@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-参数效率微调">2.1 参数效率微调</a></li>
+<li><a href="#22-vit-的令牌压缩">2.2 ViT 的令牌压缩</a></li>
+</ul>
+</li>
+<li><a href="#3-方法">3. 方法</a><ul>
+<li><a href="#31-基础知识">3.1 基础知识</a></li>
+<li><a href="#32-sparse-tuning-用于高效-vit-适应">3.2 Sparse-Tuning 用于高效 ViT 适应</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-实验设置">4.1 实验设置</a></li>
+<li><a href="#42-主要结果">4.2 主要结果</a></li>
+<li><a href="#43-消融研究">4.3 消融研究</a></li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a></li>
+<li><a href="#a-额外实验">A. 额外实验</a><ul>
+<li><a href="#a1-在-cifar-100-上的性能和效率">A.1 在 CIFAR-100 上的性能和效率</a></li>
+<li><a href="#a2-密集适配器不同瓶颈维度的影响">A.2 密集适配器不同瓶颈维度的影响</a></li>
+</ul>
+</li>
+<li><a href="#b-令牌稀疏化更多的可视化结果">B. 令牌稀疏化更多的可视化结果</a></li>
+<li><a href="#c-每项任务的实现细节">C. 每项任务的实现细节</a></li>
+<li><a href="#d-sparse-tuning-的伪代码">D. Sparse-Tuning 的伪代码</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/05.VisionTransformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>参数效率微调（PEFT）已成为适应预训练ViT模型到下游应用的流行解决方案。虽然当前的 PEFT 方法实现了参数效率，但它们忽视了在微调和推理期间的计算和 GPU 内存效率，未能满足实际需求。在本文中，我们提出了 Sparse-Tuning，这是一种新颖的 PEFT 方法，它考虑了图像和视频中的信息冗余，以提高上述效率。通过稀疏保留语义相关令牌并合并无关令牌，Sparse-Tuning 最小化了每个层处理的令牌数量，从而导致计算和内存开销的二次减少。为了使我们的令牌稀疏化策略与微调目的适当对齐，我们进一步设计了密集适配器，建立从浅层到深层的密集连接。这些密集适配器集成了多级局部特征以丰富当前令牌，改善了令牌保留和模型适应。在 VTAB-1K、三个图像数据集和两个视频数据集上的实证结果表明，我们的 Sparse-Tuning 将 GFLOPs 降低到原始 ViT-B 的 62%-70%，同时实现了最先进的性能。源代码可在 <a href="https://github.com/liuting20/Sparse-Tuning">https://github.com/liuting20/Sparse-Tuning</a> 上找到。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>大规模ViT模型 [9, 36, 42, 26] 已经在广泛的下游视觉任务中展示了强大的泛化能力。适应这些模型用于特定任务的普遍方法遵循预训练 - 微调范式，其中模型最初在大规模数据集 [7, 33] 上预训练，然后针对每个下游任务进行微调。然而，随着这些预训练 ViT 模型的不断扩大 [51, 6]，完全微调它们变得越来越计算密集。此外，在有限的下游数据集上微调时存在灾难性遗忘和过拟合的风险 [54, 20, 8]。</p>
+<p>最近，提出了各种参数效率微调（PEFT）方法 [17, 29, 18, 21, 5] 来解决与完全微调大型模型相关的高计算成本和风险。通过更新插入到模型中的额外参数 [17, 5] 或附加到输入数据的参数 [29, 21]，PEFT 方法可以实现与完整微调相似甚至更好的性能。然而，我们发现这些方法追求的参数效率并不直接相关与部署期间真正关心的效率，包括计算和内存效率。如图 1 所示，尽管可训练参数的数量存在显著差异，PEFT 方法与完整微调之间的 GFLOPs 和内存差距并不明显。原因在于，现有 PEFT 方法实现的可训练参数减少并没有解决 ViTs 的实际瓶颈。预训练 ViT 的计算和内存成本不仅来自其自身的大小，还来自输入的长度，由于变换器的核心组件注意力操作的二次复杂性，因此我们建议 PEFT 方法应考虑管理令牌数量，以实现高效有效的 ViT 适应。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212704.png" style="zoom: 80%;" /></div>
+
+<p>根据上述分析，我们提出了 Sparse-Tuning，这是一种新的调整范式，实现了 ViT 适应的高效微调和推理。受到图像中空间上的重冗余和视频在时空上的重冗余 [14, 10] 的事实启发，我们引入了一种无参数的令牌稀疏化方法，在微调期间有效地压缩提取的视觉令牌。具体来说，它逐步保留语义相关令牌，同时将无关令牌压缩成一个代表性令牌，从而减少每个层中的令牌数量。在减少计算开销的同时，我们的消融研究（如图 3 所示）表明，令牌减少可能导致信息丢失和准确性下降。由于深层中剩余的视觉令牌可以被视为低分辨率表示，包含视觉线索的粗略和整体特征，我们的调整方法进一步用设计精良的密集适配器补充高分辨率局部细节。与常规的层内适配器不同，我们的密集适配器在不同层之间建立密集连接，整合来自较浅层的多级特征以增强当前令牌。此外，局部特征的充分利用还有助于精确识别后续层中的语义相关令牌。通过这些非平凡的设计，Sparse-Tuning 在显著降低计算成本和 GPU 内存消耗的同时提高了性能，实现了 ViT 微调和推理的高效性，如图 1 所示。</p>
+<p>为了全面评估泛化能力，我们在常见的 PEFT 基准 VTAB-1K[52] 上进行了广泛的实验，三个完整的图像数据集：CIFAR-100[28]、SVHN[11] 和 Food-101[2]，以及两个完整的视频数据集：Kinetics-400 (K400)[4] 和 SomethingSomething V2 (SSv2)[12]。VTAB-1K 上的实证结果表明，Sparse-Tuning 仅使用大约原始 ViT-B 的 66% 计算成本的 11.65 GFLOPs，就超越了所有最先进的方法在性能和效率方面的表现。此外，Sparse-Tuning 在完整数据集上的图像和视频识别方面取得了优越的性能，同时显著提高了微调和推理效率。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-参数效率微调">2.1 参数效率微调<a class="anchor-link" href="#21-参数效率微调" title="Permanent link">&para;</a></h3>
+<p>随着ViT[9, 14, 51, 6] 的扩展以增强性能和泛化能力，适应整个模型到下游任务变得越来越计算昂贵。为了减轻这一点，参数效率微调（PEFT）[17, 18, 21, 48] 作为一种战略方法出现。PEFT 方法仅更新一小部分额外参数，同时保持大部分预训练模型冻结，从而减轻灾难性遗忘和过拟合的风险。</p>
+<p>大多数为变换器 [44] 设计的 PEFT 方法可以分为三种类型：(1) 部分微调 [27, 50]，仅更新一小部分固有参数，同时冻结大多数原始参数。(2) 提示微调 [29, 21, 20, 47]，整合固定长度的可学习令牌（即提示）附加到输入数据。它仅在微调期间更新提示。(3) 适配器微调 [17, 5, 46, 34, 35]，仅在微调期间更新插入到模型中的模块（即适配器）中的额外参数。</p>
+<p>尽管大多数 PEFT 方法在微调期间提高了参数效率，但它们通常引入了新参数，这影响了推理效率。重参数化方法，如 LoRA[18] 和 FacT[25]，在推理期间可以将可学习参数整合到原始模型中，从而保持原始模型的推理效率。然而，当前的 PEFT 方法在提高推理效率方面仍然不足，这对于将大规模 ViT（例如，ViT-L）适应到实际应用中至关重要。在本文中，我们旨在提高预训练 ViT 的微调和推理效率。</p>
+<h3 id="22-vit-的令牌压缩">2.2 ViT 的令牌压缩<a class="anchor-link" href="#22-vit-的令牌压缩" title="Permanent link">&para;</a></h3>
+<p>最近的工作探索了加速 ViT[43, 31, 32] 的推理效率，其中大多数旨在减少令牌冗余以降低计算复杂性。例如，DynamicViT[43] 通过预测模块识别的不太信息丰富的令牌有效地稀疏化 ViT。DVT[45] 通过自动适应每个输入图像的令牌数量来提高计算效率。SuperViT[32] 使用单一模型处理不同的补丁大小，在推理期间自适应调整令牌保留。</p>
+<p>现有的 ViT 令牌压缩方法通常需要对所有预训练参数进行微调 [43, 45]，或者从头开始训练模型 [31, 32]。因此，这些方法需要大量的训练或微调时间来适应 ViT 到下游视觉任务。最近，Dynamic Tuning (DyT)[55] 保持预训练 ViT 参数冻结，仅更新适配器和令牌调度器以提高参数效率并减少推理期间的冗余计算。与 DyT 不同，它直接跳过非信息丰富的令牌，我们的方法将这些令牌合并成一个代表性令牌以保留对分类有益的视觉特征。此外，与 DyT 不同，它需要计算所有令牌以更新所提出的令牌调度器的参数，我们没有引入任何额外的模块来进行令牌稀疏化。我们的方法通过选择性地适应令牌来高效微调预训练的 ViT，从而在微调和推理阶段都提高了效率。</p>
+<h2 id="3-方法">3. 方法<a class="anchor-link" href="#3-方法" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们详细阐述了我们提出的 Sparse-Tuning。首先，我们在第 3.1 节简要回顾了视觉变换器和适配器微调的基础知识。接下来，我们在第 3.2 节提供了 Sparse-Tuning 整体框架的一般介绍。之后，我们详细阐述了 Sparse-Tuning 的核心技术：令牌稀疏化和密集适配器。</p>
+<h3 id="31-基础知识">3.1 基础知识<a class="anchor-link" href="#31-基础知识" title="Permanent link">&para;</a></h3>
+<p>ViTs[9] 基本上由一个补丁嵌入层和一堆变换器编码器层组成。补丁嵌入层首先将输入图像 <span class="math-inline">x \in R^{H \times W \times 3}</span> 分割并展平为一系列补丁 <span class="math-inline">x_p \in R^{N \times (P^2 \cdot C)}</span>，其中 <span class="math-inline">(H, W)</span> 表示输入图像的大小，<span class="math-inline">(P, P)</span> 表示每个图像补丁的大小，<span class="math-inline">C</span> 是通道数，<span class="math-inline">N = \frac{H \cdot W}{P^2}</span> 是图像令牌的数量。补丁 <span class="math-inline">x_p</span>，加上一个可学习的 [CLS] 令牌，被送入一堆变换器编码器层，每个层包括一个多头注意（MHA）块和一个前馈网络（FFN）。在 MHA 中，令牌被线性投影并打包成三个向量，分别称为 Q、K 和 V。自注意力操作可以写成：<br />
+<div class="math-display"><br />
+    \text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V, \quad (1)<br />
+</div><br />
+<span class="math-inline">\text{Softmax}\left(\frac{QK^T}{\sqrt{d}}\right)</span> 是注意力图，其中 <span class="math-inline">QK^T</span> 表示从 [CLS] 令牌到所有令牌的注意力，反映了每个令牌的重要性。随后，输出令牌被发送到一个层归一化（LayerNorm）[1] 和一个 FFN，FFN 由两个全连接层组成，中间有一个 GELU 激活函数 [16]。处理完一堆编码器层的令牌后，提取 [CLS] 令牌并用于分类。</p>
+<p>适配器微调是 ViT[5, 39, 23] 高效微调的流行策略，通常涉及在 FFN 中并行插入一个 MLP。适配器由一个下投影层 <span class="math-inline">W_{\text{down}}</span>、ReLU 非线性激活和上投影层 <span class="math-inline">W_{\text{up}}</span> 依次组成。给定输入特征 <span class="math-inline">x</span>，标准适配器的功能可以正式表示为：<br />
+<div class="math-display"><br />
+    \text{Adapter}(x) = x + s \cdot \text{ReLU}(xW_{\text{down}})W_{\text{up}}, \quad (2)<br />
+</div><br />
+其中 <span class="math-inline">s</span> 表示缩放因子。与标准适配器不同，在本文中，我们引入了密集适配器，它接收来自不同编码器层的多个适应特征，以在 ViT 编码器层之间建立连接。</p>
+<h3 id="32-sparse-tuning-用于高效-vit-适应">3.2 Sparse-Tuning 用于高效 ViT 适应<a class="anchor-link" href="#32-sparse-tuning-用于高效-vit-适应" title="Permanent link">&para;</a></h3>
+<p>现有工作 [43, 45, 31] 表明，ViT 中的最终预测在很大程度上取决于一组最具信息性的令牌。动态调整（DyT）[55] 保持预训练参数冻结，并更新适配器和所提出的令牌调度器以区分和丢弃非信息丰富的令牌。这种设计可以提高 ViT 的推理速度，但存在两个主要缺点：(1) 低效的微调，因为 DyT 需要所有令牌的梯度反向传播以更新所提出的令牌调度器的参数，从而导致 GPU 内存消耗和微调速度方面的低效率。(2) 信息丢失，因为令牌调度器直接移除了那些未激活的令牌，这可能导致直接丢失信息，从而恶化分类准确性。</p>
+<p>基于上述分析，我们引入了带有密集适配器的 Sparse-Tuning，通过选择性地适应令牌来高效微调预训练的 ViT，重点关注信息丰富的区域，提高微调和推理阶段的效率。如图 2 所示，整体框架包括两个部分：(1) 一个预训练的 ViT-B/16[9]，由一个补丁嵌入层和 12 个变换器编码器层组成，以及我们精心设计的令牌稀疏化过程，以及 (2) 我们的密集适配器。在微调期间，我们冻结预训练的 ViT，仅更新一系列密集适配器以促进对下游任务的高效适应。在第 4、7 和 10 个编码器层中（我们在表 6 中进行了相关分析），我们实现了令牌稀疏化（见图 3），以使 ViT 更多地关注信息丰富的令牌并减少冗余计算成本。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212435.png" style="zoom: 80%;" /></div>
+
+<p><strong>令牌稀疏化</strong>。Sparse-Tuning 的主要思想是减少对非信息丰富令牌的计算负载，从而降低 ViT 和密集适配器在微调和推理期间的计算成本，从而提高整体效率和速度。一个有趣的问题出现了：如何区分信息丰富的令牌和信息较少的其他令牌？以前的工作 [3, 41, 13] 已经证明了 [CLS] 令牌和其他令牌之间的强关系。换句话说，[CLS] 令牌和其他令牌之间的注意力分数反映了当前令牌对分类的贡献。因此，与 [CLS] 令牌显示出更高/更低注意力分数的令牌包含更多/更少的语义信息，因此可以被视为注意力/非注意力令牌。尽管非注意力令牌显示出较低的注意力分数，但它们有时仍可能影响分类结果，例如预测覆盖图像大部分区域的大对象。为此，与 DyT[55] 不同，我们的令牌稀疏化逐步保留注意力令牌，并将非注意力令牌合并为一个令牌，在微调和推理期间减少计算成本。具体来说，如图 2 所示，我们计算所有头部的平均注意力分数，并保留 <span class="math-inline">k</span> 个最大值（即，前 <span class="math-inline">k</span> 个）元素对应的令牌（注意力令牌），并将其余令牌（非注意力令牌）通过加权平均融合成一个代表性令牌以补充注意力令牌。通过这种设计，Sparse-Tuning 允许预训练的 ViT 集中关注最具信息性的区域，同时丢弃非信息性的区域，从而在微调和推理期间降低冗余计算成本。此外，通过整合非注意力令牌，Sparse-Tuning 减轻了令牌稀疏化导致的信息丢失。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212529.png" style="zoom: 80%;" /></div>
+
+<p><strong>密集适配器</strong>。为了进一步减轻令牌稀疏化导致的信息丢失，并高效地使预训练的 ViT 适应下游任务，我们考虑使用适配器微调方法。大多数当前的 ViT 适配器微调方法 [5, 22] 遵循 ResNet[15] 的基本残差连接方法，这只能在两个相邻的 ViT 编码器层之间建立连接，极大地限制了微调期间适应特征的传播。ViT中跨编码器层的局部特征到全局特征的转换影响了Token稀疏化的有效性。鉴于令牌稀疏化在 ViT 编码器层中跨层发生，我们引入了密集适配器（DA），受 DenseNet[19] 启发，以在多个编码器层之间建立密集连接。如图 2（右）所示，与标准适配器 [17] 不同，DA 接收来自不同编码器层的多个特征作为输入，以建立多个令牌稀疏化步骤之间的交互，从而补偿令牌稀疏化导致的信息丢失。</p>
+<p>根据位置，DA 由一到三个下投影层（即，<span class="math-inline">W_{\text{down1}}, W_{\text{down2}}, W_{\text{down3}}</span>），ReLU 非线性激活和上投影层 <span class="math-inline">W_{\text{up}}</span> 组成。具体来说，我们将第 N 个 DA 表示为 <span class="math-inline">DA_N</span>。<span class="math-inline">DA_N</span> 的输出可以表示为：<br />
+<div class="math-display"><br />
+    x_{DA_N} = \begin{cases}<br />
+    \text{ReLU}(x_{MHAN}W_{\text{down1}})W_{\text{up}}, &amp; \text{if } N = 1 \<br />
+    \text{ReLU}(x_{MHAN}W_{\text{down1}} + x_{DA_{N-1}}W_{\text{down2}})W_{\text{up}}, &amp; \text{if } 1 &lt; N \leq 3 \<br />
+    \text{ReLU}(x_{MHAN}W_{\text{down1}} + x_{DA_{N-1}}W_{\text{down2}} + x_{DA_{N-3}}W_{\text{down3}})W_{\text{up}}, &amp; \text{if } 3 &lt; N \leq 12<br />
+    \end{cases}, \quad (3)<br />
+</div><br />
+其中 <span class="math-inline">x_{DA_N}</span> 和 <span class="math-inline">x_{MHAN}</span> 分别表示第 N 个编码器层的 <span class="math-inline">DA_N</span> 和 MHA 的输出。值得注意的是，当 <span class="math-inline">3 &lt; N \leq 12</span> 时，<span class="math-inline">x_{DA_{N-1}}</span> 和 <span class="math-inline">x_{DA_{N-3}}</span> 可能通过相应的令牌稀疏化步骤进行稀疏化，以确保 <span class="math-inline">x_{DA_N}</span>、<span class="math-inline">x_{DA_{N-1}}</span> 和 <span class="math-inline">x_{DA_{N-3}}</span> 的令牌长度一致。密集适配器促进了 ViT 编码器的较低和较高层之间的多次交互，从而增强了令牌稀疏化的表示能力和质量。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<h3 id="41-实验设置">4.1 实验设置<a class="anchor-link" href="#41-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>数据集</strong>。我们在共同的 PEFT 基准 VTAB-1K[52] 上将 Sparse-Tuning 与其他最先进的方法进行比较，以评估训练数据有限时的适应性能。对于 VTAB-1K[52] 中的每个下游分类任务，训练数据极为稀缺，仅包括 1,000 个训练样本。因此，我们遵循 [5, 55]，在三个完整的图像数据集：CIFAR-100[28]、SVHN[11] 和 Food-101[2] 上进行实验，并在两个完整的视频数据集：Kinetics-400 (K400)[4] 和 Something-Something V2 (SSv2)[12] 上进一步评估 Sparse-Tuning 的适应性能和效率。</p>
+<p><strong>实现细节</strong>。我们使用在 ImageNet21K 数据集 [7] 上进行全面监督预训练的 ViT-Base（ViT-B/16）模型 [9] 作为我们的主干。我们的密集适配器的瓶颈维度 <span class="math-inline">d</span> 默认设置为 32，并在 VTAB-1K 上遵循大多数现有工作 [5, 55] 将 <span class="math-inline">d</span> 减少到 8。缩放因子 <span class="math-inline">s</span> 设置为 1。我们将注意力令牌的保持率 <span class="math-inline">r</span> 默认设置为 0.7，除非另有说明。我们遵循 [5, 55] 中报告的相同训练计划。对于所有下游任务，我们使用 top-1 准确率作为主要评估指标。我们在 A800 GPU 上进行所有实验。更多细节在附录 C 中提供。</p>
+<h3 id="42-主要结果">4.2 主要结果<a class="anchor-link" href="#42-主要结果" title="Permanent link">&para;</a></h3>
+<p>在 VTAB-1K 上的比较。在 VTAB-1K[52] 上与最先进（SOTA）PEFT 方法的比较结果列于表 1 中，从中我们可以观察到：(1) Sparse-Tuning 超越了所有 SOTA PEFT 方法。Sparse-Tuning 在三个子组的平均准确率方面实现了 1.18% 的改进，与之前最好的模型 DyT[55] 相比。(2) Sparse-Tuning 大幅提高了推理效率。Sparse-Tuning 仅使用大约原始 ViT-B 的 66% 计算成本的 11.65 GFLOPs，在保持率 <span class="math-inline">r = 0.7</span> 的情况下，超越了所有最先进的方法在性能和推理效率方面的表现。(3) 随着保持率 <span class="math-inline">r</span> 的增加，Sparse-Tuning 继续展现出更好的性能。即使是保持率 <span class="math-inline">r = 0.5</span> 的 Sparse-Tuning 也能超越最近的强方法，如 Res-Tuning[22] 和 FacT[25]，这验证了 Sparse-Tuning 的有效性和效率。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212741.png" style="zoom: 80%;" /></div>
+
+<p><strong>在完整数据集上的比较</strong>。我们在完整的图像和视频数据集上进行实验，以评估训练数据充足时的适应性能。完整的图像和视频数据集上的结果如表 2 所示，我们发现：(1) Sparse-Tuning 在图像和视频数据集上都超越了所有基线方法，展示了其在完整数据集上的强可转移性。(2) Sparse-Tuning 在图像和视频数据集上展示了出色的推理效率。特别是在视频数据集上，Sparse-Tuning 将原始 ViT-B 的计算复杂性降低了约 30%，突出了其在视频应用中的高效率。Sparse-Tuning 仅使用 1.10M 更新参数，在图像和视频识别方面取得了优越的性能，同时显著提高了推理效率。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212802.png" style="zoom: 80%;" /></div>
+
+<h3 id="43-消融研究">4.3 消融研究<a class="anchor-link" href="#43-消融研究" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们首先分析令牌稀疏化和密集适配器的有效性。然后，我们深入分析了我们密集适配器中的特征输入及其融合方法。随后，我们研究了不同位置的令牌稀疏化对实现最佳性能的影响。最后，我们验证了在预训练 ViT 扩展时 Sparse-Tuning 的有效性。我们在三个完整的图像数据集上进行了所有的消融研究。</p>
+<p><strong>组件有效性</strong>。在表 3 中，我们报告了使用 Sparse-Tuning 的不同组件的性能，以调查令牌稀疏化和密集适配器的有效性。我们可以观察到以下情况：(1) 令牌稀疏化可以降低计算复杂性，但它导致了显著的性能下降，导致平均准确率下降了 7%（表 3 (a,b)）。(2) 密集适配器可以显著提高三个数据集上的性能（表 3 (a,c)），这表明它们在 ViT 适应中的有效性。(3) Sparse-Tuning 将令牌稀疏化和密集适配器整合到预训练的 ViT 中，实现了性能和微调以及推理效率之间的最佳权衡（表 3 (a,b,c,d)）。与仅使用密集适配器进行高效 ViT 适应（表 3 (b)）相比，Sparse-Tuning 仅牺牲了 0.48% 的平均准确率，同时将计算成本从 17.89 GFLOPs 显著降低到 11.70 GFLOPs，突出了其强大的适应性能和效率。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212819.png" style="zoom: 80%;" /></div>
+
+<p><strong>不同特征输入的影响</strong>。为了调查密集连接的有效性，我们比较了不同输入到我们密集适配器的性能。如表 4 所示，当从不同编码器层输入多个特征到密集适配器时，性能会提高。这表明我们的密集适配器有效地促进了 ViT 较低和较高层之间的密集交互，从而提高了与标准适配器调整相比的性能（表 4 (a)）。值得注意的是，尽管 Sparse-Tuning 引入了更多需要计算的特征交互，但与适配器调整相比，GFLOPs 仍然减少，这表明令牌稀疏化也减轻了密集适配器中的计算成本。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212947.png" style="zoom: 80%;" /></div>
+
+<p><strong>不同特征融合方法的影响</strong>。由于密集适配器接收多个特征作为输入，我们考虑了三种变体的密集适配器，它们可以在图 4 中所示的三种不同位置融合这些多级特征。我们在表 5 中报告了不同特征融合方法的性能。在将它们输入到密集适配器之前融合多级特征（图 4 (a)）需要较少的可训练参数，但会恶化性能。这是因为这种融合方法导致了信息丢失；不同层的特征可能包含互补信息，简单的加法可能无法有效地整合这些信息。在将它们输入到密集适配器之后融合特征（图 4 (c)）也会恶化性能。这是因为多级特征被映射到不同的空间，直接融合它们可能会掩盖重要信息，从而降低分类性能。我们的密集适配器首先将多级特征投影到相同的空间，然后融合它们，最后将融合的特征上投影回它们原来的形态（图 4 (b)）。这确保了密集交互过程在同一特征空间内进行，从而带来了更好的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227212600.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213004.png" style="zoom: 80%;" /></div>
+
+<p><strong>不同位置的令牌稀疏化的影响</strong>。由于令牌稀疏化在 ViT 的不同编码器层中发生，我们研究了它在不同位置的影响，以实现性能和计算成本之间的最佳权衡。如表 6 所示，第一次令牌稀疏化的位置越浅，需要处理的完整令牌的编码器层就越少，因此计算成本越低。然而，在早期阶段，ViT 无法可靠地识别重要令牌，因此基于不可靠的注意力图合并令牌可能导致丢失重要信息，导致性能下降（表 6 (a, b)）。相反，如表 6 (d, e) 所示，由密集适配器稍后处理的浅层令牌可能已经丢失了局部特征，导致与表 6 (a, b) 相比的整体性能更好，但仍然不是最优的。我们发现在第 4、7 和 10 个编码器层进行令牌稀疏化可以获得最佳性能。这表明，在 ViT 的相对中间编码器层执行多次密集交互在令牌稀疏化期间更有效地平衡了局部和全局特征。因此，我们选择在 ViT 的第 4、7 和 10 个编码器层进行令牌稀疏化，以实现性能和计算成本之间的最佳权衡。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213059.png" style="zoom: 80%;" /></div>
+
+<p><strong>扩展 ViT 时 Sparse-Tuning 的影响</strong>。我们将 Sparse-Tuning 应用于 ViT-L[9]，以评估在扩展预训练模型时的性能和效率。如表 7 所示，Sparse-Tuning 将可调参数减少了 99.03%，并将 GFLOPs 降低了 7.82-30.97，与完整微调相比，同时也超越了其性能。此外，Sparse-Tuning 在性能和效率方面都超越了 DyT[55]，证明了其对更大预训练模型的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213119.png" style="zoom: 80%;" /></div>
+
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>在这项工作中，我们旨在提高适应预训练 ViT 时微调和推理阶段的效率。为此，我们提出了一种名为 Sparse-Tuning 的新型调整方法，它选择性地适应令牌，使预训练的 ViT 在微调阶段更多地关注前景，更少地关注背景区域。通过逐步保留信息丰富的令牌并将非信息丰富的令牌合并为一个代表性令牌，我们的 Sparse-Tuning 显著减少了冗余计算成本，实现了 ViT 适应的微调和推理效率。我们在 VTAB-1K 基准、三个完整的图像数据集和两个完整的视频数据集上进行了实证实验，以确保 Sparse-Tuning 对高效 ViT 适应的泛化能力。广泛的实验结果表明，我们的 Sparse-Tuning 可以提高性能，同时显著改善微调和推理效率。在本文中，由于我们主要关注分类任务，将 Sparse-Tuning 扩展到其他视觉任务，如分割和检测，将是我们未来的发展方向。</p>
+<h2 id="a-额外实验">A. 额外实验<a class="anchor-link" href="#a-额外实验" title="Permanent link">&para;</a></h2>
+<h3 id="a1-在-cifar-100-上的性能和效率">A.1 在 CIFAR-100 上的性能和效率<a class="anchor-link" href="#a1-在-cifar-100-上的性能和效率" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213148.png" style="zoom: 80%;" /></div>
+
+<p>我们在 CIFAR-100 数据集上比较了 Sparse-Tuning 方法与其他主流 PEFT 方法的更新参数数量、GPU 内存使用情况、微调和推理时间、GFLOPs 和准确率。显然，Sparse-Tuning 在显著提高微调和推理阶段的效率的同时，实现了最先进的性能。</p>
+<h3 id="a2-密集适配器不同瓶颈维度的影响">A.2 密集适配器不同瓶颈维度的影响<a class="anchor-link" href="#a2-密集适配器不同瓶颈维度的影响" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213200.png" style="zoom: 80%;" /></div>
+
+<p>我们探索了 Sparse-Tuning 中密集适配器的瓶颈维度 <span class="math-inline">d</span> 对实现性能、更新参数和计算成本之间最佳权衡的影响。如表 9 所报告的，更高的瓶颈维度 <span class="math-inline">d</span> 引入了更多的参数和更高的 GFLOPs。然而，较小的 <span class="math-inline">d</span> 可能会导致下投影丢失原始特征的大量信息，导致性能下降。我们观察到性能在瓶颈维度为 32 时达到峰值，之后开始下降。因此，考虑到可训练参数、GFLOPs 和性能之间的权衡，我们选择了 32 作为瓶颈维度。</p>
+<h2 id="b-令牌稀疏化更多的可视化结果">B. 令牌稀疏化更多的可视化结果<a class="anchor-link" href="#b-令牌稀疏化更多的可视化结果" title="Permanent link">&para;</a></h2>
+<p>我们展示了图 5 中 Sparse-Tuning 令牌稀疏化的更多可视化结果。结果表明，对于各种图像，Sparse-Tuning 中的令牌稀疏化可以有效地保持前景区域的令牌。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213227.png" style="zoom: 80%;" /></div>
+
+<h2 id="c-每项任务的实现细节">C. 每项任务的实现细节<a class="anchor-link" href="#c-每项任务的实现细节" title="Permanent link">&para;</a></h2>
+<p>VTAB-1K 上的实验设置。按照之前的工作 [24, 22]，我们在 VTAB-1K[52] 的每个数据集上微调模型 100 个周期。这些实验中我们不使用任何数据增强策略。我们采用 AdamW[38] 优化器。基础学习率设置为 0.01，并根据余弦调度 [37] 逐渐衰减至 0。</p>
+<p>完整图像数据集上的实验设置。我们使用表 10 中的设置来微调带有 Sparse-Tuning 的 ViT。其他参数效率方法如 AdaptFormer[5]、LoRA[18] 和 VPT[21] 的实验也遵循 [55] 中的设置。</p>
+<p>视频数据集上的实验设置。我们使用两个视频数据集，Kinetics-400 (K400)[4] 和 Something-Something V2 (SSv2)[12]，来评估令牌数量增加时的性能。实验设置如表 11 所示。输入帧数设置为 8。在测试期间，我们使用多视角，这是视频动作识别中的常见做法。其他 PEFT 方法的实验也遵循这些实验设置。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213253.png" style="zoom: 80%;" /></div>
+
+<h2 id="d-sparse-tuning-的伪代码">D. Sparse-Tuning 的伪代码<a class="anchor-link" href="#d-sparse-tuning-的伪代码" title="Permanent link">&para;</a></h2>
+<p>我们在算法 1 中展示了 Sparse-Tuning 的 PyTorch 风格伪代码，以帮助更好地理解整个过程。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241227213317.png" style="zoom: 80%;" /></div>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#集成学习概述">集成学习概述</a></li>
+<li><a href="#集成学习之个体学习器">集成学习之个体学习器</a></li>
+<li><a href="#集成学习之boosting">集成学习之boosting</a></li>
+<li><a href="#集成学习之bagging">集成学习之bagging</a></li>
+<li><a href="#集成学习之stacking">集成学习之Stacking</a></li>
+<li><a href="#偏差与方差角度的集成学习">偏差与方差角度的集成学习</a><ul>
+<li><a href="#集成学习的偏差与方差">集成学习的偏差与方差</a></li>
+<li><a href="#bagging-的偏差与方差">Bagging 的偏差与方差</a></li>
+<li><a href="#boosting-的偏差与方差">Boosting 的偏差与方差</a></li>
+<li><a href="#小结">小结</a></li>
+</ul>
+</li>
+<li><a href="#bagging与boosting对比">Bagging与Boosting对比</a></li>
+<li><a href="#集成学习之结合策略">集成学习之结合策略</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/19.集成学习</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="集成学习概述">集成学习概述<a class="anchor-link" href="#集成学习概述" title="Permanent link">&para;</a></h2>
+<p>集成学习(ensemble learning)本身不是一个单独的机器学习算法，而是通过构建并结合多个机器学习器来完成学习任务。也就是我们常说的“博采众长”。集成学习可以用于分类问题集成，回归问题集成，特征选取集成，异常点检测集成等等，可以说所有的机器学习领域都可以看到集成学习的身影。</p>
+<p>从下图，我们可以对集成学习的思想做一个概括。对于训练集数据，我们通过训练若干个个体学习器（individual learner），通过一定的结合策略，就可以最终形成一个强学习器，以达到博采众长的目的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241231104028.png" style="zoom: 80%;" /></div>
+
+<p>也就是说，集成学习有两个主要的问题需要解决，第一是如何得到若干个个体学习器，第二是如何选择一种结合策略，将这些个体学习器集合成一个强学习器。</p>
+<h2 id="集成学习之个体学习器">集成学习之个体学习器<a class="anchor-link" href="#集成学习之个体学习器" title="Permanent link">&para;</a></h2>
+<p>集成学习的第一个问题就是如何得到若干个个体学习器。这里有两种选择。第一种就是所有的个体学习器都是一个种类的，或者说是<strong>同质的</strong>（homogeneous），同质集成中的个体学习器也称为“基学习器”（base learner），相应的学习算法称为“基学习算法”（base learning algorithm）。比如都是决策树个体学习器，或者都是神经网络个体学习器。第二种是所有的个体学习器不全是一个种类的，或者说是<strong>异质的</strong>（heterogeneous）。比如我们有一个分类问题，对训练集采用支持向量机个体学习器，逻辑回归个体学习器和朴素贝叶斯个体学习器来学习，再通过某种结合策略来确定最终的分类强学习器。这时个体学习器一般不称为基学习器，而称作“组件学习器”（component leaner）或直接称为个体学习器。</p>
+<p>弱学习器（weak learner）：指泛化性能略优于随机猜测的学习器：例如在二分类问题桑精度略高于50%的分类器。</p>
+<p>前面提到，集成学习的直觉是结合多个个体的能力，获得远超个体的集体能力优势。这种直觉在实际上对于“弱学习器”是非常符合的。故很多集成学习的研究也都是针对弱学习器，而基学习器有时也被直接称为弱学习器。</p>
+<p>一般经验中，如果把好坏不一的东西掺杂在一起，那么最终结果很可能是整体效果比最坏的东西要好一些，但又比最好的那个要坏一些，那么这种情况下不如就让最好的单独去工作，而不要参与混合。但是集成学习还是对多个学习器进行了结合，那它怎么保证整体的效果会比最好的那个单一学习器的效果更好呢。</p>
+<p>用一个简单的例子来进行说明：在一个二分类任务中，假设三个分类器在三个测试样本上的表现如下图所示。假设集成学习的结果通过三个个体学习器用投票发（voting）产生，即“少数服从多数”，那么当三个个体学习器分别对三个测试例有不同的判别优势时，集成的效果也会不一样。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241231105443.png" style="zoom: 80%;" /></div>
+
+<p>在（a）中，每个分类器原本只有66.6%的精度，集成学习却达到了100%；（b）中，每个分类器都是一样的，集成之后性能没有任何提高；在（c）中，每个分类器的精度只有33.3%，集成之后结果反而变得更糟。</p>
+<p>这个例子表明：要获得好的集成，个体学习器应“好而不同”，即个体学习器要有一定的准确性，即学习器不能太坏，并且要有“多样性”（diversity），即学习器间具有差异。</p>
+<p>根据个体学习器生成方式的不同，目前集成学习方法大致可分为两大类，第一个是个体学习器之间存在强依赖关系，一系列个体学习器基本都需要串行生成的序列化方法，代表算法是boosting系列算法，第二个是个体学习器之间不存在强依赖关系，一系列个体学习器可以并行生成，代表算法是bagging和随机森林（Random Forest）系列算法。</p>
+<h2 id="集成学习之boosting">集成学习之boosting<a class="anchor-link" href="#集成学习之boosting" title="Permanent link">&para;</a></h2>
+<p>Boosting 训练过程为阶梯状，基模型的训练是有顺序的，每个基模型都会在前一个基模型学习的基础上进行学习，最终综合所有基模型的预测值产生最终的预测结果，用的比较多的综合方式为加权法。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250102110740.png" style="zoom: 80%;" /></div>
+
+<p>Boosting算法的工作机制是首先从训练集用初始权重训练出一个弱学习器1，根据弱学习的学习误差率表现来更新训练样本的权重，使得之前弱学习器1学习误差率高的训练样本点的权重变高，使得这些误差率高的点在后面的弱学习器2中得到更多的重视。然后基于调整权重后的训练集来训练弱学习器2.，如此重复进行，直到弱学习器数达到事先指定的数目T，最终将这T个弱学习器通过集合策略进行整合，得到最终的强学习器。</p>
+<p>Boosting系列算法里最著名算法主要有AdaBoost算法和提升树(boosting tree)系列算法。提升树系列算法里面应用最广泛的是梯度提升树(Gradient Boosting Tree)。</p>
+<h2 id="集成学习之bagging">集成学习之bagging<a class="anchor-link" href="#集成学习之bagging" title="Permanent link">&para;</a></h2>
+<p>Bagging 全称叫 <strong>B</strong>ootstrap <strong>agg</strong>regat<strong>ing</strong> ，每个基学习器都会对训练集进行有放回抽样得到子训练集，比较著名的采样法为 0.632 自助法。每个基学习器基于不同子训练集进行训练，并综合所有基学习器的预测值得到最终的预测结果。Bagging 常用的综合方法是投票法，票数最多的类别为预测类别。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250102110713.png" style="zoom: 80%;" /></div>
+
+<p>对于这里的随机采样有必要做进一步的介绍，这里一般采用的是自助采样法（Bootstap sampling）,即对于 <span class="math-inline">m</span> 个样本的原始训练集，我们每次先随机采集一个样本放入采样集，接着把该样本放回，也就是说下次采样时该样本仍有可能被采集到，这样采集 <span class="math-inline">m</span> 次，最终可以得到 <span class="math-inline">m</span> 个样本的采样集，由于是随机采样，这样每次的采样集是和原始训练集不同的，和其他采样集也是不同的，这样得到多个不同的弱学习器。</p>
+<blockquote>
+<p>注：Bootstrap方法是非常有用的一种统计学上的估计方法。 Bootstrap是一类非参Monte Carlo方法,其实质是对观测信息进行再抽样，进而对总体的分布特性进行统计推断。首先，Bootstrap通过重抽样，避免了Cross-Validation造成的样本减少问题，其次，Bootstrap也可以创造数据的随机性。Bootstrap是一种有放回的重复抽样方法，抽样策略就是简单的随机抽样。</p>
+</blockquote>
+<p>随机森林（Random Forest，简称RF）是Bagging的一个扩展变体。其在以决策树作为基学习器构建Bagging集成的基础上，进一步在决策树的训练过程中引入了随机属性选择。</p>
+<p>具体来说，传统决策树在选择划分属性时是在当前结点的属性集合（假定有 <span class="math-inline">d</span> 个属性）中选择一个最优属性；而在RF中，对基决策树的每个结点，先从该结点的属性集合中随机选择一个包含 <span class="math-inline">k</span> 个属性的子集，然后再从这个子集中选择一个最优属性用于划分。这里的参数 <span class="math-inline">k</span> 控制了随机性的引入程度：若令 <span class="math-inline">k=d</span> ，则基决策树的构建与传统决策树相同；若令 <span class="math-inline">k=1</span> ，则是随机选择一个属性用于划分；一般情况下，推荐值 <span class="math-inline">k=log_2d</span> 。</p>
+<h2 id="集成学习之stacking">集成学习之Stacking<a class="anchor-link" href="#集成学习之stacking" title="Permanent link">&para;</a></h2>
+<p>Stacking 是先用全部数据训练好基模型，然后每个基模型都对每个训练样本进行的预测，其预测值将作为训练样本的特征值，最终会得到新的训练样本，然后基于新的训练样本进行训练得到模型，然后得到最终预测结果。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250102110750.png" style="zoom: 80%;" /></div>
+
+<p>Stacking算法分为2层，第一层是用不同的算法形成<span class="math-inline">T</span> 弱分类器，同时产生一个与原数据集大小相同的新数据集，利用这个新数据集和一个新算法构成第二层的分类器。</p>
+<p>Stacking 就像是 Bagging的升级版，Bagging中的融合各个基础分类器是相同权重，而Stacking中则不同,Stacking中第二层学习的过程就是为了寻找合适的权重或者合适的组合方式。</p>
+<p>那么，为什么集成学习会好于单个学习器呢？原因可能有三：</p>
+<ol>
+<li>训练样本可能无法选择出最好的单个学习器，由于没法选择出最好的学习器，所以干脆结合起来一起用；</li>
+<li>假设能找到最好的学习器，但由于算法运算的限制无法找到最优解，只能找到次优解，采用集成学习可以弥补算法的不足；</li>
+<li>可能算法无法得到最优解，而集成学习能够得到近似解。比如说最优解是一条对角线，而单个决策树得到的结果只能是平行于坐标轴的，但是集成学习可以去拟合这条对角线。</li>
+</ol>
+<h2 id="偏差与方差角度的集成学习">偏差与方差角度的集成学习<a class="anchor-link" href="#偏差与方差角度的集成学习" title="Permanent link">&para;</a></h2>
+<h3 id="集成学习的偏差与方差">集成学习的偏差与方差<a class="anchor-link" href="#集成学习的偏差与方差" title="Permanent link">&para;</a></h3>
+<p>偏差（Bias）描述的是预测值和真实值之差；方差（Variance）描述的是预测值作为随机变量的离散程度。放一场很经典的图：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250102110820.png" style="zoom: 80%;" /></div>
+
+<p>模型的偏差与方差</p>
+<ul>
+<li><strong>偏差：</strong>描述样本拟合出的模型的预测结果的期望与样本真实结果的差距，要想偏差表现的好，就需要复杂化模型，增加模型的参数，但这样容易过拟合，过拟合对应上图的 High Variance，点会很分散。低偏差对应的点都打在靶心附近，所以喵的很准，但不一定很稳；</li>
+<li><strong>方差：</strong>描述样本上训练出来的模型在测试集上的表现，要想方差表现的好，需要简化模型，减少模型的复杂度，但这样容易欠拟合，欠拟合对应上图 High Bias，点偏离中心。低方差对应就是点都打的很集中，但不一定是靶心附近，手很稳，但不一定瞄的准。</li>
+</ul>
+<p>我们常说集成学习中的基模型是弱模型，通常来说弱模型是偏差高（在训练集上准确度低）方差小（防止过拟合能力强）的模型，<strong>但并不是所有集成学习框架中的基模型都是弱模型</strong>。<strong>Bagging 和 Stacking 中的基模型为强模型（偏差低，方差高），而Boosting 中的基模型为弱模型（偏差高，方差低）</strong>。</p>
+<p>在 Bagging 和 Boosting 框架中，通过计算基模型的期望和方差我们可以得到模型整体的期望和方差。为了简化模型，我们假设基模型的期望为 <span class="math-inline">\mu</span> ，方差 <span class="math-inline">\sigma ^ 2</span> ，模型的权重为 <span class="math-inline">r</span> ，两两模型间的相关系数 <span class="math-inline">\rho</span> 相等。由于 Bagging 和 Boosting 的基模型都是线性组成的，那么有：</p>
+<p>模型总体期望： <br />
+<div class="math-display"><br />
+\begin{align}   E(F) &amp;= E(\sum_{i}^{m}{r_i f_i})   \ &amp;= \sum_{i}^{m}r_i E(f_i)   \end{align}  \<br />
+</div><br />
+模型总体方差（公式推导参考协方差的性质，协方差与方差的关系）：</p>
+<p><div class="math-display"><br />
+\begin{align}   Var(F) &amp;= Var(\sum_{i}^{m}{r_i f_i}) \       &amp;= \sum_{i}^{m}Var(r_if_i) + \sum_{i \neq j}^{m}Cov(r_i f_i ,  r_j f_j)   \ &amp;= \sum_{i}^{m} {r_i}^2 Var(f_i) + \sum_{i \neq j}^{m}\rho r_i r_j \sqrt{Var(f_i)} \sqrt{Var(f_j)} \   &amp;= mr^2\sigma^2 + m(m-1)\rho r^2 \sigma^2\   &amp;= m r^2 \sigma^2  (1-\rho) +  m^2 r^2 \sigma^2 \rho \end{align}  \<br />
+</div><br />
+模型的准确度可由偏差和方差共同决定：<br />
+<div class="math-display"><br />
+Error = bias^2 + var + \xi \<br />
+</div></p>
+<h3 id="bagging-的偏差与方差">Bagging 的偏差与方差<a class="anchor-link" href="#bagging-的偏差与方差" title="Permanent link">&para;</a></h3>
+<p>对于 Bagging 来说，每个基模型的权重等于 1/m 且期望近似相等，故我们可以得到：</p>
+<p><div class="math-display"><br />
+\begin{align}   E(F) &amp; = \sum_{i}^{m}r_i E(f_i)   \      &amp;= m \frac{1}{m} \mu \     &amp;= \mu  \   Var(F) &amp;=  m r^2 \sigma^2 (1-\rho) + m^2 r^2 \sigma^2 \rho \     &amp;= m \frac{1}{m^2} \sigma^2 (1-\rho) + m^2 \frac{1}{m^2} \sigma^2 \rho  \     &amp;= \frac{\sigma^2(1 - \rho)}{m}  + \sigma^2 \rho  \end{align}  \<br />
+</div><br />
+通过上式我们可以看到：</p>
+<ul>
+<li><strong>整体模型的期望等于基模型的期望，这也就意味着整体模型的偏差和基模型的偏差近似。</strong></li>
+<li><strong>整体模型的方差小于等于基模型的方差，当且仅当相关性为 1 时取等号，随着基模型数量增多，整体模型的方差减少，从而防止过拟合的能力增强，模型的准确度得到提高。</strong>但是，模型的准确度一定会无限逼近于 1 吗？并不一定，当基模型数增加到一定程度时，方差公式第一项的改变对整体方差的作用很小，防止过拟合的能力达到极限，这便是准确度的极限了。</li>
+</ul>
+<p>在此我们知道了为什么 Bagging 中的基模型一定要为强模型，如果 Bagging 使用弱模型则会导致整体模型的偏差提高，而准确度降低。</p>
+<p>Random Forest 是经典的基于 Bagging 框架的模型，并在此基础上通过引入特征采样和样本采样来降低基模型间的相关性，在公式中显著降低方差公式中的第二项，略微升高第一项，从而使得整体降低模型整体方差。</p>
+<h3 id="boosting-的偏差与方差">Boosting 的偏差与方差<a class="anchor-link" href="#boosting-的偏差与方差" title="Permanent link">&para;</a></h3>
+<p>对于 Boosting 来说，由于基模型共用同一套训练集，所以基模型间具有强相关性，故模型间的相关系数近似等于 1，针对 Boosting 化简公式为：<br />
+<div class="math-display"><br />
+\begin{align}  E(F) &amp; = \sum_{i}^{m}r_i E(f_i) \  Var(F) &amp;= m r^2 \sigma^2  (1-\rho) +  m^2 r^2 \sigma^2 \rho \   &amp;= m \frac{1}{m^2} \sigma^2 (1-1) + m^2 \frac{1}{m^2} \sigma^2 1  \&amp;=  \sigma^2   \end{align}  \<br />
+</div><br />
+通过观察整体方差的表达式我们容易发现：</p>
+<ul>
+<li>整体模型的方差等于基模型的方差，如果基模型不是弱模型，其方差相对较大，这将导致整体模型的方差很大，即无法达到防止过拟合的效果。因此，Boosting 框架中的基模型必须为弱模型。</li>
+<li>此外 Boosting 框架中采用基于贪心策略的前向加法，整体模型的期望由基模型的期望累加而成，所以随着基模型数的增多，整体模型的期望值增加，整体模型的准确度提高。</li>
+</ul>
+<p>基于 Boosting 框架的 Gradient Boosting Decision Tree 模型中基模型也为树模型，同 Random Forrest，我们也可以对特征进行随机抽样来使基模型间的相关性降低，从而达到减少方差的效果。</p>
+<h3 id="小结">小结<a class="anchor-link" href="#小结" title="Permanent link">&para;</a></h3>
+<ul>
+<li>我们可以使用模型的偏差和方差来近似描述模型的准确度；</li>
+<li>对于 Bagging 来说，整体模型的偏差与基模型近似，而随着模型的增加可以降低整体模型的方差，故其基模型需要为强模型；</li>
+<li>对于 Boosting 来说，整体模型的方差近似等于基模型的方差，而整体模型的偏差由基模型累加而成，故基模型需要为弱模型。</li>
+</ul>
+<p>️那么这里有一个小小的疑问，Bagging 和 Boosting 到底用的是什么模型呢？</p>
+<h2 id="bagging与boosting对比">Bagging与Boosting对比<a class="anchor-link" href="#bagging与boosting对比" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241231153517.png" style="zoom: 80%;" /></div>
+
+<p><strong>为什么bagging是减少variance，而boosting是减少bias?</strong></p>
+<blockquote>
+<p><a href="https://www.zhihu.com/question/26760839">为什么说bagging是减少variance，而boosting是减少bias?</a></p>
+</blockquote>
+<p>Bagging对样本重采样，对每一重采样得到的子样本集训练一个模型，最后取平均。由于子样本集的相似性以及使用的是同种模型，因此各模型有近似相等的bias和variance（事实上，各模型的分布也近似相同，但不独立）。由于 <span class="math-inline">E[\frac{\sum X_i}{n}]=E[X_i]</span> ，所以bagging后的bias和单个子模型的接近，一般来说不能显著降低bias。另一方面，若各子模型独立，则有 <span class="math-inline">Var(\frac{\sum X_i}{n})=\frac{Var(X_i)}{n}</span> ，此时可以显著降低variance。若各子模型完全相同，则 <span class="math-inline">Var(\frac{\sum X_i}{n})=Var(X_i)</span> ，此时不会降低variance。bagging方法得到的各子模型是有一定相关性的，属于上面两个极端状况的中间态，因此可以一定程度降低variance。为了进一步降低variance，Random forest通过随机选取变量子集做拟合的方式de-correlated了各子模型（树），使得variance进一步降低。</p>
+<p>boosting从优化角度来看，是用forward-stagewise这种贪心法去最小化损失函数 <span class="math-inline">L(y_i,\sum_ia_if_i(x))</span> 。例如，常见的AdaBoost即等价于用这种方法最小化exponential loss： <span class="math-inline">L(y,f(x))=exp(-yf(x))</span> 。所谓forward-stagewise，就是在迭代的第 <span class="math-inline">n</span> 步，求解新的子模型 <span class="math-inline">f(x)</span> 及步长 <span class="math-inline">a</span> （或者叫组合系数），来最小化 <span class="math-inline">L(y,f_{n-1}(x)+\alpha f(x))</span> ，这里 <span class="math-inline">f_{n-1}(x)</span> 是前 <span class="math-inline">n-1</span> 步得到的子模型的和。因此boosting是在sequential地最小化损失函数，其bias自然逐步下降。但由于是采取这种sequential、adaptive的策略，各子模型之间是强相关的，于是子模型之和并不能显著降低variance。所以说boosting主要还是靠降低bias来提升预测精度。</p>
+<h2 id="集成学习之结合策略">集成学习之结合策略<a class="anchor-link" href="#集成学习之结合策略" title="Permanent link">&para;</a></h2>
+<p>假设集成中包含 <span class="math-inline">T</span> 个基学习器 <span class="math-inline">h_1,h_2,...,h_T</span> ，其中 <span class="math-inline">h_i</span> 在示例 <span class="math-inline">x</span> 上的输出为 <span class="math-inline">h_i(x)</span> 。那么对 <span class="math-inline">h_i</span> 进行结合的常见策略有以下几种：</p>
+<p><strong>6.1 平均法</strong></p>
+<p>对于数值类的回归预测问题，通常使用的结合策略是平均法，也就是说，对于若干个弱学习器的输出进行平均得到最终的预测输出。</p>
+<p>最简单的平均是算术平均，也就是说最终预测是:</p>
+<p><div class="math-display">H(x)=\frac{1}{T}\sum_1^Th_i(x)\</div> <br />
+如果每个个体学习器有一个权重 <span class="math-inline">w</span> ，则最终预测是:</p>
+<p><div class="math-display">H(x)=\sum_1^Tw_ih_i(x)\</div> <br />
+其中 <span class="math-inline">w_i</span> 是个体学习器 <span class="math-inline">h_i</span> 的权重， <span class="math-inline">w_i\ge 0, \sum_1^Tw_i=1</span></p>
+<p>一般而言，在个体学习器的性能相差较大时宜使用加权平均法，而在个体学习器性能相近时宜使用简单平均法。</p>
+<p><strong>6.2 投票法</strong></p>
+<p>对于分类问题的预测，我们通常使用的是投票法。假设我们的预测类别是 <span class="math-inline">{c_1,c_2,...,c_K}</span> ，对于任意一个预测样本 <span class="math-inline">x</span> ，我们的 <span class="math-inline">T</span> 个弱学习器的预测结果分别是 <span class="math-inline">(h_1(x),h_2(x),...,h_T(x))</span> 。</p>
+<p>最简单的投票法是相对多数投票法（plurality voting），也就是我们常说的少数服从多数，也就是 <span class="math-inline">T</span> 个弱学习器的对样本 <span class="math-inline">x</span> 的预测结果中，数量最多的类别 <span class="math-inline">c_i</span> 为最终的分类类别。如果不止一个类别获得最高票，则随机选择一个做最终类别。</p>
+<p>稍微复杂的投票法是绝对多数投票法（majority voting），也就是我们常说的要票过半数。在相对多数投票法的基础上，不光要求获得最高票，还要求票过半数。否则会拒绝预测。</p>
+<p>更加复杂的是加权投票法（weighted voting），和加权平均法一样，每个弱学习器的分类票数要乘以一个权重，最终将各个类别的加权票数求和，最大的值对应的类别为最终类别。</p>
+<p><strong>6.3 学习法</strong></p>
+<p>上两节的方法都是对弱学习器的结果做平均或者投票，相对比较简单，但是可能学习误差较大，于是就有了学习法这种方法，对于学习法，代表方法是stacking，当使用stacking的结合策略时， 我们不是对弱学习器的结果做简单的逻辑处理，而是再加上一层学习器，也就是说，我们将训练集弱学习器的学习结果作为输入，将训练集的输出作为输出，重新训练一个学习器来得到最终结果。</p>
+<p>在这种情况下，我们将弱学习器称为初级学习器，将用于结合的学习器称为次级学习器。对于测试集，我们首先用初级学习器预测一次，得到次级学习器的输入样本，再用次级学习器预测一次，得到最终的预测结果。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/39920405">集成学习-Boosting,Bagging与Stacking</a></li>
+<li><a href="http://www.cnblogs.com/pinard/p/6131423.html">集成学习原理小结 - 刘建平Pinard - 博客园</a></li>
+<li><a href="http://www.xtecher.com/Xfeature/view?aid=7974">Xtecher | 一文读懂集成学习（附学习资源）</a></li>
+<li><a href="https://blog.csdn.net/qq_32690999/article/details/78759463">集成学习（Ensemble Learning）</a></li>
+<li><a href="https://blog.csdn.net/ruiyiin/article/details/77114072">一文读懂集成学习 - CSDN博客</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/85731206">【机器学习】决策树（上）——ID3、C4.5、CART（非常详细）</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/86263786">【机器学习】决策树（中）——Random Forest、Adaboost、GBDT （非常详细）</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

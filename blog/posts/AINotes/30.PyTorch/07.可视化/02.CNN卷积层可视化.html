@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>resize操作是为了和传入神经网络训练图片大小一致</title>
+    <meta name="description" content="resize操作是为了和传入神经网络训练图片大小一致 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#cnn-可视化">CNN 可视化</a></li>
+<li><a href="#cnn-卷积核可视化">CNN 卷积核可视化</a></li>
+<li><a href="#cnn-特征图可视化方法">CNN 特征图可视化方法</a></li>
+<li><a href="#cnn-class-activation-map-可视化方法">CNN class activation map 可视化方法</a></li>
+<li><a href="#使用-flashtorch-快速实现-cnn-可视化">使用 FlashTorch 快速实现 CNN 可视化</a></li>
+<li><a href="#参考资料">参考资料</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>resize操作是为了和传入神经网络训练图片大小一致</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/07.可视化</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="cnn-可视化">CNN 可视化<a class="anchor-link" href="#cnn-可视化" title="Permanent link">&para;</a></h2>
+<p>卷积神经网络（CNN）是深度学习中非常重要的模型结构，它广泛地用于图像处理，极大地提升了模型表现，推动了计算机视觉的发展和进步。但 CNN 是一个“黑盒模型”，人们并不知道 CNN 是如何获得较好表现的，由此带来了深度学习的可解释性问题。如果能理解 CNN 工作的方式，人们不仅能够解释所获得的结果，提升模型的鲁棒性，而且还能有针对性地改进 CNN 的结构以获得进一步的效果提升。</p>
+<p>理解 CNN 的重要一步是可视化，包括可视化特征是如何提取的、提取到的特征的形式以及模型在输入数据上的关注点等。本节我们就从上述三个方面出发，介绍如何在 PyTorch 的框架下完成 CNN 模型的可视化。</p>
+<p>经过本节的学习，你将收获：</p>
+<ul>
+<li>可视化 CNN 卷积核的方法</li>
+<li>可视化 CNN 特征图的方法</li>
+<li>可视化 CNN 显著图（class activation map）的方法</li>
+</ul>
+<h2 id="cnn-卷积核可视化">CNN 卷积核可视化<a class="anchor-link" href="#cnn-卷积核可视化" title="Permanent link">&para;</a></h2>
+<p>卷积核在 CNN 中负责提取特征，可视化卷积核能够帮助人们理解 CNN 各个层在提取什么样的特征，进而理解模型的工作原理。例如在 Zeiler 和 Fergus 2013 年的<a href="https://arxiv.org/pdf/1311.2901.pdf">paper</a>中就研究了 CNN 各个层的卷积核的不同，他们发现靠近输入的层提取的特征是相对简单的结构，而靠近输出的层提取的特征就和图中的实体形状相近了，如下图所示：</p>
+<p><img alt="layer2" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257343.png" /></p>
+<p><img alt="layer3" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257346.png" /></p>
+<p><img alt="layer4" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257348.png" /></p>
+<p>在 PyTorch 中可视化卷积核也非常方便，核心在于特定层的卷积核即特定层的模型权重，可视化卷积核就等价于可视化对应的权重矩阵。下面给出在 PyTorch 中可视化卷积核的实现方案，以 torchvision 自带的 VGG11 模型为例。</p>
+<p>首先加载模型，并确定模型的层信息：</p>
+<pre><code class="language-python">import torch
+from torchvision.models import vgg11
+
+model = vgg11(pretrained=True)
+print(dict(model.features.named_children()))
+</code></pre>
+<pre><code class="language-python">{'0': Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '1': ReLU(inplace=True),
+ '2': MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False),
+ '3': Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '4': ReLU(inplace=True),
+ '5': MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False),
+ '6': Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '7': ReLU(inplace=True),
+ '8': Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '9': ReLU(inplace=True),
+ '10': MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False),
+ '11': Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '12': ReLU(inplace=True),
+ '13': Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '14': ReLU(inplace=True),
+ '15': MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False),
+ '16': Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '17': ReLU(inplace=True),
+ '18': Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+ '19': ReLU(inplace=True),
+ '20': MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)}
+</code></pre>
+<p>卷积核对应的应为卷积层（Conv2d），这里以第“3”层为例，可视化对应的参数：</p>
+<pre><code class="language-python">conv1 = dict(model.features.named_children())['3']
+kernel_set = conv1.weight.detach()
+num = len(conv1.weight.detach())
+print(kernel_set.shape)
+for i in range(0,num):
+    i_kernel = kernel_set[i]
+    plt.figure(figsize=(20, 17))
+    if (len(i_kernel)) &gt; 1:
+        for idx, filer in enumerate(i_kernel):
+            plt.subplot(9, 9, idx+1)
+            plt.axis('off')
+            plt.imshow(filer[ :, :].detach(),cmap='bwr')
+</code></pre>
+<pre><code>torch.Size([128, 64, 3, 3])
+</code></pre>
+<p>由于第“3”层的特征图由 64 维变为 128 维，因此共有 128*64 个卷积核，其中部分卷积核可视化效果如下图所示：</p>
+<p><img alt="kernel" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257349.png" /></p>
+<h2 id="cnn-特征图可视化方法">CNN 特征图可视化方法<a class="anchor-link" href="#cnn-特征图可视化方法" title="Permanent link">&para;</a></h2>
+<p>与卷积核相对应，输入的原始图像经过每次卷积层得到的数据称为特征图，可视化卷积核是为了看模型提取哪些特征，可视化特征图则是为了看模型提取到的特征是什么样子的。</p>
+<p>获取特征图的方法有很多种，可以从输入开始，逐层做前向传播，直到想要的特征图处将其返回。尽管这种方法可行，但是有些麻烦了。在 PyTorch 中，提供了一个专用的接口使得网络在前向传播过程中能够获取到特征图，这个接口的名称非常形象，叫做 hook。可以想象这样的场景，数据通过网络向前传播，网络某一层我们预先设置了一个钩子，数据传播过后钩子上会留下数据在这一层的样子，读取钩子的信息就是这一层的特征图。具体实现如下：</p>
+<pre><code class="language-python">class Hook(object):
+    def __init__(self):
+        self.module_name = []
+        self.features_in_hook = []
+        self.features_out_hook = []
+
+    def __call__(self,module, fea_in, fea_out):
+        print(&quot;hooker working&quot;, self)
+        self.module_name.append(module.__class__)
+        self.features_in_hook.append(fea_in)
+        self.features_out_hook.append(fea_out)
+        return None
+
+
+def plot_feature(model, idx, inputs):
+    hh = Hook()
+    model.features[idx].register_forward_hook(hh)
+
+    # forward_model(model,False)
+    model.eval()
+    _ = model(inputs)
+    print(hh.module_name)
+    print((hh.features_in_hook[0][0].shape))
+    print((hh.features_out_hook[0].shape))
+
+    out1 = hh.features_out_hook[0]
+
+    total_ft  = out1.shape[1]
+    first_item = out1[0].cpu().clone()
+
+    plt.figure(figsize=(20, 17))
+
+
+    for ftidx in range(total_ft):
+        if ftidx &gt; 99:
+            break
+        ft = first_item[ftidx]
+        plt.subplot(10, 10, ftidx+1)
+
+        plt.axis('off')
+        #plt.imshow(ft[ :, :].detach(),cmap='gray')
+        plt.imshow(ft[ :, :].detach())
+</code></pre>
+<p>这里我们首先实现了一个 hook 类，之后在 plot_feature 函数中，将该 hook 类的对象注册到要进行可视化的网络的某层中。model 在进行前向传播的时候会调用 hook 的<strong>call</strong>函数，我们也就是在那里存储了当前层的输入和输出。这里的 features_out_hook 是一个 list，每次前向传播一次，都是调用一次，也就是 features_out_hook 长度会增加 1。</p>
+<h2 id="cnn-class-activation-map-可视化方法">CNN class activation map 可视化方法<a class="anchor-link" href="#cnn-class-activation-map-可视化方法" title="Permanent link">&para;</a></h2>
+<p>class activation map （CAM）的作用是判断哪些变量对模型来说是重要的，在 CNN 可视化的场景下，即判断图像中哪些像素点对预测结果是重要的。除了确定重要的像素点，人们也会对重要区域的梯度感兴趣，因此在 CAM 的基础上也进一步改进得到了 Grad-CAM（以及诸多变种）。CAM 和 Grad-CAM 的示例如下图所示：</p>
+<p><img alt="cam" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257350.png" /></p>
+<p>相比可视化卷积核与可视化特征图，CAM 系列可视化更为直观，能够一目了然地确定重要区域，进而进行可解释性分析或模型优化改进。CAM 系列操作的实现可以通过开源工具包 pytorch-grad-cam 来实现。</p>
+<ul>
+<li>安装</li>
+</ul>
+<pre><code class="language-bash">pip install grad-cam
+</code></pre>
+<ul>
+<li>一个简单的例子</li>
+</ul>
+<pre><code class="language-python">import torch
+from torchvision.models import vgg11,resnet18,resnet101,resnext101_32x8d
+import matplotlib.pyplot as plt
+from PIL import Image
+import numpy as np
+
+model = vgg11(pretrained=True)
+img_path = './dog.png'
+# resize操作是为了和传入神经网络训练图片大小一致
+img = Image.open(img_path).resize((224,224))
+# 需要将原始图片转为np.float32格式并且在0-1之间
+rgb_img = np.float32(img)/255
+plt.imshow(img)
+</code></pre>
+<p><img alt="dog" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257351.png" /></p>
+<pre><code class="language-python">from pytorch_grad_cam import GradCAM,ScoreCAM,GradCAMPlusPlus,AblationCAM,XGradCAM,EigenCAM,FullGrad
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+from pytorch_grad_cam.utils.image import show_cam_on_image
+
+# 将图片转为tensor
+img_tensor = torch.from_numpy(rgb_img).permute(2,0,1).unsqueeze(0)
+
+target_layers = [model.features[-1]]
+# 选取合适的类激活图，但是ScoreCAM和AblationCAM需要batch_size
+cam = GradCAM(model=model,target_layers=target_layers)
+targets = [ClassifierOutputTarget(preds)]
+# 上方preds需要设定，比如ImageNet有1000类，这里可以设为200
+grayscale_cam = cam(input_tensor=img_tensor, targets=targets)
+grayscale_cam = grayscale_cam[0, :]
+cam_img = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
+print(type(cam_img))
+Image.fromarray(cam_img)
+</code></pre>
+<p><img alt="grad_cam" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257352.png" /></p>
+<h2 id="使用-flashtorch-快速实现-cnn-可视化">使用 FlashTorch 快速实现 CNN 可视化<a class="anchor-link" href="#使用-flashtorch-快速实现-cnn-可视化" title="Permanent link">&para;</a></h2>
+<p>聪明的你可能要问了，已经 202x 年了，难道还要我们手把手去写各种 CNN 可视化的代码吗？答案当然是否定的。随着 PyTorch 社区的努力，目前已经有不少开源工具能够帮助我们快速实现 CNN 可视化。这里我们介绍其中的一个——<a href="https://github.com/MisaOgura/flashtorch">FlashTorch</a>。</p>
+<p>（注：使用中发现该 package 对环境有要求，如果下方代码运行报错，请参考作者给出的配置或者 Colab 运行环境：https://github.com/MisaOgura/flashtorch/issues/39）</p>
+<ul>
+<li>安装</li>
+</ul>
+<pre><code class="language-bash">pip install flashtorch
+</code></pre>
+<ul>
+<li>可视化梯度</li>
+</ul>
+<pre><code class="language-python"># Download example images
+# !mkdir -p images
+# !wget -nv \
+#    https://github.com/MisaOgura/flashtorch/raw/master/examples/images/great_grey_owl.jpg \
+#    https://github.com/MisaOgura/flashtorch/raw/master/examples/images/peacock.jpg   \
+#    https://github.com/MisaOgura/flashtorch/raw/master/examples/images/toucan.jpg    \
+#    -P /content/images
+
+import matplotlib.pyplot as plt
+import torchvision.models as models
+from flashtorch.utils import apply_transforms, load_image
+from flashtorch.saliency import Backprop
+
+model = models.alexnet(pretrained=True)
+backprop = Backprop(model)
+
+image = load_image('/content/images/great_grey_owl.jpg')
+owl = apply_transforms(image)
+
+target_class = 24
+backprop.visualize(owl, target_class, guided=True, use_gpu=True)
+</code></pre>
+<p><img alt="ft-gradient" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257353.png" /></p>
+<ul>
+<li>可视化卷积核</li>
+</ul>
+<pre><code class="language-python">import torchvision.models as models
+from flashtorch.activmax import GradientAscent
+
+model = models.vgg16(pretrained=True)
+g_ascent = GradientAscent(model.features)
+
+# specify layer and filter info
+conv5_1 = model.features[24]
+conv5_1_filters = [45, 271, 363, 489]
+
+g_ascent.visualize(conv5_1, conv5_1_filters, title=&quot;VGG16: conv5_1&quot;)
+</code></pre>
+<p><img alt="ft-activate" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202404091257354.png" /></p>
+<h2 id="参考资料">参考资料<a class="anchor-link" href="#参考资料" title="Permanent link">&para;</a></h2>
+<ol>
+<li>https://andrewhuman.github.io/cnn-hidden-layout_search</li>
+<li>https://cloud.tencent.com/developer/article/1747222</li>
+<li>https://github.com/jacobgil/pytorch-grad-cam</li>
+<li>https://github.com/MisaOgura/flashtorch</li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

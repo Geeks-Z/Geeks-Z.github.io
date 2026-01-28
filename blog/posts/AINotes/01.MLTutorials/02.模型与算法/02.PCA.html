@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1相关背景">1.相关背景</a></li>
+<li><a href="#2-性质">2. 性质</a></li>
+<li><a href="#3pca原理详解">3.PCA原理详解</a><ul>
+<li><a href="#31-pca的概念">3.1 PCA的概念</a></li>
+<li><a href="#32协方差和散度矩阵">3.2协方差和散度矩阵</a></li>
+<li><a href="#33-特征值分解矩阵原理">3.3 特征值分解矩阵原理</a></li>
+<li><a href="#34-svd分解矩阵原理">3.4 SVD分解矩阵原理</a></li>
+<li><a href="#35-pca算法两种实现方法">3.5 PCA算法两种实现方法</a><ul>
+<li><a href="#1-基于特征值分解协方差矩阵实现pca算法">(1) 基于特征值分解协方差矩阵实现PCA算法</a></li>
+<li><a href="#2-基于svd分解协方差矩阵实现pca算法">(2) 基于SVD分解协方差矩阵实现PCA算法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4理论推导">4.理论推导</a></li>
+<li><a href="#5-细节">5. 细节</a><ul>
+<li><a href="#51-零均值化">5.1 零均值化</a></li>
+<li><a href="#52-与-svd-的对比">5.2 与 SVD 的对比</a></li>
+</ul>
+</li>
+<li><a href="#_1"></a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/02.模型与算法</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="1相关背景">1.相关背景<a class="anchor-link" href="#1相关背景" title="Permanent link">&para;</a></h2>
+<p>在许多领域的研究与应用中，通常需要对含有多个变量的数据进行观测，收集大量数据后进行分析寻找规律。多变量大数据集无疑会为研究和应用提供丰富的信息，但是也在一定程度上增加了数据采集的工作量。更重要的是在很多情形下，许多变量之间可能存在相关性，从而增加了问题分析的复杂性。如果分别对每个指标进行分析，分析往往是孤立的，不能完全利用数据中的信息，因此盲目减少指标会损失很多有用的信息，从而产生错误的结论。</p>
+<p>因此需要找到一种合理的方法，在减少需要分析的指标同时，尽量减少原指标包含信息的损失，以达到对所收集数据进行全面分析的目的。由于各变量之间存在一定的相关关系，因此可以考虑将关系紧密的变量变成尽可能少的新变量，使这些新变量是两两不相关的，那么就可以用较少的综合指标分别代表存在于各个变量中的各类信息。主成分分析与因子分析就属于这类降维算法。</p>
+<h2 id="2-性质">2. 性质<a class="anchor-link" href="#2-性质" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>缓解维度灾难</strong>：PCA 算法通过舍去一部分信息之后能使得样本的采样密度增大（因为维数降低了），这是缓解维度灾难的重要手段；</li>
+</ol>
+<p>降维具有如下一些优点：</p>
+<p>1) 使得数据集更易使用。<br />
+   2) 降低算法的计算开销。<br />
+   3) 去除噪声。<br />
+   4) 使得结果容易理解。<br />
+   降维的算法有很多，比如奇异值分解(SVD)、主成分分析(PCA)、因子分析(FA)、独立成分分析(ICA)。</p>
+<ol start="2">
+<li>
+<p><strong>降噪</strong>：当数据受到噪声影响时，<strong>最小特征值对应的特征向量往往与噪声有关</strong>，将它们舍弃能在一定程度上起到降噪的效果；</p>
+</li>
+<li>
+<p><strong>过拟合</strong>：PCA 保留了主要信息，但这个主要信息只是针对训练集的，而且这个主要信息未必是重要信息。有可能舍弃了一些看似无用的信息，但是这些看似无用的信息恰好是重要信息，只是在训练集上没有很大的表现，所以 PCA 也可能加剧了过拟合；</p>
+</li>
+<li>
+<p><strong>特征独立</strong>：PCA 不仅将数据压缩到低维，它也使得降维之后的数据各特征相互独立；</p>
+</li>
+</ol>
+<h2 id="3pca原理详解">3.PCA原理详解<a class="anchor-link" href="#3pca原理详解" title="Permanent link">&para;</a></h2>
+<h3 id="31-pca的概念">3.1 PCA的概念<a class="anchor-link" href="#31-pca的概念" title="Permanent link">&para;</a></h3>
+<p>PCA(Principal Component Analysis)，即主成分分析方法，是一种使用最广泛的数据降维算法。PCA的主要思想是将<strong>n维特征映射到k维上</strong>，<strong>这k维是全新的正交特征也被称为主成分</strong>，是在原有n维特征的基础上重新构造出来的k维特征。PCA的工作就是从原始的空间中顺序地找<strong>一组相互正交的坐标轴</strong>，新的坐标轴的选择与数据本身是密切相关的。其中，第一个新坐标轴选择是原始数据中方差最大的方向，第二个新坐标轴选取是与第一个坐标轴正交的平面中使得方差最大的，第三个轴是与第1,2个轴正交的平面中方差最大的。依次类推，可以得到n个这样的坐标轴。通过这种方式获得的新的坐标轴，我们发现，大部分方差都包含在前面k个坐标轴中，后面的坐标轴所含的方差几乎为0。于是，我们可以忽略余下的坐标轴，只保留前面k个含有绝大部分方差的坐标轴。事实上，这相当于只保留包含绝大部分方差的维度特征，而忽略包含方差几乎为0的特征维度，实现对数据特征的降维处理。</p>
+<p>思考：我们如何得到这些包含最大差异性的主成分方向呢？</p>
+<p>答案：事实上，通过计算数据矩阵的协方差矩阵，然后得到协方差矩阵的特征值特征向量，选择特征值最大(即方差最大)的k个特征所对应的特征向量组成的矩阵。这样就可以将数据矩阵转换到新的空间当中，实现数据特征的降维。</p>
+<p>由于得到协方差矩阵的特征值特征向量有两种方法<strong>：特征值分解</strong>协方差矩阵、奇异值分解协方差矩阵，所以PCA算法有两种实现方法：基于特征值分解协方差矩阵实现PCA算法、基于SVD分解协方差矩阵实现PCA算法。</p>
+<p><img alt="20160207114645575" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208291736564.gif" /></p>
+<h3 id="32协方差和散度矩阵">3.2协方差和散度矩阵<a class="anchor-link" href="#32协方差和散度矩阵" title="Permanent link">&para;</a></h3>
+<p>样本均值：<br />
+<div class="math-display"><br />
+\frac{1}{n} \sum_{i=1}^{n}x_i<br />
+</div><br />
+样本方差：<br />
+<div class="math-display"><br />
+S^2=\frac{1}{n-1} \sum_{i=1}^{n}(x_i- \overline{x})^2<br />
+</div><br />
+样本X和Y的协方差：<br />
+<div class="math-display"><br />
+Cov(X,Y)=E[(X-E(X))(Y-E(Y))]=\frac{1}{n-1} \sum_{i=1}^{n}(x_i- \overline{x})(y_i- \overline{y})<br />
+</div><br />
+由上面的公式，我们可以得到以下结论：</p>
+<p>(1) 方差的计算公式是针对一维特征，即针对同一特征不同样本的取值来进行计算得到；而协方差则必须要求至少满足二维特征；方差是协方差的特殊情况。</p>
+<p>(2) 方差和协方差的除数是<span class="math-inline">n-1</span>,这是为了得到方差和协方差的无偏估计。</p>
+<p>协方差为正时，说明<span class="math-inline">X</span> <span class="math-inline">Y</span> 正相关关系；协方差为负时，说明<span class="math-inline">X</span> <span class="math-inline">Y</span> 负相关关系；协方差为0时，说明<span class="math-inline">X</span> <span class="math-inline">Y</span> 相互独立。<span class="math-inline">Cov(X,X)</span> 是<span class="math-inline">X</span> 方差。当样本是<span class="math-inline">n</span> 数据时，它们的协方差实际上是协方差矩阵(对称方阵)。例如，对于3维数据<span class="math-inline">(x,y,z)</span>，计算它的协方差就是：<br />
+<div class="math-display"><br />
+Cov(X,Y,Z)=<br />
+\begin{bmatrix}<br />
+Cov(x,x) &amp; Cov(x,y) &amp; Cov(x,z)\<br />
+Cov(y,x) &amp; Cov(y,y) &amp; Cov(y,z)\<br />
+Cov(z,x) &amp; Cov(z,y) &amp; Cov(z,z)<br />
+\end{bmatrix}<br />
+</div><br />
+散度矩阵<br />
+<div class="math-display"><br />
+S=\sum_{k=1}^{n}(x_k- m)(x_k-m)^T\<br />
+m=\frac{1}{n} \sum_{k=1}^{n}x_k<br />
+</div><br />
+对于数据<span class="math-inline">X</span> 散度矩阵为<span class="math-inline">XX^T</span> 实协方差矩阵和散度矩阵关系密切，散度矩阵就是协方差矩阵乘以（总数据量-1)。因此它们的特征值和特征向量是一样的。这里值得注意的是，散度矩阵是SVD奇异值分解的一步，因此PCA和SVD是有很大联系。</p>
+<h3 id="33-特征值分解矩阵原理">3.3 特征值分解矩阵原理<a class="anchor-link" href="#33-特征值分解矩阵原理" title="Permanent link">&para;</a></h3>
+<p>(1) 特征值与特征向量</p>
+<p>如果一个向量<span class="math-inline">v</span> 矩阵A的特征向量，则可以表示为：<span class="math-inline">Av=\lambda v</span></p>
+<p>其中，<span class="math-inline">\lambda</span> 特征向量<span class="math-inline">v</span> 应的特征值，一个矩阵的一组特征向量是一组正交向量。<br />
+(2) 特征值分解矩阵</p>
+<p>对于矩阵A，有一组特征向量<span class="math-inline">v</span>，将这组向量进行正交化单位化，就能得到一组正交单位向量。特征值分解，就是将矩阵A分解为如下式：<span class="math-inline">A = Q^{-1}\sum Q</span></p>
+<p>其中，Q是矩阵A的特征向量组成的矩阵，<span class="math-inline">\sum</span> 是一个对角阵，对角线上的元素就是特征值。</p>
+<h3 id="34-svd分解矩阵原理">3.4 SVD分解矩阵原理<a class="anchor-link" href="#34-svd分解矩阵原理" title="Permanent link">&para;</a></h3>
+<p>奇异值分解是一个能适用于任意矩阵的一种分解的方法，对于任意矩阵A总是存在一个奇异值分解：<span class="math-inline">A = U\sum V^T</span></p>
+<p>假设A是一个<span class="math-inline">m<em>n</span> 矩阵，那么得到的<span class="math-inline">U</span> 一个<span class="math-inline">m</em>n</span> 方阵，<span class="math-inline">U</span> 面的正交向量被称为左奇异向量。<span class="math-inline">\sum</span> 一个的矩阵，<span class="math-inline">\sum</span> 了对角线其它元素都为0，对角线上的元素称为奇异值。<span class="math-inline">V^T</span> <span class="math-inline">V</span> 转置矩阵，是一个<span class="math-inline">n*n</span> 矩阵，它里面的正交向量被称为右奇异值向量。而且一般来讲，我们会将<span class="math-inline">\sum</span> 的值按从大到小的顺序排列。</p>
+<p>SVD分解矩阵A的步骤：</p>
+<p>(1) 求<span class="math-inline">AA^T</span> 特征值和特征向量，用单位化的特征向量构成<span class="math-inline">U</span>。</p>
+<p>(2) 求<span class="math-inline">A^TA</span> 特征值和特征向量，用单位化的特征向量构成<span class="math-inline">V</span>。</p>
+<p>(3) 将<span class="math-inline">AA^T</span> 者<span class="math-inline">A^TA</span> 特征值求平方根，然后构成 <span class="math-inline">\sum</span>。</p>
+<h3 id="35-pca算法两种实现方法">3.5 PCA算法两种实现方法<a class="anchor-link" href="#35-pca算法两种实现方法" title="Permanent link">&para;</a></h3>
+<h4 id="1-基于特征值分解协方差矩阵实现pca算法">(1) 基于特征值分解协方差矩阵实现PCA算法<a class="anchor-link" href="#1-基于特征值分解协方差矩阵实现pca算法" title="Permanent link">&para;</a></h4>
+<p>输入：数据集<span class="math-inline">X={x_1,x_2,x_3,x_4,...x_n}</span> ，需要降到<span class="math-inline">k</span> 。<br />
+1) 去平均值(即去中心化)，即每一位特征减去各自的平均值。</p>
+<p>2) 计算协方差矩阵<span class="math-inline">\frac{1}{n}XX^T</span>,注：这里除或不除样本数量<span class="math-inline">n</span> <span class="math-inline">n-1</span>,其实对求出的特征向量没有影响。</p>
+<p>3) 用特征值分解方法求协方差矩阵<span class="math-inline">\frac{1}{n}XX^T</span> 特征值与特征向量。</p>
+<p>4) 对特征值从大到小排序，选择其中最大的k个。然后将其对应的<span class="math-inline">k</span> 特征向量分别作为行向量组成特征向量矩阵<span class="math-inline">P</span>。</p>
+<p>5) 将数据转换到<span class="math-inline">k</span> 特征向量构建的新空间中，即<span class="math-inline">Y=PX</span>。</p>
+<h4 id="2-基于svd分解协方差矩阵实现pca算法">(2) 基于SVD分解协方差矩阵实现PCA算法<a class="anchor-link" href="#2-基于svd分解协方差矩阵实现pca算法" title="Permanent link">&para;</a></h4>
+<p>输入：数据集，需要降到k维。</p>
+<p>输入：数据集<span class="math-inline">X={x_1,x_2,x_3,x_4,...x_n}</span> ，需要降到<span class="math-inline">k</span> 。<br />
+1) 去平均值(即去中心化)，即每一位特征减去各自的平均值。</p>
+<p>2) 计算协方差矩阵。</p>
+<p>3) 通过SVD计算协方差矩阵的特征值与特征向量。</p>
+<p>4) 对特征值从大到小排序，选择其中最大的<span class="math-inline">k</span> 。然后将其对应的<span class="math-inline">k</span> 特征向量分别作为列向量组成特征向量矩阵。</p>
+<p>5) 将数据转换到<span class="math-inline">k</span> 特征向量构建的新空间中。</p>
+<p>在PCA降维中，我们需要找到样本协方差矩阵的最大<span class="math-inline">k</span> 特征向量，然后用这最大的<span class="math-inline">k</span> 特征向量组成的矩阵来做低维投影降维。可以看出，在这个过程中需要先求出协方差矩阵,当样本数多、样本特征数也多的时候，这个计算还是很大的。当我们用到SVD分解协方差矩阵的时候，SVD有两个好处：</p>
+<p>1) 有一些SVD的实现算法可以先不求出协方差矩阵<span class="math-inline">XX^T</span> 能求出我们的右奇异矩阵V。也就是说，我们的PCA算法可以不用做特征分解而是通过SVD来完成，这个方法在样本量很大的时候很有效。实际上，scikit-learn的PCA算法的背后真正的实现就是用的SVD，而不是特征值分解。</p>
+<p>2)注意到PCA仅仅使用了我们SVD的左奇异矩阵，没有使用到右奇异值矩阵，那么右奇异值矩阵有什么用呢？</p>
+<p>假设我们的样本是<span class="math-inline">m<em>n</span> 矩阵<span class="math-inline">X</span>，如果我们通过SVD找到了矩阵最大的<span class="math-inline">k</span> 特征向量组成的<span class="math-inline">k</em>n</span> 矩阵 ,则我们可以做如下处理：<span class="math-inline">X_{m<em>k}^{'}=X_{m</em>n}V_{n*k}^T</span></p>
+<p>可以得到一个<span class="math-inline">m<em>k</span> 矩阵<span class="math-inline">X</span>,这个矩阵和我们原来<span class="math-inline">m</em>n</span> 矩阵<span class="math-inline">X</span> 比，列数从<span class="math-inline">n</span> 到了<span class="math-inline">k</span>，可见对列数进行了压缩。也就是说，<strong>左奇异矩阵可以用于对行数的压缩；右奇异矩阵可以用于对列(即特征维度)的压缩</strong>。这就是我们用SVD分解协方差矩阵实现PCA可以得到两个方向的PCA降维(即行和列两个方向)。</p>
+<h2 id="4理论推导">4.理论推导<a class="anchor-link" href="#4理论推导" title="Permanent link">&para;</a></h2>
+<p>PCA有两种通俗易懂的解释：(1)最大方差理论；(2)最小化降维造成的损失。这两个思路都能推导出同样的结果。</p>
+<p><img alt="img" src="C:/Users/Geeks_Z/Desktop/新建文件夹/20180609150017832" /></p>
+<p>图中，红色点表示样例，蓝色点表示在<span class="math-inline">u</span> 的投影，<span class="math-inline">u</span> 直线的斜率也是直线的方向向量，而且是单位向量。蓝色点是在<span class="math-inline">u</span> 的投影点，离原点的距离是<span class="math-inline"><x,u></span>（即<span class="math-inline">X^TU</span> 者<span class="math-inline">U^TX</span>)。</p>
+<p>(1) 拉格朗日乘子法</p>
+<p>在叙述求协方差矩阵对角化时，我们给出希望变化后的变量有<strong>：变量间协方差为 0 且变量内方差尽可能大</strong>。然后我们通过实对称矩阵的性质给予了推导，此外我们还可以把它转换为最优化问题利用拉格朗日乘子法来给予推导。</p>
+<p>样本点<span class="math-inline">x_i</span> 基<span class="math-inline">w</span> 的坐标为：<span class="math-inline">(x_i,w) = x_{i}^Tw</span>,于是方差为：<br />
+<div class="math-display"><br />
+\begin{split}<br />
+D(x) &amp;= \frac{1}{m}\sum_{i=1}^{m}(x_i^Tw)^2 \<br />
+&amp;=\frac{1}{m}\sum_{i=1}^{m}(x_i^Tw)^T(x_i^Tw) \<br />
+&amp;=\frac{1}{m}\sum_{i=1}^{m}w^Tx_ix_i^Tw \<br />
+&amp;=w^T(\frac{1}{m}\sum_{i=1}^{m}x_ix_i^T)w<br />
+\end{split}<br />
+</div><br />
+其中<span class="math-inline">\frac{1}{m}\sum_{i=1}^{m}x_ix_i^T</span> 原样本的协方差，令该矩阵为<span class="math-inline">\Lambda</span>,于是有<br />
+<div class="math-display"><br />
+D(x) = \begin{cases}<br />
+\max(w^T\Lambda w)\<br />
+s.t. w^Tw = 1<br />
+\end{cases}<br />
+</div><br />
+构造拉格朗日函数：<span class="math-inline">L(w) = w^T\Lambda w + \lambda (1-w^Tw)</span>，对<span class="math-inline">w</span> 导，可得<span class="math-inline">\Lambda w = \lambda w</span>，此时<br />
+<div class="math-display"><br />
+D(x)=w^T\Lambda w= \lambda w^Tw = \lambda<br />
+</div></p>
+<h2 id="5-细节">5. 细节<a class="anchor-link" href="#5-细节" title="Permanent link">&para;</a></h2>
+<h3 id="51-零均值化">5.1 零均值化<a class="anchor-link" href="#51-零均值化" title="Permanent link">&para;</a></h3>
+<p>当对训练集进行 PCA 降维时，也需要对验证集、测试集执行同样的降维。而<strong>对验证集、测试集执行零均值化操作时，均值必须从训练集计算而来</strong>，不能使用验证集或者测试集的中心向量。</p>
+<p>其原因也很简单，因为我们的训练集时可观测到的数据，测试集不可观测所以不会知道其均值，而验证集再大部分情况下是在处理完数据后再从训练集中分离出来，一般不会单独处理。如果真的是单独处理了，不能独自求均值的原因是和测试集一样。</p>
+<p>另外我们也需要保证一致性，我们拿训练集训练出来的模型用来预测测试集的前提假设就是两者是独立同分布的，如果不能保证一致性的话，会出现 Variance Shift 的问题。</p>
+<h3 id="52-与-svd-的对比">5.2 与 SVD 的对比<a class="anchor-link" href="#52-与-svd-的对比" title="Permanent link">&para;</a></h3>
+<p>这是两个不同的数学定义。我们先给结论<strong>：特征值和特征向量是针对方阵</strong>才有的，而<strong>对任意形状的矩阵都可以做奇异值分解</strong>。</p>
+<p><strong>PCA</strong>：方阵的特征值分解，对于一个方阵 A，总可以写成： <span class="math-inline">A=Q\Lambda Q^{-1}</span>。</p>
+<p>其中，<span class="math-inline">Q</span> 是这个矩阵<span class="math-inline">A</span> 的特征向量组成的矩阵， <span class="math-inline">\Lambda</span> 一个对角矩阵，每一个对角线元素就是一个特征值，里面的特征值是由大到小排列的，这些特征值所对应的特征向量就是描述这个矩阵变化方向（从主要的变化到次要的变化排列）。也就是说矩阵<span class="math-inline">A</span> 的信息可以由其特征值和特征向量表示。</p>
+<p><strong>SVD</strong>：矩阵的奇异值分解其实就是对于矩阵<span class="math-inline"> A</span> 的协方差矩阵<span class="math-inline">A^TA</span> <span class="math-inline">AA^T</span> 特征值分解推导出来的：<br />
+<div class="math-display"><br />
+A_{m,n}=U_{m,n}\Lambda_{m,n}V_{n,n}^T\approx U_{m,k} \Lambda <em>{k,k}V</em>{k,n}^T<br />
+</div><br />
+其中：<span class="math-inline">U V</span> 都是正交矩阵，有<span class="math-inline">U^TU=I_m,V^TV=I_n</span>。这里的约等于是因为<span class="math-inline">\Lambda</span> 有 <span class="math-inline">n</span> 个奇异值，但是由于排在后面的很多接近 0，所以我们可以仅保留比较大的<span class="math-inline">k</span> 奇异值。<br />
+<div class="math-display"><br />
+A^TA=(U\Lambda V^T)^T(U\Lambda V^T)=V\Lambda ^TU^TU\Lambda V^T=V\Lambda ^2V^T\<br />
+AA^T=(U\Lambda V^T)(U\Lambda V^T)^T=U\Lambda V^TV\Lambda^T U^T=U\Lambda ^2U^T<br />
+</div><br />
+所以，<span class="math-inline">V U</span> 两个矩阵分别是<span class="math-inline">A^TA</span> <span class="math-inline">AA^T</span> 特征向量，中间的矩阵对角线的元素是 的特<span class="math-inline">A^TA</span> <span class="math-inline">AA^T</span> 值。我们也很容易看出 <span class="math-inline">A</span> 的奇异值和 <span class="math-inline">A^TA</span> 特征值之间的关系。</p>
+<p>PCA 需要对协方差矩阵<span class="math-inline">C=\frac{1}{m}XX^T</span> 行特征值分解； SVD 也是对<span class="math-inline">AA^T</span> 行特征值分解。如果取<span class="math-inline">A=\frac{X^T}{\sqrt{m}}</span> 两者基本等价。所以 PCA 问题可以转换成 SVD 求解。</p>
+<p>而实际上 Sklearn 的 PCA 就是用 SVD 进行求解的，原因有以下几点：</p>
+<ol>
+<li>当样本维度很高时，协方差矩阵计算太慢；</li>
+<li>方阵特征值分解计算效率不高；</li>
+<li>SVD 除了特征值分解这种求解方式外，还有更高效更准确的迭代求解方式，避免了<span class="math-inline">A^TA</span> 的计算；</li>
+<li>其实 PCA 与 SVD 的右奇异向量的压缩效果相同。</li>
+</ol>
+<p><img alt="image-20210626180725705" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208291736028.png" /></p>
+<p>参考文献：</p>
+<p><a href="https://blog.csdn.net/program_developer/article/details/80632779">主成分分析（PCA）原理详解_Microstrong-CSDN博客_pca</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/77151308">【机器学习】降维——PCA（非常详细） - 知乎 (zhihu.com)</a></p>
+<h2 id="_1"><a class="anchor-link" href="#_1" title="Permanent link">&para;</a></h2>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

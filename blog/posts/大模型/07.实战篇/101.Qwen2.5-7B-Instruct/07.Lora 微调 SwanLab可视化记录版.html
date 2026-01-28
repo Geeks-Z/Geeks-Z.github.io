@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更换 pypi 源加速库的安装</title>
+    <meta name="description" content="更换 pypi 源加速库的安装 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#目录">目录</a></li>
+<li><a href="#-swanlab简介">👋 SwanLab简介</a></li>
+<li><a href="#-环境配置">🌍 环境配置</a></li>
+<li><a href="#-准备数据集">📚 准备数据集</a></li>
+<li><a href="#-模型下载与加载">🤖 模型下载与加载</a></li>
+<li><a href="#-集成swanlab">🐦‍ 集成SwanLab</a></li>
+<li><a href="#-开始微调">🚀 开始微调</a></li>
+<li><a href="#-训练结果演示">💻 训练结果演示</a></li>
+<li><a href="#补充">补充</a><ul>
+<li><a href="#05b15b7b14b模型在法律问答任务上的表现对比">0.5B/1.5B/7B/14B模型在法律问答任务上的表现对比</a></li>
+<li><a href="#详细硬件配置和参数说明">详细硬件配置和参数说明</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>更换 pypi 源加速库的安装</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/07.实战篇/101.Qwen2.5-7B-Instruct</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>本节我们简要介绍基于 transformers、peft 等框架，使用 Qwen2.5-7B-Instruct 模型在<strong>中文法律问答数据集 DISC-Law-SFT</strong> 上进行Lora微调训练，同时使用 <a href="https://github.com/swanhubx/swanlab">SwanLab</a> 监控训练过程与评估模型效果，并比较0.5B/1.5B/7B/14B模型在此任务上的表现。</p>
+<p>Lora 是一种高效微调方法，深入了解其原理可参见博客：<a href="https://zhuanlan.zhihu.com/p/650197598">知乎|深入浅出 Lora</a>。</p>
+<p>训练过程：<a href="https://swanlab.cn/@ZeyiLin/Qwen2.5-LoRA-Law/charts" target="_blank">Qwen2.5-LoRA-Law</a></p>
+<h2 id="目录">目录<a class="anchor-link" href="#目录" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#-SwanLab简介">SwanLab简介</a></li>
+<li><a href="#-环境配置">环境配置</a></li>
+<li><a href="#-准备数据集">准备数据集</a></li>
+<li><a href="#-模型下载与加载">模型下载与加载</a></li>
+<li><a href="#-集成SwanLab">集成SwanLab</a></li>
+<li><a href="#-开始微调">开始微调（完整代码）</a></li>
+<li><a href="#-训练结果演示">训练结果演示</a></li>
+<li><a href="#补充">补充</a></li>
+</ul>
+<h2 id="-swanlab简介">👋 SwanLab简介<a class="anchor-link" href="#-swanlab简介" title="Permanent link">&para;</a></h2>
+<p><img alt="07-1" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036393.jpg" /></p>
+<p><a href="https://github.com/swanhubx/swanlab">SwanLab</a> 是一个开源的模型训练记录工具，面向AI研究者，提供了训练可视化、自动日志记录、超参数记录、实验对比、多人协同等功能。在SwanLab上，研究者能基于直观的可视化图表发现训练问题，对比多个实验找到研究灵感，并通过在线链接的分享与基于组织的多人协同训练，打破团队沟通的壁垒。</p>
+<p><strong>为什么要记录训练</strong></p>
+<p>相较于软件开发，模型训练更像一个实验科学。一个品质优秀的模型背后，往往是成千上万次实验。研究者需要不断尝试、记录、对比，积累经验，才能找到最佳的模型结构、超参数与数据配比。在这之中，如何高效进行记录与对比，对于研究效率的提升至关重要。</p>
+<h2 id="-环境配置">🌍 环境配置<a class="anchor-link" href="#-环境配置" title="Permanent link">&para;</a></h2>
+<p>环境配置分为三步：</p>
+<ol>
+<li>
+<p>确保你的电脑上至少有一张英伟达显卡，并已安装好了CUDA环境。</p>
+</li>
+<li>
+<p>安装Python（版本&gt;=3.8）以及能够调用CUDA加速的PyTorch。</p>
+</li>
+<li>
+<p>安装微调相关的第三方库，可以使用以下命令：</p>
+</li>
+</ol>
+<pre><code class="language-bash">python -m pip install --upgrade pip
+# 更换 pypi 源加速库的安装
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+pip install modelscope==1.18.0
+pip install transformers==4.44.2
+pip install sentencepiece==0.2.0
+pip install accelerate==0.34.2
+pip install datasets==2.20.0
+pip install peft==0.11.1
+pip install swanlab==0.3.23
+</code></pre>
+<h2 id="-准备数据集">📚 准备数据集<a class="anchor-link" href="#-准备数据集" title="Permanent link">&para;</a></h2>
+<p>本节使用的是 <a href="https://huggingface.co/datasets/ShengbinYue/DISC-Law-SFT">DISC-Law-SFT</a> 数据集，该数据集主要用于中文法律大语言模型的微调。</p>
+<blockquote>
+<p>HF README：在中国，法律智能系统需要结合各种能力，包括法律文本理解和生成。为了实现这一目标，我们构建了一个高质量的监督微调数据集，名为DISC-Law-SFT，涵盖了不同的法律场景，如法律信息提取、法律判决预测、法律文件摘要和法律问题回答。DISC-Law-SFT包括两个子集，DISC-Law-SFT-Pair和DISC-Law-SFT-Triplet。前者旨在向LLM引入法律推理能力，而后者有助于增强模型利用外部法律知识的能力。</p>
+</blockquote>
+<p><img alt="07-2" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036394.png" /></p>
+<p>在本节的任务中，我们主要使用其中的 <a href="https://huggingface.co/datasets/ShengbinYue/DISC-Law-SFT/blob/main/DISC-Law-SFT-Pair-QA-released.jsonl">DISC-Law-SFT-Pair-QA-released</a> 子集，并对它进行格式调整，组合成如下格式的json文件：</p>
+<pre><code class="language-json">{
+  &quot;instruction&quot;: &quot;你是一个法律专家，请根据用户的问题给出专业的回答&quot;,
+  &quot;input&quot;: &quot;诈骗罪量刑标准是什么?&quot;,
+  &quot;output&quot;: &quot;诈骗罪指的是以非法占有为目的，使用欺骗方法，骗取数额较大的公私财物的行为...&quot;
+}
+</code></pre>
+<p>其中，<code>instruction</code> 是用户指令，告知模型其需要完成的任务；<code>input</code> 是用户输入，即模拟真实场景下用户的问题；<code>output</code> 是模型应该给出的输出，即模型的回答。</p>
+<p><strong>数据集下载与处理方式</strong></p>
+<ol>
+<li>在HuggingFace上直接下载<a href="https://huggingface.co/datasets/ShengbinYue/DISC-Law-SFT/blob/main/DISC-Law-SFT-Pair-QA-released.jsonl">DISC-Law-SFT-Pair-QA-released.jsonl</a>，放到项目根目录下</li>
+<li>在同一目录下，用以下代码处理数据集，得到新数据集文件：</li>
+</ol>
+<pre><code class="language-python">import json
+
+# 定义固定的instruction
+INSTRUCTION = &quot;你是一个法律专家，请根据用户的问题给出专业的回答&quot;
+
+def process_jsonl(input_file, output_file):
+    with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
+        for line in infile:
+            # 读取每一行并解析JSON
+            data = json.loads(line)
+
+            # 创建新的字典，包含instruction, input和output
+            new_data = {
+                &quot;instruction&quot;: INSTRUCTION,
+                &quot;input&quot;: data[&quot;input&quot;],
+                &quot;output&quot;: data[&quot;output&quot;]
+            }
+
+            # 将新的字典写入输出文件
+            json.dump(new_data, outfile, ensure_ascii=False)
+            outfile.write('\n')
+
+# 使用示例
+input_file = &quot;DISC-Law-SFT-Pair-QA-released.jsonl&quot;
+output_file = &quot;DISC-Law-SFT-Pair-QA-released-new.jsonl&quot;
+
+process_jsonl(input_file, output_file)
+print(f&quot;处理完成。输出文件：{output_file}&quot;)
+</code></pre>
+<ol start="3">
+<li>至此我们完成了数据集准备</li>
+</ol>
+<h2 id="-模型下载与加载">🤖 模型下载与加载<a class="anchor-link" href="#-模型下载与加载" title="Permanent link">&para;</a></h2>
+<p>这里我们使用modelscope下载Qwen2.5-7B-Instruct模型，然后把它加载到Transformers中进行训练：</p>
+<pre><code class="language-python">from modelscope import snapshot_download, AutoTokenizer
+from transformers import AutoModelForCausalLM, TrainingArguments, Trainer, DataCollatorForSeq2Seq
+import torch
+
+# 在modelscope上下载Qwen模型到本地目录下
+model_dir = snapshot_download(&quot;qwen/Qwen2.5-7B-Instruct&quot;, cache_dir=&quot;./&quot;, revision=&quot;master&quot;)
+
+# Transformers加载模型权重
+tokenizer = AutoTokenizer.from_pretrained(&quot;./qwen/Qwen2___5-7B-Instruct/&quot;, use_fast=False,trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(&quot;./qwen/Qwen2___5-7B-Instruct/&quot;, device_map=&quot;auto&quot;,torch_dtype=torch.bfloat16)
+model.enable_input_require_grads()  # 开启梯度检查点时，要执行该方法
+</code></pre>
+<p>模型大小为 15GB，下载模型大概需要 5 分钟。</p>
+<h2 id="-集成swanlab">🐦‍ 集成SwanLab<a class="anchor-link" href="#-集成swanlab" title="Permanent link">&para;</a></h2>
+<p>SwanLab与Transformers已经做好了集成，用法是在Trainer的<code>callbacks</code>参数中添加<code>SwanLabCallback</code>实例，就可以自动记录超参数和训练指标，简化代码如下：</p>
+<pre><code class="language-python">from swanlab.integration.transformers import SwanLabCallback
+from transformers import Trainer
+
+swanlab_callback = SwanLabCallback()
+
+trainer = Trainer(
+    ...
+    callbacks=[swanlab_callback],
+)
+</code></pre>
+<p>首次使用SwanLab，需要先在<a href="https://swanlab.cn">官网</a>注册一个账号，然后在用户设置页面复制你的API Key，然后在训练开始提示登录时粘贴即可，后续无需再次登录：</p>
+<p><img alt="07-3" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036395.png" /></p>
+<p>更多用法可参考<a href="https://docs.swanlab.cn/zh/guide_cloud/general/quick-start.html">快速开始</a>、<a href="https://docs.swanlab.cn/zh/guide_cloud/integration/integration-huggingface-transformers.html">Transformers集成</a>。</p>
+<h2 id="-开始微调">🚀 开始微调<a class="anchor-link" href="#-开始微调" title="Permanent link">&para;</a></h2>
+<p>查看可视化训练过程：<a href="https://swanlab.cn/@ZeyiLin/Qwen2.5-LoRA-Law/charts" target="_blank">Qwen2.5-LoRA-Law</a></p>
+<p><strong>本节代码做了以下几件事</strong>：<br />
+1. 下载并加载Qwen2.5-7B-Instruct模型<br />
+2. 加载数据集，取前5000条数据参与训练，5条数据进行主观评测<br />
+3. 配置Lora，参数为r=64, lora_alpha=16, lora_dropout=0.1<br />
+4. 使用SwanLab记录训练过程，包括超参数、指标和每个epoch的模型输出结果<br />
+5. 训练2个epoch</p>
+<p><strong>完整代码如下</strong></p>
+<pre><code class="language-python">import json
+import pandas as pd
+import torch
+from datasets import Dataset
+from modelscope import snapshot_download, AutoTokenizer
+from swanlab.integration.transformers import SwanLabCallback
+from peft import LoraConfig, TaskType, get_peft_model
+from transformers import (
+    AutoModelForCausalLM,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForSeq2Seq,
+)
+import swanlab
+
+
+def process_func(example):
+    &quot;&quot;&quot;
+    将数据集进行预处理
+    &quot;&quot;&quot;
+    MAX_LENGTH = 384
+    input_ids, attention_mask, labels = [], [], []
+    instruction = tokenizer(
+        f&quot;&lt;|im_start|&gt;system\n{example['instruction']}&lt;|im_end|&gt;\n&lt;|im_start|&gt;user\n{example['input']}&lt;|im_end|&gt;\n&lt;|im_start|&gt;assistant\n&quot;,
+        add_special_tokens=False,
+    )
+    response = tokenizer(f&quot;{example['output']}&quot;, add_special_tokens=False)
+    input_ids = (
+        instruction[&quot;input_ids&quot;] + response[&quot;input_ids&quot;] + [tokenizer.pad_token_id]
+    )
+    attention_mask = instruction[&quot;attention_mask&quot;] + response[&quot;attention_mask&quot;] + [1]
+    labels = (
+        [-100] * len(instruction[&quot;input_ids&quot;])
+        + response[&quot;input_ids&quot;]
+        + [tokenizer.pad_token_id]
+    )
+    if len(input_ids) &gt; MAX_LENGTH:  # 做一个截断
+        input_ids = input_ids[:MAX_LENGTH]
+        attention_mask = attention_mask[:MAX_LENGTH]
+        labels = labels[:MAX_LENGTH]
+
+    return {&quot;input_ids&quot;: input_ids, &quot;attention_mask&quot;: attention_mask, &quot;labels&quot;: labels}
+
+
+def predict(messages, model, tokenizer):
+    device = &quot;cuda&quot;
+    text = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    model_inputs = tokenizer([text], return_tensors=&quot;pt&quot;).to(device)
+
+    generated_ids = model.generate(model_inputs.input_ids, max_new_tokens=512)
+    generated_ids = [
+        output_ids[len(input_ids) :]
+        for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+    ]
+
+    response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    return response
+
+
+# 在modelscope上下载Qwen模型到本地目录下
+model_dir = snapshot_download(&quot;qwen/Qwen2.5-7B-Instruct&quot;, cache_dir=&quot;./&quot;, revision=&quot;master&quot;)
+
+# Transformers加载模型权重
+tokenizer = AutoTokenizer.from_pretrained(&quot;./qwen/Qwen2___5-7B-Instruct/&quot;, use_fast=False, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(&quot;./qwen/Qwen2___5-7B-Instruct/&quot;, device_map=&quot;auto&quot;, torch_dtype=torch.bfloat16)
+model.enable_input_require_grads()  # 开启梯度检查点时，要执行该方法
+
+# 处理数据集
+train_jsonl_path = &quot;DISC-Law-SFT-Pair-QA-released-new.jsonl&quot;
+train_df = pd.read_json(train_jsonl_path, lines=True)[5:5000]
+train_ds = Dataset.from_pandas(train_df)
+train_dataset = train_ds.map(process_func, remove_columns=train_ds.column_names)
+test_df = pd.read_json(train_jsonl_path, lines=True)[:5]
+
+config = LoraConfig(
+    task_type=TaskType.CAUSAL_LM,
+    target_modules=[
+        &quot;q_proj&quot;,
+        &quot;k_proj&quot;,
+        &quot;v_proj&quot;,
+        &quot;o_proj&quot;,
+        &quot;gate_proj&quot;,
+        &quot;up_proj&quot;,
+        &quot;down_proj&quot;,
+    ],
+    inference_mode=False,  # 训练模式
+    r=64,  # Lora 秩
+    lora_alpha=16,  # Lora alaph，具体作用参见 Lora 原理
+    lora_dropout=0.1,  # Dropout 比例
+)
+
+peft_model = get_peft_model(model, config)
+
+args = TrainingArguments(
+    output_dir=&quot;./output/Qwen2.5-7b&quot;,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
+    logging_steps=10,
+    num_train_epochs=2,
+    save_steps=100,
+    learning_rate=1e-4,
+    save_on_each_node=True,
+    gradient_checkpointing=True,
+    report_to=&quot;none&quot;,
+)
+
+class HuanhuanSwanLabCallback(SwanLabCallback):   
+    def on_train_begin(self, args, state, control, model=None, **kwargs):
+        if not self._initialized:
+            self.setup(args, state, model, **kwargs)
+
+        print(&quot;训练开始&quot;)
+        print(&quot;未开始微调，先取3条主观评测：&quot;)
+        test_text_list = []
+        for index, row in test_df[:3].iterrows():
+            instruction = row[&quot;instruction&quot;]
+            input_value = row[&quot;input&quot;]
+
+            messages = [
+                {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;{instruction}&quot;},
+                {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;{input_value}&quot;},
+            ]
+
+            response = predict(messages, peft_model, tokenizer)
+            messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: f&quot;{response}&quot;})
+
+            result_text = f&quot;【Q】{messages[1]['content']}\n【LLM】{messages[2]['content']}\n&quot;
+            print(result_text)
+
+            test_text_list.append(swanlab.Text(result_text, caption=response))
+
+        swanlab.log({&quot;Prediction&quot;: test_text_list}, step=0)
+
+    def on_epoch_end(self, args, state, control, **kwargs):
+        # ===================测试阶段======================
+        test_text_list = []
+        for index, row in test_df.iterrows():
+            instruction = row[&quot;instruction&quot;]
+            input_value = row[&quot;input&quot;]
+            ground_truth = row[&quot;output&quot;]
+
+            messages = [
+                {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;{instruction}&quot;},
+                {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;{input_value}&quot;},
+            ]
+
+            response = predict(messages, peft_model, tokenizer)
+            messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: f&quot;{response}&quot;})
+
+            if index == 0:
+                print(&quot;epoch&quot;, round(state.epoch), &quot;主观评测：&quot;)
+
+            result_text = f&quot;【Q】{messages[1]['content']}\n【LLM】{messages[2]['content']}\n【GT】 {ground_truth}&quot;
+            print(result_text)
+
+            test_text_list.append(swanlab.Text(result_text, caption=response))
+
+        swanlab.log({&quot;Prediction&quot;: test_text_list}, step=round(state.epoch))
+
+
+swanlab_callback = HuanhuanSwanLabCallback(
+    project=&quot;Qwen2.5-LoRA-Law&quot;,
+    experiment_name=&quot;7b&quot;,
+    config={
+        &quot;model&quot;: &quot;https://modelscope.cn/models/Qwen/Qwen2.5-7B-Instruct&quot;,
+        &quot;dataset&quot;: &quot;https://huggingface.co/datasets/ShengbinYue/DISC-Law-SFT&quot;,
+        &quot;github&quot;: &quot;https://github.com/datawhalechina/self-llm&quot;,
+        &quot;system_prompt&quot;: &quot;你是一个法律专家，请根据用户的问题给出专业的回答&quot;,
+        &quot;lora_rank&quot;: 64,
+        &quot;lora_alpha&quot;: 16,
+        &quot;lora_dropout&quot;: 0.1,
+    },
+)
+
+trainer = Trainer(
+    model=peft_model,
+    args=args,
+    train_dataset=train_dataset,
+    data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True),
+    callbacks=[swanlab_callback],
+)
+
+trainer.train()
+
+# 在Jupyter Notebook中运行时要停止SwanLab记录，需要调用swanlab.finish()
+swanlab.finish()
+</code></pre>
+<p>看到下面的进度条即代表训练开始：</p>
+<p><img alt="07-4" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036396.png" /></p>
+<h2 id="-训练结果演示">💻 训练结果演示<a class="anchor-link" href="#-训练结果演示" title="Permanent link">&para;</a></h2>
+<p><img alt="07-5" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036397.png" /></p>
+<p>从图表中我们可以看到，lr的下降策略是线性下降，loss随epoch呈现下降趋势，而grad_norm则在上升。这种形态往往反映了模型有过拟合的风险，训练不要超过2个epoch。</p>
+<p>在<code>Prediction</code>图表中记录着每个epoch的模型输出结果，可以直观看到在微调过程中，模型对同一输入文本的输出变化：</p>
+<p>没有被微调的模型：<br />
+<img alt="07-6" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036398.png" /></p>
+<p>微调后：<br />
+<img alt="07-7" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036399.png" /></p>
+<p>可以看到Lora微调后的模型，在回答的风格上要更贴近数据集，更符合预期。</p>
+<h2 id="补充">补充<a class="anchor-link" href="#补充" title="Permanent link">&para;</a></h2>
+<h3 id="05b15b7b14b模型在法律问答任务上的表现对比">0.5B/1.5B/7B/14B模型在法律问答任务上的表现对比<a class="anchor-link" href="#05b15b7b14b模型在法律问答任务上的表现对比" title="Permanent link">&para;</a></h3>
+<p>这里我们补充一组实验，探究同一个数据集的lora微调任务，不同规模大小的模型的表现。</p>
+<p><img alt="07-8" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036400.png" /></p>
+<p>可以看到，越大规模的模型，loss明显要越低，反映了模型的学习能力。</p>
+<h3 id="详细硬件配置和参数说明">详细硬件配置和参数说明<a class="anchor-link" href="#详细硬件配置和参数说明" title="Permanent link">&para;</a></h3>
+<p>使用4张A100 40GB显卡，batch size为4，gradient accumulation steps为4，训练2个epoch的用时为29分钟6秒。</p>
+<p><img alt="07-9" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412231036401.png" /></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

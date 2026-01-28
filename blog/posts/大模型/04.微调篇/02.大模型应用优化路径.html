@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[提示工程、RAG和微调 - 哪个才是大模型应用优化的最佳路径？](https://mp.weixin.qq.com/s/muOs95RFVQlr-WuTJ8tT3w)</title>
+    <meta name="description" content="[提示工程、RAG和微调 - 哪个才是大模型应用优化的最佳路径？](https://mp.weixin.qq.com/s/muOs95RFVQlr-WuTJ8tT3w) - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#大模型应用工程能力建设se4ai">大模型应用工程能力建设（SE4AI）</a></li>
+<li><a href="#两个优化维度">两个优化维度</a></li>
+<li><a href="#三个优化方法">三个优化方法</a><ul>
+<li><a href="#方法1---提示工程prompt-engineering">方法1 - 提示工程（Prompt Engineering）</a></li>
+<li><a href="#方法2---检索增强式内容生成rag---retrieval-augmented-generation">方法2 - 检索增强式内容生成（RAG - Retrieval Augmented Generation）</a></li>
+<li><a href="#方法3---微调-fine-tuning">方法3 - 微调 (Fine-tuning）</a></li>
+</ul>
+</li>
+<li><a href="#如何选择提示工程rag或者微调">如何选择提示工程，RAG或者微调</a></li>
+<li><a href="#大模型应用验证测试">大模型应用验证（测试）</a></li>
+<li><a href="#小结">小结</a></li>
+<li><a href="#是否需要访问外部数据源">是否需要访问外部数据源？</a></li>
+<li><a href="#是否需要修改模型的行为写作风格或特定领域的知识">是否需要修改模型的行为、写作风格或特定领域的知识</a></li>
+<li><a href="#抑制幻觉有多重要">抑制幻觉有多重要</a></li>
+<li><a href="#有多少标记的训练数据可用">有多少标记的训练数据可用</a></li>
+<li><a href="#数据的静态动态程度如何">数据的静态/动态程度如何</a></li>
+<li><a href="#我们的-llm-应用程序需要有多透明可解释">我们的 LLM 应用程序需要有多透明/可解释</a></li>
+<li><a href="#其他因素">其他因素</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#训练-llama-2-70b-需要多少钱">训练 LLaMA-2-70B 需要多少钱？</a></li>
+<li><a href="#基于开源大模型进行微调rag-才是首选">基于开源大模型进行微调+RAG 才是首选</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>[提示工程、RAG和微调 - 哪个才是大模型应用优化的最佳路径？](https://mp.weixin.qq.com/s/muOs95RFVQlr-WuTJ8tT3w)</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/04.微调篇</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="提示工程rag和微调---哪个才是大模型应用优化的最佳路径"><a href="https://mp.weixin.qq.com/s/muOs95RFVQlr-WuTJ8tT3w">提示工程、RAG和微调 - 哪个才是大模型应用优化的最佳路径？</a><a class="anchor-link" href="#提示工程rag和微调---哪个才是大模型应用优化的最佳路径" title="Permanent link">&para;</a></h1>
+<p>在上一篇文章 【<a href="http://mp.weixin.qq.com/s?__biz=MzU3NjY5NDgyNw==&amp;mid=2247483713&amp;idx=1&amp;sn=2ed793c0d62154a96811ab74674a430f&amp;chksm=fd0ebe05ca793713d1e2c3caae08b107eea35f2d040d77f7a77020b930cf0727427e61f1717c&amp;scene=21#wechat_redirect">GitHub Copilot产品经理和微软MVP告诉你：企业是否需要训练自己的代码大模型？- 微软MVP全球峰会纪行</a>】中，我以GitHub Copilot作为案例，和大家分析了企业进行私有化模型训练的6个基本要素。但这其实是一个未完成的话题。</p>
+<p>企业内部存在大量的私域数据是客观事实，从代码生成角度来看，私有的框架、公用代码组件、内部编码规范、内部接口定义和说明以及内部业务逻辑这些内容客观存在；即便不适合采用私有化训练的方式，我们也必须找到解决这些问题的有效方式。</p>
+<p>在本篇中，我将延续这个话题和大家聊一聊几个大家在大模型领域经常听到的技术<strong>：提示词工程、RAG（检索增强式生成）和模型微调，分析一下这3个技术之间到底是怎样的一种关系。</strong>更重要的是，对于企业技术管理者来说，如何构建一种机制，让企业内部具备应对大模型应用这种全新应用类型的持续改进机制。本篇的内容仍然是基于我和前文提到的三位重要人物的对话，包括：微软全球副总裁<strong>Julia Liuson 潘正磊，</strong>GitHub Copilot的产品经理 <strong>Ryan J. Salva</strong>，GitHub Next 团队的负责人 <strong>Idan Gazit</strong> ；我也参考了OpenAI DevDay上的一些视频和其他一些技术资料，都列在本文的结尾，供大家翻阅；除了这些参考，本文的大部分内容也是基于我和我的团队在AISE和SmartCode开发过程中的经验整理而成。希望对大家有所帮助。</p>
+<p>在企业中引入AI能力是当前所有企业管理者都在考虑的问题，但并不是所有人都意识到，AI能力不是独立的，它需要融入到企业现有的管理和工程场景中，用全新的方式重构这些场景，最终演化出我们从未见过的新场景。</p>
+<blockquote>
+<p>延续上一篇中有关电和电器的比喻，大模型是电，企业应用就是各种电器。</p>
+</blockquote>
+<p>因此，大模型应用不会是独立的系统，而是为现有的系统注入新的能力，它的影响面会从一些当前显而易见的场景逐渐蔓延到那些我们现在还想不到的部分。这个过程需要企业内几乎所有人都参与其中。对于企业管理者而言，如何构建一套AI时代下适合企业IT系统演进的全新策略和路线图，才是真正的关键问题。</p>
+<h2 id="大模型应用工程能力建设se4ai">大模型应用工程能力建设（SE4AI）<a class="anchor-link" href="#大模型应用工程能力建设se4ai" title="Permanent link">&para;</a></h2>
+<p>回到大模型应用系统制定问题。即便企业不符合上文中提到的 <a href="http://mp.weixin.qq.com/s?__biz=MzU3NjY5NDgyNw==&amp;mid=2247483713&amp;idx=1&amp;sn=2ed793c0d62154a96811ab74674a430f&amp;chksm=fd0ebe05ca793713d1e2c3caae08b107eea35f2d040d77f7a77020b930cf0727427e61f1717c&amp;scene=21#wechat_redirect">6个私有训练的基本要求</a>，让模型能够适应企业的私有代码仍然是我们需要解决的问题。</p>
+<p>企业需要的是定制化大模型应用方案，而模型训练只是其中一条路径而已，我们需要对所有可行的技术路线有充分认知，才能找到更加高效、可扩展、经济可行的最适合企业的方案。</p>
+<p>下图我们整理的 <strong>大模型应用的工程能力建设</strong> 整体思路：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214214838.png" style="zoom: 80%;" /></div>
+
+<p>构建大模型应用是一个典型的迭代过程，这个构建过程需要从应用场景出发，先搞清楚我们要做什么，然后再去优化大模型应用系统的性能、质量和用户体验。企业引入大模型更是如此，不能只把电缆接到家里，没有电器设备，电没有任何价值。当前市场最大的问题是，真正能够落地的大模型应用太少，因为“电压”不稳定（大模型的输出不稳定），“发电厂太少”（GPT国内用不了，开源模型和国内商用模型在内部部署又缺少算力），所以很多应用场景还处于探索阶段。</p>
+<p><strong>在众多应用中，</strong><strong>AI</strong><strong>智能编码是少数已经被证明的可落地的应用场景</strong>，GitHub Copilot实际上就是全球第一款真正具备百万级付费用户量的大模型应用，它本身就已经证明了AI智能编码确实可以大幅提高开发者的工作效率，解决实际问题。以下数据来自2022年的开发者调研 </p>
+<p>与市场上其他类型的大模型应用不同，GitHub Copilot 在 ChatGPT 出现之前就已经正式投入使用，到现在为止已经迭代了近3年的时间，微软和GitHub在这个过程中积累大量的实践经验。<strong>在这次和GitHub产品总监Ryan J. Salva沟通之后，对GitHub Copilot 是如何同时应用提示词工程、RAG和模型微调三种方法持续改进代码生成效果的过程有了深入了解，以下是对这三种方法的优缺点以及如何综合利用三种方法的一些总结。</strong></p>
+<h2 id="两个优化维度">两个优化维度<a class="anchor-link" href="#两个优化维度" title="Permanent link">&para;</a></h2>
+<p>如果你使用过任何大模型应用，就会发现这类应用有两个特点<strong>：1) 不确定性</strong>，与传统应用不同，模型的输出是不确定的，即使给它完全一样的输入，它也会给出不尽相同的答复。这种特性对于日常应用业务OK，但是如果要在企业内用来处理具体业务问题，就必须提高这个稳定性。<strong>2) 静态性</strong>，模型一旦训练好，就无法再补充数据，因此模型不会了解你自己组织内部的年假规定，代码规范。如何让大模型掌握这些数据是另外一个需要解决的问题。</p>
+<p>针对这两个问题，参考本文开头的路线图，我们可以看到对于大模型应用的场景优化，有2个关键的优化维度。基于这两个维度的综合优化过程，最终可以推动我们持续改进大模型应用的性能，质量和用户体验。</p>
+<ul>
+<li>
+<p><strong>行为优化</strong>：这个维度主要关注模型的行为，是教会模型去按照我们希望方式做事，包括：输出内容的格式、语气、偏好；甚至生成固定格式的请求以便调用其他服务。这个维度主要解决模型输出形式上的稳定性。</p>
+</li>
+<li>
+<p><strong>上下文优化</strong>：这个纬度主要关注私域数据，是让模型知道它所不知道的事情，包括：模型训练中从未见过的数据，比如内部代码、文档、规范、策略等。这个维度主要解决模型输出内容上的相关性。</p>
+</li>
+</ul>
+<h2 id="三个优化方法">三个优化方法<a class="anchor-link" href="#三个优化方法" title="Permanent link">&para;</a></h2>
+<p>提示词工程，RAG和模型微调三种方法，可以分别解决输出形式上的稳定性和内容上的相关性问题，但是不同的方法对这两个问题也有不同的侧重点。以下分别解释说明。</p>
+<h3 id="方法1---提示工程prompt-engineering">方法1 - 提示工程（Prompt Engineering）<a class="anchor-link" href="#方法1---提示工程prompt-engineering" title="Permanent link">&para;</a></h3>
+<p>这是最经济可行，也是见效最快的方式；在生成式AI（GenAI）这个领域中大家经常听说的 <strong>零样本/多样本学习（Zero-short/Few-short learning）</strong>或者 上<strong>下文引导学习（in-context learnning）</strong>其实都是提示词工程中的一些具体方法和技巧。</p>
+<p>在实际应用中，应该首先考虑使用提示工程的方式优化大模型应用，这是成本最低，见效最快的方式。<strong>提示词工程可以同时为模型补充上下文（上下文优化）和优化模型的行为（行为优化）。</strong>因此提示词工程可以同时在以上2个维度上帮助我们提升模型的性能、质量和用户体验，让我们可以更快达到目标。对任何应用场景，我们都不建议在还没有尝试提示工程的前提下就开始引入RAG或者微调。</p>
+<p>在AISE和SmartCode系统的研发过程中，我们已经形成<strong>一个标准化的优化流程，那就是：先定义好一个应用场景，然后首先进行提示词的调试，只有当提示词工程无法达到预期效果时才会引入RAG和微调。</strong>另外，因为大模型的应用场景众多，用户会不停提出各种类型的场景需求，最佳的解决方案是将提示工程的能力直接赋予用户。简单来说，提供用户可自助创建的提示词模板的功能模块，并允许用户自己在内部进行分享这些模板，最后对模板的使用情况进行监控，将那些有共性的模板提升为系统级甚至内置的模板。很多时候，用户经过摸索可以很快构建出高效的提示词解决自己的问题。而作为应用系统来说，我们需要提供的是这种能力，而不是将各种提示词都封装起来不让用户去碰。提示词模板本身就是一种和大模型沟通的工具，用户在问题驱动下构建出的模板非常简单高效。</p>
+<p>当然，提示词模板也可能变得非常复杂，当你发现自己构建的模板越来越长，越来越复杂，但是仍然无法满足要求。这就是引入RAG或者微调的信号。</p>
+<h3 id="方法2---检索增强式内容生成rag---retrieval-augmented-generation">方法2 - 检索增强式内容生成（RAG - Retrieval Augmented Generation）<a class="anchor-link" href="#方法2---检索增强式内容生成rag---retrieval-augmented-generation" title="Permanent link">&para;</a></h3>
+<p><strong>RAG并不是某种系统/工具/产品，RAG是一种为模型补充知识的方法。</strong>首先，任何的大模型一旦训练完成就变成了一个静态的文件，它只存储了在训练过程中提供给它的知识（数据）。因此，当你问ChatGPT自己公司内部有关年假的相关规定，它必定无法准确回答，而且还会给出误导性的答案。</p>
+<p>为了解决这个问题，最简单的方式就是先告诉大模型这些规定，然后再让它回答。这种方式就是提示词工程中的<strong>多样本学习（few-short learning）</strong>。同时，<strong>大模型是没有记忆的，你提出的每一个问题其实对他来说都是全新的问题。</strong>你可能会觉得ChatGPT是有记忆的，这是因为 <strong>ChatGPT 本身就是一个大模型应用（它背后的模型是</strong><strong>GPT</strong><strong>系列模型，包括</strong><strong>：GPT 3.5</strong><strong>， GPT4， DALL-E等）</strong>OpenAI本身在ChatGPT这个应用层上开发了大量的功能让用户可以更友好的和这些模型进行交互。因此，ChatGPT会帮助用户存储对话历史，并在你发送新的问题的时候将历史记录插入对话消息中，这样模型才知道你之前跟他说过的内容。在我们使用ChatGPT的过程中，它后面的大模型其实并不知道在和谁进行对话，而是机械快速的处理着一次次完全互不相干的请求。回到模型记忆的问题，ChatGPT的这种做法问题也很明显，当历史消息太多时，消息长度会超出模型能够处理的窗口大小，从而引发上下文丢失的问题，当你持续和ChatGPT对话时，会发现他会逐渐遗忘之前的信息，就是这个原因。</p>
+<p>当我们需要为模型提供更多上下文的时候，就需要用到RAG技术。RAG是在给模型发送消息之前首先进行内容检索，从其他数据源把相关的数据先提取出来，然后插入到当前对话消息中给到模型，这样就解决了既要让模型知晓大量它不知道的知识，又避免消息窗口不够的局限。</p>
+<p>你可能会问，你这里没有提到数据嵌入（embedding）和向量数据库，也能叫做RAG吗？实际上，只要通过检索的方式为模型补充了上下文数据，就是一种RAG的实现。数据嵌入和向量数据库只是提供了一种基于语义搜索的数据检索方式，虽然这种方式和当前的生成式AI技术有很紧密的联系，但这并不是RAG技术的必要组成部分。</p>
+<h3 id="方法3---微调-fine-tuning">方法3 - 微调 (Fine-tuning）<a class="anchor-link" href="#方法3---微调-fine-tuning" title="Permanent link">&para;</a></h3>
+<p>现在业界有各种不同的说法，比如：迁移训练（Transfer training），再训练（re-training），微调（fine-tuning）。甚至很多人会将数据嵌入（embedding）也称为训练，这其实是一种误导。<strong>微调之所以称为微调，就是因为微调不是从零开始，是基于一个预训练好的基础模型通过继续训练来调整模型行为的方式来完成的。</strong>这个过程所使用的数据量远远小于预训练模型所需要的数据量（基本在基础训练量的1%左右 [5]），只需要能够可以在一定程度上改变模型的行为就够了。<strong>微调的作用主要是对模型的行为进行调整，虽然也可以通过这个过程为模型补充数据，但是并不能保证模型就一定会按照你补充的数据回答问题，因为模型并不是一个确定性系统。</strong>这种调整需要构建在模型本身已经具备的能力上，这个过程和我们所说的熟能生巧和举一反三的过程很像。</p>
+<p>我们以小学生要学习二元一次方程的解法为例，要学习二元一次方程那么首先需要学会基本的数字，大小的概念和基本的运算能力。这个获得基础能力的过程有点像预训练基础模型，当小朋友做了足够多的基础运算题目以后，会对基础运算产生认知能力。有了这个基础认知能力，再通过一些例子帮助小朋友建立对未知数的认知，同时配合一些练习来使用未知数和整数、小数、分数这些基础数字混合以后进行运算，这样小朋友就会产生对二元一次方程的认知能力。后面这个过程其实就是微调过程。我们在学习数学的过程中会发现，自己在后来掌握更加复杂的运算方式所需要的练习数量会逐步减少。但是无论怎样，即使你的数学基础再好，要掌握一种新的运算都是需要一定练习量的。</p>
+<p>机器学习技术作为生成式AI的基础，其实就是建立在模仿人类认知的基础上构建的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214215022.png" style="zoom: 80%;" /></div>
+
+<p>对模型进行微调最重要的是数据的准备和处理，你需要对于自己的微调目标有清晰的认知，微调工程师需要充分理解每一条数据应该有怎样的结果，因为所有的训练数据都是为了让模型去模仿，以便可以在生成下一个token的时候增强你所希望生成内容的概率。从这个角度看，仅仅具备数据科学背景的工程师是不足以完成特定领域模型微调的，这个团队必须同时具备数据科学背景和微调相关的领域知识才能有效完成微调操作，比如：在 AI辅助智能编码领域，就需要数据科学工程师和软件工程/DevOps工程师配合。</p>
+<h2 id="如何选择提示工程rag或者微调">如何选择提示工程，RAG或者微调<a class="anchor-link" href="#如何选择提示工程rag或者微调" title="Permanent link">&para;</a></h2>
+<p>这3个方法不是非此即彼的关系，而是相互配合的关系。对于任何问题，我们都建议将提示工程的方式作为起点，当经过一段时间的优化以后，如果发现提示词已经变得非常复杂，甚至模板内容都已经快要占满整个模型输入窗口，但是仍然无法获得稳定的模型输出，那么就应该考虑采用微调或者RAG来解决问题了。</p>
+<p>判断后续路线的标准其实也不复杂，我们只需要关注提示工程产出的提示词模板的一些特性就可以做出明确的判断</p>
+<ul>
+<li>
+<p>如果在模板中大部分的内容是模型不知道的知识，这些知识的内容又来自其他的数据源，知识内容不停变动，以至于你不得不创建多个不同模板来实现不同场景，那么应该开始引入RAG进行下一步的优化。</p>
+</li>
+<li>
+<p>如果模板中的内容大部分是各种格式的示例，你的目的也是希望模型能够模仿这些示例来输出内容，但是即便这些示例已经占满了模板，模型输出仍然不够稳定，那么应该开始引入微调进行下一步的优化。</p>
+</li>
+</ul>
+<p>提示工程可以同时解决知识和行为的问题，但是会受限于模型数据窗口大小；RAG能解决知识补充问题但是不擅长改变模型行为，微调可以改变模型行为但是不适合为模型补充知识。</p>
+<p>复杂的提示词还会消耗大量token，造成模型响应速度降低（如果使用按token收费的模型服务，还会造成成本增加），采用微调方式可以将特定任务固化在模型中，后续调用的速度会大幅提升，也更加节省token。不过，微调过程会一次性产生大额成本投入，更适合那些高频的固定任务。在 <strong>AI辅助智能编码</strong> 领域，我们一般会针对代码解释，代码纠错，单元测试生成这些场景进行模型微调以实现更优化的性能，输出稳定性和更友好的输出格式。</p>
+<p>在具体应用场景的实践中，应该根据特定场景的需要组合使用3种方法，具体是否要走到RAG，微调或者RAG+微调哪个阶段才能达到目标，要根据应用验证的结果而定。对于日常使用来说，用户感觉好用往往就可以作为完整结果了。但对于企业应用的工程化方法，我们需要有可评估的量化标准才行。</p>
+<h2 id="大模型应用验证测试">大模型应用验证（测试）<a class="anchor-link" href="#大模型应用验证测试" title="Permanent link">&para;</a></h2>
+<p>大模型应用效果的验证和传统软件的评估效果不同，因为大模型本身的通用性和非确定性，造成即便是一个特定场景，我们无法穷举所有的输入可能性；对于同样的输入，我们也无法确定模型的标准化输出。类似这样的通用性和不确定的特点决定了传统的测试方法对大模型应用是无法直接使用的，我们必须探索一种适合大模型应用的验证/测试方式。  </p>
+<blockquote>
+<p>以下图这个场景为例，我们给模型输入了完全一样的提示词：“如何计算等边三角形的面积，请使用Python代码生成一个计算方法”。但是模型给出的输出却不完全一致，如果我们仔细阅读模型的输出，会发现虽然输出的格式，内容有所区别，但是关键部分和核心内容的含义却是一致的。注意：这个测试使用的是同一个模型。</p>
+</blockquote>
+<p><img alt="图片" src="https://mmbiz.qpic.cn/sz_mmbiz_png/ibWgicrljcI9NBMibQc8JhRfCJPBfWWvQiaPkaZZicOT35Hd6nADv18dIvtaH4d6AiabFwn5rdGVrAgdPO44AWGrMDkw/640?wx_fmt=png&amp;from=appmsg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1&amp;wx_co=1" /></p>
+<p>简单来说：</p>
+<ul>
+<li>
+<p>传统应用是确定性的：同样的输入一定有同样的输出</p>
+</li>
+<li>
+<p>大模型应用是不确定性的：同样的输入不一定有同样的输出，不同的输入也可以有同样的输出，输出的内容虽然不相等但是含义一致。</p>
+</li>
+</ul>
+<p>充分认识到大模型应用与传统应用的不同，我们才能有针对性的对传统测试、验收方式进行重构，以便适应大模型应用本身的特点。传统软件工程中的自动化测试，CI/CD流水线，单元测试等实践对大模型应用仍然有效。但是我们需要重构这些流程中所使用的工具和方法。比如：针对大模型应用的单元测试，我们仍然可以采用 define-exec-eval 的模式进行用例的设计，但是其中define和eval步骤的实现方式都需要进行重构：</p>
+<ul>
+<li>
+<p>Define - 测试目标的定义往往需要我们尽量穷举所有的测试场景，这一点在传统软件工程上是可行的，因为系统本身是确定性；但是在大模型应用上穷举法就是不可行的，因为大模型应用所面对的场景和传统应用场景有非常大的不同。比如：大模型应用可以帮助我们分析软件需求，这样一个场景就是无法通过传统软件工程方法来穷举的，我们必须寻求其他办法；同样，在传统软件应用上，我们也不会提出这类的应用场景，因为依靠常识就知道这种场景是不可行的。</p>
+</li>
+<li>
+<p>Eval - 在测试验证环节上，这个区别更加明显。因为大模型输出不确定性属性，同样的输入会产生每次都不一致的输出，这些输出虽然在形式/用词/格式上有所区别，他们之间的语义上又存在联系。传统测试基于等式的验证方式明显无法适应这样的输出特性。</p>
+</li>
+</ul>
+<p>大模型的应用验证是AI时代带来的全新的软件工程问题，业界普遍有3种实现路径<strong>：基于统计学算法的验证方式，基于模型的验证方式和人工验证。</strong>基于统计的验证方式使用一些算法来验证模型输出与预期结果的相似度，有代表性的方法包括：BLEU (BiLingual Evaluation Understudy) ，ROUGE (Recall-Oriented Understudy for Gisting Evaluation) ，METEOR (Metric for Evaluation of Translation with Explicit Ordering)，Levenshtein distance 等等。基于模型的验证方法采用大模型来验证大模型的输出，相比基于统计的验证方法提供更好的普适性，但是在系统构建，运行效率和成本上会带来很大挑战，有代表性的框架包括：RAGUS，DeepEval 等。人工验证就是让测试人员或者用户直接对模型输出进行反馈和打分，虽然这种方法效率更低，实际上却是现在最准确的评估方式，毕竟大模型应用的最终用户是人，人本身的智能足以应对模型输出的不确定性。</p>
+<p>另外，针对RAG和微调的两种路径，验证的方式和采用的指标也会有所不同，以下列出一些常见的验证指标，供大家参考：</p>
+<ul>
+<li>
+<p>相关性</p>
+</li>
+<li>
+<p>总结能力</p>
+</li>
+<li>
+<p>偏见度</p>
+</li>
+<li>
+<p>毒性</p>
+</li>
+<li>
+<p>友好度</p>
+</li>
+<li>
+<p>伤害性</p>
+</li>
+<li>
+<p>遵从性</p>
+</li>
+<li>
+<p>幻觉程度</p>
+</li>
+</ul>
+<p>大模型应用验证是 SE4AI 领域的一个比较有代表性的工程问题，在面向大模型应用的交付流水线中，其实还有很多其他的环节也需要采用同样的思路进行重构。</p>
+<h2 id="小结">小结<a class="anchor-link" href="#小结" title="Permanent link">&para;</a></h2>
+<p>本文延续模型私有化训练的问题，对当前比较常见的大模型应用优化方式：提示工程，RAG和微调三种方法的优缺点进行了分析和比较。我们需要了解这三种方式并不是孤立互斥的，而是互相推动的，企业大模型应用最终的形态往往是这三种方法综合使用的结果。</p>
+<h1 id="rag--微调我们应该如何选择"><a href="https://mp.weixin.qq.com/s/2bgque4LCcyVOOuGxm7wPw">RAG &amp; 微调，我们应该如何选择？</a><a class="anchor-link" href="#rag--微调我们应该如何选择" title="Permanent link">&para;</a></h1>
+<p><code>RAG</code> 全称是 Retrieval-Augmented Generation（检索增强生成），它将检索（或搜索）的能力集成到 LLM 的文本生成中。它结合了一个检索系统和一个 LLM，前者从大型语料库中获取与用户查询最相关的文档，后者使用这些被检索到的文档中的信息生成答案。本质上，RAG 帮助模型“查找”外部信息以改进其响应。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241215141525.png" style="zoom: 80%;" /></div>
+
+<p><code>微调（Finetuing）</code>：在较小的特定数据集上进一步训练预训练过的 LLM，以使其适应特定任务或提高其性能。通过微调，我们根据数据调整模型的权重，使其更适合我们应用程序的独特需求。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241215141758.png" style="zoom: 80%;" /></div>
+
+<p>下面我将从几个不同的角度来说明什么时候应该使用 RAG，什么时候应该使用微调。</p>
+<h2 id="是否需要访问外部数据源">是否需要访问外部数据源？<a class="anchor-link" href="#是否需要访问外部数据源" title="Permanent link">&para;</a></h2>
+<p>现今所有的 LLM 的知识受到训练这些 LLM 时的数据集的制约，具体来说有两个主要方面的制约：</p>
+<ul>
+<li>
+<p>时间：所有训练数据集的收集都有一个时间范围，这导致 LLM 无法获取最新的知识。</p>
+</li>
+<li>
+<p>私有数据：很多企业和组织都有自己的私有数据，比如公司内部不公开的资料库，这些资料库中的知识也无法被外部公司或组织收集起来训练 LLM。</p>
+</li>
+</ul>
+<p>如果我们要构建一个需要访问外部数据源的 LLM 应用程序，那么我们就应该选择 RAG。</p>
+<p>根据 RAG 的定义，RAG 会通过在 LLM 生成响应之前从外部数据源中检索与当前用户查询最相关的信息来增强 LLM 的能力。这使得该技术非常适合需要查询数据库、文档或其他结构化/非结构化数据存储库的应用程序。</p>
+<p>相比之下，虽然可以我们对 LLM 进行微调以学习一些外部知识，但这样做需要来自目标领域的大量带标签的问答对数据集。该数据集必须随着基础数据的变化而更新，这对于频繁变化的数据源来说是不切实际的。微调过程也没有明确地对查询外部知识所涉及的检索和推理步骤进行建模。</p>
+<p>总而言之，如果我们的应用程序需要利用外部数据源，那么使用 RAG 系统可能比尝试仅通过微调“融入”所需的知识更有效且可扩展。</p>
+<h2 id="是否需要修改模型的行为写作风格或特定领域的知识">是否需要修改模型的行为、写作风格或特定领域的知识<a class="anchor-link" href="#是否需要修改模型的行为写作风格或特定领域的知识" title="Permanent link">&para;</a></h2>
+<p>微调的优势在于能够使 LLM 的行为适应特定领域的语气或术语。如果我们希望模型听起来更像医学专业人士，以诗意的风格写作，或者使用特定行业的术语，那么对特定领域的数据进行微调可以让我们实现这些定制化需求。这种影响模型行为的能力对于与特定风格或领域专业知识保持一致至关重要的应用程序至关重要。  </p>
+<p>RAG 虽然在整合外部知识方面功能强大，但主要侧重于信息检索，它本身并不根据检索到的信息来调整 LLM 的语言风格或领域特异性。它将从外部数据源提取相关内容，但可能不会展现微调模型可以提供的定制化响应风格。</p>
+<p>因此，如果我们的应用程序需要专门的写作风格或与特定领域的语言和惯例深度一致，那么微调提供了一种更直接的途径来实现这种一致性。它提供了与特定受众或专业领域真正产生共鸣所需的深度和定制性，确保生成的内容真实且信息灵通。</p>
+<h2 id="抑制幻觉有多重要">抑制幻觉有多重要<a class="anchor-link" href="#抑制幻觉有多重要" title="Permanent link">&para;</a></h2>
+<p>LLM 的缺点之一是容易产生幻觉——编造没有现实依据的事实或细节。在准确性和真实性至关重要的应用中，这可能会产生很大的问题。</p>
+<p>通过将模型基于特定领域的训练数据进行微调，可以在一定程度上帮助模型减少幻觉。然而，当面对不熟悉的输入时，模型仍然可能会做出响应。需要对新数据进行再训练，以不断减少模型输出虚假信息的可能性。</p>
+<p>相比之下，RAG 本质上不太容易产生幻觉，因为它们将每个响应都基于从指定数据源中检索到的信息。在 LLM 输出答案之前，检索器从外部知识源中识别相关事实。这个检索步骤充当事实检查机制，降低了模型的虚构能力。LLM 也被限制根据检索到的上下文信息合成响应。</p>
+<h2 id="有多少标记的训练数据可用">有多少标记的训练数据可用<a class="anchor-link" href="#有多少标记的训练数据可用" title="Permanent link">&para;</a></h2>
+<p>微调 LLM 以适应特定任务或领域在很大程度上取决于可用标记数据的质量和数量。丰富的数据集可以帮助模型深入理解特定领域的细微差别、复杂性和独特模式，从而使其能够生成更准确且与上下文相关的响应。然而，如果我们使用有限的数据集，微调带来的改进可能微乎其微。在某些情况下，数据集不足甚至可能导致过拟合。  </p>
+<p>相反，RAG 独立于训练数据，因为它们利用外部知识源来检索相关信息。即使我们没有广泛的标记数据集，RAG 仍然可以通过访问和合并来自外部数据源的信息来有效执行。检索和生成的结合确保系统即使在特定领域的训练数据稀疏的情况下也能保持知情。</p>
+<p>从本质上讲，如果我们拥有大量的标记数据来捕获该领域的复杂性，那么微调可以提供更加定制和完善的模型行为。但在此类数据有限的情况下，RAG 系统提供了一个强大的替代方案，确保应用程序通过其检索功能保持数据知情和上下文感知。</p>
+<h2 id="数据的静态动态程度如何">数据的静态/动态程度如何<a class="anchor-link" href="#数据的静态动态程度如何" title="Permanent link">&para;</a></h2>
+<p>在特定数据集上微调 LLM 意味着模型的知识成为训练时数据的静态快照。如果数据频繁更新、更改或扩展，模型很快就会过时。为了使 LLM 在这种动态环境中保持最新状态，我们必须经常重新训练它，这个过程既耗时又占用资源。此外，每次迭代都需要仔细监控，以确保更新后的模型在不同场景中仍然表现良好，并且没有产生新的偏差或理解差距。  </p>
+<p>相比之下，RAG 在动态数据环境中具有固有的优势。它们的检索机制不断查询外部来源，确保他们提取用于生成响应的信息是最新的。随着外部知识库或数据库的更新，RAG 无缝集成这些变化，保持其相关性，而不需要频繁地重新训练模型。</p>
+<p>总之，如果我们正在应对快速发展的数据环境，RAG 提供的敏捷性是传统微调难以比拟的。通过始终与最新数据保持连接，RAG 可确保生成的响应与信息的当前状态保持一致，使其成为动态数据场景的理想选择。</p>
+<h2 id="我们的-llm-应用程序需要有多透明可解释">我们的 LLM 应用程序需要有多透明/可解释<a class="anchor-link" href="#我们的-llm-应用程序需要有多透明可解释" title="Permanent link">&para;</a></h2>
+<p>微调 LLM 虽然非常强大，但其运作就像一个黑盒子，使其响应背后的推理更加不透明。随着模型内化数据集中的信息，辨别每个响应背后的确切来源或推理变得具有挑战性。这可能会使开发人员或用户难以信任模型的输出，特别是在关键应用程序中，了解答案背后的“原因”至关重要。</p>
+<p>另一方面，RAG 提供了一定程度的透明度，这在单独的微调模型中通常是不存在的。鉴于 RAG 的两步性质（检索然后生成），用户可以查看该过程。检索组件允许检查哪些外部文档或数据点被选择为相关。这提供了切实的证据或参考线索，可以对其进行评估以了解响应的基础。在需要高度责任感或需要验证生成内容的准确性的应用程序中，追溯模型对特定数据源的答案的能力可能非常宝贵。</p>
+<p>从本质上讲，如果透明度和解释模型响应基础的能力是优先考虑的因素，那么 RAG 具有明显的优势。通过将响应生成分解为不同的阶段并允许深入了解其数据检索，RAG 可以增强用户对其输出的信任和理解。  </p>
+<h2 id="其他因素">其他因素<a class="anchor-link" href="#其他因素" title="Permanent link">&para;</a></h2>
+<ul>
+<li>可扩展性</li>
+</ul>
+<p>随着企业或组织的发展和需求的变化，所讨论的方法的可扩展性如何？鉴于其模块化性质，RAG 可能会提供更直接的可扩展性，尤其是在知识库增长的情况下。另一方面，频繁微调模型以适应不断扩展的数据集可能需要大量计算资源。</p>
+<ul>
+<li>延迟和实时要求  </li>
+</ul>
+<p>如果应用程序需要实时或接近实时的响应，与基于内化知识生成响应的微调 LLM 相比，RAG 涉及在生成响应之前检索数据，可能会引入更多延迟。</p>
+<ul>
+<li>维护与支持  </li>
+</ul>
+<p>RAG 可能需要维护数据库和检索机制，而微调则需要一致的再训练工作，特别是在数据或需求发生变化的情况下。</p>
+<ul>
+<li>稳健性和可靠性  </li>
+</ul>
+<p>每种方法对于不同类型的输入的鲁棒性如何？ 虽然 RAG 可以从外部知识源中获取知识，并且可以处理广泛的问题，但经过良好调整的模型可能会在某些领域提供更高的一致性。</p>
+<ul>
+<li>道德和隐私问题  </li>
+</ul>
+<p>从外部数据库存储和检索可能会引起隐私问题，尤其是在数据敏感的情况下。另一方面，经过微调的模型虽然不查询实时数据库，但仍可能根据其训练数据产生输出，这可能有其自身的道德含义。</p>
+<ul>
+<li>与现有系统集成 </li>
+</ul>
+<p>要考虑与现有系统（无论是数据库、云基础设施还是用户界面）的兼容性。</p>
+<ul>
+<li>用户体验</li>
+</ul>
+<p>考虑最终用户及其需求。如果他们需要详细的、有参考资料支持的答案，RAG 可能是更好的选择。如果他们重视速度和特定领域的专业知识，那么微调的模型可能更合适。</p>
+<ul>
+<li>成本</li>
+</ul>
+<p>微调可能会变得昂贵，尤其是对于非常大的模型。但在过去的几个月里，得益于 QLoRA 等参数高效技术，成本已显著下降。设置 RAG 可能是一项巨大的初始投资——涵盖集成、数据库访问，甚至可能是许可费用——但还需要考虑定期维护外部知识库。</p>
+<ul>
+<li>复杂度  </li>
+</ul>
+<p>微调很快就会变得复杂。虽然许多提供商现在提供一键式微调，我们只需要提供训练数据，但跟踪模型版本并确保新模型仍然全面运行是一项挑战。另一方面，RAG 也可能很快变得复杂。有多个组件的设置，确保数据库保持最新，并确保各个部分（例如检索和生成）正确地组合在一起。</p>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<p>正如我们所探讨的，在 RAG 和微调之间进行选择需要对 LLM 的独特需求和优先事项进行细致入微的评估。没有一种万能的解决方案 ，成功在于使优化方法与任务的具体要求保持一致。通过评估关键标准（外部数据的需求、调整模型行为、训练数据可用性、数据动态、结果透明度等），我们就可以用最佳前进路径做出明智的决策。在某些情况下，同时利用 RAG 和微调的混合方法可能是最佳选择。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241215151604.png" style="zoom: 80%;" /></div>
+
+<p>关键是避免假设一种方法普遍优越。与任何工具一样，它们的适用性取决于手头的工作。方法和目标不一致可能会阻碍进展，而正确的方法会加速进展。当我们评估提升 LLM 应用程序的选项时，它必须抵制过度简化，不要将 RAG 和微调视为可互换的，并选择使模型能够满足其与用例需求相一致的功能的工具。这些方法所带来的可能性令人震惊，但仅有可能性还不够——执行就是一切。</p>
+<h1 id="从-0-训练一个大模型需要多少钱为什么大多数企业选择微调rag-这条路"><a href="https://mp.weixin.qq.com/s/xVgu_5a_jYVNRuAAX3sC1A?poc_token=HNJnLGajzd-i-9AM98NFyBkxS5fPUMipSztraknX">从 0 训练一个大模型需要多少钱？为什么大多数企业选择微调+RAG 这条路</a><a class="anchor-link" href="#从-0-训练一个大模型需要多少钱为什么大多数企业选择微调rag-这条路" title="Permanent link">&para;</a></h1>
+<h2 id="训练-llama-2-70b-需要多少钱">训练 LLaMA-2-70B 需要多少钱？<a class="anchor-link" href="#训练-llama-2-70b-需要多少钱" title="Permanent link">&para;</a></h2>
+<p><code>LLaMA-2 70B</code>是 Meta 于 2023 年 7 月 18 日发布的一款开源通用大模型，经过实际测评，大家普遍认为不如<code>ChatGPT-3.5</code>（参数量级 175b）。我们先看下关于<code>LLaMA-2-70B</code>训练的一些相关信息：</p>
+<ol>
+<li>
+<p>训练后的<code>LLaMA-2-70B</code>，模型文件大概有 140GB，700 亿级参数。</p>
+</li>
+<li>
+<p>训练时，需要抓取最少 10TB 的网络数据集。</p>
+</li>
+<li>
+<p>需要 1 千万亿亿 FLOPS。如果 12 天可以训练完，需要 6000 块 A100 GPU. 想要一个月训练完，需要 2400 块 A100 GPU。如果你只有 1 块 A100，想要训练完，需要 200 年。</p>
+</li>
+<li>
+<p>总体费用花销，需要最少 200w 美元。</p>
+</li>
+</ol>
+<p>所以根据上面 <code>LLaMA-2-70b</code> 的训练信息大概就可以看到，想要训练一款通用性质的大模型，对标 <code>ChatGPT-3.5</code> 的话，无论是数据的采集还是模型的训练，都是需要花费非常高的成本。而 <code>ChatGPT-3.5</code> 参数量级是 175b，是 <code>LLaMA-2-70b</code> 的两倍还多，ChatGPT-3.5 的训练成本最少我推测也的 500w 美元。而现在大家用的 ChatGPT-4 更不用说了，它是一个 MoE 性质的混合超级大模型，由各个子模型组成，每个子模型最起码都是千亿级别的参数量级。由于 Chat-GPT4 并未公布详细参数量级，但是据传达到了万亿级参数，所以训练成本推测最少也的 3000w 美元。</p>
+<h2 id="基于开源大模型进行微调rag-才是首选">基于开源大模型进行微调+RAG 才是首选<a class="anchor-link" href="#基于开源大模型进行微调rag-才是首选" title="Permanent link">&para;</a></h2>
+<p>从 0 开始训练一个通用领域大模型，除了一些大厂玩的起，相信大多数企业不会选择这条路。而不同的企业往往需要的是一个符合其业务场景在某个垂直领域的大模型，所以基于一个开源的大模型，进行微调+RAG 或许才是更实际的一种选择，企业可以通过微调这些模型来适应自己的特定需求，使用 RAG 可以进一步提高模型的性能，通过从大型文档数据库中检索信息来增强生成的内容，这样可以使模型在没有直接训练数据的情况下也能够生成高质量的回答或内容。但即使是基于一个开源的大模型去微调，那也需要去慎重的选择，而选择标准，往往还是会落在算力上。下面几个影响因素，大家可以参考下：</p>
+<ol>
+<li>关于微调数据+RAG 知识库的准备，企业自身结合其业务场景准备数据即可。</li>
+<li>根据企业可以接受的算力选择大模型，这个才是根基。你总不能说你只有一张 A100 卡，直接上马斯克的 Grok-1（3140 亿参数的混合专家模型），你连推理都玩不起来，更别说基于它去微调了。所以算力是最重要的因素。</li>
+<li>同时你还需要考虑微调的策略，微调的策略也有很多种，基于所选的基本模型架构和业务需要，难易度和效果更是不同（如果没有足够的技术能力，不推荐选择 MoE 性质混合专家模型作为基础模型）。你可以选择最简单的 P-tuning 方式，或者稍微复杂一些的 PEFT 策略中的 LoRA，更或许是 OpenAI 的监督学习+RLHF 强化学习（奖励模型那套）的策略。</li>
+<li>不选择微调，直接外挂 RAG，这种成本最低。</li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

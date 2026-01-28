@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#大模型训练微调框架">大模型训练微调框架</a><ul>
+<li><a href="#deepspeed微软">deepspeed(微软)</a></li>
+<li><a href="#transformershugggingface">transformers(hugggingface)</a></li>
+<li><a href="#modelscope魔塔">modelscope(魔塔)</a></li>
+<li><a href="#llama-factory">Llama Factory</a></li>
+</ul>
+</li>
+<li><a href="#数据集">数据集</a><ul>
+<li><a href="#alpaca-cot">Alpaca-CoT</a></li>
+<li><a href="#alpaca_gpt4">Alpaca_GPT4</a></li>
+<li><a href="#belle_data">belle_data</a></li>
+<li><a href="#coig">COIG</a></li>
+</ul>
+</li>
+<li><a href="#垂直领域大模型微调实践经验">垂直领域大模型微调实践经验</a><ul>
+<li><a href="#模型架构">模型架构</a></li>
+<li><a href="#数据">数据</a></li>
+<li><a href="#微调">微调</a></li>
+<li><a href="#强化学习部分重要吗">强化学习部分重要吗</a></li>
+<li><a href="#垂域-llm-训练经验之谈">垂域 LLM 训练经验之谈</a></li>
+</ul>
+</li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/04.微调篇</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>大模型微调的三个节点：</p>
+<ul>
+<li><strong>节点 1 ChatGPT</strong>：由于 ChatGPT 惊人的效果，让大家意识到 AGI 的可能性，并重视起了大模型+开放指令微调+强化学习这种三阶段范式</li>
+<li><strong>节点 2 LLaMA</strong>：LLaMA 是 Meta 在今年 2 月份推出的基座模型，宣称 LLaMA-13B 在大多数基准测试中超过了 GPT-3 (175B)，而 LLaMA-65B 与最好的模型 Chinchilla70B 和 PaLM-540B 相比非常有竞争力。此外，该项目还开源了 7B、13B、30B 和 65B 版本。</li>
+<li><strong>节点 3 Stanford Alpaca</strong>：在 LLaMA 的基础上，用 Self-Instruct 去制造了 52K 的指令微调数据集，最后发现训练出来的模型确实是能听懂指令的，能看出 ChatGPT 的雏形</li>
+</ul>
+<p>本质都是：底座模型(ChatGLM/LLaMA/BLOOM)+ 微调数据(主要是指令微调数据集) + 高效微调方案(Fulltuning/Lora/Freeze/Ptuning)。</p>
+<h2 id="大模型训练微调框架">大模型训练微调框架<a class="anchor-link" href="#大模型训练微调框架" title="Permanent link">&para;</a></h2>
+<h3 id="deepspeed微软">deepspeed(微软)<a class="anchor-link" href="#deepspeed微软" title="Permanent link">&para;</a></h3>
+<h3 id="transformershugggingface">transformers(hugggingface)<a class="anchor-link" href="#transformershugggingface" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>丰富的生态，几乎开源的大模型都在 huggingface 都可以找到，开源的数据集利用它可以轻松加载。</p>
+</li>
+<li>
+<p>底层支持 tensorflow 和 pytorch,重新封装一层，比较麻烦的训练和预测备封装成 Tranier 类，数据加载、处理、搭建模型、训练使用起来特别容易上手。</p>
+</li>
+</ul>
+<h3 id="modelscope魔塔">modelscope(魔塔)<a class="anchor-link" href="#modelscope魔塔" title="Permanent link">&para;</a></h3>
+<h3 id="llama-factory">Llama Factory<a class="anchor-link" href="#llama-factory" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>多种模型</strong>：LLaMA、LLaVA、Mistral、Mixtral-MoE、Qwen（阿里通义）、Yi（零一万物）、Gemma、Baichuan（百川）、ChatGLM（智谱）、Phi 等等。</p>
+</li>
+<li>
+<p><strong>集成方法</strong>：（增量）预训练、（多模态）指令监督微调、奖励模型训练、PPO 训练、DPO 训练和 ORPO 训练。</p>
+</li>
+<li>
+<p><strong>多种精度</strong>：32 比特全参数微调、16 比特冻结微调、16 比特 LoRA 微调和基于 AQLM/AWQ/GPTQ/LLM.int8 的 2/4/8 比特 QLoRA 微调。</p>
+</li>
+<li>
+<p><strong>先进算法</strong>：GaLore、BAdam、DoRA、LongLoRA、LLaMA Pro、Mixture-of-Depths、LoRA+、LoftQ 和 Agent 微调。</p>
+</li>
+<li>
+<p><strong>实用技巧</strong>：FlashAttention-2、Unsloth、RoPE scaling、NEFTune 和 rsLoRA。</p>
+</li>
+<li>
+<p><strong>实验监控</strong>：LlamaBoard、TensorBoard、Wandb、MLflow 等等。</p>
+</li>
+<li>
+<p><strong>极速推理</strong>：基于 vLLM 的 OpenAI 风格 API、浏览器界面和命令行接口。</p>
+</li>
+</ul>
+<h2 id="数据集">数据集<a class="anchor-link" href="#数据集" title="Permanent link">&para;</a></h2>
+<h3 id="alpaca-cot">Alpaca-CoT<a class="anchor-link" href="#alpaca-cot" title="Permanent link">&para;</a></h3>
+<p>对大部份中英文的开源 IFT 数据集进行了整理和汇总，包括有 Guanaco、belle、firefly、COIG，加上项目自己开源的 CoT 数据集。假如不想自己去疏离数据集的话，就看这个它们整理好的就行了。</p>
+<h3 id="alpaca_gpt4">Alpaca_GPT4<a class="anchor-link" href="#alpaca_gpt4" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://github.com/Instruction-Tuning-with-GPT-4/GPT-4-LLM</p>
+</blockquote>
+<p>微软论文《INSTRUCTION TUNING WITH GPT-4》开源的数据集。亮点是利用 GPT-4 生成的 Alpaca 数据，并做了中文的翻译。由于 GPT4 比 GPT3.5 强大很多的，因此质量自然会更高。</p>
+<h3 id="belle_data">belle_data<a class="anchor-link" href="#belle_data" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://github.com/LianjiaTech/BELLE/tree/main/data/10M</p>
+</blockquote>
+<p>规模很大、类型也较多的数据集</p>
+<ul>
+<li>School Math：包含约 25 万条中文数学题数据，包含解题过程。</li>
+<li>Multiturn Chat：包含约 80 万条用户与助手的多轮对话。</li>
+<li>Generated Chat：包含约 40 万条给定角色的多轮对话。</li>
+<li>train_2M_CN：包含约 200 万条与 Alpaca 类似生成的多样化指令任务数据。</li>
+</ul>
+<p>这些数据都是由 ChatGPT 生成，部分质量是不过关的，需要自己好好筛选一下。</p>
+<h3 id="coig">COIG<a class="anchor-link" href="#coig" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://huggingface.co/datasets/BAAI/COIG</p>
+</blockquote>
+<p>规模很大，类型很全的数据集</p>
+<p>翻译指令数据集：基于开源数据集精选得到，并通过 DeepL 高质量翻译、并进行人工验证+人工修正<br />
+考试指令数据集：中国高考、中考、公务员考试得到，可用作思维链 (CoT) 语料库<br />
+价值对齐数据集：「中文世界的价值观念不同于英语世界的价值观」，作者构建了与普世华人价值观 match 的数据集，也是通过 self-instruct 生成的<br />
+反事实校正数据集：构建了反事实校正多轮聊天数据集（CCMC）。CCMC 数据集包括学生和老师之间的 5 轮角色扮演聊天，以及他们所参考的相应知识。教师根据基本事实知识生成响应，并在每一轮中纠正学生问题或陈述中的事实错误或不一致之处<br />
+代码指令数据集：Leetcode 数据集，包含有代码到文本和文本到代码<br />
+总体来说，这份数据集质量非常高，需要我们好好根据任务进行挑选。</p>
+<h2 id="垂直领域大模型微调实践经验">垂直领域大模型微调实践经验<a class="anchor-link" href="#垂直领域大模型微调实践经验" title="Permanent link">&para;</a></h2>
+<h3 id="模型架构">模型架构<a class="anchor-link" href="#模型架构" title="Permanent link">&para;</a></h3>
+<ol>
+<li>不要指望一个单个垂直领域的LLM就可以满足所有需求，合理的做法可能是实时更新的<strong>知识库+微调的垂直领域LLM</strong></li>
+<li>超大参数模型(至少百亿) 即使被量化其能力依然能保持的较好。</li>
+</ol>
+<h3 id="数据">数据<a class="anchor-link" href="#数据" title="Permanent link">&para;</a></h3>
+<ol>
+<li>在LLM时代，需要牢记<strong>数据质量&gt;数量</strong>这个真理，超大规模的SFT数据会让下游任务LLM减弱或者失去ICL、CoT等能力。</li>
+<li>为防止灾难性遗忘，在算力充足情况下推荐  <strong>使用垂直领域数据和通用语料数据进行训练</strong>，这样模型既可以有垂直领域上的训练学习，也可以保持通用能力（如指令遵循）  。</li>
+<li>大量数据进行二次预训练需要配比各类型其他数据：</li>
+<li>语言模型训练完成后，参数各个区域负责部分已经确定，如果大量增加某类在预训练时没有的知识，会造成参数的大幅度变化，造成整个语言模型能力损失;</li>
+<li>
+<p>进行大规模数据的二次预训练，需要添加5-10倍原始预训练中的数据，并打混后一起训练。</p>
+</li>
+<li>
+<p>训练数据要严格控制噪音</p>
+</li>
+<li>
+<p>预训练数据中如果出现少量连续的噪音数据，比如连续重复单词、非单词序列等，都可能造成特定维度的调整，从而使得模型整体PPL大幅度波动;  </p>
+</li>
+<li>有监督微调指令中如果有大量与原有大语言模型不匹配的指令片段，也可能造成模型调整特定维度，从而使得模型整体性能大幅度下降。</li>
+<li>大模型混合多种能力数据微调时呈现：高资源冲突，低资源增益，所以混合不同数据进行微调需要一定的工程技巧，翻译总结一下就是：  <strong>低资源但高质量，并结合不同领域需求进行配比</strong></li>
+<li>对于静态数据集，在多轮训练中多次迭代可能效果不佳。会导致过拟合，使训练结果恶化。</li>
+<li>对于静态数据集，想要让 LLM 强化成「全能选手」，在所有基线任务中都表现优异是不可能完成的。想要解决这个问题需要多样化的数据源，或者使用 LoRA<br />
+以外的技术。</li>
+<li>多样性：例如在 Self-Instruct 论文中，会使用 ROUGE 指标，过滤掉生成的指令与已有指令重合的指令。</li>
+<li>高质量：使用 ChatGPT 生成数据，自然训练出来的模型就是模仿 ChatGPT 的回复风格。然而，ChatGPT（指 GPT3.5）自身的缺点包括浓浓的机翻味道、文绉绉的、不够活泼可爱，其次中文生成不够流畅。一种思路是使用 PPL 等指标筛选出生成的指令和回复，计算困惑度 Perplexity。Perplexity 低的通常是不流畅的，可以将低于一定阈值的去掉。</li>
+<li>启发式：例如过滤掉问题是中文但回答是英文的，过滤掉生成的指令包含需要外部知识库的情况。</li>
+</ol>
+<h3 id="微调">微调<a class="anchor-link" href="#微调" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>全流程的LLM训练包括：预训练、监督微调、奖励模型、强化学习，<strong>多数情况下监督微调即可满足自身需求。</strong>  </p>
+</li>
+<li>
+<p>对于垂类模型，更应该关注PT的过程，而不是采集千万百万的SFT数据做训练，一般建议是  <strong>大规模预训练+小规模监督微调=超强的LLM模型</strong></p>
+</li>
+<li>
+<p><strong>指令微调阶段不能够进行过多轮次训练</strong> ：</p>
+</li>
+</ol>
+<p>(1) 针对少量数据进行多个epoch的训练，可能会造成语言关键区域变化，从而导致整个模型失效;</p>
+<p>(2) 为了特定任务提升的指令微调，为了保证模型语言能力关键区不被大幅度调整，需要添加通用指令微调数据或者预训练数据。<br />
+4. 通常来说，<strong>使用lora的效果不如full-tuning</strong> （如LoRA results in 4-6% lower performance<br />
+compared to full fine-tuning ）<br />
+5.  7B系列模型请优先采用全参数微调方式  （条件不满足就P-tuning，动的参数越多效果通常会更好），<br />
+<strong>13B及以上参数模型可使用LoRA，QLoRA等方法</strong> 。<br />
+6.  <strong>如果要结合 LoRA，确保它在所有层上应用</strong> ，而不仅仅是 Key 和 Value 矩阵中，这样才能最大限度地提升模型的性能。<br />
+7. 虽然 LLM 训练（或者说在 GPU 上训练出的所有模型）有着不可避免的随机性，但多轮训练的结果仍非常一致。<br />
+8. 如果受 GPU 内存的限制，QLoRA 提供了一种高性价比的折衷方案。它以运行时间增长 39% 的代价，节省了 33% 的内存。<br />
+9.  <strong>在微调 LLM 时，优化器的选择不是影响结果的主要因素</strong> 。无论是 AdamW、具有调度器 scheduler 的 SGD ，还是具有<br />
+scheduler 的 AdamW，对结果的影响都微乎其微。<br />
+10. 虽然 Adam 经常被认为是需要大量内存的优化器，因为它为每个模型参数引入了两个新参数，但这并不会显著影响 LLM<br />
+的峰值内存需求。这是因为大部分内存将被分配用于大型矩阵的乘法，而不是用来保留额外的参数。<br />
+11. 调整 LoRA rank 和选择合适的 α 值至关重要，  可以把 α 值设置成 rank 值的两倍  。<br />
+从 BELLE 的技术报告《A Comparative Study between Full-Parameter and LoRA-based Fine-Tuning on Chinese Instruction Data for Instruction Following Large Language Model》中可以看出，Full-Tuning 效果应该是最好的，但 Full-Tuning 需要机器资源多，训练时间长。其次是 P-TuningV2/Lora/Freezing 的话，貌似是 P-TuningV2 效果最佳，具体可以看这个https://github.com/liucongg/ChatGLM-Finetuning。然而，这些比较并不严谨，例如每个方案都有自己的超参，是否每个方法都做了超参搜索。</p>
+<h3 id="强化学习部分重要吗">强化学习部分重要吗<a class="anchor-link" href="#强化学习部分重要吗" title="Permanent link">&para;</a></h3>
+<p>非常重要。现在发现 ChatGLM-6B 的回复虽然一看过去感觉像模像样，但仔细看会发现胡言乱语的情况很严重，也即幻觉问题。也有人会另辟蹊径，例如 COIG 中的 CCMC 数据集，通过将这些数据集加入到 IFT 训练中，让模型学习纠正不正确回复的能力。还有在 prompt 中加入“请不要生成虚假的、自我捏造的回复”等字眼，目的是让模型在生成更加谨慎。然而，这些都是折中的办法。个人认为减少幻觉问题这一步，还得靠强化学习。希望未来能看到更多构建强化学习数据和开源强化学习数据集、训练的方案。</p>
+<h3 id="垂域-llm-训练经验之谈">垂域 LLM 训练经验之谈<a class="anchor-link" href="#垂域-llm-训练经验之谈" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://mp.weixin.qq.com/s/giJ7vSs1PIv98_EuJpsBXQ</p>
+</blockquote>
+<ol>
+<li>全参微调学东西最快</li>
+<li>lora 要学习垂域知识，得多训几个 epoch 才行，或者对数据集进行过采样</li>
+<li>llama pro 学东西也快，缺点就是会增加参数量</li>
+<li>如果不是特别垂直的场景，优先 RAG 吧</li>
+<li>训垂域模型，要我选，我选 llama pro</li>
+</ol>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/624079704">大模型微调项目 / 数据集调研汇总</a></li>
+<li><a href="https://mp.weixin.qq.com/s/A5a-1zxJQFi4_LOtn5zhfA">垂直领域大模型微调实践经验最全总结</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

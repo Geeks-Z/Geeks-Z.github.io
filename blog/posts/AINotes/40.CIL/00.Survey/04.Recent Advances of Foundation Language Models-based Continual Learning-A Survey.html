@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1 引言</a></li>
+<li><a href="#2-相关工作">2 相关工作</a><ul>
+<li><a href="#21-持续学习">2.1 持续学习</a></li>
+<li><a href="#22-计算机视觉中的持续学习">2.2 计算机视觉中的持续学习</a></li>
+<li><a href="#23-自然语言处理中的持续学习">2.3 自然语言处理中的持续学习</a></li>
+<li><a href="#24-其他领域的持续学习">2.4 其他领域的持续学习</a></li>
+</ul>
+</li>
+<li><a href="#3-设置和学习模式">3 设置和学习模式</a><ul>
+<li><a href="#31-基本公式化">3.1 基本公式化</a></li>
+<li><a href="#32-典型场景">3.2 典型场景</a><ul>
+<li><a href="#321-离线持续学习">3.2.1 离线持续学习</a></li>
+<li><a href="#322-在线持续学习">3.2.2 在线持续学习</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-离线持续学习">4 离线持续学习</a><ul>
+<li><a href="#41-领域增量学习">4.1 领域增量学习</a><ul>
+<li><a href="#411-基于预训练语言模型plms的-dil">4.1.1 基于预训练语言模型（PLMs）的 DIL</a></li>
+</ul>
+</li>
+<li><a href="#412-基于大型语言模型llms的-dil">4.1.2 基于大型语言模型（LLMs）的 DIL</a></li>
+<li><a href="#413-基于视觉---语言模型vlms的-dil">4.1.3 基于视觉 - 语言模型（VLMs）的 DIL</a></li>
+</ul>
+</li>
+<li><a href="#5-在线持续学习">5 在线持续学习</a><ul>
+<li><a href="#51-硬任务边界">5.1 硬任务边界</a></li>
+<li><a href="#511-基于-plms-的-htb">5.1.1 基于 PLMs 的 HTB</a></li>
+<li><a href="#52-模糊任务边界">5.2 模糊任务边界</a></li>
+<li><a href="#521-基于-plms-的-btb">5.2.1 基于 PLMs 的 BTB</a></li>
+<li><a href="#522-基于-vlms-的-btb">5.2.2 基于 VLMs 的 BTB</a></li>
+</ul>
+</li>
+<li><a href="#6-数据集">6 数据集</a><ul>
+<li><a href="#61-离线自然语言处理nlp数据集">6.1 离线自然语言处理（NLP）数据集</a><ul>
+<li><a href="#611-分类数据集">6.1.1 分类数据集</a></li>
+<li><a href="#612-生成数据集">6.1.2 生成数据集</a></li>
+<li><a href="#613-信息抽取数据集">6.1.3 信息抽取数据集</a></li>
+<li><a href="#614-持续预训练数据集">6.1.4 持续预训练数据集</a></li>
+<li><a href="#615-混合任务数据集">6.1.5 混合任务数据集</a></li>
+</ul>
+</li>
+<li><a href="#62-在线nlp数据集">6.2 在线NLP数据集</a><ul>
+<li><a href="#621-分类数据集">6.2.1 分类数据集</a></li>
+<li><a href="#622-生成数据集">6.2.2 生成数据集</a></li>
+<li><a href="#623-信息抽取数据集">6.2.3 信息抽取数据集</a></li>
+<li><a href="#624-其他任务数据集">6.2.4 其他任务数据集</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#7-度量标准">7 度量标准</a><ul>
+<li><a href="#71-整体性能">7.1 整体性能</a></li>
+<li><a href="#72-记忆稳定性">7.2 记忆稳定性</a></li>
+<li><a href="#73-学习可塑性">7.3 学习可塑性</a></li>
+<li><a href="#74-持续预训练的度量标准">7.4 持续预训练的度量标准</a></li>
+<li><a href="#75-在线-cl-特定度量标准">7.5 在线 CL 特定度量标准</a></li>
+</ul>
+</li>
+<li><a href="#8-挑战与未来工作">8 挑战与未来工作</a></li>
+<li><a href="#9-结论">9 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/00.Survey</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>近期，在自然语言处理（NLP）和计算机视觉（CV）领域，基础语言模型（LMs）取得了显著成就。与传統神经网络模型不同，基础LMs通过在大量无监督数据集上进行预训练，获得了丰富的常识知识，并通过大量参数获得了巨大的迁移学习能力。然而，由于灾难性遗忘，它们仍无法模拟类似人类的持续学习能力。因此，开发了各种基于持续学习（CL）的方法来改进LMs，使它们能够在不遗忘以前知识的情况下适应新任务。然而，目前还缺乏现有方法的系统分类和性能比较，这正是我们的综述旨在填补的空白。我们深入进行了全面的回顾、总结和分类，对应用于基础语言模型的基于CL的方法进行了研究，如预训练语言模型（PLMs）、大型语言模型（LLMs）和视觉-语言模型（VLMs）。我们将这些研究分为离线CL和在线CL，包括传统方法、参数高效基础方法、指令调整基础方法和持续预训练方法。离线CL包括领域增量学习、任务增量学习和类增量学习，而在线CL则细分为硬任务边界和模糊任务边界设置。此外，我们概述了CL研究中使用的典型数据集和指标，并提供了对基于LMs的持续学习所面临的挑战和未来工作的详细分析。</p>
+<h2 id="1-引言">1 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>近期在基础语言模型（LMs）方面的进展为自然语言处理（NLP）[136, 226, 232] 和计算机视觉（CV）[188] 设定了新的基准。基础LMs包括三个主要类别：预训练语言模型（PLMs）[136]、大型语言模型（LLMs）[226] 和视觉-语言模型（VLMs）[42]。像BERT [88]、RoBERTa [120] 和 BART [102] 这样的PLMs 专注于基于文本的任务，并且对于通过预训练中的语言遮罩任务来理解和生成语言至关重要。包括GPT-4 [1] 和 LLaMA [173] 在内的LLMs通过扩大模型架构和训练数据的规模，扩展了PLMs的能力，从而增强了它们在更广泛任务范围内的通用性和适应性。以VisualBERT [106]、CLIP [154]、LLaVA [113] 和 DALL-E [156] 为代表的VLMs整合了文本和图像模态，以实现视觉和文本信息之间的复杂交互。这些模型的底层范式是通过在广泛的、通常是未标记的数据集上进行预训练以捕获丰富的语义信息，然后针对特定任务或领域进行微调。这种方法不仅在各种应用中提高了性能，而且显著增强了模型的灵活性和任务适应性。</p>
+<p>然而，这些基础模型在动态环境中，由于一系列任务的顺序，通常表现出局限性，主要是因为它们在训练完成后的固定参数。这些模型通常缺乏在不经过重新训练过程的情况下整合新数据或概念的能力。在一系列任务上训练时，一个重大的挑战是“灾难性遗忘”[92]，即模型在学习新信息时失去了先前获得的知识。这与人类学习过程形成鲜明对比，后者本质上是连续和适应性的。尽管多任务学习（MTL）和迁移学习（TL）在某些应用中取得了成功，但它们在现实世界场景中存在局限性。MTL 需要预先拥有所有任务及其数据，这在推出新服务时提出了挑战，因为模型必须用所有数据重新训练。此外，TL 通常只针对两个任务进行，即源任务和目标任务，这使得它在现实世界的在线平台上，面对多个目标任务时变得不切实际。为了解决这些挑战，模型必须处理并学习不断扩展和多样化的数据集。这需要机制，允许模型适应新的语言现象和趋势，同时不影响对历史数据的准确性和敏感性。</p>
+<p>因此，持续学习（CL）[175, 186]，也称为终身学习[145]或增量学习[230]，在人工智能中是一个关键领域，它旨在开发能够不断更新自身并获取新知识，而不会忘记先前学习的信息，类似于人类学习[34]。这种范式在基础语言模型（LMs）的背景下尤其相关，这些模型面临灾难性遗忘（CF）和跨任务知识转移（KT）等特定问题。灾难性遗忘是一个重大挑战，模型在获得新信息时往往会失去先前获得的知识。为了解决这个问题，语言模型必须在适应新的语言趋势的同时，保持对过去语言数据的强大把握。此外，跨任务知识转移对于增强持续学习过程至关重要。有效的KT不仅加快了新任务的学习曲线（正向转移），而且通过新知识的反馈增强了模型对先前任务的性能（反向转移）。</p>
+<p>近期在持续学习方法论方面的进展极大地增强了基础语言模型（LMs）的适应性和知识保持能力。这些发展对于解决CL中先前观察到的复杂挑战至关重要。研究人员制定了创新策略来减轻这些挑战，从而使LMs在不断整合新知识的同时保持在各种任务中的高性能[30, 99, 134]。在诸如基于方面的语义分析、对话生成、文本分类和视觉问题回答等不同的下游任务中，都有显著的成功记录。上述工作强调了持续学习在显著提高基础LMs性能方面的潜力。</p>
+<p>在持续学习的领域内，已经从传统方法论发生了重大的范式转变，转向整合基础LMs的方法（见图1）。首先，由于在大规模数据集上的广泛预训练，基础LMs在不同任务上展示了增强的泛化和迁移学习能力。该模型具有专门的迁移能力，可以快速适应只有少数样本的下游任务。因此，当促进新技能的获取时，减轻LMs中零样本迁移和历史任务能力下降是至关重要的。其次，由于基础LMs中的参数数量庞大，因此必须使用如提示调整[119]和适配器[140]等参数高效技术来更新参数，而不是进行全面的重新训练。第三，基础LMs具备通过指令学习[39, 144]的能力，从而实现更动态和上下文感知的交互。</p>
+<p>这篇综述系统地将这些策略和技术归类为两个核心领域：离线持续学习和在线持续学习（见图2）。我们首先给出了离线和在线CL设置的详细定义和场景，其中离线CL包括领域增量、任务增量和类增量CL，而在线CL包括硬任务边界和模糊任务边界。这些学习策略进一步细分为基于预训练语言模型（PLMs）、大型语言模型（LLMs）和视觉-语言模型（VLMs）的方法。然后，我们总结了有关传统方法、持续预训练方法、参数高效调整方法和基于指令的方法的相关论文。最后，我们从不同角度静态分析了主要数据集，并回顾了评估模型防止遗忘和知识转移性能的关键指标。</p>
+<p>这篇综述论文的主要贡献可以总结如下：</p>
+<ul>
+<li>我们全面回顾了现有的基于基础LMs的CL方法的文献，这些方法将基础LMs与CL整合起来，在不重新训练模型的情况下学习新知识。这与传统的CL有很大不同，因为基础LMs具有巨大的迁移学习能力、零样本和指令跟随能力。</li>
+<li>我们给出了不同设置的定义，并将这些研究归类为不同的类别，以便更好地理解这个领域的发展。除了像重放、正则化和参数隔离这样的传统方法，我们还总结了有关持续预训练方法、参数高效调整方法和基于指令的方法的工作。</li>
+<li>我们提供了现有数据集的特征，并展示了评估防止遗忘和知识转移性能的主要指标。</li>
+<li>我们讨论了基于基础LMs的CL面临的最具挑战性的问题，并指出了这个领域有希望的未来研究方向。</li>
+</ul>
+<p>本文的组织结构如下。在第2节中，我们回顾了主要相关的持续学习综述。然后，在第3节中，我们介绍了持续学习的基本设置和学习模式，包括CL的定义和场景。此外，在第4节中，我们介绍了关于离线持续学习的相关研究，可以分为领域增量学习、任务增量学习和类增量学习。在第5节中，我们专注于在线持续学习，包括硬任务边界和模糊任务边界设置。第6节和第7节提供了典型数据集和指标。最后，在第8节中分析了挑战和进一步的工作，并在第9节中得出结论。</p>
+<h2 id="2-相关工作">2 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-持续学习">2.1 持续学习<a class="anchor-link" href="#21-持续学习" title="Permanent link">&para;</a></h3>
+<p>早期对持续学习（Continual Learning, CL）的研究提供了广泛的覆盖，如Parisi等人[145]的调查所示。最近，Wang等人[186]进行了一项全面的调查，将CL中的五个关键策略归类为：基于正则化、基于重放、基于优化、基于表示和基于架构的方法。这项调查反映了在该领域内组织和理解多样化方法的努力。值得注意的是，对类增量设置[7, 131, 230]和基于重放的方法[60]的关注日益增加，反映了CL领域内研究兴趣的日益细化。</p>
+<h3 id="22-计算机视觉中的持续学习">2.2 计算机视觉中的持续学习<a class="anchor-link" href="#22-计算机视觉中的持续学习" title="Permanent link">&para;</a></h3>
+<p>在计算机视觉领域，De等人[34]针对持续学习面临的紧迫挑战，特别是在任务增量设置中，任务以清晰的边界顺序到达。他们引入了一个针对持续学习者的稳定性-可塑性权衡框架，并进行了全面实验分析，比较了11种方法在三个基准测试中的有效性。Qu等人[153]提出了对持续学习的全面审查，强调了它在从顺序数据流中积累知识中的关键作用。这项研究调查了一系列方法，包括正则化、知识蒸馏、基于记忆的方法等。这些方法根据它们的特点和在计算机视觉中的应用进行了系统分类。此外，Mai等人[130]专注于在线持续学习在图像分类中的领域，解决灾难性遗忘问题。这项研究评估了不同记忆和数据配置下最先进方法的有效性。Masan等人[131]对应用于图像分类的类增量方法进行了全面的性能评估。实验涵盖了一系列场景，包括大规模数据集和不同的网络架构。Belouadah等人[7]更加关注视觉任务的类增量学习算法。这项研究定义了增量学习算法的基本属性，提供了类增量学习问题的统一形式化，并提供了一个评估框架，用于详细分析。</p>
+<h3 id="23-自然语言处理中的持续学习">2.3 自然语言处理中的持续学习<a class="anchor-link" href="#23-自然语言处理中的持续学习" title="Permanent link">&para;</a></h3>
+<p>Biesialska等人[8]解决了自然语言处理（NLP）中持续学习的挑战，其中传统架构难以在不损害先前获得的知识的情况下适应新任务。研究提出了包括排练、正则化和架构方法在内的广泛回顾，所有这些方法旨在减轻上述挑战。同样，Ke等人[82]提供了关于NLP领域持续学习的专注调查，全面检查了各种持续学习设置、方法和挑战。这项工作深入分析了最先进的方法，并将原始的CL设置扩展为更通用和最新的。此外，它强调了NLP中知识传递的重要性以及任务间类分离带来的挑战。</p>
+<h3 id="24-其他领域的持续学习">2.4 其他领域的持续学习<a class="anchor-link" href="#24-其他领域的持续学习" title="Permanent link">&para;</a></h3>
+<p>最近的调查，如[101, 167, 219]，调查了神经推荐系统和机器人领域的增量学习持续学习（CL）的进步。Zhang等人[219]通过引入增量更新推荐系统（Incremental Update Recommendation Systems, IURS），为缩小学术研究和工业应用之间的差距做出了显著贡献。他们强调了实时更新的必要性，使用流数据，并专注于IURS与传统批量更新推荐系统（Batch Update Recommendation Systems, BURS）相比的独特挑战，并在该领域进行了现有文献和评估方法的彻底审查。Shaheen等人[167]提供了对现实世界背景下CL当代方法的全面概述。他们的分析集中在有效处理大型顺序数据集的学习算法上，同时考虑到计算和内存限制。调查还探讨了将CL应用于自主系统的挑战，比较了在计算效率、内存利用和网络复杂性等指标上的方法。在机器人领域，代理必须使用连续的观察流来适应和与其环境交互。因此，Lesort等人[101]探索了该领域的CL，将CL定义为数据分布和学习目标动态发展的范式。他们强调了在机器人应用中评估CL算法的挑战，并引入了一个新的框架以及度量标准，以有效地呈现和评估CL方法。</p>
+<h2 id="3-设置和学习模式">3 设置和学习模式<a class="anchor-link" href="#3-设置和学习模式" title="Permanent link">&para;</a></h2>
+<h3 id="31-基本公式化">3.1 基本公式化<a class="anchor-link" href="#31-基本公式化" title="Permanent link">&para;</a></h3>
+<p>持续学习是机器学习中的一个高级方法。在此框架内，模型将顺序地在一系列任务 <span class="math-inline">\mathcal{T} = {1, 2, ..., T}</span> 上进行训练，每个任务 <span class="math-inline">T_i</span> 都有其独立的数据集 <span class="math-inline">\mathcal{D}<em>i = {(x_i^{(j)}, y_i^{(j)}) | j=1, ..., |\mathcal{D}_i| }</span>。这里，<span class="math-inline">x_i^{(j)}</span> 表示单个训练样本，<span class="math-inline">y_i^{(j)}</span> 表示任务 <span class="math-inline">T_i</span> 对应的类标签，而 <span class="math-inline">|\mathcal{D}_i|</span> 表示任务 <span class="math-inline">T_i</span> 中的样本总数。然而，任何两个任务 <span class="math-inline">T_i</span> 和 <span class="math-inline">T</em>{i'}</span> 之间的数据分布是不同的（对于所有的 <span class="math-inline">i \neq i'</span>，<span class="math-inline">x_i \neq x_{i'}</span>）。这种差异在管理多个任务之间的数据分布多样性方面提出了基本挑战。这种设置要求模型在学习新知识的同时保留过去的信息。</p>
+<p>持续学习包括两个主要范式：离线和在线持续学习。这些范式定义了数据如何到达以及模型如何随时间更新其知识。</p>
+<ul>
+<li>
+<p>离线持续学习：此设置涉及跨一系列任务的学习，每个任务在处理下一个任务之前完全呈现。对于每个任务 <span class="math-inline">T_i</span>，模型通过多个周期训练整个数据集 <span class="math-inline">\mathcal{D}<em>i</span>。只有在达到任务 <span class="math-inline">T_i</span> 的所需熟练程度后，模型才会进展到任务 <span class="math-inline">T</em>{i+1}</span>。</p>
+</li>
+<li>
+<p>在线持续学习：此设置在动态框架内操作，其中模型从顺序呈现的数据点或小批量数据中学习知识。此外，模型无法访问给定任务的整个数据集。这种设置紧密反映了以连续数据流为特征的真实世界场景，迫使模型实时适应。</p>
+</li>
+</ul>
+<h3 id="32-典型场景">3.2 典型场景<a class="anchor-link" href="#32-典型场景" title="Permanent link">&para;</a></h3>
+<h4 id="321-离线持续学习">3.2.1 离线持续学习<a class="anchor-link" href="#321-离线持续学习" title="Permanent link">&para;</a></h4>
+<p>离线 CL（见图 3）包括三种主要场景，每种场景都有不同的特征：领域增量学习（DIL）、任务增量学习（TIL）和类增量学习（CIL）。</p>
+<ul>
+<li>
+<p><strong>领域增量学习（DIL）</strong>：模型的目标是处理不同的数据分布。具体来说，在 DIL 中，虽然任务 <span class="math-inline">T_i</span> 的数据分布 <span class="math-inline">x_i</span> 与任务 <span class="math-inline">T_{i'}</span> 的数据分布 <span class="math-inline">x_{i'}</span> 不同，它们的任务类型和类标签保持一致。不需要任务 ID。</p>
+</li>
+<li>
+<p><strong>任务增量学习（TIL）</strong>：模型旨在处理一系列具有独特目标的任务。这些任务中的类别可能是也可能不是不相交的。每个任务的边界都很清晰，在训练和测试阶段都提供了任务 ID。</p>
+</li>
+<li>
+<p><strong>类增量学习（CIL）</strong>：模型旨在在保留先前学习类别的知识的同时，不断学习新的类别信息。对于任务 <span class="math-inline">T_i</span> 和 <span class="math-inline">T_{i'}</span>，虽然它们可能共享相同的任务类型（例如分类），但它们的类集 <span class="math-inline">\mathcal{D}<em>i</span> 和 <span class="math-inline">\mathcal{D}</em>{i'}</span> 是不同的。此外，任务 ID 仅在训练期间提供。</p>
+</li>
+</ul>
+<p>总之，领域增量学习专注于适应输入数据分布的变化，同时保持任务和类别的一致性。任务增量学习要求模型能够学习并保留跨连续任务的任务特定知识。另一方面，类增量学习强调将新类别逐步整合到模型的识别能力中，同时不影响先前学习的类别知识。</p>
+<h4 id="322-在线持续学习">3.2.2 在线持续学习<a class="anchor-link" href="#322-在线持续学习" title="Permanent link">&para;</a></h4>
+<p>在线持续学习（见图 4）中，现有研究根据任务到达的模式被归类为两种配置：“硬任务边界”和“模糊任务边界”：</p>
+<ul>
+<li>
+<p><strong>硬任务边界</strong>：任务的到来遵循严格结构化和顺序的过程。先前任务的数据在过渡到下一个任务之前完全处理完毕，确保任务之间没有数据重叠。</p>
+</li>
+<li>
+<p><strong>模糊任务边界</strong>：任务之间的区别不那么清晰，类似于现实世界场景。不同任务的数据是混合的，很难确定一个任务何时结束，另一个任务何时开始。</p>
+</li>
+</ul>
+<p>在这两种设置中，主要挑战在于实现学习新数据的同时保留以前获得的知识，通常称为灾难性遗忘。出现了许多方法，如经验重放 [152, 171]、弹性权重巩固（EWC）[92] 和渐进神经网络 [83 86]，来解决这个问题。每种方法在任务到达配置上都有其独特的优势和劣势。</p>
+<h2 id="4-离线持续学习">4 离线持续学习<a class="anchor-link" href="#4-离线持续学习" title="Permanent link">&para;</a></h2>
+<h3 id="41-领域增量学习">4.1 领域增量学习<a class="anchor-link" href="#41-领域增量学习" title="Permanent link">&para;</a></h3>
+<h4 id="411-基于预训练语言模型plms的-dil">4.1.1 基于预训练语言模型（PLMs）的 DIL<a class="anchor-link" href="#411-基于预训练语言模型plms的-dil" title="Permanent link">&para;</a></h4>
+<p><strong>传统方法</strong>：在预训练语言模型（PLMs）的背景下，持续学习方法经常被使用，包括基于重放、基于正则化和基于参数隔离的算法。Li 等人 [103] 提出了一个以正则化为中心的终身学习框架，称为 RMR DSE，专门为跨多个领域的顺序操作量身定制。与传统策略不同，RMR-DSE 不需要增量式内存分配，而是采用基于正则化的召回优化机制，有选择地保留来自先前任务的重要参数。它还包括一个领域漂移估计算法来解决嵌入空间的偏移问题。Castellucci 等人 [20] 提出了一种基于知识蒸馏的持续学习方法，称为 CL-KD，采用教师 - 学生框架。当学生模型在新语言上训练时，教师模型也将支持语言的知识传递给学生模型。Lee 等人 [100] 引入了一个与领域无关的框架，采用两阶段训练过程，最初使用合成数据学习通用的对话模式，然后使用客户支持中的人机对话。此外，应用了自适应弹性权重巩固算法来调整损失函数，确保在获取新知识和保留先前学习的信息之间保持平衡。</p>
+<p>Gururangan 等人 [57] 开发了一种基于参数隔离的方法，名为 DE MIX 层，由一系列专家组成。这些专家的动态添加或删除可以增强模型适应新领域同时保持在先前建立的领域中的稳健性能。PlugLM[27] 是一种预训练模型，配备了可微分插件内存（DPM），专为领域自适应持续训练设计。这种方法的核心概念是使用可适应的键值内存结构将知识存储与模型参数分离。它使得在 DPM 中显式检索和利用存储的知识成为可能。</p>
+<p><strong>持续预训练方法</strong>：持续领域自适应预训练（DAP-training）[85] 基于两个主要思想：（1）LM 中的一般知识以及从先前领域获得的知识对于缓解灾难性遗忘（CF）和增强跨任务知识转移至关重要。这是通过基于它们的重要性的软掩码单元实现的，（2）模型旨在发展对当前领域和先前领域的互补表示，从而促进知识的整合。持续 DAP 训练的关键创新是直接控制 LM 的软掩码机制。Cossu 等人 [30] 形式化并探讨了跨语言和视觉领域的持续预训练场景的动态。在此框架中，模型在微调各种下游任务之前，会持续在顺序数据流上进行预训练。</p>
+<p><strong>参数高效调整方法</strong>：由于 LMs 的参数庞大，因此使用像适配器 [64, 147] 和 p 调整 [119] 这样的参数高效调整方法进行领域增量 CL[84, 86, 128, 234]。适配器架构采用跳跃连接，以最小化参数数量。这种方法的一个著名例子是 AdapterCL[128]，它采用特别为任务导向的对话系统量身定制的残差适配器。这个框架包含 37 个领域，旨在促进在四个重要方面持续学习：意图识别、状态跟踪、自然语言生成和端到端处理。同样，Ke 等人 [86] 引入了 B-CL 模型，以解决基于方面的持续学习中的关键挑战。B-CL 将持续学习适配器整合到胶囊网络架构中。旨在在微调期间减轻灾难性遗忘，CLASSIC 模型 [84] 通过部署适配器来利用 BERT 的能力（见图 5a）。采用了一种创新的对比持续学习策略，促进跨任务的知识转移，并将先前任务的见解蒸馏到后续任务中。它还有效地消除了测试期间对任务标识符的需求。此外，Continual PostTraining (CPT) [81] 在 RoBERTa 的每个 Transformer 层中引入了两个持续学习插件模块，称为 CL 插件。</p>
+<p><strong>指令调整基础方法</strong>：指令调整基础方法涉及将给定任务转换为自然语言指令。Qin 等人 [152] 提出了 ELLE，这是一种新方法，旨在有效地将不断扩展的流数据整合到预训练语言模型（PLMs）中。它由两个基本组件组成：（1）功能保持模型扩展，通过改变现有 PLM 的宽度和深度来提高知识获取效率，（2）预训练领域提示，通过有效隔离预训练阶段获得的多样化知识，显著增强对下游任务的适应性。</p>
+<h3 id="412-基于大型语言模型llms的-dil">4.1.2 基于大型语言模型（LLMs）的 DIL<a class="anchor-link" href="#412-基于大型语言模型llms的-dil" title="Permanent link">&para;</a></h3>
+<p><strong>传统方法</strong>：在许多实际情况中，由于资源限制和数据隐私问题，重新训练语言模型（LMs）面临挑战。Zhang 等人 [218] 引入了一种名为 Continual Proximal Policy Optimization (CPPO) 的方法来解决这个问题。CPPO 将样本加权整合到 Proximal Policy Optimization (PPO) 算法中，有效平衡策略学习和知识保留。Zhang 等人 [217] 提出了一种名为 Continual Optimal Policy Regularization (COPR) 的方法，它计算最优策略分布而不需要划分函数，并使用先前的最优策略来规范当前策略。Sun 等人 [171] 引入了 LAMOL，它在新任务训练时生成来自先前任务的伪样本。它有效地减少了知识损失，而不需要额外的内存或计算资源。在这个框架的基础上，Wang 等人 [183] 开发了 RVAE_LAMOL，它集成了一个残差变分自编码器（RVAE）将输入数据编码到统一的语义空间，从而增强任务表示。该模型还包括一个身份任务，以增强模型对任务识别的辨别能力。为了提高训练效率，设计了交替滞后训练（ALT），将训练过程分为多个阶段。</p>
+<h3 id="413-基于视觉---语言模型vlms的-dil">4.1.3 基于视觉 - 语言模型（VLMs）的 DIL<a class="anchor-link" href="#413-基于视觉---语言模型vlms的-dil" title="Permanent link">&para;</a></h3>
+<p>视觉 - 语言模型（VLMs）在领域增量学习环境中展现了其优越性。Yi 等人 [206] 将 VLMs 与持续学习的方法结合起来，开发了一种通用的医疗 AI。此外，他们的研究强调了数据高效适应算法的重要性，这些算法在过渡到新领域或任务时，最小化了对广泛标记的需求。此外，还利用提示文本来掌握嵌入在 VLMs 中的预训练知识。为了使用预训练的 VLMs 独立学习跨不同领域的提示，设计了 S-Prompt[191]。该方法包括获取图像提示的技术，并引入了一种创新的语言 - 图像提示获取方法。提示学习是独立进行的，在训练期间使用统一的交叉熵损失函数。在推理过程中，采用 K-NN（k- 最近邻）技术来识别领域。</p>
+<h2 id="5-在线持续学习">5 在线持续学习<a class="anchor-link" href="#5-在线持续学习" title="Permanent link">&para;</a></h2>
+<h3 id="51-硬任务边界">5.1 硬任务边界<a class="anchor-link" href="#51-硬任务边界" title="Permanent link">&para;</a></h3>
+<h3 id="511-基于-plms-的-htb">5.1.1 基于 PLMs 的 HTB<a class="anchor-link" href="#511-基于-plms-的-htb" title="Permanent link">&para;</a></h3>
+<p>MBPA++[35]、Meta-MBPA++[194]、OML-ER[63]、TPEM[47] 和 CID[115] 等方法都是在硬任务边界（Hard Task Boundary, HTB）设置下为持续学习设计的。这些方法考虑了任务以结构化和顺序的方式到达的情况，其中先前任务的数据在过渡到下一个任务之前被完全处理，确保任务之间没有数据重叠。</p>
+<h3 id="52-模糊任务边界">5.2 模糊任务边界<a class="anchor-link" href="#52-模糊任务边界" title="Permanent link">&para;</a></h3>
+<h3 id="521-基于-plms-的-btb">5.2.1 基于 PLMs 的 BTB<a class="anchor-link" href="#521-基于-plms-的-btb" title="Permanent link">&para;</a></h3>
+<p>MBPA++[35]、Meta-MBPA++[194]、OML-ER[63]、TPEM[47] 和 CID[115] 等方法也能够适应模糊任务边界（Blurry Task Boundary, BTB）的环境。在这种设置中，任务的界限不那么清晰，类似于现实世界的场景，不同任务的数据是混合在一起的，很难确定一个任务何时结束，另一个任务何时开始。</p>
+<h3 id="522-基于-vlms-的-btb">5.2.2 基于 VLMs 的 BTB<a class="anchor-link" href="#522-基于-vlms-的-btb" title="Permanent link">&para;</a></h3>
+<p>CBA[187]、MVP[139] 和 DKR[32] 等方法是基于视觉 - 语言模型（VLMs）的，它们设计用来处理在线持续学习中的模糊任务边界问题。这些方法通过不同的机制来处理任务之间的知识转移和灾难性遗忘问题，以适应不断变化的数据流。</p>
+<h2 id="6-数据集">6 数据集<a class="anchor-link" href="#6-数据集" title="Permanent link">&para;</a></h2>
+<h3 id="61-离线自然语言处理nlp数据集">6.1 离线自然语言处理（NLP）数据集<a class="anchor-link" href="#61-离线自然语言处理nlp数据集" title="Permanent link">&para;</a></h3>
+<h4 id="611-分类数据集">6.1.1 分类数据集<a class="anchor-link" href="#611-分类数据集" title="Permanent link">&para;</a></h4>
+<p><strong>文本分类</strong>：持续学习中最常见的任务是文本分类。基础文本分类基准包括 [221] 中介绍的五个文本分类数据集，包括 AG 新闻、亚马逊评论、Yelp 评论、DBpedia 和 Yahoo 答案 [171]。特别是，AG 新闻数据集有 4 个新闻分类类别；亚马逊和 Yelp 数据集有 5 个情感分析类别；DBpedia 数据集有 14 个类别用于 Wikipedia 文章分类；Yahoo 数据集有 10 个类别用于问答分类。文本分类基准包括每个任务 115,000 个训练样本和 7,600 个测试样本，从训练集中为每个类别保留 500 个样本用于验证。基于此，Razdaibiedina 等人 [158] 开发了一个新的持续学习（CL）基准。这个基准不仅使用了基础文本分类基准，还整合了来自 GLUE 基准 [181]、SuperGLUE 基准 [180] 和 IMDB 数据集 [127] 的额外数据集。具体来说，包括的 GLUE 基准数据集有 MNLI、QQP、RTE 和 SST2，专注于自然语言推理、释义检测和情感分析等任务。同样，SuperGLUE 数据集—WiC、CB、COPA、MultiRC 和 BoolQ—包括从词义消歧到问答的任务范围。</p>
+<p>DE&amp;E[197] 使用了三个具有不同特点的常见文本分类数据集—新闻组、BBC 新闻和消费者金融投诉。这些数据集可以用来评估模型在不同难度级别任务上的表现。[193] 中介绍的数据集进一步根据任务之间的领域相关性被分为两组：远领域和近领域。远领域组包括两个文本分类任务，这些是 [221] 中的基础基准，分为主题分类（AG 新闻、Yahoo 答案、DBpedia）和情感分类（Yelp、亚马逊评论）。相比之下，近领域组使用 Web of Science (WOS) [96] 和 20 个新闻组 [97]，根据它们之间的高任务相关性进行了重新组织。WOS 数据集包括七个父类别，每个类别有五个密切相关的子类别，而 20 个新闻组数据集包含六个新闻主题，被重新组织成四个任务，以最大化任务之间的相关性。</p>
+<p><strong>意图分类</strong>：一些研究专注于意图分类任务，其中类别在不同领域或场景中差异很大。在意图分类和检测领域，有几个数据集被特别设计来通过解决不同的挑战并为模型训练和评估提供多样化的环境来推进该领域。在 PAGeR[177] 中介绍的数据集旨在通过结合三个公共意图分类数据集（CLINC150[98]、HWU64[118]、BANKING77[19]）、一个文本分类数据集（Stackoverflow S20[203]）和两个公共多领域对话意图检测数据集（SGD[157]、MWOZ[12]）来解决终身意图检测问题。此外，FewRel[58] 也被纳入其中，以解决终身关系提取问题。这种整合旨在通过包括广泛的领域和查询分布，模拟现实世界的应用，从而促进开发更强大、更通用的意图检测系统。</p>
+<p>与此相反，PLE[105] 中编译的数据集整合了九个广受好评的意图检测数据集，包括 CLINC150[98] 和 HWU64[118] 等，以固定随机顺序排列，形成标准化基准。这个数据集强调了在不同意图检测模型的性能评估中保持一致性和可比性的重要性，为评估和增强各种方法提供了平台。MeLL[182] 中描述的数据集专门针对两个不同的上下文进行意图检测：任务导向对话（TaskDialog EUIC）和现实世界的电子商务互动（Hotline-EUIC）。TaskDialog-EUIC 将 Snips[31]、TOP 语义解析 [56] 和 Facebook 的多语言任务导向数据集 [162] 整合到 90 个任务中，这些任务的标签集有重叠，总共包含超过一万个样本。Hotline-EUIC 源自电子商务对话系统 [104]，热线音频通过高精度的工业自动语音识别（ASR）系统转录为文本。</p>
+<p><strong>细粒度情感分析</strong>：Ke 等人 [86] 为基于方面的持续学习情感分类（ABSC）开发了一个任务增量学习数据集。这个数据集汇集了来自四个不同来源的评论，从而增强了其多样性和跨多个领域的适用性。这些来源包括 Hu 等人 [67] 的 L5Domains 数据集，该数据集包含有关五种不同产品的消费者评论；Liu[114] 的 Liu3Domains 数据集，包括与三种产品相关的评论；Ding 等人 [38] 的 Ding9Domains 数据集，包括对九种不同产品的评论；以及专注于笔记本电脑和餐厅评论的 SemEval14 数据集。</p>
+<h4 id="612-生成数据集">6.1.2 生成数据集<a class="anchor-link" href="#612-生成数据集" title="Permanent link">&para;</a></h4>
+<p>在快速发展的机器学习领域，多样化的数据集作为探索语言和代码生成各个维度的关键基准。这些数据集既解决通用挑战，也解决特定任务的挑战，使模型的综合评估成为可能。特别是，Continual-T0[164]中强调的数据集专注于英语语言生成任务，包括文本简化和同理心对话生成等[9, 17]。该数据集的设计保持了大小的一致性，通过确保训练数据量的一致性，便于跨不同任务的性能进行有效的比较分析。在随后的研究中，Luo等人[125]使用Continual T0数据集对Bloomz[161]进行了灾难性遗忘的分析。</p>
+<p>LAMOL[171]中介绍的数据集结合了DecaNLP[133]和基础文本分类基准[221]的元素。该数据集包括五个不同的NLP任务，这些任务最初来源于DecaNLP：问答、语义解析、情感分析、语义角色标注和目标导向对话。对于该数据集，所有任务，无论是来自DecaNLP还是基础文本分类基准，都被重新构建为统一格式，概念化在一个问答任务框架下。此外，RVAE_LAMOL[183]中设计的数据集采用了DecaNLP中的三个任务：英语Wizard of Oz (WOZ)用于目标导向对话，QA-SRL用于SQuAD风格的语义角色标注，以及SST，这是斯坦福情感树库的二元版本，将情感分类为正面或负面。这些任务被特别处理为序列生成任务。</p>
+<p>COPR[217]中介绍的数据集代表了在现有人类偏好基准的背景下应用任务增量学习（TIL）和领域增量学习（DIL）的先驱努力。具体来说，这个数据集中的TIL框架要求模型顺序地从三个不同的任务中获取知识。这些包括使用HH-RLHF数据集[4]的问答任务，基于Reddit TL、DR数据集的摘要任务，该数据集具有人类反馈[179]，以及使用IMDB数据集[127]的正面电影评论生成任务。同时，DIL框架要求模型适应SHP数据集的三个不同部分，如Ethayarajh等人[44]所描述。</p>
+<p>Adaptive Compositional Modules[223]中介绍的数据集探索了序列生成，并根据它们的特征将任务分类为“相似”和“不同”的组。被归类为相似的任务，包括E2ENLG[142]和来自RNNLG[196]的四个领域（餐厅、酒店、电视、笔记本电脑），展示了共享的模式，并在四个序列顺序上进行了测试，总共有五个任务。相比之下，不同的任务，如WikiSQL（SQL查询生成）[229]、CNN/DailyMail（新闻文章摘要）[165]和MultiWOZ（语义状态序列生成）[12]，与之前遇到的有显著的分布变化。Yadav等人[204]探索的CODETASKCL数据集包括多种以代码为中心的任务，包括代码生成[70]、摘要[69]、翻译[123]和细化[174]，涵盖各种编程语言。这个数据集显著增强了技术领域内语言处理应用的广度。</p>
+<h4 id="613-信息抽取数据集">6.1.3 信息抽取数据集<a class="anchor-link" href="#613-信息抽取数据集" title="Permanent link">&para;</a></h4>
+<p>在自然语言处理（NLP）领域，各种数据集被定制用于特定任务的持续学习范式。ExtendNER[138]中介绍的数据集是持续学习命名实体识别（NER）的一个例子。该数据集结合了CoNLL-03英语NER[160]和OntoNotes[65]，涵盖了广泛的实体类型和来源。这个混合数据集旨在挑战NER系统在不同情境下的适应性和泛化能力。</p>
+<p>与NER任务中静态文本不同，Schema-Guided Dialog (SGD)[157]数据集在C-PT[234]中使用，服务于对话状态跟踪方面的信息抽取，这涉及到在对话过程中保持上下文。SGD数据集具有44项服务，涵盖19个领域，每个领域被视为一个单独的任务，旨在评估模型在对话过程中管理和提取信息的能力。最后，lifelong SimpleQuestions和lifelong FewRel数据集，由[184]设计，用于关系提取任务。它将SimpleQuestions[11]和FewRel[58]的元素合并，形成一个持续学习的基准，面对在少数镜头情境下关系检测的挑战。</p>
+<h4 id="614-持续预训练数据集">6.1.4 持续预训练数据集<a class="anchor-link" href="#614-持续预训练数据集" title="Permanent link">&para;</a></h4>
+<p>在大型语言模型（LMs）的持续预训练领域，开发和利用专门的基准测试在评估和增强持续学习系统的效能方面发挥着关键作用。CPT[81]中介绍的数据集主要侧重于在一系列特定领域的未标记数据集上对LMs进行持续的后训练。它通过使用Yelp餐厅评论[202]、AI和ACL论文[121]以及AGNews文章[221]等多样化的语料库，提供了一个严格的测试环境。其主要目标是衡量LM在这些领域中增量整合特定领域知识的能力，而不会忘记先前学习的信息，从而提高其在这些领域的少数镜头学习能力。与CPT[81]中使用的评估领域特定适应性和增量学习的数据集不同，CKL基准测试[73]被精心设计来衡量LM保留时不变知识、更新过时信息和获取新知识的能力。它包括INVARIANTLAMA、UPDATEDLAMA和NEWLAMA等子集，旨在探索LM在其学习过程中可能遇到的特定类型知识。</p>
+<p>与上述两个数据集评估更受控的知识整合和保留不同，ELLE[152]中介绍的数据集专注于持续学习背景下从多个领域持续增长的数据流的动态场景。这个数据集反映了现实世界中语言模型（LM）必须不断适应来自多个领域的新数据流的挑战，包括BOOKCORPUS (WB) [235]、NEWS ARTICLES (NS) [215]、AMAZON REVIEWS (REV) [62]、BIOMEDICAL PAPERS (BIO) [121]和COMPUTER SCIENCE PAPERS (CS) [121]。该基准测试评估了LM随时间从这些不同来源有效整合新信息的能力，强调了LM必须响应持续的数据增长和数据分布变化的必要性。Jin等人[78]构建了数据流来代表实践中观察到的两种普遍类型的领域转移。第一种是领域增量论文流，模拟学术论文中研究领域的顺序演变，涵盖生物医学和计算机科学等不同学科。第二种是按时间顺序排列的推文流，模拟随时间推移的推文的时间进展。</p>
+<h4 id="615-混合任务数据集">6.1.5 混合任务数据集<a class="anchor-link" href="#615-混合任务数据集" title="Permanent link">&para;</a></h4>
+<p>越来越多的数据集采用混合任务方法，整合多种学习范式和任务类型，旨在测试和增强模型的适应性。AdapterCL[128]中介绍的数据集就是一个显著的例子，它为任务导向的对话系统量身定制。这个数据集整合了四个任务导向的数据集：TaskMaster 2019 (TM19) [13]、TaskMaster 2020 (TM20) [13]、Schema Guided Dialogue (SGD) [157]和MultiWoZ [12]。这些数据集已经预处理，形成了一个课程，涵盖了37个领域，结构化为四种持续学习设置：意图分类、对话状态跟踪（DST）、自然语言生成（NLG）和端到端（E2E）建模。</p>
+<p>Continual Instruction Tuning Benchmark (CITB) [225]通过专注于基于指令的NLP任务，扩展了持续学习的概念。它建立在全面的SuperNI [192]数据集的基础上，包括超过1600个任务，涵盖多种NLP类别。CITB通过制定两个不同的流—InstrDialog和InstrDialog++—来检验模型如何在持续学习环境下整合和保留新的对话导向和多样化的NLP任务。这个基准测试套件不仅测试任务保留和适应性，还探索了如何为持续学习框架优化指令调整。ConTinTin[208]是对NATURAL-INSTRUCTIONS数据集的改编，专门重新构建以促进持续学习框架。这种改编涉及将原始的众包指令分解为更小的、不同的子任务，以创建一个新的数据集。此外，新数据集还采用了一种新的实验设计，通过随机选择任务来创建多样化的序列，使模型能够在没有预先接触的情况下评估其适应新指令的能力。</p>
+<p>Conure[214]中使用的数据集包括Tencent TL (TTL) [213]和Movielens (ML)。TTL数据集旨在解决三个项目推荐任务和三个用户画像任务，而ML数据集专门关注三个项目推荐任务。这两个数据集都经过了预处理，以促进持续学习框架，模拟模型必须适应不断演变的数据流的环境。此外，Kim等人[91]介绍了专有的NAVER购物数据集，该数据集在前面提到的数据集的基础上构建。NAVER购物数据集包括六个任务：两个用于搜索查询预测，两个用于购买项目类别预测，以及两个用于用户画像，所有这些任务都旨在满足现实世界的行业需求。</p>
+<p>最后，Wang等人[190]介绍的TRACE数据集专门设计用来填补大型语言模型（LLMs）在持续学习框架内评估的现有差距，涵盖了包括代码完成和数学推理在内的一系列复杂和专业任务。与其他数据集不同，TRACE针对的是特定领域的任务，这些任务是多语言的和技术性的。这种多样性提出了跨越专业和广泛维度的独特挑战。此外，TRACE严格评估了模型在需要不同知识基础和认知技能的任务上保持性能的能力。这种评估强调了在持续学习条件下训练的LLMs在动态现实世界应用中的适应性潜力。</p>
+<h3 id="62-在线nlp数据集">6.2 在线NLP数据集<a class="anchor-link" href="#62-在线nlp数据集" title="Permanent link">&para;</a></h3>
+<h4 id="621-分类数据集">6.2.1 分类数据集<a class="anchor-link" href="#621-分类数据集" title="Permanent link">&para;</a></h4>
+<p>Zhang等人[221]介绍的基础文本分类基准，传统上应用于离线持续学习环境。最近的进步已经将这个基准适应于在线持续学习，尤其是在MBPA++[35]和OML-ER[63]等研究中。</p>
+<h4 id="622-生成数据集">6.2.2 生成数据集<a class="anchor-link" href="#622-生成数据集" title="Permanent link">&para;</a></h4>
+<p>MBPA++[35]中使用的数据集包括三个不同的问答集合：SQuAD 1.1[155]、TriviaQA[79]和QuAC[28]。SQuAD 1.1是基于Wikipedia文章的阅读理解数据集，旨在评估从结构化文本中派生答案的能力。TriviaQA由问答爱好者开发，包含由网络和Wikipedia来源的证据支持的问答对，测试模型处理多样化信息来源的能力。QuAC采用对话式格式，其中一个学生询问Wikipedia文章中的信息，老师使用文章中的文本直接回应，挑战模型的交互式回应生成。</p>
+<h4 id="623-信息抽取数据集">6.2.3 信息抽取数据集<a class="anchor-link" href="#623-信息抽取数据集" title="Permanent link">&para;</a></h4>
+<p>OML-ER[63]中使用的终身关系提取基准，由Wang等人[184]基于FewRel构建。与Wang等人最初的应用不同，OML-ER中的基准适应于在线持续学习场景。</p>
+<h4 id="624-其他任务数据集">6.2.4 其他任务数据集<a class="anchor-link" href="#624-其他任务数据集" title="Permanent link">&para;</a></h4>
+<p>Hu等人[66]编译了Firehose数据集，包含2013年1月至2019年9月期间超过920,000用户的1.1亿条推文。这个数据集被分割成FIREHOSE 10M和FIREHOSE 100M。TemporalWiki[72]通过使用Wikipedia和Wikidata的连续快照来训练和评估LMs，解决了时间错位问题。这种方法有助于评估LM在保留先前获得的知识的同时，随时间整合新信息的能力。</p>
+<h2 id="7-度量标准">7 度量标准<a class="anchor-link" href="#7-度量标准" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们回顾了用于评估持续学习（Continual Learning, CL）的主要度量标准。这些度量标准可以分为三类：(1) 整体性能，它评估算法在所有任务上的有效性；(2) 记忆稳定性，它衡量算法保留先前获得知识的程度；(3) 学习可塑性，它评估算法获取新技能或知识的能力。这些度量标准为算法在持续学习环境中的不同方面的表现提供了见解。</p>
+<p>首先，我们建立在学习和评估模型阶段使用的标志（见图 9）。一旦模型完成了学习任务 <span class="math-inline">\mathcal{T}<em>i</span>，它将在包含所有 <span class="math-inline">\mathcal{T}</span> 任务的测试集上评估其性能，其中 <span class="math-inline">N</span> 是集合 <span class="math-inline">\mathcal{T}</span> 中任务的总数。这种评估由矩阵 <span class="math-inline">R \in \mathbb{R}^{N \times N}</span> 表示，其中每个元素 <span class="math-inline">R</em>{i,j}</span> 表示在训练任务 <span class="math-inline">\mathcal{T}_i</span> 后，模型在任务 <span class="math-inline">\mathcal{T}_j</span> 上的测试分类准确率。</p>
+<h3 id="71-整体性能">7.1 整体性能<a class="anchor-link" href="#71-整体性能" title="Permanent link">&para;</a></h3>
+<p>"Last" [122, 228] 度量标准评估了在完成所有任务后，持续学习方法的整体性能。具体来说，它计算性能矩阵 <span class="math-inline">R</span> 的最后一行的平均分数。<br />
+<div class="math-display"><br />
+    \text{Last} = \frac{1}{N} \sum_{i=1}^{N} R_{N,i}<br />
+</div><br />
+此外，Zheng 等人 [228] 设计了 "Avg" 分数度量标准，它计算了所有数据集和时间点的平均准确率。<br />
+<div class="math-display"><br />
+    \text{Avg} = \frac{1}{N} \sum_{i=1}^{N} \left( \frac{1}{N} \sum_{j=1}^{N} R_{i,j} \right)<br />
+</div><br />
+在 Rebuffi 等人 [159] 和 Douillard 等人 [40] 的开创性工作中，引入了平均增量准确率（Average Incremental Accuracy, AIA）的概念。这个度量标准专门设计用来量化不同任务的历史性能。它通过考虑矩阵 <span class="math-inline">R</span> 的左下角部分，计算每个任务的平均性能，有效地捕捉了系统在新任务学习中的演变能力。<br />
+<div class="math-display"><br />
+    \text{AIA} = \frac{1}{N} \sum_{i=1}^{N} \left( \frac{1}{i} \sum_{j=1}^{i} R_{i,j} \right)<br />
+</div><br />
+"Transfer" 度量标准通过计算矩阵 <span class="math-inline">R</span> 右上角三角形区域中任务的性能平均值来推导。这种方法通过对每个数据集进行平均加权，评估了模型在不同任务中保持零样本迁移能力的情况。<br />
+<div class="math-display"><br />
+    \text{Transfer} = \frac{1}{N-1} \sum_{i=2}^{N} \left( \frac{1}{N-1} \sum_{j=1}^{N-1} R_{i,j} \right)<br />
+</div><br />
+此外，Chaudhry 等人 [22] 设计了学习曲线面积（Learning Curve Area, LCA）度量标准，它量化了模型的学习速度。Qin 等人 [152] 提出了两个度量标准，旨在评估预训练语言模型（PLMs）在已学习领域内的表现：平均困惑度（Average Perplexity）和平均增加困惑度（Average Increased Perplexity）。</p>
+<h3 id="72-记忆稳定性">7.2 记忆稳定性<a class="anchor-link" href="#72-记忆稳定性" title="Permanent link">&para;</a></h3>
+<p>记忆稳定性通常通过后向转移（Backward Transfer, BWT）[122] 和遗忘度量（Forgetting Measure, FM）[21] 来评估。</p>
+<p>后向转移（BWT）是文献中广泛记录的关键概念，特别是在 Lopez-Paz 等人 [122] 和 Wu 等人 [199] 的研究中。BWT 衡量了在新任务上训练后，先前掌握任务的性能下降程度。这种性能下降现象通常被称为“遗忘”。<br />
+<div class="math-display"><br />
+    \text{BWT} = \frac{1}{N-1} \sum_{i=1}^{N-1} (R_{i,i} - R_{i+1,i})<br />
+</div><br />
+此外，Chaudhry 等人 [21] 引入了遗忘度量（FM），这是一个旨在量化模型对特定任务遗忘程度的度量标准。较低的 FM 表示更好的保留先前任务。</p>
+<p>Davari 等人 [33] 提出了一种名为线性探针（Linear Probes, LP）的方法来评估表示遗忘。这种方法通过在基础网络的冻结激活上训练最优线性分类器来衡量学习表示的有效性。通过评估引入新任务前后的语言处理（LP）性能变化来量化表示遗忘。</p>
+<p>Kemker 等人 [87] 引入了三个度量标准，其中 <span class="math-inline">\Omega_{\text{base}}</span> 评估初始学习的记忆，<span class="math-inline">\Omega_{\text{new}}</span> 衡量新任务的回忆，<span class="math-inline">\Omega_{\text{all}}</span> 评估在保持旧知识和获取新信息方面的整体能力。此外，研究人员 [95] 设计了一种新度量标准，称为知识损失比（Knowledge Loss Ratio, KLR），使用信息论原理量化知识退化。</p>
+<h3 id="73-学习可塑性">7.3 学习可塑性<a class="anchor-link" href="#73-学习可塑性" title="Permanent link">&para;</a></h3>
+<p>通过两个关键度量标准可以有效地评估学习可塑性：前向转移（Forward Transfer, FWT）[122] 和固执度量（Intransigence Measure, IM）[21]。</p>
+<p>前向转移（FWT）[122] 评估了在先前任务上训练后，对后续任务性能的有益影响。<br />
+<div class="math-display"><br />
+    \text{FWT} = \frac{1}{N-1} \sum_{i=2}^{N} (R_{i-1,i} - R_{0,i})<br />
+</div><br />
+其中 <span class="math-inline">R_{0,i}</span> 表示独立于任务 <span class="math-inline">i</span> 训练时的性能度量。FWT 的较高值表明模型性能优越。重要的是要注意，对于初始任务讨论后向转移是不适用的，因为前面没有任务可以影响其性能。</p>
+<p>固执度量（IM），由 Chaudhry 等人 [21] 定义，量化了模型在新任务上学习的能力。这个度量通过比较任务在与其他任务联合训练时的性能差异与在持续学习环境中训练时的性能差异来计算。</p>
+<p>此外，Koh 等人 [95] 引入了新度量标准，称为知识获取比（Knowledge Gain Ratio, KGR），通过计算知识增量来量化获取新知识的能力。</p>
+<h3 id="74-持续预训练的度量标准">7.4 持续预训练的度量标准<a class="anchor-link" href="#74-持续预训练的度量标准" title="Permanent link">&para;</a></h3>
+<p>CKL[73] 引入了一种新的度量标准，称为 FUAR（FORGOTTEN / (UPDATED + ACQUIRED) RATIO），用于量化每种 CKL 方法的效率。它计算模型为了学习或更新一个新知识实例而忘记的时间不变知识实例的数量。当 FUAR 等于 1.0 时，它表示一个平衡状态，平均忘记一个时间不变知识实例以获得一个新的或更新的知识实例。</p>
+<h3 id="75-在线-cl-特定度量标准">7.5 在线 CL 特定度量标准<a class="anchor-link" href="#75-在线-cl-特定度量标准" title="Permanent link">&para;</a></h3>
+<p>近期未来准确率（Near-future accuracy, NFA）[2] 被引入作为在线持续学习（Online Continual Learning, OCL）问题的新型评估度量标准。与传统评估方法不同，这些方法评估模型在紧随其后的样本上的表现，NFA 评估模型在稍远一些的未来样本上的表现，使用最小的偏移 <span class="math-inline">\alpha</span>。这种操作可以减少标签相关性效应，这可能对模型适应性评估的准确性产生不利影响。选择最小的 <span class="math-inline">\alpha</span> 以确保测试样本与最近观察到的训练数据的分布紧密对齐。</p>
+<p>Yogatama 等人 [209] 提出了一种新颖的在线代码长度（online codelength），受到 prequential encoding[10] 的启发，用于量化现有模型适应新任务的速度。</p>
+<h2 id="8-挑战与未来工作">8 挑战与未来工作<a class="anchor-link" href="#8-挑战与未来工作" title="Permanent link">&para;</a></h2>
+<p><strong>自主持续学习</strong>。大多数现有的持续学习研究假设了在相对封闭环境中具有已知分布的静态数据集。此外，这些研究主要关注具有清晰标签的简单任务（例如文本分类、情感分析和意图分类）。这些假设在现实世界应用中并不成立，现实世界中环境不断演变，引入新刺激。一个关键挑战是开发能够在复杂、嘈杂的环境中有效运作的持续学习模型，这些环境中清晰的标签并不总是可用的，任务领域经常变化。Liu等人[112]最近提出了SOLA框架来解决这些限制，通过促进AI系统的自主适应。尽管取得了进展，但在使这些系统在没有持续人工监督的情况下独立调整到新的动态环境中，仍然存在重大挑战。未来的研究应该专注于开发能够在数据分布发生变化时自主检测和适应的算法，从而提高AI在动态现实世界场景中的适用性。</p>
+<p><strong>从对话中学习知识</strong>。传统的AI系统通常在静态数据集上训练，这与通过互动动态更新知识的人类对话学习形成鲜明对比[111]。AI面临的挑战在于从静态数据学习过渡到更动态的、对话性的参与。这个领域的未来方向可能涉及开发模仿人类对话学习过程的模型，这些模型能够在持续的互动中进行上下文适应、新概念推断和动态知识应用。</p>
+<p><strong>多模态持续学习</strong>。持续学习研究主要集中在如情感分析和文本分类等自然语言处理任务上。最近的研究开始探索基本的多模态任务，例如文本到图像检索、文本图像分类和视觉问题回答。整合不同类型的数据——文本、视觉和听觉——提出了巨大的挑战。未来的研究应该扩展到更复杂的多模态数据集，并努力设计有效综合这些不同模态的方法，从而增强模型在不同感官输入中持续学习的能力。</p>
+<p><strong>持续学习中的隐私保护</strong>。在持续学习系统中进行隐私保护是一个重大挑战，特别是这些系统旨在根据传入的数据流不断更新和完善它们的模型。与传统的静态机器学习模型不同，持续学习系统经常在不同的上下文和时间段访问和处理敏感数据，引起了对数据保密性和用户隐私的重大关注。必须将有效的隐私保护机制整合到这些系统的架构中，以确保它们不会无意中暴露或滥用个人数据。差分隐私[43]、联邦学习[216]和安全多方计算[49]等技术提供了有希望的解决方案，允许模型在不需要直接访问实际数据的情况下从分散的数据源中学习。未来的持续学习研究不仅应该专注于提高学习效率和适应性，还应该优先开发能够在整个数据处理和模型更新阶段保护用户隐私的强大框架。</p>
+<p><strong>鲁棒持续学习</strong>。现有的研究主要关注设计持续学习模型来改善各种度量标准的遗忘和迁移性能，而对持续学习系统的鲁棒性研究不足。这在安全性和可靠性至关重要的应用中尤其关键。主要挑战包括评估这些系统对对抗性攻击的鲁棒性，或在面临急剧变化的环境时。未来的研究可以专注于为持续学习开发鲁棒性评估度量标准，并设计系统以在环境变化中保持性能可靠性。</p>
+<p><strong>大规模和高质量的数据集和基准</strong>。如第6节所讨论的，大多数数据集是通过合并现有数据集构建的。这通常导致数据集缺乏多样性和现实世界的复杂性，这阻碍了鲁棒和适应性强的持续学习模型的发展。创建大规模、高质量的数据集，准确反映现实世界的复杂性，是一个关键挑战。展望未来，开发这样的数据集和基准将是评估持续学习算法的有效性以及推动这些算法在实际设置中所能取得的成就的关键。</p>
+<h2 id="9-结论">9 结论<a class="anchor-link" href="#9-结论" title="Permanent link">&para;</a></h2>
+<p>本综述深入探讨了为预训练语言模型（PLMs）、大型语言模型（LLMs）和视觉-语言模型（VLMs）量身定制的持续学习方法。通过将CL的动态适应性与LMs的强大基础能力整合起来，这个领域有望显著推进人工智能的发展。我们将现有研究归类为离线和在线持续学习范式，清晰区分了这些框架内使用的环境和方法。离线CL从领域增量、任务增量和类增量学习的角度进行了讨论。同时，在线CL以硬任务边界和模糊任务边界为重点进行了分析，提供了对这些方法如何处理实时数据流的见解。我们对文献的综述不仅阐明了针对基础LMs的CL方法的现状，而且强调了为充分利用基础LMs的庞大能力而设计的持续预训练、参数高效调整和基于指令调整方法的创新整合。此外，我们突出了该领域使用的主要数据集的特征和有效衡量防止灾难性遗忘和增强知识转移的关键指标。这项工作希望能够激发进一步的研究，最终实现更鲁棒、高效和智能的系统，能够进行终身学习。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

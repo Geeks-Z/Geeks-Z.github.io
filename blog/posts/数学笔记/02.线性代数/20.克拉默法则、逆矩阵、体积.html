@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#求逆矩阵">求逆矩阵</a></li>
+<li><a href="#求解axb">求解$Ax=b$</a></li>
+<li><a href="#关于体积volume">关于体积（Volume）</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/02.线性代数</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="求逆矩阵">求逆矩阵<a class="anchor-link" href="#求逆矩阵" title="Permanent link">&para;</a></h2>
+<p>我们从逆矩阵开始，对于二阶矩阵有<span class="math-inline">\begin{bmatrix}a&amp;b\c&amp;d\end{bmatrix}^{-1}=\frac{1}{ad-bc}\begin{bmatrix}d&amp;-b\-c&amp;a\end{bmatrix}</span>。观察易得，系数项就是行列式的倒数，而矩阵则是由一系列代数余子式组成的。先给出公式：</p>
+<p><div class="math-display"><br />
+A^{-1}=\frac{1}{\det A}C^T<br />
+\tag{1}<br />
+</div></p>
+<p>观察这个公式是如何运作的，化简公式得<span class="math-inline">AC^T=(\det A)I</span>，写成矩阵形式有<span class="math-inline">\begin{bmatrix}a_{11}&amp;a_{12}&amp;\cdots&amp;a_{1n}\\vdots&amp;\vdots&amp;\ddots&amp;\vdots\a_{n1}&amp;a_{n2}&amp;\cdots&amp;a_{nn}\end{bmatrix}\begin{bmatrix}C_{11}&amp;\cdots&amp;C_{n1}\C_{12}&amp;\cdots&amp;C_{n2}\\vdots&amp;\ddots&amp;\vdots\C_{1n}&amp;\cdots&amp;C_{nn}\end{bmatrix}=Res</span></p>
+<p>对于这两个矩阵的乘积，观察其结果的元素<span class="math-inline">Res_{11}=a_{11}C_{11}+a_{12}C_{12}+\cdots+a_{1n}C_{1n}</span>，这正是上一讲提到的将行列式按第一行展开的结果。同理，对<span class="math-inline">Res_{22}, \cdots, Res_{nn}</span>都有<span class="math-inline">Res_{ii}=\det A</span>，即对角线元素均为<span class="math-inline">\det A</span>。</p>
+<p>再来看非对角线元素：回顾二阶的情况，如果用第一行乘以第二行的代数余子式<span class="math-inline">a_{11}C_{21}+a_{12}C_{22}</span>，得到<span class="math-inline">a(-b)+ab=0</span>。换一种角度看问题，<span class="math-inline">a(-b)+ab=0</span>也是一个矩阵的行列式值，即<span class="math-inline">A_{s}=\begin{bmatrix}a&amp;b\a&amp;b\end{bmatrix}</span>。将<span class="math-inline">\det A_{s}</span>按第二行展开，也会得到<span class="math-inline">\det A_{s}=a(-b)+ab</span>，因为行列式有两行相等所以行列式值为零。</p>
+<p>推广到<span class="math-inline">n</span>阶，我们来看元素<span class="math-inline">Res_{1n}=a_{11}C_{n1}+a_{12}C_{n2}+\cdots+a_{1n}C_{nn}</span>，该元素是第一行与最后一行的代数余子式相乘之积。这个式子也可以写成一个特殊矩阵的行列式，即矩阵<span class="math-inline">A_{s}=\begin{bmatrix}a_{11}&amp;a_{12}&amp;\cdots&amp;a_{1n}\a_{21}&amp;a_{22}&amp;\cdots&amp;a_{2n}\\vdots&amp;\vdots&amp;\ddots&amp;\vdots\a_{n-a1}&amp;a_{n-12}&amp;\cdots&amp;a_{n-1n}\a_{11}&amp;a_{12}&amp;\cdots&amp;a_{1n}\end{bmatrix}</span>。计算此矩阵的行列式，将<span class="math-inline">\det A_{s}</span>按最后一行展开，也得到<span class="math-inline">\det A_{s}=a_{11}C_{n1}+a_{12}C_{n2}+\cdots+a_{1n}C_{nn}</span>。同理，行列式<span class="math-inline">A_{s}</span>有两行相等，其值为零。</p>
+<p>结合对角线元素与非对角线元素的结果，我们得到<span class="math-inline">Res=\begin{bmatrix}\det A&amp;0&amp;\cdots&amp;0\0&amp;\det A&amp;\cdots&amp;0\\vdots&amp;\vdots&amp;\ddots&amp;\vdots\0&amp;0&amp;\cdots&amp;\det A\end{bmatrix}</span>，也就是<span class="math-inline">(1)</span>等式右边的<span class="math-inline">(\det A)I</span>，得证。</p>
+<h2 id="求解axb">求解<span class="math-inline">Ax=b</span><a class="anchor-link" href="#求解axb" title="Permanent link">&para;</a></h2>
+<p>因为我们现在有了逆矩阵的计算公式，所以对<span class="math-inline">Ax=b</span>有<span class="math-inline">x=A^{-1}b=\frac{1}{\det A}C^Tb</span>，这就是计算<span class="math-inline">x</span>的公式，即克莱默法则（Cramer's rule）。</p>
+<p>现在来观察<span class="math-inline">x=\frac{1}{\det A}C^Tb</span>，我们将得到的解拆分开来，对<span class="math-inline">x</span>的第一个分量有<span class="math-inline">x_1=\frac{y_1}{\det A}</span>，这里<span class="math-inline">y_1</span>是一个数字，其值为<span class="math-inline">y_1=b_1C_{11}+b_2C_{21}+\cdots+b_nC_{n1}</span>，每当我们看到数字与代数余子式乘之积求和时，都应该联想到求行列式，也就是说<span class="math-inline">y_1</span>可以看做是一个矩阵的行列式，我们设这个矩阵为<span class="math-inline">B_1</span>。所以有<span class="math-inline">x_i=\frac{\det B_1}{\det A}</span>，同理有<span class="math-inline">x_2=\frac{\det B_2}{\det A}</span>，<span class="math-inline">x_2=\frac{\det B_2}{\det A}</span>。</p>
+<p>而<span class="math-inline">B_1</span>是一个型为<span class="math-inline">\Bigg[b a_2 a_3 \cdots a_n\Bigg]</span>的矩阵，即将矩阵<span class="math-inline">A</span>的第一列变为<span class="math-inline">b</span>向量而得到的新矩阵。其实很容易看出，<span class="math-inline">\det B_1</span>可以沿第一列展开得到<span class="math-inline">y_1=b_1C_{11}+b_2C_{21}+\cdots+b_nC_{n1}</span>。</p>
+<p>一般的，有<span class="math-inline">B_j=\Bigg[a_1 a_2 \cdots a_{j-1} b a_{j+1} \cdots a_n\Bigg]</span>，即将矩阵<span class="math-inline">A</span>的第<span class="math-inline">j</span>列变为<span class="math-inline">b</span>向量而得到的新矩阵。所以，对于解的分量有<span class="math-inline">x_j=\frac{\det B_j}{\det A}</span>。</p>
+<p>这个公式虽然很漂亮，但是并不方便计算。</p>
+<h2 id="关于体积volume">关于体积（Volume）<a class="anchor-link" href="#关于体积volume" title="Permanent link">&para;</a></h2>
+<p>先提出命题：行列式的绝对值等于一个箱子的体积。</p>
+<p>来看三维空间中的情形，对于<span class="math-inline">3</span>阶方阵<span class="math-inline">A</span>，取第一行<span class="math-inline">(a_1,a_2,a_3)</span>，令其为三维空间中点<span class="math-inline">A_1</span>的坐标，同理有点<span class="math-inline">A_2, A_3</span>。连接这三个点与原点可以得到三条边，使用这三条边展开得到一个平行六面体，<span class="math-inline">\left|\det A\right|</span>就是该平行六面体的体积。</p>
+<p>对于三阶单位矩阵，其体积为<span class="math-inline">\det I=1</span>，此时这个箱子是一个单位立方体。这其实也证明了前面学过的行列式性质1。于是我们想，如果能接着证明性质2、3即可证明体积与行列式的关系。</p>
+<p>对于行列式性质2，我们交换两行并不会改变箱子的大小，同时行列式的绝对值也没有改变，得证。</p>
+<p>现在我们取矩阵<span class="math-inline">A=Q</span>，而<span class="math-inline">Q</span>是一个标准正交矩阵，此时这个箱子是一个立方体，可以看出其实这个箱子就是刚才的单位立方体经过旋转得到的。对于标准正交矩阵，有<span class="math-inline">Q^TQ=I</span>，等式两边取行列式得<span class="math-inline">\det(Q^TQ)=1=\left|Q^T\right|\left|Q\right|</span>，而根据行列式性质10有<span class="math-inline">\left|Q^T\right|=\left|Q\right|</span>，所以<span class="math-inline">原式=\left|Q\right|^2=1, \left|Q\right|=\pm 1</span>。</p>
+<p>接下来在考虑不再是“单位”的立方体，即长方体。 假设<span class="math-inline">Q</span>矩阵的第一行翻倍得到新矩阵<span class="math-inline">Q_2</span>，此时箱子变为在第一行方向上增加一倍的长方体箱子，也就是两个“标准正交箱子”在第一行方向上的堆叠。易知这个长方体箱子是原来体积的两倍，而根据行列式性质3.a有<span class="math-inline">\det Q_2=\det Q</span>，于是体积也符合行列式的数乘性质。</p>
+<p>我们来看二阶方阵的情形，<span class="math-inline">\begin{vmatrix}a+a'&amp;b+b'\c&amp;d\end{vmatrix}=\begin{vmatrix}a&amp;b\c&amp;d\end{vmatrix}+\begin{vmatrix}a'&amp;b'\c&amp;d\end{vmatrix}</span>。在二阶情况中，行列式就是一个求平行四边形面积的公式，原来我们求由四个点<span class="math-inline">(0,0), (a,b), (c,d), (a+c,b+d)</span>围成的四边形的面积，需要先求四边形的底边长，再做高求解，现在只需要计算<span class="math-inline">\det A=ad-bc</span>即可（更加常用的是求由<span class="math-inline">(0,0), (a,b), (c,d)</span>围成的三角形的面积，即<span class="math-inline">\frac{1}{2}ad-bc</span>）。也就是说，如果知道了歪箱子的顶点坐标，求面积（二阶情形）或体积（三阶情形）时，我们不再需要开方、求角度，只需要计算行列式的值就行了。</p>
+<p>再多说两句我们通过好几讲得到的这个公式，在一般情形下，由点<span class="math-inline">(x_1,y_1), (x_2,y_2), (x_3,y_3)</span>围成的三角形面积等于<span class="math-inline">\frac{1}{2}\begin{vmatrix}x_1&amp;y_1&amp;1\x_2&amp;y_2&amp;1\x_3&amp;y_3&amp;1\end{vmatrix}</span>，计算时分别用第二行、第三行减去第一行化简到第三列只有一个<span class="math-inline">1</span>（这个操作实际作用是将三角形移动到原点），得到<span class="math-inline">\frac{1}{2}\begin{vmatrix}x_1&amp;y_1&amp;1\x_2-x_1&amp;y_2-y_1&amp;0\x_3-x_1&amp;y_3-y_1&amp;0\end{vmatrix}</span>，再按照第三列展开，得到三角形面积等于<span class="math-inline">\frac{(x_2-x_1)(y_3-y_1)-(x_3-x_1)(y_2-y_1)}{2}</span>。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

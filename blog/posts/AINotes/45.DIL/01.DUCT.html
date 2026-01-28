@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-从旧域到新域">3. 从旧域到新域</a><ul>
+<li><a href="#31-域增量学习">3.1 域增量学习</a></li>
+<li><a href="#32-域增量学习中的基线方法">3.2 域增量学习中的基线方法</a></li>
+</ul>
+</li>
+<li><a href="#4-duct域增量学习的双重巩固">4. DUCT：域增量学习的双重巩固</a><ul>
+<li><a href="#41-表示巩固">4.1 表示巩固</a></li>
+<li><a href="#42-分类器巩固">4.2 分类器巩固</a></li>
+<li><a href="#43-duct-总结">4.3 DUCT 总结</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实验设置">5.1 实验设置</a></li>
+<li><a href="#52-基准对比">5.2 基准对比</a></li>
+<li><a href="#53-进一步分析">5.3 进一步分析</a><ul>
+<li><a href="#遗忘度量">遗忘度量</a></li>
+<li><a href="#参数稳健性">参数稳健性</a></li>
+<li><a href="#组成模块">组成模块</a></li>
+<li><a href="#可视化">可视化</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6 结论</a><ul>
+<li><a href="#局限性">局限性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/45.DIL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>域增量学习（Domain-Incremental Learning, DIL）涉及模型在不同域中逐步适应新概念。尽管预训练模型的最新进展为 DIL 提供了坚实的基础，但学习新概念通常会导致预训练知识的灾难性遗忘。具体来说，顺序模型更新可能会用来自最新域的知识覆盖表示和分类器。因此，开发一种在学习过程中适应所有已见域的表示和相应的分类器至关重要。为此，我们提出了双重巩固（DUal ConsolidaTion, DUCT），以在表示和分类器两个层面统一和巩固历史知识。通过合并不同阶段的主干网络，我们创建了一个适合多域增量学习的表示空间。合并后的表示作为一个平衡的中间体，捕捉了所有已见域的特定任务特征。此外，为了解决合并嵌入和分类器之间的不匹配问题，我们引入了一个额外的分类器巩固过程。利用类级语义信息，我们估计了最新嵌入空间中旧域的分类器权重。通过合并历史和估计的分类器，我们将它们与合并的嵌入空间对齐，促进了增量分类。在四个基准数据集上的广泛实验结果证明了 DUCT 的最先进性能。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>近年来，深度学习的兴起展示了其在现实世界应用中的强大潜力（He et al., 2016; Deng et al., 2009; Floridi &amp; Chiriatti, 2020）。然而，在一个动态且不断变化的世界中，数据通常以流的形式演变（Aggarwal, 2018; Ye et al., 2024），因此需要不断更新来自新域的数据（Gama et al., 2014）。例如，自动驾驶汽车必须处理不同季节和天气条件下的驾驶任务（Bojarski et al., 2016），而人脸识别系统应该能够在不同的光照条件下识别用户（Zhao et al., 2003）。相应地，域增量学习（DIL）（van de Ven et al., 2022）通过从新数据分布中吸收新知识同时保留现有知识来应对这一挑战。然而，顺序更新模型以适应新域通常会使得嵌入（Yu et al., 2020）和分类器（Zhao et al., 2020; Wu et al., 2019）模块偏向最新域，导致先前知识的灾难性遗忘（Mermillod et al., 2013; De Lange et al., 2021）。因此，开发一种在学习新域时不遗忘现有知识的方法成为机器学习社区面临的一个关键挑战。</p>
+<p>为了应对灾难性遗忘，最近的工作利用强大的预训练模型（PTMs）（Han et al., 2021）作为 DIL 的初始化（Wang et al., 2022d;c;b）。PTMs 的强大表示能力为 DIL 提供了一个强大的起点，在 DIL 基准测试中显示出良好的结果。这些方法冻结了预训练的主干网络以保留现有知识，并附加轻量级模块（Jia et al., 2022; Chen et al., 2022; Lian et al., 2022）以捕捉新模式。然而，由于传入的域也会覆盖附加的模块，表示仍然会遭受遗忘，从而导致分类器的相应偏差。</p>
+<p>在 DIL 中，遗忘有两个主要来源：特征的覆盖和分类器的覆盖。不断调整特征以捕捉最新任务会使表示偏向最新域。例如，假设前一个任务涉及真实世界的照片，而后一个任务包括快速绘制的图像。特征将被大幅调整为突出非客观细节，这些细节在区分先前域时帮助不大，从而导致遗忘。鉴于此，DIL 中的理想特征空间应适合所有域，并同等地突出所有已见任务的特定域特征。然而，由于覆盖导致特征的可泛化性降低，分类器也会偏向最新域。由于分类器在将嵌入映射到类别中起着关键作用，使用有偏分类器可能会对决策产生不利影响。因此，必须在特征和分类器上巩固现有知识以抵抗遗忘。</p>
+<p>实现这一目标有两个主要挑战：1）不断构建一个适合所有任务的统一嵌入空间。由于训练数据以流的形式到达，我们无法同时访问所有训练实例，这阻止了我们实现适合所有已见域的“预言嵌入”。2）校准有偏分类器的预测。即使我们实现了适合所有任务的整体嵌入，由于缺乏先前实例，我们仍然无法在特征和类别之间建立准确的映射。因此，需要一个分类器巩固过程来不断将分类器权重与变化的特征对齐。</p>
+<p>在本文中，我们提出了双重巩固（DUCT）来应对这些挑战。为了应对特征漂移，我们引入了一种表示合并技术，不断整合历史主干网络。这种合并的嵌入巩固了所有先前域的特定任务信息，提供了信息丰富的特征而不遗忘。因此，我们逐步实现了不可遗忘的特征，并抵抗了特征级遗忘。为了将更新的特征映射到类别，我们设计了一个分类器巩固过程，将历史分类器权重与校准权重合并。通过在联合空间中提取类级语义关系，我们开发了一种分类器传输机制，估计最新嵌入空间中先前域类别的分类器。通过以这种协调的方式巩固特征和分类器，DUCT 平衡了所有已见域，并稳健地抵抗了遗忘，在各种基准测试中取得了有竞争力的性能。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>持续学习/增量学习是机器学习领域的一个热门话题，旨在在流数据中融入新知识（De Lange et al., 2021; Masana et al., 2023; Wang et al., 2024; Zhao et al., 2021; Zheng et al., 2024; Qi et al., 2024）。它可以进一步分为三个子类别，即任务增量学习（TIL）（De Lange et al., 2021）、类增量学习（CIL）（Masana et al., 2023）和域增量学习（DIL）（van de Ven et al., 2022）。其中，TIL 和 CIL 面临新兴的新类别，并要求在学习这些类别时不遗忘。相比之下，DIL 主要关注标签空间固定而传入数据涉及新域的场景（Wang et al., 2022b; Shi &amp; Wang, 2023）。在持续学习中，典型的解决方案包括使用数据回放（Bang et al., 2021; Aljundi et al., 2019b; Isele &amp; Cosgun, 2018; Rolnick et al., 2019; Ratcliff, 1990）来回顾先前的知识，使用知识蒸馏（Hinton et al., 2015; Rebuffi et al., 2017; Li &amp; Hoiem, 2017）或参数正则化（Kirkpatrick et al., 2017; Zenke et al., 2017; Chaudhry et al., 2018; Aljundi et al., 2018; 2019a）来维护现有知识。最近的进展还通过偏差校正（Hou et al., 2019; Zhao et al., 2020; Ahn et al., 2021; Castro et al., 2018; Wu et al., 2019; Belouadah &amp; Popescu, 2019）来纠正模型偏差或随着数据的演变扩展网络结构（Rusu et al., 2016; Aljundi et al., 2017; Yan et al., 2021; Wang et al., 2022a; Zhou et al., 2023）。</p>
+<p>基于预训练模型的域增量学习：随着预训练技术的快速发展，PTMs 为 DIL 模型提供了强大的初始化，以提升特征的泛化能力（Smith et al., 2023; Wang et al., 2022c;d;b）。当前的基于 PTM 的 DIL 方法主要采用视觉提示调优（Jia et al., 2022）来调整预训练特征。在冻结预训练特征的情况下，它学习一个提示池作为外部知识，并选择实例特定的提示来编码任务信息。L2P（Wang et al., 2022d）利用查询键匹配机制选择实例特定的提示，而 DualPrompt（Wang et al., 2022c）通过联合学习任务特定和实例特定的提示来扩展它。相比之下，S-Prompts（Wang et al., 2022b）为 DIL 学习域特定的提示，并通过 KNN 搜索检索提示。为了减轻提示选择的成本，CODA-Prompt（Smith et al., 2023）将提示选择过程修改为基于注意力的加权组合。除了提示调优外，还有一些方法直接在预训练特征上构建分类器（Zhou et al., 2024a; McDonnell et al., 2023）。</p>
+<p>模型合并：预训练的最新进展使得不同模型之间的权重插值成为模型编辑中的有用技术（Ainsworth et al., 2023; Frankle et al., 2020; Ilharco et al., 2023; Matena &amp; Raffel, 2021; Wortsman et al., 2022a;b）。大多数工作集中在多个模型的简单平均，旨在增强模型在单一任务上的性能和对抗分布外数据的鲁棒性。在本文中，我们考虑合并预训练权重和任务向量参数，以培养适合所有已见域的多任务表示。</p>
+<h2 id="3-从旧域到新域">3. 从旧域到新域<a class="anchor-link" href="#3-从旧域到新域" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们介绍了域增量学习的背景信息，以及将预训练模型应用于域增量学习的基线方法。</p>
+<h3 id="31-域增量学习">3.1 域增量学习<a class="anchor-link" href="#31-域增量学习" title="Permanent link">&para;</a></h3>
+<p>在域增量学习中，模型面临一个任务序列的数据流 <span class="math-inline">D_1, D_2, \dots, D_B</span>，其中 <span class="math-inline">D_b = {X_b, Y_b}</span> 是第 <span class="math-inline">b</span> 个训练任务，即 <span class="math-inline">X_b = {x_i}<em>{i=1}^{n_b}</span> 和 <span class="math-inline">Y_b = {y_i}</em>{i=1}^{n_b}</span>。每个训练实例 <span class="math-inline">x_i \in \mathbb{R}^D</span> 属于类别 <span class="math-inline">y_i \in Y</span>。本文遵循无样本设置（Zhu et al., 2021; Wang et al., 2022d），即在第 <span class="math-inline">b</span> 个训练阶段，我们只能访问当前数据集 <span class="math-inline">D_b</span> 中的数据。在 DIL 中，标签空间 <span class="math-inline">Y</span> 在整个学习过程中保持不变，而输入实例的分布从域到域不断变化，即 <span class="math-inline">p(X_b) \neq p(X_{b'})</span> 对于 <span class="math-inline">b \neq b'</span>。DIL 的目标是拟合一个模型 <span class="math-inline">f(x)</span>，能够在任何已见域中区分类别：<br />
+<div class="math-display"><br />
+    f^* = \arg\min_{f \in \mathcal{H}} \mathbb{E}_{(x, y) \sim D_1^t \cup \dots D_b^t} \mathbb{I}(y \neq f(x)), \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">\mathcal{H}</span> 是假设空间，<span class="math-inline">\mathbb{I}(\cdot)</span> 是指示函数，如果表达式成立则输出 1，否则输出 0。<span class="math-inline">D_b^t</span> 表示任务 <span class="math-inline">b</span> 的数据分布。因此，DIL 模型应该能够对新域的实例进行分类，同时不遗忘先前的域。</p>
+<p>根据（Wang et al., 2022c;d;b; Smith et al., 2023），我们假设一个预训练的视觉 Transformer（ViT）（Dosovitskiy et al., 2020）可用作 <span class="math-inline">f(x)</span> 的初始化。为了简单起见，我们将网络结构解耦为嵌入函数 <span class="math-inline">\phi(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^d</span>（即最终的 [CLS] 标记）和线性分类器 <span class="math-inline">W \in \mathbb{R}^{d \times |Y|}</span>。这样，输出表示为 <span class="math-inline">f(x) = W^\top \phi(x)</span>，并且本文使用余弦分类器。分类器进一步解耦为 <span class="math-inline">W = [w_1, w_2, \dots, w_{|Y|}]</span>，其中 <span class="math-inline">w_j</span> 表示第 <span class="math-inline">j</span> 个类别的分类器权重。尽管在学习过程中标签空间是静态的，但不同域中同一类别的数据分布可能会产生显著的域差距。因此，我们遵循现有工作（Wang et al., 2022c;d;b; Smith et al., 2023）在出现新任务时扩展分类器 <span class="math-inline">W \in \mathbb{R}^{d \times b|Y|}</span>，最终预测通过以下方式实现：<br />
+<div class="math-display"><br />
+    \arg\max_i w_i^\top \phi(x) \mod |Y|.<br />
+</div></p>
+<h3 id="32-域增量学习中的基线方法">3.2 域增量学习中的基线方法<a class="anchor-link" href="#32-域增量学习中的基线方法" title="Permanent link">&para;</a></h3>
+<p>在域增量学习中，面对新域的传入数据集，一种简单的解决方案是直接优化嵌入和分类器：<br />
+<div class="math-display"><br />
+    \min_{W \cup \phi} \sum_{(x, y) \in D_b} \ell(W^\top \phi(x), y). \tag{2}<br />
+</div><br />
+以预训练权重作为初始化，公式（2）可以快速捕捉新域中的判别特征。然而，由于嵌入 <span class="math-inline">\phi(\cdot)</span> 在不同域之间不断变化，它很快失去了对先前域的泛化能力，并遭受遗忘。</p>
+<p>为了抵抗特征级遗忘，一种可行的解决方案是冻结预训练权重并附加轻量级模块以编码域特定知识，例如提示（Jia et al., 2022）。代表性工作 L2P（Wang et al., 2022d）组织一组提示作为提示池（即 Pool），并通过以下方式优化模型：<br />
+<div class="math-display"><br />
+    \min_{\text{Pool} \cup W} \sum_{(x, y) \in D_b} \ell(W^\top \bar{\phi}(x; \text{Pool}), y) + L_{\text{Pool}}, \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">\bar{\phi}(x; \text{Pool})</span> 表示在主干网络冻结的情况下提示的特征表示，<span class="math-inline">L_{\text{Pool}}</span> 表示提示选择损失（Wang et al., 2022d）。公式（3）动态检索实例特定的提示以调整表示，并学习分类器将特征映射到相应的类别。由于主干权重被冻结，它可以减轻更新过程中的表示漂移。</p>
+<p>讨论：尽管公式（2）和公式（3）采用了不同的模型更新策略，但它们都遭受了特征级遗忘。具体来说，通过公式（2）调整模型可以将特定任务知识编码到嵌入中，但也存在特征被新域完全覆盖的风险，因为没有限制保留先前知识。此外，尽管公式（3）冻结了预训练权重，附加的可训练提示也可能导致遗忘。由于提示的特征依赖于实例特定的提示选择，为新域优化提示仍然有覆盖先前提示的风险。随着特征偏向最新域，分类器也会相应地调整。因此，先前任务的分类器与不稳定且不断变化的特征不兼容，导致了分类器级遗忘。</p>
+<h2 id="4-duct域增量学习的双重巩固">4. DUCT：域增量学习的双重巩固<a class="anchor-link" href="#4-duct域增量学习的双重巩固" title="Permanent link">&para;</a></h2>
+<p>观察到特征级和分类器级覆盖的风险，我们旨在从两个方面抵抗 DIL 中的遗忘。首先，减轻特征级遗忘需要以低成本获得一个统一的嵌入空间。由于顺序更新主干网络或提示都会导致遗忘，因此需要一种适当的解决方案来充分利用所有历史特征并将它们合并为一个统一的特征。其次，随着表示从任务到任务的变化，分类器和嵌入之间的不匹配随着数据的演变变得更加严重。因此，需要一个分类器巩固步骤来校准它们以与嵌入兼容。</p>
+<p>在接下来的部分中，我们介绍了表示巩固和分类器巩固的学习范式。最后，我们提供了训练和推理的详细指南。</p>
+<h3 id="41-表示巩固">4.1 表示巩固<a class="anchor-link" href="#41-表示巩固" title="Permanent link">&para;</a></h3>
+<p>观察到在所有已见域之间取得平衡的挑战，我们需要选择另一种特征更新策略以避免顺序覆盖并抵抗遗忘。假设我们能够为每个传入域分别训练每个模型，获得一组模型 <span class="math-inline">{\phi_1(\cdot), W_1}, \dots, {\phi_B(\cdot), W_B}</span>。这些模型通过优化公式（2）获得，因此对每个特定域具有判别能力，可以被视为“域专家”。在一个过于简化的场景中，如果我们知道实例来自哪个域，我们可以直接使用相应的专家进行预测。然而，由于在 DIL 中无法获得此类辅助信息，我们需要获得一个适合所有域的“全能”嵌入空间。这样，无需决定使用哪个嵌入，因为全能嵌入足够强大，可以捕捉所有域特定特征。</p>
+<p>相应地，我们从模型合并社区（Ilharco et al., 2023; Ramé et al., 2023）中获得灵感，即通过组合多个任务向量可以实现适合多个域的理想模型。我们将嵌入函数的相对变化表示为 <span class="math-inline">\delta_{\phi_i} = \phi_i - \phi_0</span>，其中 <span class="math-inline">\phi_0</span> 是预训练模型的权重。因此，<span class="math-inline">\delta_{\phi_i}</span> 表示第 <span class="math-inline">i</span> 个域中权重的相对变化，我们可以通过以下方式构建统一的嵌入：<br />
+<div class="math-display"><br />
+    \phi_m^i = \phi_0 + \alpha_\phi \sum_i \delta_{\phi_i}, \tag{4}<br />
+</div><br />
+它将预训练权重与每个任务向量合并。由于所有微调的嵌入都从相同的预训练权重开始，（Ilharco et al., 2023; Zhang &amp; Bottou, 2023）验证了由于不同域之间的语义差距，任务向量之间的相似性较低。因此，添加此类权重使得合并的模型能够突出所有特定任务的特征，公式（4）提供了一种获得适合所有已见域的通用特征表示的可行方法。</p>
+<p><strong>表示巩固与任务相似性</strong>：尽管公式（4）提供了一种简单的方法来合并多个任务向量以构建统一的嵌入，但它仍然缺乏对任务相似性的考虑。例如，如果两个不同的域更相似，突出这些特征将更有助于识别相应域的类别。因此，我们将任务相似性（<span class="math-inline">Sim_{0,i}</span>）引入表示巩固过程，并将公式（4）替换为：<br />
+<div class="math-display"><br />
+\phi_m^i = \phi_0 + \alpha_\phi \sum_i \text{Sim}<em>{0,i} \delta</em>{\phi_i}. \tag{5}<br />
+</div><br />
+具体来说，由于合并的嵌入是基于预训练权重和任务向量构建的，我们考虑预训练模型 <span class="math-inline">\phi_0</span> 和后续模型 <span class="math-inline">\phi_i</span> 的相似性来调整合并过程。一种简单的方法是直接测量 <span class="math-inline">\phi_0</span> 和 <span class="math-inline">\phi_i</span> 之间的余弦相似性。然而，由于预训练权重具有数百万维度，这种空间中的相似性由于维度灾难而无效。为此，我们利用当前训练任务作为任务相似性的指示器。具体来说，对于 <span class="math-inline">D_b</span> 中的每个类别，我们使用主干网络 <span class="math-inline">\phi_i</span> 在其嵌入空间中提取类中心：<br />
+<div class="math-display"><br />
+    c_i^p = \frac{\sum_{j=1}^{|D_b|} \mathbb{I}(y_j = p) \phi_i(x_j)}{\sum_{j=1}^{|D_b|} \mathbb{I}(y_j = p)}. \tag{6}<br />
+</div><br />
+随后，我们可以在嵌入空间中获得两组类中心，即 <span class="math-inline">C_0 = [c_0^1, c_0^2, \dots, c_0^{|Y|}]</span> 和 <span class="math-inline">C_i = [c_i^1, c_i^2, \dots, c_i^{|Y|}]</span>。由于这些类中心是嵌入空间中的代表性点，我们计算成对的类相似性来表示任务相似性：<br />
+<div class="math-display"><br />
+    \text{Sim}<em>{0,i} = \frac{1}{|Y|} \sum</em>{j=1}^{|Y|} \text{sim}(c_0^j, c_i^j), \tag{7}<br />
+</div><br />
+其中我们使用余弦相似性来计算中心相似性 <span class="math-inline">\text{sim}(\cdot, \cdot)</span>。</p>
+<p><strong>表示巩固的效果</strong>：图 1（顶部）可视化了表示巩固过程，其中合并的主干网络可以统一多个域。通过公式（5），我们能够通过参数空间中的组合构建适合所有任务的联合嵌入空间。由于 DIL 中的任务是一个接一个出现的，表示巩固过程也可以<strong>增量式</strong>进行，即：<br />
+<div class="math-display"><br />
+    \phi_m^i = \phi_m^{i-1} + \alpha_\phi \text{Sim}<em>{0,i} \delta</em>{\phi_i}. \tag{8}<br />
+</div><br />
+这样，我们可以摆脱大量的内存开销，只需在内存中最多保留两个主干网络。在每个训练阶段，我们首先通过公式（2）微调模型，并进行表示巩固以聚合表示。通过这种方式，我们获得了一个跨所有已见任务的统一嵌入空间。</p>
+<p><img alt="image-20250224081131238" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202502240811450.png" /></p>
+<h3 id="42-分类器巩固">4.2 分类器巩固<a class="anchor-link" href="#42-分类器巩固" title="Permanent link">&para;</a></h3>
+<p>在公式（5）中，我们设计了特征巩固过程，通过累积任务向量聚合多个微调模型。然而，仍然存在一个致命问题，即分类器与合并的嵌入之间存在<strong>不匹配</strong>。由于分类器被优化以将嵌入映射到相应的类别，随着主干网络被替换，匹配度急剧下降。回顾第 3.1 节中的背景信息，我们为每个域使用独立的分类器，因此需要设计额外的分类器巩固过程以将分类器与嵌入空间对齐。在每个训练阶段，我们将先前域的分类器称为“旧分类器”（<span class="math-inline">W_o</span>），将当前域的分类器称为“新分类器”（<span class="math-inline">W_n</span>）。接下来，我们讨论如何将它们与合并的特征对齐。</p>
+<p><strong>新分类器重新训练</strong>：在每个训练阶段，我们手中有训练数据 <span class="math-inline">D_b</span>。因此，直观的做法是通过以下方式协调新分类器与合并的特征：<br />
+<div class="math-display"><br />
+    \min_{W_n} \sum_{(x, y) \in D_b} \ell(W_n^\top \bar{\phi}_m^i(x), y), \tag{9}<br />
+</div><br />
+其中合并的特征 <span class="math-inline">\bar{\phi}_m^i(\cdot)</span> 被冻结以抵抗进一步的不匹配，我们可以通过公式（9）将新分类器 <span class="math-inline">W_n</span> 对齐以匹配特征。</p>
+<p><strong>旧分类器传输</strong>：公式（9）将新分类器与最新嵌入空间对齐。然而，仍然存在一个致命问题，即旧分类器也与合并的嵌入空间不兼容。因此，先前旧域的知识在增量学习过程中将被遗忘。如果我们有大量先前域的训练实例，可以像公式（9）那样进行类似的校准过程。然而，由于无样本限制，我们无法在内存中保存任何先前实例。因此，我们需要找到另一种方法来估计旧分类器的相对校准权重。例如，如果我们有一个重新训练的分类器来分类“狮子”的剪贴画风格，它可以大部分重用于分类“狮子”的真实照片风格。我们将这种关系称为“语义信息”，目标是利用这种信息来辅助旧分类器的对齐。我们使用语义信息 <span class="math-inline">S</span> 将校准的分类器表示为 <span class="math-inline">\hat{W}_o = T(W_n, S)</span>，即通过使用语义信息 <span class="math-inline">S</span> 转换新分类器来获得估计的分类器。因此，仍然需要解决两个核心问题：1）如何定义转换函数 <span class="math-inline">T</span>？2）如何定义语义信息 <span class="math-inline">S</span>？</p>
+<p><strong>通过最优传输实现</strong> <span class="math-inline">T</span>：函数 <span class="math-inline">T</span> 编码了两个任务之间特征集的相关性。考虑到线性层的权重矩阵揭示了特征 - 类别对之间的相对关系，最终的 logit 是所有特征的聚合，因此我们可以设计一个线性映射 <span class="math-inline">T \in \mathbb{R}^{\beta \times \gamma}</span> 来<strong>重组</strong>现有的分类器。<span class="math-inline">T</span> 编码了当前域和先前域之间的跨任务相关性，其中 <span class="math-inline">T</span> 中的较大值表示较高的类别相似性。由于决策是通过匹配分类器与相应特征来进行的，我们可以利用并重组当前域中相似类别的权重来获得先前域的权重。例如，在剪贴画风格中区分狮子的重要特征应分配较高的系数以帮助分类照片风格中的狮子，反之亦然。</p>
+<p>我们定义 <span class="math-inline">\mu_1 \in \Delta^\beta</span> 和 <span class="math-inline">\mu_2 \in \Delta^\gamma</span>，其中 <span class="math-inline">\Delta^d = {\mu: \mu \in \mathbb{R}^d_+, \mu^\top \mathbf{1} = 1}</span> 是 <span class="math-inline">d</span> 维单纯形。<span class="math-inline">\mu_1</span> 和 <span class="math-inline">\mu_2</span> 表示跨域中每个类别的重要性，我们将它们设置为均匀分布。为了在旧域和新域之间映射一组类别，引入了一个成本矩阵 <span class="math-inline">Q \in \mathbb{R}^{\beta \times \gamma}<em>+</span> 来指导转换。<span class="math-inline">Q</em>{i,j}</span> 的较大权重表示在重用第 <span class="math-inline">i</span> 个类别的分类器来辅助第 <span class="math-inline">j</span> 个类别时需要支付更多的成本。因此，矩阵 <span class="math-inline">T</span> 可以表示为两个分布的耦合，旨在以最低的传输成本连接不同域的类别。因此，可以通过最小化以下公式获得 <span class="math-inline">T</span>：<br />
+<div class="math-display"><br />
+    \min_T \langle T, Q \rangle \quad \text{s.t.} \quad T\mathbf{1} = \mu_1, T^\top \mathbf{1} = \mu_2, T \geq 0, \tag{10}<br />
+</div><br />
+这是最优传输（OT）的 Kantorovich 公式（Villani, 2008; Peyré et al., 2019）。优化公式（10）使我们能够展示如何以低成本在域之间移动概率质量。由于目标是重用重新训练的分类器 <span class="math-inline">W_n</span> 来调整先前的分类器 <span class="math-inline">W_o</span>，我们将 <span class="math-inline">\mu_1 \in \Delta^{|Y|}</span> 和 <span class="math-inline">\mu_2 \in \Delta^{|Y_o|}</span> 设置为均匀类别边际，其中 <span class="math-inline">|Y_o|</span> 表示 <span class="math-inline">W_o</span> 中的类别数量。求解公式（10）会产生不同域之间的对齐，我们可以将 <span class="math-inline">T</span> 应用于新分类器以获得估计的旧分类器，即 <span class="math-inline">\hat{W}_o = W_n T</span>。</p>
+<p><strong>定义语义信息的传输成本</strong>：求解公式（10）需要正确定义跨域成本 <span class="math-inline">Q</span>。较高的成本表示将分类器传输到目标类别的效果较差，反之亦然。为此，我们设计了一种简单而有效的方法来衡量这种类别级信息。具体来说，在每个阶段的训练之前，我们使用预训练主干网络 <span class="math-inline">\phi_0</span> 通过公式（6）在其嵌入空间中提取类中心，即 <span class="math-inline">[c_0^1, c_0^2, \dots, c_0^{|Y|}]</span>。这些类中心表示相应类别的最具代表性的嵌入。由于 <span class="math-inline">\phi_0</span> 是通过广泛数据集优化的，我们依赖其泛化能力来反映任务相似性。如果两个类别相似，它们的嵌入也应彼此接近。因此，我们计算类中心之间的欧几里得距离作为传输成本，即 <span class="math-inline">Q_{i,j} = |c_0^i - c_0^j|_2^2</span>。这里的类别 <span class="math-inline">i</span> 和 <span class="math-inline">j</span> 来自不同域。通过成对的传输成本，我们能够优化公式（10）以获得传输计划 <span class="math-inline">T</span>。随后，我们使用旧分类器和传输的分类器之间的插值进行合并：<br />
+<div class="math-display"><br />
+    W_m^o = (1 - \alpha_W) W_o + \alpha_W \hat{W}_o = (1 - \alpha_W) W_o + \alpha_W W_n T. \tag{11}<br />
+</div><br />
+<strong>分类器巩固的效果</strong>：我们在图 1（底部）可视化了分类器巩固过程。分类器巩固过程分为两个步骤，即新分类器重新训练和旧分类器传输。第一步旨在将新分类器与统一嵌入对齐，而第二步旨在将旧分类器与校准的分类器重新组合。通过这种方式，我们获得了一个与合并特征兼容的分类器，从而有利于在统一嵌入空间中进行识别。</p>
+<h3 id="43-duct-总结">4.3 DUCT 总结<a class="anchor-link" href="#43-duct-总结" title="Permanent link">&para;</a></h3>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202502240828738.png" alt="image-20250224082831679" style="zoom:50%;" /></p>
+<p>我们总结了训练步骤，如算法 1 所示。具体来说，面对一个新的训练任务，我们首先使用 <span class="math-inline">\phi_0</span> 提取类中心。随后，我们优化模型并分别巩固特征和分类器。合并后的模型（<span class="math-inline">[W_m^o; W_n]^\top \phi_m^i</span>）随后用于测试。我们使用 Sinkhorn 算法（Sinkhorn &amp; Knopp, 1967）来求解公式（10）中的最优传输问题。</p>
+<p><strong>内存开销的讨论</strong>：在训练过程中，我们需要在内存中保留两个模型，即历史合并的主干网络 <span class="math-inline">\phi_m^i</span> 和用于学习当前任务的在线主干网络 <span class="math-inline">\phi_i</span>。然而，在每个域的学习过程之后，当前运行的模型会被合并到 <span class="math-inline">\phi_m^i</span> 中（公式 5），而无需保留在内存中。在推理过程中，我们使用合并的主干网络 <span class="math-inline">\phi_m^i</span> 和分类器 <span class="math-inline">[W_m^o; W_n]</span> 进行分类，这与单个主干网络相同。因此，DUCT 可以与其他方法公平比较。</p>
+<hr />
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们在基准数据集上进行了实验，将 DUCT 与现有的最先进方法进行比较。我们还提供了对组件和参数鲁棒性的消融研究，以分析不同模块的效果。嵌入空间的可视化也验证了我们提出方法的有效性。</p>
+<h3 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>数据集</strong>：遵循基于预训练模型的域增量学习的基准设置（Wang et al., 2022c;d;b; Smith et al., 2023），我们在 Office-Home（Venkateswara et al., 2017）、DomainNet（Peng et al., 2019）、CORe50（Lomonaco &amp; Maltoni, 2017）和 CDDB-Hard（Li et al., 2023）上评估性能。具体来说，Office-Home 有四个域，DomainNet 有六个域，CORe50 有 11 个域，CDDB-Hard 有五个域。我们考虑五种任务顺序来打乱这些域，以进行全面评估，并在附录 B.2 中报告详细信息。</p>
+<p><strong>对比方法</strong>：在对比中，我们考虑了两类方法，包括基于样本的方法（如 Replay（Ratcliff, 1990）、iCaRL（Rebuffi et al., 2017）、MEMO（Zhou et al., 2023））和最新的无样本 DIL 方法（如 SimpleCIL（Zhou et al., 2024a）、L2P（Wang et al., 2022d）、DualPrompt（Wang et al., 2022c）、CODA-Prompt（Smith et al., 2023）、EASE（Zhou et al., 2024b）、RanPAC（McDonnell et al., 2023）和 S-iPrompt（Wang et al., 2022b））。我们为所有对比方法使用相同的预训练主干网络。</p>
+<p><strong>实现细节</strong>：我们使用 PyTorch（Paszke et al., 2019）和 Pilot（Sun et al., 2023）在 NVIDIA 4090 上进行实验。根据（Wang et al., 2022d; Zhou et al., 2024b），我们考虑两种典型的预训练权重，即 ViT-B/16-IN21K 和 ViT-B/16-IN1K。两者都是在 ImageNet21K（Russakovsky et al., 2015）上预训练的，后者进一步在 ImageNet1K 上进行了微调。我们使用 SGD 优化器优化 DUCT，批量大小为 128，训练 15 个 epoch。学习率设置为 0.001。我们使用 herding 算法（Welling, 2009）为基于样本的方法选择每个类别的 10 个样本。在 DUCT 中，我们设置合并参数 <span class="math-inline">\alpha_\phi = 0.5</span>，<span class="math-inline">\alpha_w = 0.5</span>。代码将在接受后公开。</p>
+<p><strong>性能指标</strong>：根据（Wang et al., 2022d;b），我们将学习第 <span class="math-inline">b</span> 个任务后所有已见域的准确率记为 <span class="math-inline">A_b</span>，我们主要考虑 <span class="math-inline">A_B</span>（学习最后阶段后的性能）和 <span class="math-inline">\bar{A} = \frac{1}{B} \sum_{b=1}^B A_b</span>（所有增量阶段的平均性能）进行比较。我们还考虑了遗忘度量（Chaudhry et al., 2018）来衡量 DIL 中的相对遗忘程度。</p>
+<h3 id="52-基准对比">5.2 基准对比<a class="anchor-link" href="#52-基准对比" title="Permanent link">&para;</a></h3>
+<p>我们在图 2 中报告了四个基准数据集上的结果。从这些结果中可以看出，DUCT 在最终准确率上始终比其他对比方法高出 1% 到 7%。需要注意的是，起点的差异是由于不同的调优技术造成的，这些方法中可训练参数的数量不同，因此无法直接对齐。具体来说，即使从预训练模型开始，顺序微调模型也会遭受灾难性遗忘。为了补偿遗忘现象，我们观察到一些基于示例的方法（如 Replay、iCaRL 和 MEMO）对基线显示出稳定的改进。然而，由于其中一些工作是为类增量学习场景设计的，扩展或蒸馏目标可能不适用于当前设置。然后，我们将 DUCT 与专门为预训练模型设计的方法进行比较，发现基于提示的方法（如 L2P、DualPrompt、CODA-Prompt 和 S-iPrompt）的表现不如我们的方法。我们还观察到，DUCT 与各种预训练权重兼容，并在 ViT-B/16 IN1K（a∼d）和 IN21K（e∼f）上显示出稳定的改进。</p>
+<p>此外，我们还在表 1 和图 3(a) 中报告了五个任务顺序下的增量性能（平均值和标准差）。从表中可以看出，DUCT 在不同的任务顺序下表现稳健，与现有的最先进方法相比显示出稳定的改进。</p>
+<h3 id="53-进一步分析">5.3 进一步分析<a class="anchor-link" href="#53-进一步分析" title="Permanent link">&para;</a></h3>
+<h4 id="遗忘度量">遗忘度量<a class="anchor-link" href="#遗忘度量" title="Permanent link">&para;</a></h4>
+<p>图 2 和表 1 主要关注准确率度量，该度量使用所有见过的域来衡量相对性能。除了准确率度量外，我们还遵循（Wang et al., 2022b;d）使用遗忘度量，该度量捕捉了先前域中现有知识的稳定性。如图 3(b) 所示，我们在 CDDB 数据集上报告了所有对比方法的遗忘度量。从图中可以看出，一些方法遭受了严重的遗忘，例如 Finetune 和 MEMO，表明它们不适合域增量学习场景。我们还观察到，基于提示的方法冻结了主干以防止特征漂移，这解决了遗忘现象。然而，DUCT 在所有对比方法中显示出最少的遗忘（即 0.12），表明其强大的性能。</p>
+<h4 id="参数稳健性">参数稳健性<a class="anchor-link" href="#参数稳健性" title="Permanent link">&para;</a></h4>
+<p>DUCT 有两个主要的合并步骤，即公式 (5) 中的表示合并和公式 (10) 中的分类器合并。这些合并步骤包括一组模型/分类器之间的合并参数，即主干合并比率 <span class="math-inline">\alpha_\varphi</span> 和分类器合并比率 <span class="math-inline">\alpha_W</span>。在本节中，我们对这些参数的选择进行了消融实验，以研究 DUCT 在参数变化下的稳健性。具体来说，我们选择 <span class="math-inline">\alpha_\varphi</span> 和 <span class="math-inline">\alpha_W</span> 在{0.1, 0.25, 0.5, 0.75, 1.0}之间，产生了 25 种参数组合。我们在 Office-Home 数据集上使用这些参数组合进行实验，并在图 3(c) 中显示了平均性能。从图中可以看出，DUCT 对参数变化总体上具有稳健性。此外，由于合并参数旨在在旧知识和新知识之间进行权衡，我们发现较小值（例如 0.1）或较大值（例如 1.0）效果较差。这些边缘参数的不良表现也表明合并过程的重要性，因为较小值或较大值意味着在合并过程中忽略了部分重要信息。相比之下，两者都倾向于温和值，即选择在{0.25, 0.5}附近的值显示出更好的性能。因此，我们建议将 <span class="math-inline">\alpha_\varphi=0.5</span>，<span class="math-inline">\alpha_w=0.5</span> 设为默认设置。</p>
+<h4 id="组成模块">组成模块<a class="anchor-link" href="#组成模块" title="Permanent link">&para;</a></h4>
+<p>在本节中，我们在 CDDB 数据集上进行了实验，以研究 DUCT 中每个模块的重要性。如表 2 所示，“Baseline”表示直接冻结嵌入并提取类中心作为分类器，由于与下游域的域差距，显示出较差的性能。然后，我们使用公式 (4) 顺序合并主干以合并表示，并将其称为“Variation 1”。结果表明，添加表示合并过程显著提高了性能，表明这种统一表示在域增量学习中的优越性。然而，当将公式 (4) 切换到公式 (5) 时，我们发现“Variation 2”进一步提高了性能，表明任务相似性在获得通用嵌入空间方面是有帮助的。之后，我们将其与公式 (8) 中的分类器重新训练过程结合，称为“Variation 3”。结果表明，合并特征与分类器之间的不匹配削弱了性能，将新分类器与嵌入对齐有助于域增量学习。当将 DUCT 与“Variation 3”进行比较时，我们发现旧分类器的传输对于恢复先前知识和抵抗遗忘也至关重要，这将最终准确率提高了 2%。消融实验验证了 DUCT 中不同模块的有效性。</p>
+<h4 id="可视化">可视化<a class="anchor-link" href="#可视化" title="Permanent link">&para;</a></h4>
+<p>在本节中，我们可视化了嵌入空间，以展示 DUCT 在 DomainNet 数据集上的有效性。我们考虑了一个两阶段的域增量学习场景，每个阶段包含五个类别，并使用 t-SNE（Van der Maaten &amp; Hinton, 2008）可视化表示空间，分别在 DUCT 应用前后。我们使用点表示第一阶段中的类别，三角形表示第二阶段中的类别。我们使用阴影区域表示由分类器权重获得的不同类别的决策边界。如图 4 所示，尽管在 DUCT 应用前的嵌入空间显示出竞争性能，但存在两个主要缺陷：1）黄色和红色点之间存在<strong>混淆区域</strong>，表明随着数据的演变，先前类别被部分遗忘。2）同一类别的嵌入空间仍然位于不同的区域，例如紫色和绿色类别，这对于域增量学习并不理想。然而，当应用 DUCT 合并特征和分类器时，上述问题在图 5 中得到了解决。具体来说，由于合并后的嵌入适用于所有任务，先前域的遗忘得到了缓解。此外，统一的嵌入空间将不同域的同一类别适当地放在一起，有利于最终的推理。</p>
+<h3 id="6-结论">6 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h3>
+<p>域增量学习是现实世界学习系统获取新知识的理想能力。在本文中，我们提出了双重合并（DUCT）来实现这一目标。由于域增量学习中的遗忘发生在两个方面，即嵌入和分类器，我们分别设计了合并技术来处理它们。具体来说，我们考虑将预训练模型与特定域的任务向量合并，以实现统一的嵌入。为了补偿合并特征与分类器之间的不匹配，我们通过引入语义引导的传输设计了分类器合并过程。大量实验验证了 DUCT 的有效性。</p>
+<h4 id="局限性">局限性<a class="anchor-link" href="#局限性" title="Permanent link">&para;</a></h4>
+<p>可能的局限性包括对预训练模型的使用，因为特征合并依赖于可泛化的初始化。未来的工作包括将 DUCT 扩展到非预训练模型的场景。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

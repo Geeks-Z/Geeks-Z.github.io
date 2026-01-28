@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#multimodal-parameter-efficient-few-shot-class-incremental-learning">Multimodal Parameter-Efficient Few-Shot Class Incremental Learning</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-少样本图像分类">2.1 少样本图像分类</a></li>
+<li><a href="#22-增量学习">2.2 增量学习</a></li>
+<li><a href="#23-少样本类增量学习">2.3 少样本类增量学习</a></li>
+<li><a href="#24-参数高效学习">2.4 参数高效学习</a></li>
+</ul>
+</li>
+<li><a href="#3-问题表述">3. 问题表述</a></li>
+<li><a href="#4-方法">4. 方法</a><ul>
+<li><a href="#41-语言编码器">4.1 语言编码器</a></li>
+<li><a href="#42-视觉编码器">4.2 视觉编码器</a></li>
+<li><a href="#43-多模态分类">4.3 多模态分类</a></li>
+<li><a href="#44-提示正则化">4.4 提示正则化</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-评估基准">5.1 评估基准</a></li>
+<li><a href="#52-实现细节">5.2 实现细节</a></li>
+<li><a href="#53-超参数调整">5.3 超参数调整</a></li>
+<li><a href="#54-与最新模型的比较">5.4 与最新模型的比较</a></li>
+<li><a href="#55-消融研究">5.5 消融研究</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a><ul>
+<li><a href="#61-局限性">6.1 局限性</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/41.小样本类增量学习FSCIL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="multimodal-parameter-efficient-few-shot-class-incremental-learning"><a href="https://arxiv.org/abs/2303.04751">Multimodal Parameter-Efficient Few-Shot Class Incremental Learning</a><a class="anchor-link" href="#multimodal-parameter-efficient-few-shot-class-incremental-learning" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>少样本类增量学习（FSCIL）是一个具有挑战性的持续学习任务，其中在多个学习阶段中仅有有限的训练样本可用。要在这个任务中取得成功，必须避免由少样本训练集中的偏差分布引起的新类的过拟合问题。通常的解决方法是通过在预定义的主干架构上增加特殊模块以增强表征能力，从而实现与旧类的向后兼容。然而，这种方法尚未解决如何在确保长期内高分类准确率的同时减少大训练集与小训练集之间的性能差距的难题。在这项工作中，我们提出了一种称为持续参数高效CLIP（CPE-CLIP）的替代方法，以减少不同学习阶段之间的信息损失。我们不是通过调整附加模块来解决信息丢失问题，而是利用CLIP在大规模预训练中获得的广泛知识及其在泛化到新概念方面的有效性。我们的方法是多模态且参数高效的，依赖于可学习的提示来对语言和视觉编码器进行传递学习。我们还引入了提示正则化以提高性能并防止遗忘。我们的实验结果表明，CPE-CLIP显著改善了FSCIL的性能，同时大幅减少了可学习参数的数量和训练成本。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>在动态环境中部署机器学习系统需要考虑到随着时间推移不断到来的数据流。这种环境可能会经历数据分布的变化或新类别的增加。一个理想的学习系统必须能够学习新到来的类别，同时保持对先前学习类别的辨别能力，从而避免灾难性遗忘【31】。这种持续学习问题的表述被称为类增量学习（CIL），它需要处理稳定性-可塑性两难问题【32, 14】，即学习新类别和保留旧类别之间的权衡。在这项工作中，我们专注于CIL的一种特殊情况，称为少样本类增量学习（FSCIL, 【44】），其中在每次学习阶段只有少量训练样本可用。这里，额外的挑战在于避免因少样本训练集中的偏差分布引起的新到来的类别的过拟合问题。在实际的现实场景中，这个问题尤为关键，因为数据的可用性通常有限。例如，在制造业【59, 2】和医学影像【18】中，这种情况尤为明显。在制造业中，机器人被部署来执行各种任务，如组装或抓取物体。为了执行这些任务，机器人可能需要适应新物体或材料，而这些新物体或材料的训练数据可能非常有限。在医学影像中，由于数据收集的高成本和患者隐私的原因，数据的可用性也可能受到限制，从而使得随时间推移获得新知识变得困难。</p>
+<p>最近的研究致力于通过各种方法解决这些问题，如元学习【57, 34】、正则化技术【30】或知识蒸馏【38, 6, 62】。这些方法在有限的数据可用性条件下逐步实现了增量学习的良好结果。通常的方法是通过在预定义的主干架构上增加特殊模块来增强基本的表征能力，以实现学习阶段中的旧类的向后兼容。这些解决方案在计算上是昂贵的，因为它们在每个学习阶段中需要大量迭代来适应新类，同时保持向后兼容。尽管计算成本很高，它们仍未能有效地减少随着时间推移在较大训练集上获得的性能与较小训练集上获得的性能之间的差距，这仍然是一个未解决的难题【67, 25】。</p>
+<p>在这项工作中，我们提出了一种称为持续参数高效CLIP（CPE-CLIP）的替代方法，以减少不同学习阶段之间的信息损失。受零样本设置中获得的出色持续学习性能的启发【45】，我们使用CLIP【36】作为构建FSCIL持续学习系统的起点。我们并不是依赖调整附加模块来解决信息损失问题，而是提出通过轻量级可学习提示来适应CLIP架构，以进行少样本图像分类。通过这种方式，我们能够利用CLIP在大规模预训练中获得的大量知识及其在泛化到新概念方面的内在有效性。值得注意的是，这是一种多模态且参数高效的方法，因为它依赖于可学习提示，而不是微调语言和视觉编码器的参数，以实现跨越不同学习阶段的传递学习。我们展示了我们的方法显著提高了FSCIL的性能，相比于最先进的提案，同时大幅减少了可学习参数的数量和训练成本。我们还进行了广泛的超参数调整和消融研究，以理解我们模型各个组件的功能属性。我们的主要贡献可以总结如下：</p>
+<ul>
+<li>我们提出了一种基于提示的方法，通过减少遗忘和支持长期的知识传递，将CLIP架构适配于少样本设置下的持续学习任务，同时学习的参数少于总参数的0.3%。</li>
+<li>我们结合了两种不同的提示附加方法与提示正则化，以平稳地过渡到未来任务，同时保持长期的恒定性能。</li>
+<li>我们在三个流行的FSCIL基准数据集上取得了最先进的性能，并以很大幅度超过了之前的最先进结果。</li>
+</ul>
+<p>本文的其余部分组织如下。我们在第2节讨论了与我们的方法相关的工作和少样本类增量学习。在第3节介绍了问题的表述。第4节提出了所提出的方法。此外，我们在第5节和第6节分别展示了我们的实验结果和最终的考虑。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>我们的方法与少样本持续学习问题相关，因此我们分别介绍了这些相关领域。</p>
+<h3 id="21-少样本图像分类">2.1 少样本图像分类<a class="anchor-link" href="#21-少样本图像分类" title="Permanent link">&para;</a></h3>
+<p>少样本图像分类旨在用不足的训练样本来拟合新的未见过的类别【5, 50】。为了达到这一目的，提出了几种学习方法。例如，在基于度量的方法中，构建了不同的网络分支，通过计算测试集中查询图像与少样本训练集中的训练图像之间的距离来分类图像【42, 48, 43】。不同的是，在元学习中，模型被训练来解决各种学习任务，以便它们能使用少量的训练样本来解决新的学习任务【11, 10, 57, 34】。一种较新的视角是基于预训练的多模态视觉 - 语言模型，通过最少的训练样本，从带标签的描述中分类图像【65, 64, 19】。在这种方法中，少样本学习基于查询图像与描述类别标签的文本描述的正确匹配。我们的方法可以看作是后者方法在持续学习中的一种适应。</p>
+<h3 id="22-增量学习">2.2 增量学习<a class="anchor-link" href="#22-增量学习" title="Permanent link">&para;</a></h3>
+<p>增量学习处理的是从非平稳的数据流中学习新信息的问题【46, 28, 35】。根据任务标识符（ID）随时间的可用性，问题的表述可以是任务增量学习或类增量学习。文献中有多种解决方案试图通过允许从新任务中学习新信息，同时最小化对已获得知识的遗忘来应对这些任务。在基于正则化的方法中，特定参数被正则化，以保留在以前任务中获得的知识，并避免灾难性遗忘【20, 24, 60】。在基于架构的方法中，为每个任务分配主干的一个独立部分或附加分支的独立参数【40, 58, 29, 51, 9】。在基于排练的方法中，已学任务的数据存储在排练缓冲区中，并在当前任务中与当前训练集一起使用【3, 4, 33】。最近的一种基于提示的无排练方法结合了强大的预训练主干与可学习提示，这些提示在不修改主干主要权重的情况下保留了从不同任务中获得的知识，从而避免了遗忘【52, 53, 41, 37】。我们的方法从后者方法中汲取了灵感。</p>
+<h3 id="23-少样本类增量学习">2.3 少样本类增量学习<a class="anchor-link" href="#23-少样本类增量学习" title="Permanent link">&para;</a></h3>
+<p>FSCIL 是一个最近提出的研究课题，旨在解决类增量设置中的少样本训练输入问题【44】，其中在评估期间未提供任务 ID。一般任务是首先从一定数量的基础类中学习，然后不断更新模型以表示新到来的类。这种设置的主要挑战是避免对新类少样本的过拟合。解决这一问题的首次尝试提出了神经气（NG）网络来表示知识【44】，其中为不同的类学习特征空间拓扑结构，并通过扩展和调整网络的拓扑结构来表示新类。在【61】中，作者通过允许分类器随着时间的推移进行更新，将学习表示与分类器解耦，通过图模型在分类器之间传播信息。原型建模也用于在嵌入空间中分配原型，以保留未来新类的空间【62】，或使用新类嵌入表示的平均值作为类原型来替换分类器【63】。不同的方法通过使用 VAE 将增量类的特征合成为子空间的混合【7】，或通过调整一般的深度学习架构，使每组新类只更新少量参数【30】。最近的方法试图结合监督和自监督模型中出现的特征来增强分类器【1】，或通过检索旧类的分布来校准分布，同时估计新类的分布以避免遗忘【26】。</p>
+<h3 id="24-参数高效学习">2.4 参数高效学习<a class="anchor-link" href="#24-参数高效学习" title="Permanent link">&para;</a></h3>
+<p>将大型通用预训练模型适配到下游任务的最常见方法是微调所有模型参数，这会导致高计算成本和内存使用，并需要为不同任务存储多个微调模型的副本。一种轻量级的替代方案来自参数高效学习文献，该文献提出在保持主干参数冻结的同时，仅更新少量额外参数【12, 22】。已经提出了几种方法，以灵活地将预训练的主干适配到不同的下游任务中。适配器调优【15, 16】通过在每一层之间插入带有跳跃连接的瓶颈模块来适应层输出，然后再传递到下一层。前缀调优【23, 52, 17】通过在多头注意力层中预先附加可调前缀向量作为可学习的嵌入来优化。提示调优【22, 53】通过将一组可学习的嵌入附加到第一层的输入嵌入，并通过冻结的转换器层处理扩展的输入。</p>
+<h2 id="3-问题表述">3. 问题表述<a class="anchor-link" href="#3-问题表述" title="Permanent link">&para;</a></h2>
+<p>FSCIL 设置【44】可以定义如下。我们考虑一系列标注的训练集 <span class="math-inline">D_0, D_1, \ldots, D_T</span>，其中 <span class="math-inline">D_t = {(x_{i,t}, y_{i,t})}<em>{i=1}^{N</em>{D_t}}</span>，<span class="math-inline">N_{D_t}</span> 是在阶段 <span class="math-inline">t</span> 提供的训练样本数，<span class="math-inline">T</span> 是最后一个增量阶段。 <span class="math-inline">D_0</span> 标识基础类的大规模训练集， <span class="math-inline">D_t</span> 是新类的少样本训练集，对于 <span class="math-inline">t &gt; 0</span>。基础类数据集 <span class="math-inline">D_0</span> 预期拥有足够多的训练样本。相反，提供的新类的训练集是不足的。考虑属于训练集 <span class="math-inline">D_t</span> 的类标签集合 <span class="math-inline">C_t</span>。FSCIL 有以下要求：（1）各阶段之间的类不重叠， <span class="math-inline">\forall t, \tau</span>， <span class="math-inline">t \neq \tau</span>，<span class="math-inline">C_t \cap C_\tau = \emptyset</span>；（2）基础类集比新类集大， <span class="math-inline">|C_0| &gt; |C_t|</span>，并且 <span class="math-inline">N_{D_0} &gt; N_{D_t}</span>，对于 <span class="math-inline">t &gt; 0</span> 成立；（3）新类集的大小相同， <span class="math-inline">\forall t, \tau</span>， <span class="math-inline">t \neq \tau</span>， <span class="math-inline">|C_t| = |C_\tau|</span> 并且 <span class="math-inline">N_{D_t} = N_{D_\tau}</span> 对 <span class="math-inline">t, \tau &gt; 0</span> 成立。在评估阶段，唯一的要求是根据当前阶段 <span class="math-inline">t</span> 所遇到的所有类来计算阶段性表现。考虑标注的评估集 <span class="math-inline">E_0, E_1, \ldots, E_T</span> 的流，以及模型 <span class="math-inline">f</span>，那么阶段 <span class="math-inline">t</span> 的评估准确率可以如下计算：<br />
+\begin{equation}<br />
+    A_t = \frac{\sum_{(x_i, y_i) \in E_0 \cup E_1 \cup \ldots \cup E_t} [f(x_i) = y_i]}{N_{E_0} + N_{E_1} + \ldots + N_{E_t}}<br />
+\end{equation}<br />
+其中 <span class="math-inline">N_{E_\tau}</span> 是阶段 <span class="math-inline">\tau</span> 的评估样本数，[·] 表示指示函数。</p>
+<h2 id="4-方法">4. 方法<a class="anchor-link" href="#4-方法" title="Permanent link">&para;</a></h2>
+<p>我们提出的方法，CPE-CLIP，如图 1 所示。该方法使用 CLIP 基础视觉 - 语言模型【36】作为持续学习系统的主要构建块。CLIP 是一个神经网络，旨在对齐语言和视觉的模态，并利用自然语言提供的丰富监督来推理视觉概念。在我们的工作中，我们利用 CLIP 的能力，将图像分类视为一个多模态任务，其中文本提示（例如“a photo of a <category>”）作为文本编码器的查询标题，测试图像与标题的匹配作为分类标准。我们的方法学习了适用于语言和视觉编码器的提示【19】。通过这样做，我们保持了预训练期间获得的知识，通过冻结 CLIP 主干，同时允许提示来解决持续学习任务。为了进一步提高性能并避免遗忘，我们引入了提示正则化。</p>
+<h3 id="41-语言编码器">4.1 语言编码器<a class="anchor-link" href="#41-语言编码器" title="Permanent link">&para;</a></h3>
+<p>在这里，我们学习了在给定下游任务的所有类别中共享的语言上下文提示。上下文提示有两个目的：（1）它们避免了手动选择低效的提示【65, 64】来为图像提供文本表示，假设该图像的类别标签可用；（2）它们充当稳定参数，学习在各个阶段任务中共享的一般任务不变属性。我们然后引入了 <span class="math-inline">L</span> 个可学习的标记 <span class="math-inline">g</span>，称为 G-Prompt（遵循 Wang 等人的符号【52】），使得 <span class="math-inline">\Theta_g \in \mathbb{R}^{L \times d_{\text{NLP}}}</span>，其中 <span class="math-inline">d_{\text{NLP}}</span> 是 CLIP 语言编码器的嵌入维度。输入嵌入现在的形式为 <span class="math-inline">[g_1, g_2, \ldots, g_L, w] = [g, w]</span>，其中 <span class="math-inline">w</span> 是输入图像类别名的嵌入。定义 <span class="math-inline">f_{\text{NLP}<em>i}</span> 为语言编码器的第 <span class="math-inline">i</span> 层 transformer 层，其中 <span class="math-inline">i = 1, 2, \ldots, K</span>， <span class="math-inline">K</span> 为层数总数。我们假设可以在每一语言编码器层 <span class="math-inline">f</em>{\text{NLP}<em>i}</span> 中进一步引入新的可学习标记，直至一定深度 <span class="math-inline">D</span>。通过这种方式，不同的提示可以独立地应用于不同的层次，以考虑不同的抽象级别。前向传递可以描述如下：<br />
+\begin{equation}<br />
+    [</em>, h_1] = f_{\text{NLP}<em>1}([g_1, w])<br />
+\end{equation}<br />
+对于第一层，和<br />
+\begin{equation}<br />
+    [</em>, h_i] = f_{\text{NLP}<em>i}([g</em>{i-1}, h_{i-1}]) \quad i = 2, 3, 4, \ldots, D<br />
+\end{equation}<br />
+对于后续层至第 <span class="math-inline">D</span> 层。这里，[·, ·] 表示纵向拼接，<span class="math-inline">h_i</span> 是第 <span class="math-inline">i</span> 层的类别词嵌入关联的隐藏状态输出，<span class="math-inline">g_i</span> 代表第 <span class="math-inline">i</span> 层的可学习提示集合。在此阶段，输入提示 <span class="math-inline">g_i</span> 的输出嵌入将被丢弃，不会传递给下一层。值得注意的是，当引入层特定的提示时，我们有 <span class="math-inline">\Theta_g \in \mathbb{R}^{D \times L \times d_{\text{NLP}}}</span>。在第 <span class="math-inline">D</span> 层 transformer 之后，后续层将以前的输出层按标准方式处理，直到最终的文本表示：<br />
+\begin{equation}<br />
+    [gi, hi] = f_{\text{NLP}<em>i}([g</em>{i-1}, h_{i-1}]) \quad i = D + 1, \ldots, K<br />
+\end{equation}<br />
+为了简便，我们将最后的隐藏状态表示为 <span class="math-inline">h_{\text{NLP}}</span>，在 CLIP 语言编码器中用于表示整个句子。然后将隐藏状态投影到低维空间：<br />
+\begin{equation}<br />
+    h_{\text{NLP}^<em>} = p_{\text{NLP}}(h_{\text{NLP}})<br />
+\end{equation}<br />
+其中 <span class="math-inline">p_{\text{NLP}}</span> 是线性投影层，<span class="math-inline">h_{\text{NLP}^</em>}</span> 是文本表示的最终低维向量。</p>
+<h3 id="42-视觉编码器">4.2 视觉编码器<a class="anchor-link" href="#42-视觉编码器" title="Permanent link">&para;</a></h3>
+<p>对于语言编码器，我们为视觉分支设计了 G-Prompt。在这种情况下，提示与图像的补丁嵌入在多个层次的层次结构中进行拼接，以便与低级和高级图像特征处理交互。我们引入了 <span class="math-inline">L</span> 个标记 <span class="math-inline">\tilde{g}</span>，使得 <span class="math-inline">\tilde{g} \in \mathbb{R}^{L \times d_{\text{CV}}}</span>，其中 <span class="math-inline">d_{\text{CV}}</span> 是 CLIP 视觉编码器的嵌入维度，且 <span class="math-inline">d_{\text{CV}} &gt; d_{\text{NLP}}</span>。输入嵌入的形式现在为 <span class="math-inline">[c_1, c_2, \ldots, c_J, \tilde{g}<em>1, \tilde{g}_2, \ldots, \tilde{g}_L] = [c, \tilde{g}]</span>，其中 <span class="math-inline">c</span> 是输入图像的嵌入补丁集加上附加的 [CLS] 标记，<span class="math-inline">J</span> 是嵌入的总数。定义 <span class="math-inline">f</em>{\text{CV}<em>i}</span> 为视觉编码器的第 <span class="math-inline">i</span> 层 transformer 层，其中 <span class="math-inline">i = 1, 2, \ldots, K</span>。类似于 Khattak 等人【19】，我们通过明确将后者表示为前者的函数来缩小语言和视觉提示之间的差距。我们引入了一个可学习的线性投影 <span class="math-inline">f</em>{\text{PROJ}}</span>，<span class="math-inline">\Theta_{f_{\text{PROJ}}} \in \mathbb{R}^{d_{\text{NLP}} \times d_{\text{CV}}}</span>，并限制视觉任务不变提示由语言 G-Prompt 调节，使得 <span class="math-inline">\tilde{g}<em>i = f</em>{\text{PROJ}}(g_i)</span>，且 <span class="math-inline">\tilde{g}<em>i</span> 是视觉编码器第 <span class="math-inline">i</span> 层的提示集合。尽管视觉分支中的提示是从语言上下文提示中派生的，我们发现对提示跨层次传播采用不同策略更为有益。在这里，我们提出了一种累积方法，作为语言分支中使用的替代方法，提示在不同层之间不再独立，因为它们可以与前一层提示的处理输出嵌入进行交互。通常，提示累积在深度 <span class="math-inline">D</span> 之内进行。形式上，我们描述了视觉编码器中的前向传递：<br />
+\begin{equation}<br />
+    [h_1, \tilde{g}_1] = f</em>{\text{CV}<em>1}([c, \tilde{g}_1])<br />
+\end{equation}<br />
+对于第一层，和<br />
+\begin{equation}<br />
+    \tilde{g}_i = [\tilde{g}_i, \tilde{g}</em>{i-1}]<br />
+\end{equation}</p>
+<p>\begin{equation}<br />
+    [h_i, \tilde{g}<em>i] = f</em>{\text{CV}<em>i}([c, \tilde{g}_i]) \quad i = 2, 3, 4, \ldots, D<br />
+\end{equation}<br />
+对于后续层至第 <span class="math-inline">D</span> 层。第 <span class="math-inline">D</span> 层 transformer 之后，不再累积提示，后续层按标准方式处理之前的输出层，直到最终的图像表示：<br />
+\begin{equation}<br />
+    [\tilde{g}_i, h_i] = f</em>{\text{CV}<em>i}([g</em>{i-1}, h_{i-1}]) \quad i = D + 1, \ldots, K<br />
+\end{equation}<br />
+现在 <span class="math-inline">\tilde{g}<em>i</span> 是最终的提示池，使得 <span class="math-inline">\tilde{g}_i \in \mathbb{R}^{L_D \times d</em>{\text{CV}}}</span>。我们将与 [CLS] 标记相关的最后隐藏状态称为 <span class="math-inline">h_{\text{CV}}</span>，在 CLIP 视觉编码器中用于表示整个图像。然后将隐藏状态投影到低维空间：<br />
+\begin{equation}<br />
+    h_{\text{CV}^<em>} = p_{\text{CV}}(h_{\text{CV}})<br />
+\end{equation}<br />
+其中 <span class="math-inline">p_{\text{CV}}</span> 是线性投影层，<span class="math-inline">h_{\text{CV}^</em>}</span> 是图像表示的最终低维向量。</p>
+<h3 id="43-多模态分类">4.3 多模态分类<a class="anchor-link" href="#43-多模态分类" title="Permanent link">&para;</a></h3>
+<p>对于每个给定输入图像 <span class="math-inline">x</span> 被分类为属于类 <span class="math-inline">z</span>，<span class="math-inline">z = 1, 2, \ldots, Z</span>，的预测概率计算如下：<br />
+\begin{equation}<br />
+    p(y = z|x) = \frac{\exp[\rho(h_{\text{CV}^<em>}, h_{\text{NLP}^</em><em>z<br />
+    })]}{\sum</em>{j=1}^{Z} \exp[\rho(h_{\text{CV}^<em>}, h_{\text{NLP}^</em><em>j})]}<br />
+\end{equation}<br />
+其中 <span class="math-inline">\rho</span> 是余弦相似度，<span class="math-inline">h</em>{\text{CV}^<em>}</span> 是图像 <span class="math-inline">x</span> 的投影表示，<span class="math-inline">h_{\text{NLP}^</em>_z}</span> 是训练集中与第 <span class="math-inline">z</span> 类类别名对应的句子投影表示。</p>
+<h3 id="44-提示正则化">4.4 提示正则化<a class="anchor-link" href="#44-提示正则化" title="Permanent link">&para;</a></h3>
+<p>在 FSCIL 中，基础类训练对于最初调整网络以促进对新类的泛化非常重要。在我们的情况下，G-Prompt 引入了一组标记来实现这个目的。这些标记提供了一种有效的文本表示，可以与图像匹配，以正确地将图像分类为正确的（语义）类别/标签。然而，基础类集相比于与阶段相关的类集提供了更多的泛化机会，因为它提供了更多的类别和训练样本。出于这个原因，我们提出了一种机制，根据在不同阶段中遇到的类别数量来保存知识。我们为给定阶段 <span class="math-inline">t</span>，<span class="math-inline">t = 1, 2, \ldots, T</span> 定义了一个缩放因子 <span class="math-inline">\alpha_t</span>，它影响 G-Prompt 参数在阶段 <span class="math-inline">t</span> 上的更新速率：<br />
+\begin{equation}<br />
+    \alpha_t = \frac{|C_t|}{\sum_{\tau=0}^{t} |C_\tau|}<br />
+\end{equation}<br />
+然后我们按照如下方式应用正则化：<br />
+\begin{equation}<br />
+    \frac{\partial L_t}{\partial \Theta_g} \leftarrow \alpha_t \frac{\partial L_t}{\partial \Theta_g}<br />
+\end{equation}<br />
+和<br />
+\begin{equation}<br />
+    \frac{\partial L_t}{\partial \Theta_{f_{\text{PROJ}}}} \leftarrow \alpha_t \frac{\partial L_t}{\partial \Theta_{f_{\text{PROJ}}}}<br />
+\end{equation}<br />
+其中 <span class="math-inline">L_t</span> 是阶段 <span class="math-inline">t</span> 中的分类任务的损失函数。这样的正则化使得 G-Prompt 及语言 - 视觉提示投影随着总看到的类数量的增加而减少更新频率。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>我们在三个基准数据集上评估了 CPE-CLIP，这三个数据集【44】是 FSCIL 文献中模型比较的主要基准。基准包括 CIFAR100【21】、miniImageNet【39】和 CUB200-2011【49】。</p>
+<h3 id="51-评估基准">5.1 评估基准<a class="anchor-link" href="#51-评估基准" title="Permanent link">&para;</a></h3>
+<p>对于所有基准，我们遵循 Tao 等人【44】提出的分割方案，因为它们为文献中的所有提案提供了标准，确保了公平的模型比较。基准描述如下：</p>
+<ul>
+<li>
+<p><strong>CIFAR100</strong>：该数据集包含来自 100 个类别的 60,000 张 32×32 RGB 图像。我们使用 60 个类别作为基础类集。其余 40 个类别分为 8 个阶段，每个阶段包含 5 个新类别，少样本训练集由每个类别 5 个样本组成（5 类 5 样本增量任务）。</p>
+</li>
+<li>
+<p><strong>miniImageNet</strong>：该数据集包含 60,000 张 84×84 RGB 图像。我们使用 100 个类别作为基础类集。其余 40 个类别分为 8 个阶段，每个阶段包含 5 个少样本训练样本（5 类 5 样本增量任务）。</p>
+</li>
+<li>
+<p><strong>Caltech-UCSD Birds-200-2011 (CUB200)</strong>：该数据集包含 11,788 张来自 200 个鸟类物种的 224×224 细粒度 RGB 图像。我们使用 100 个类别作为基础类集。其余 100 个类别分为 10 个阶段或时间戳，每个阶段包含 10 个新类别，少样本训练集由每个类别 5 个样本组成（10 类 5 样本增量任务）。</p>
+</li>
+</ul>
+<h3 id="52-实现细节">5.2 实现细节<a class="anchor-link" href="#52-实现细节" title="Permanent link">&para;</a></h3>
+<p>我们使用了来自 HuggingFace 的 Transformers 库中的 OpenAI CLIP【36】版本，16×16 的补丁作为起始主干。模型和管道是使用 PyTorch 构建的，并得到了 Avalanche 库【27】的支持。我们使用带动量的 SGD 优化器，所有基准的学习率设置为 0.00325，权重衰减为 1e-5，并使用具有预热的余弦退火。对于基础类训练，我们将批量大小设置为 32，CIFAR100 和 miniImageNet 的数据集训练 3 个 epoch，CUB200 的数据集批量大小为 4，训练 6 个 epoch。对于新类阶段训练集，所有基准的批量大小设置为 4，训练 5 个 epoch。所有实验均部署在一台 GeForce RTX 2080 Ti 上。对于模型比较，我们报告了基础类和每个阶段的 top-1 评估准确率，因为这是 FSCIL 中的标准实践。我们还报告了下降率（PD）指标，该指标衡量了最后一个阶段的准确率与基础类阶段准确率之间的下降，作为遗忘的一个度量，以及跨阶段的平均准确率作为整体性能的度量。</p>
+<h3 id="53-超参数调整">5.3 超参数调整<a class="anchor-link" href="#53-超参数调整" title="Permanent link">&para;</a></h3>
+<p>我们进行了超参数调整，通过改变影响 CPE-CLIP 在 FSCIL 中的总体行为的两个超参数，选择最佳候选模型。我们使用网格搜索来探索以下范围的值：<span class="math-inline">L = [2, 4]</span>，<span class="math-inline">D = [1, 3, 6, 9, 12]</span>，进行了详尽的 2×5 搜索。对于每个配置，我们使用 5 次随机参数初始化的跨阶段平均准确率作为模型选择的指标。由于详尽的超参数搜索计算负担较重，我们仅专注于 CUB200 基准，因为由于与技术性、非常见的反映鸟类物种的文本标签相关的细粒度图像，这一基准对于我们的 CLIP 方法提出了特殊挑战。结果如表 1 所示。</p>
+<h3 id="54-与最新模型的比较">5.4 与最新模型的比较<a class="anchor-link" href="#54-与最新模型的比较" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们展示了 CPE-CLIP 在 CIFAR100、miniImageNet 和 CUB200 基准上的主要结果，如表 2、3 和 4 所示，其中 CPE-CLIP 与最新的 FSCIL 方法【66, 1, 61, 55, 56, 67, 62, 63】进行比较。我们未在模型比较研究中包括被最新的最先进方法大幅超越的模型。</p>
+<p>根据这些结果，我们的模型在很大程度上超越了最先进的模型。CPE-CLIP 在基础类阶段获得了最佳分类准确率，并更有效地减少了遗忘，如 PD 指标所示，同时保持了在时间上的稳定高分类性能。CPE-CLIP 在从较大的数据集（如基础类集）训练到学习阶段的较小数据集时，在减少信息丢失方面表现出色。值得注意的是，当前模型比较中包含的其他方法主要依赖于 ResNet【13】和 ViT【8】作为主要主干，这些主干仅为 CUB200 基准进行了预训练。此外，CPE-CLIP 依赖于 CLIP，而后者并未直接在流行的基础数据集（如 ImageNet【39】）上进行预训练，与 ResNet 和 ViT 不同。我们还对研究中各种模型的训练时间和可学习参数数量进行了比较。比较旨在了解完成整个学习阶段堆栈的计算成本。我们只包括了确保可重复性并具有可用超参数的模型。比较结果见表 5。总体而言，我们的研究发现表明，CPE-CLIP 在不牺牲性能的情况下显著降低了计算成本。</p>
+<h3 id="55-消融研究">5.5 消融研究<a class="anchor-link" href="#55-消融研究" title="Permanent link">&para;</a></h3>
+<p>在这里，我们分析了 CPE-CLIP 中相关组件的重要性。为了简洁，我们仅依赖于 CUB200 基准。特别是，我们专注于三个被消融的模型。首先，我们考虑了不在视觉编码器中应用提示传播的累积策略的情况。在这种情况下，使用与语言分支相同的标准替换策略。其次，我们关注通过完全删除视觉提示来对 G-Prompt 投影到视觉分支的贡献。最后，我们考虑了没有应用正则化的情况，使得 G-Prompt 在各个阶段中一致更新。结果如图 2 所示。</p>
+<p>主模型与其消融版本之间的比较揭示了值得注意的观察结果。具体而言，提示正则化是确保长期内一致性能的关键因素，通过抵消少样本训练样本在问题阶段中的偏差分布的影响来实现。而在消除视觉提示系统的情况下，模型在遗忘和信息丢失方面的敏感性并未显著变化。然而，与完整模型相比，每个阶段的性能普遍下降，特别是在初始阶段表现下降明显，最终在后期阶段趋于收敛。值得注意的是，完全删除视觉分支中的提示与使用提示传播替换策略之间的性能差异很小。总体而言，结果证实了我们提示系统在持续学习设置中实现最佳性能的有效性。总结而言，提示正则化通过确保在时间上的稳定训练，减少了信息丢失和遗忘，而在视觉编码器中进行提示传播的累积策略提供了更好的图像表示，确保了特定阶段中的更高准确率。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>受少样本图像分类和参数高效学习进展的启发，我们提出了一种解决少样本类增量学习这一挑战性任务的新方案，在每个阶段可用的标注数据非常有限。我们提出的CPE-CLIP有效地结合了多种技术和现代理念，构建了一个多模态少样本持续学习者，在时间上保持了高性能。我们证明了我们的方法能够依赖较少的参数和更低的整体计算成本，超越专为FSCIL设计的其他方法。CPE-CLIP引入了一种提示传播的累积策略，这在通过确保最佳分类准确性来增强图像表示方面是有益的。提示正则化则确保了通过减少信息丢失实现的稳定学习。</p>
+<h3 id="61-局限性">6.1 局限性<a class="anchor-link" href="#61-局限性" title="Permanent link">&para;</a></h3>
+<p>CPE-CLIP架构建立在CLIP框架的基础上。CLIP利用文本监督来推理视觉概念，这为FSCIL提供了主要优势。然而，当处理缺少图像类别标签的任务，或者这些标签无法通过CLIP词汇直接处理，或者任务本质上具有模糊性时，这也会带来挑战，导致图像-文本匹配不可靠。此外，尚未探讨正则化对更多阶段的影响。虽然随着看到的类的增加，减少G-Prompt参数的更新率似乎对避免过拟合至关重要，但随着阶段的增加，缩放因子在梯度中接近于零。在这种情况下，G-Prompt参数的更新不足可能会在发生意外分布变化时对新类的泛化产生不利影响。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

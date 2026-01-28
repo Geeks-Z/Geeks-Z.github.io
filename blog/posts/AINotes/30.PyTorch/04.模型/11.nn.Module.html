@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#state_dict">state_dict</a></li>
+<li><a href="#load_state_dict">load_state_dict</a><ul>
+<li><a href="#参数说明">参数说明</a></li>
+<li><a href="#注意事项">注意事项</a></li>
+</ul>
+</li>
+<li><a href="#modeltrain">model.train()</a><ul>
+<li><a href="#使用示例">使用示例</a></li>
+</ul>
+</li>
+<li><a href="#modeleval">model.eval()</a><ul>
+<li><a href="#主要作用">主要作用</a></li>
+<li><a href="#使用方法">使用方法</a></li>
+<li><a href="#注意事项_1">注意事项</a></li>
+</ul>
+</li>
+<li><a href="#modeleval和torchno_grad的区别">model.eval()和torch.no_grad()的区别</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/04.模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="state_dict">state_dict<a class="anchor-link" href="#state_dict" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>在PyTorch中，<code>state_dict</code>是一个字典对象，用于存储模型或优化器的参数。这个字典将每一层或优化器的参数映射到对应的张量。<code>state_dict</code>的主要作用在于方便模型的保存和加载，以便在训练过程中恢复模型的状态或在其他任务中重用模型。</p>
+</blockquote>
+<ul>
+<li>
+<p>对于模型（如<code>torch.nn.Module</code>的实例），<code>state_dict</code>包含模型的可学习参数（如权重和偏置）。只有包含可学习参数的层（如卷积层、线性层等）和已注册的缓冲区（如Batch Normalization层的运行均值和方差）才会在<code>state_dict</code>中有对应的条目。这些参数是在模型训练过程中被优化器更新的。</p>
+</li>
+<li>
+<p>对于优化器（如<code>torch.optim</code>的实例），<code>state_dict</code>包含优化器的状态信息以及使用的超参数（如学习率、动量等）。这些状态信息用于在训练过程中更新模型的参数。</p>
+</li>
+</ul>
+<p>通过调用<code>torch.save(model.state_dict(), PATH)</code>可以将模型的<code>state_dict</code>保存到磁盘上，其中<code>PATH</code>是保存的路径。同样地，通过<code>model.load_state_dict(torch.load(PATH))</code>可以加载之前保存的<code>state_dict</code>到模型中。</p>
+<pre><code class="language-python">#encoding:utf-8
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+import numpy as mp
+import matplotlib.pyplot as plt
+import torch.nn.functional as F
+
+#define model
+class TheModelClass(nn.Module):
+    def __init__(self):
+        super(TheModelClass,self).__init__()
+        self.conv1=nn.Conv2d(3,6,5)
+        self.pool=nn.MaxPool2d(2,2)
+        self.conv2=nn.Conv2d(6,16,5)
+        self.fc1=nn.Linear(16*5*5,120)
+        self.fc2=nn.Linear(120,84)
+        self.fc3=nn.Linear(84,10)
+
+    def forward(self,x):
+        x=self.pool(F.relu(self.conv1(x)))
+        x=self.pool(F.relu(self.conv2(x)))
+        x=x.view(-1,16*5*5)
+        x=F.relu(self.fc1(x))
+        x=F.relu(self.fc2(x))
+        x=self.fc3(x)
+        return x
+
+def main():
+    # Initialize model
+    model = TheModelClass()
+
+    #Initialize optimizer
+    optimizer=optim.SGD(model.parameters(),lr=0.001,momentum=0.9)
+
+    #print model's state_dict
+    print('Model.state_dict:')
+    for param_tensor in model.state_dict():
+        #打印 key value字典
+        print(param_tensor,'\t',model.state_dict()[param_tensor].size())
+
+    #print optimizer's state_dict
+    print('Optimizer,s state_dict:')
+    for var_name in optimizer.state_dict():
+        print(var_name,'\t',optimizer.state_dict()[var_name])
+
+
+
+if __name__=='__main__':
+    main()
+</code></pre>
+<pre><code class="language-python">Model.state_dict:
+conv1.weight     torch.Size([6, 3, 5, 5])
+conv1.bias   torch.Size([6])
+conv2.weight     torch.Size([16, 6, 5, 5])
+conv2.bias   torch.Size([16])
+fc1.weight   torch.Size([120, 400])
+fc1.bias     torch.Size([120])
+fc2.weight   torch.Size([84, 120])
+fc2.bias     torch.Size([84])
+fc3.weight   torch.Size([10, 84])
+fc3.bias     torch.Size([10])
+Optimizer`s state_dict:
+state    {}
+param_groups     [{'lr': 0.001, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False, 'maximize': False, 'foreach': None, 'differentiable': False, 'params': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}]
+
+</code></pre>
+<h2 id="load_state_dict">load_state_dict<a class="anchor-link" href="#load_state_dict" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><code>load_state_dict</code> 是 PyTorch 中 <code>torch.nn.Module</code> 类的一个方法，用于加载模型的状态字典（state dictionary）。状态字典是一个包含模型所有参数的字典，通常通过调用 <code>state_dict()</code> 方法获得。</p>
+</blockquote>
+<h3 id="参数说明">参数说明<a class="anchor-link" href="#参数说明" title="Permanent link">&para;</a></h3>
+<p><code>load_state_dict</code> 的主要参数是一个字典，该字典包含了要加载的参数。通常，这个字典是通过 <code>torch.load()</code> 从一个文件（通常是 <code>.pth</code> 或 <code>.pt</code> 文件）中加载的。</p>
+<pre><code class="language-python">state_dict = torch.load('path_to_model.pth')
+model.load_state_dict(state_dict)
+</code></pre>
+<h3 id="注意事项">注意事项<a class="anchor-link" href="#注意事项" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>模型结构匹配</strong>：在调用 <code>load_state_dict</code> 之前，确保你已经定义了与保存状态字典时完全相同的模型结构。如果模型结构不匹配，你将无法加载状态字典，因为 PyTorch 无法将参数映射到正确的位置。</li>
+<li><strong>设备</strong>：加载的状态字典中的参数默认在 CPU 上。如果你想在 GPU 上使用这些参数，你需要先将模型移动到 GPU 上，然后再加载状态字典。</li>
+</ol>
+<pre><code class="language-python">model = model.to('cuda')
+model.load_state_dict(torch.load('path_to_model.pth'))
+</code></pre>
+<p>或者，你也可以在加载状态字典后移动模型：</p>
+<pre><code class="language-python">model.load_state_dict(torch.load('path_to_model.pth', map_location=torch.device('cuda')))
+model = model.to('cuda')
+</code></pre>
+<ol start="3">
+<li><strong>优化器状态</strong>：除了模型参数外，你可能还想加载优化器的状态。这可以通过类似的方式完成，但请注意，优化器的状态字典应该单独加载。</li>
+</ol>
+<pre><code class="language-python">optimizer_state_dict = torch.load('path_to_optimizer.pth')
+optimizer.load_state_dict(optimizer_state_dict)
+</code></pre>
+<h2 id="modeltrain">model.train()<a class="anchor-link" href="#modeltrain" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>model.train()和model.eval()的区别主要在于Batch Normalization和Dropout两层。</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306281723463.png" style="zoom: 50%;" /></div>
+
+<p>当调用 <code>model.train()</code> 时，模型将处于训练模式，这通常意味着：</p>
+<ol>
+<li>
+<p><strong>Dropout</strong>：如果模型中包含 Dropout 层，那么在训练模式下，Dropout 层会在前向传播时随机地将一部分神经元的输出设置为零。这有助于防止模型过拟合。在评估模式下，Dropout 层不会进行任何操作，所有神经元的输出都会被保留。</p>
+</li>
+<li>
+<p><strong>BatchNorm</strong>：Batch Normalization（BatchNorm）层在训练和评估模式下的行为也有所不同。在训练模式下，BatchNorm 会计算每个批次的均值和方差，并使用这些统计量来标准化输入。同时，它还会更新其内部运行均值和方差的估计值。在评估模式下，BatchNorm 会使用这些运行均值和方差来进行标准化，而不是每个批次的统计量。</p>
+</li>
+<li>
+<p><strong>其他层</strong>：有些自定义的层或模块也可能在训练和评估模式下有不同的行为。这取决于这些层或模块的实现。</p>
+</li>
+</ol>
+<h3 id="使用示例">使用示例<a class="anchor-link" href="#使用示例" title="Permanent link">&para;</a></h3>
+<p>在训练循环的开始，你通常会调用 <code>model.train()</code> 来确保模型处于正确的模式：</p>
+<pre><code class="language-python">model = MyModel()  # 假设 MyModel 是你的模型类
+model.train()  # 将模型设置为训练模式
+
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+
+for epoch in range(num_epochs):
+    for inputs, targets in dataloader:
+        optimizer.zero_grad()  # 清零梯度
+        outputs = model(inputs)  # 前向传播
+        loss = criterion(outputs, targets)  # 计算损失
+        loss.backward()  # 反向传播
+        optimizer.step()  # 更新权重
+</code></pre>
+<p>在评估或测试模型时，你应该使用 <code>model.eval()</code> 来确保模型不会应用 Dropout 或使用批次的统计量进行 BatchNorm：</p>
+<pre><code class="language-python">model.eval()  # 将模型设置为评估模式
+
+with torch.no_grad():  # 不计算梯度，节省内存和计算资源
+    for inputs, targets in test_dataloader:
+        outputs = model(inputs)  # 前向传播
+        # ... 计算性能指标等 ...
+</code></pre>
+<p>请注意，在评估模式下，使用 <code>with torch.no_grad():</code> 块是一个好习惯，因为它可以防止计算不必要的梯度，从而节省计算资源和内存。</p>
+<h2 id="modeleval">model.eval()<a class="anchor-link" href="#modeleval" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306281721920.png" style="zoom: 50%;" /></div>
+
+<p><code>model.eval()</code> 是 PyTorch 框架中一个非常关键的方法，用于将模型设置为评估模式（evaluation mode）。在模型训练完成后，我们通常会对模型进行评估或测试以检查其性能。这时候，调用 <code>model.eval()</code> 是非常必要的，因为它会影响模型中的某些层（如 Dropout 和 Batch Normalization）的行为。</p>
+<h3 id="主要作用">主要作用<a class="anchor-link" href="#主要作用" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Dropout</strong>：在训练模式下，Dropout 层会随机丢弃一部分神经元的输出，这有助于防止模型过拟合。但在评估模式下，<code>model.eval()</code> 会关闭 Dropout 层的功能，确保所有神经元都参与前向传播，从而得到更稳定、更准确的输出。</p>
+</li>
+<li>
+<p><strong>Batch Normalization</strong>：BatchNorm 层在训练和评估模式下的行为也不同。在训练模式下，BatchNorm 会使用当前批次的均值和方差来标准化输入。而在评估模式下，<code>model.eval()</code> 会指示 BatchNorm 使用训练过程中积累的运行均值（running mean）和运行方差（running variance）来进行标准化。这样做的好处是，模型在评估时对每个输入的标准化方式是一致的，不受批次大小的影响。</p>
+</li>
+</ol>
+<h3 id="使用方法">使用方法<a class="anchor-link" href="#使用方法" title="Permanent link">&para;</a></h3>
+<p>在 PyTorch 中，使用 <code>model.eval()</code> 很简单。你只需在模型评估或测试之前调用它即可：</p>
+<pre><code class="language-python">model = MyModel()  # 假设 MyModel 是你的模型类
+model.load_state_dict(torch.load('path_to_model.pth'))  # 加载预训练模型参数
+
+model.eval()  # 将模型设置为评估模式
+
+with torch.no_grad():  # 不计算梯度，节省内存和计算资源
+    for inputs, targets in test_dataloader:
+        outputs = model(inputs)  # 进行前向传播
+        # ... 计算性能指标等 ...
+</code></pre>
+<p>在上面的代码中，我们首先加载了预训练的模型参数，然后调用 <code>model.eval()</code> 将模型设置为评估模式。注意，我们还使用了 <code>with torch.no_grad():</code> 块来确保在评估过程中不计算梯度，这有助于节省内存和计算资源。</p>
+<h3 id="注意事项_1">注意事项<a class="anchor-link" href="#注意事项_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>确保在正确的位置调用</strong>：确保在评估或测试开始前调用 <code>model.eval()</code>，并在训练开始前调用 <code>model.train()</code>。不要在训练循环内部多次调用 <code>model.eval()</code>，除非你有特定的需求。</p>
+</li>
+<li>
+<p><strong>梯度计算</strong>：调用 <code>model.eval()</code> 后，模型中的所有可学习参数的 <code>requires_grad</code> 属性将被设置为 <code>False</code>，这意味着在评估模式下不会计算梯度。这有助于加速推理过程。</p>
+</li>
+<li>
+<p><strong>BatchNorm 和 Dropout 的固定</strong>：如前所述，<code>model.eval()</code> 会固定 BatchNorm 层和关闭 Dropout 层，确保在评估时模型的行为是一致的。</p>
+</li>
+</ol>
+<h2 id="modeleval和torchno_grad的区别">model.eval()和torch.no_grad()的区别<a class="anchor-link" href="#modeleval和torchno_grad的区别" title="Permanent link">&para;</a></h2>
+<p>在PyTorch中进行validation/test时，会使用<code>model.eval()</code>切换到测试模式，在该模式下：</p>
+<ol>
+<li>
+<p>主要用于通知dropout层和BN层在training和validation/test模式间切换：<br />
+   - 在train模式下，dropout网络层会按照设定的参数p，设置保留激活单元的概率（保留概率=p)。BN层会继续计算数据的mean和var等参数并更新。<br />
+   - 在eval模式下，dropout层会让所有的激活单元都通过，而BN层会停止计算和更新mean和var，直接使用在训练阶段已经学出的mean和var值。</p>
+</li>
+<li>
+<p>eval模式不会影响各层的gradient计算行为，即gradient计算和存储与training模式一样，只是不进行反向传播（back probagation)。</p>
+</li>
+</ol>
+<p>而<code>with torch.no_grad()</code>则主要是用于停止autograd模块的工作，以起到加速和节省显存的作用。它的作用是将该with语句包裹起来的部分停止梯度的更新，从而节省了GPU算力和显存，但是并不会影响dropout和BN层的行为。</p>
+<p>如果不在意显存大小和计算时间的话，仅仅使用<code>model.eval()</code>已足够得到正确的validation/test的结果；而<code>with torch.no_grad()</code>则是更进一步加速和节省gpu空间（因为不用计算和存储梯度），从而可以更快计算，也可以跑更大的batch来测试。</p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://blog.csdn.net/qq_38410428/article/details/101102075">PyTorch：model.train()和model.eval()用法和区别，以及model.eval()和torch.no_grad()的区别</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

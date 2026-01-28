@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-预备知识">3. 预备知识</a><ul>
+<li><a href="#31-梯度提升">3.1 梯度提升</a></li>
+<li><a href="#32-类增量学习设置">3.2 类增量学习设置</a></li>
+</ul>
+</li>
+<li><a href="#4-方法">4. 方法</a><ul>
+<li><a href="#41-从梯度提升到类增量学习">4.1 从梯度提升到类增量学习</a></li>
+<li><a href="#42-新旧类别的校准">4.2 新旧类别的校准</a><ul>
+<li><a href="#logits-对齐">Logits 对齐</a></li>
+<li><a href="#特征增强">特征增强</a></li>
+<li><a href="#特征提升总结">特征提升总结</a></li>
+</ul>
+</li>
+<li><a href="#43-特征压缩">4.3 特征压缩</a><ul>
+<li><a href="#平衡蒸馏">平衡蒸馏</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实验设置">5.1 实验设置</a></li>
+<li><a href="#52-定量结果">5.2 定量结果</a></li>
+<li><a href="#53-消融实验">5.3 消融实验</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/22.Backbone Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>FOSTER: <a href="https://arxiv.org/abs/2204.04662">Feature Boosting and Compression for Class-Incremental Learning</a> | <a href="https://github.com/G-U-NECCV22-FOSTER">Code</a> </p>
+</blockquote>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>在不断变化的世界中，持续学习新概念的能力是必要的。然而，深度神经网络在学习新类别时会出现灾难性遗忘的问题。许多工作已经提出以缓解这一现象，但大多数方法要么陷入稳定性与可塑性之间的困境，要么需要过多的计算或存储开销。受梯度提升算法的启发，我们提出了一种新的两阶段学习范式 FOSTER，使模型能够自适应地学习新类别。具体来说，我们首先动态扩展新模块以拟合目标模型与原始模型输出之间的残差。接着，我们通过有效的蒸馏策略移除冗余参数和特征维度，以保持单一骨干模型。我们在 CIFAR-100 和 ImageNet-100/1000 数据集上验证了我们的方法 FOSTER，并在不同设置下取得了最先进的性能。代码可在 https://github.com/G-U-N/ECCV22-FOSTER 获取。</p>
+<p><strong>关键词</strong>: 类增量学习, 梯度提升</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>现实世界在不断变化，新的概念和类别不断涌现 [14,52,39,50]。由于数据隐私 [5] 和昂贵的训练成本，每次新类别出现时重新训练模型是不现实的。因此，有必要使模型能够持续学习新类别，即类增量学习 [48,53,38]。然而，直接在新数据上微调原始神经网络会导致一个严重的问题，即灾难性遗忘 [11]，模型会完全并突然忘记之前学到的信息。受此启发，类增量学习旨在设计一种学习范式，使模型能够在多个阶段持续学习新类别，同时保持对旧类别的判别能力。</p>
+<p>近年来，许多方法从不同方面被提出。到目前为止，最广泛认可和使用的类增量学习策略是基于知识蒸馏 [19]。方法 [28,34,1,42,47,51] 额外保留旧模型，并使用知识蒸馏来约束新模型在原始任务上的输出与旧模型的输出相似 [28]。然而，这些使用单一骨干的方法可能没有足够的可塑性 [17] 来应对即将到来的新类别。此外，即使有知识蒸馏的限制，由于对旧数据的访问有限 [5]，模型仍然会遭受旧类别特征退化 [44] 的问题。</p>
+<p>最近，基于动态架构的方法 [44,29,9] 在类增量学习中取得了最先进的性能。通常，它们保留一些参数冻结的模块以维持旧类别的重要部分，并扩展新的可训练模块以增强学习新类别的可塑性。然而，它们有两个不可避免的缺陷：首先，不断为即将到来的任务扩展新模块会导致参数数量急剧增加，导致严重的存储和计算开销，这使得这些方法不适合长期增量学习。其次，由于旧模块从未见过新概念，直接保留它们可能会损害新类别的性能。保留的旧模块越多，负面影响越显著。</p>
+<p>在本文中，我们提出了一种从梯度提升的角度分析和实现类增量学习目标的新视角。梯度提升方法使用加法模型逐步逼近真实目标模型，其中后续模型拟合目标与先前模型之间的残差。在类增量学习中，由于新类别的分布不断到来，分布漂移也会导致目标标签与模型输出之间的残差。因此，我们提出了一个类似的提升框架，通过应用加法模型逐步拟合残差来解决类增量学习问题，其中不同的模型主要处理它们的特殊任务（具有不重叠的类别集合）。正如我们后面所讨论的，我们的提升框架是动态结构方法（如 DER [44]）的更广义框架。它在两个方面具有积极意义：一方面，新模型增强了可塑性，从而帮助模型学习区分新类别。另一方面，训练新模型对所有类别进行分类可能有助于发现原始模型忽略的一些关键元素。如图 1 所示，当模型学习旧类别（如老虎、猫和猴子）时，它可能认为条纹是重要信息，但错误地将耳廓视为无意义的特征。在学习新类别时，由于鱼和鸟没有耳廓，新模型会发现这个错误并纠正它。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145514.png" style="zoom: 80%;" /></div>
+
+<p>然而，正如我们上面所讨论的，创建新模型不仅会导致参数数量增加，还可能导致新旧模型在特征层面的不一致性。为此，我们对提升模型进行压缩，移除不必要的参数和不一致的特征，从而避免上述基于动态结构方法的缺点，保留关键信息并增强模型的鲁棒性。</p>
+<p>总之，我们的范式可以分解为两个步骤：提升和压缩。第一步可以看作是提升，以缓解由于新类别的到来而导致的性能下降。具体来说，我们保留旧模型并冻结其所有参数。然后我们扩展一个新的可训练特征提取器，并将其与旧模型的特征提取器连接，并初始化一个受限的全连接层，将超级特征转换为 logits，我们将在后面详细演示。在第二步中，我们旨在消除由于特征提升而导致的冗余参数和无意义的维度。具体来说，我们提出了一种有效的蒸馏策略，即使在学习新任务时数据有限，也可以将知识从提升模型转移到单一模型中，且性能损失可以忽略不计。我们在三个基准数据集（包括 CIFAR-100 和 ImageNet-100/1000）上进行了广泛的实验，结果表明我们的方法 FOSTER 取得了最先进的性能。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>许多工作已经分析了类增量学习中性能下降的原因并缓解了这一现象。在本节中，我们将简要讨论这些方法和提升算法。</p>
+<p><strong>知识蒸馏</strong>。知识蒸馏 [19] 旨在通过鼓励学生模型的输出近似教师模型的输出来将暗知识 [25] 从教师传递给学生 [28]。LwF [28] 额外保留旧模型，并应用修改后的交叉熵损失来约束新模型在旧类别上的输出，以保留旧模型的能力。Bic [42], WA [47] 提出了有效的策略来缓解蒸馏后由于训练数据不平衡导致的分类器偏差。</p>
+<p><strong>回放</strong>。回放策略使模型能够部分访问旧数据。[34,42,47,40] 分配内存来存储先前任务的样本，以便在学习任务时回放。[22] 保留低维特征而不是原始实例以减少存储开销。在 [43] 中，实例通过生成模型 [16] 合成以进行回放。[32] 测试了各种样本选择策略，表明不同的样本选择方式对性能有显著影响，且 herding 在大多数设置中优于其他策略。</p>
+<p><strong>动态架构</strong>。许多工作 [10,15,21,36,41] 创建新模块以动态处理不断增长的训练分布 [45,27]。然而，大多数这些方法需要一个准确的任务 ID，这在实际生活中通常不可用，以帮助它们选择相应的特定 ID 模块。最近，方法 [44,29,9] 成功地将动态架构应用于类增量学习，其中任务 ID 不可用，展示了它们相对于单一骨干方法的优势。然而，正如我们在第 1 节中所说明的，它们有两个不可避免的缺点：(i) 不断添加新模块会导致无法承受的开销。(ii) 直接保留旧模块会导致新类别表示的噪声，损害新类别的性能。</p>
+<p><strong>提升</strong>。提升代表了一组将弱学习者转化为强学习者的机器学习算法 [54]。AdaBoost [12] 是最著名的提升算法之一，旨在最小化加法模型的指数损失。AdaBoost 的关键思想是调整训练样本的权重，使新的基学习器更关注前一个集成模型无法正确识别的样本。近年来，基于梯度提升 [13] 的算法 [2,24,7] 在各种任务上取得了优异的性能。</p>
+<h2 id="3-预备知识">3. 预备知识<a class="anchor-link" href="#3-预备知识" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先简要讨论梯度提升的基本过程（第 3.1 节）。然后，我们在第 3.2 节中描述类增量学习的设置。在第 4 节中，我们将详细演示如何将梯度提升的思想应用于类增量学习场景。</p>
+<h3 id="31-梯度提升">3.1 梯度提升<a class="anchor-link" href="#31-梯度提升" title="Permanent link">&para;</a></h3>
+<p>给定训练集 <span class="math-inline">D_{train} = {(x_i, y_i)}_{i=1}^n</span>，其中 <span class="math-inline">x_i \in X</span> 是实例，<span class="math-inline">y_i \in Y</span> 是对应的标签，梯度提升方法寻求一个假设 <span class="math-inline">F: X \rightarrow Y</span> 以最小化经验风险（损失函数为 <span class="math-inline">\ell(\cdot, \cdot)</span>）：</p>
+<p><div class="math-display"><br />
+F^* = \arg \min_F \mathbb{E}<em>{(x,y) \in D</em>{train}} [\ell(y, F(x))], \tag{1}<br />
+</div></p>
+<p>通过迭代地添加一个新的加权弱函数 <span class="math-inline">h_i(\cdot)</span>，该函数从特定的函数空间 <span class="math-inline">H_i</span> 中选择（例如，所有可能的决策树的集合），以逐步拟合残差。经过 <span class="math-inline">m</span> 次迭代后，假设 <span class="math-inline">F</span> 可以表示为：</p>
+<p><div class="math-display"><br />
+F(x) = F_m(x) = \sum_{i=1}^m \alpha_i h_i(x), \tag{2}<br />
+</div></p>
+<p>其中 <span class="math-inline">\alpha_i</span> 是 <span class="math-inline">h_i(\cdot)</span> 的系数。然后我们需要找到 <span class="math-inline">F_{m+1}</span> 以进一步优化目标：</p>
+<p><div class="math-display"><br />
+F_{m+1}(x) = F_m(x) + \arg \min_{h_{m+1} \in H_{m+1}} \mathbb{E}<em>{(x,y) \in D</em>{train}} [\ell(y, F_m(x) + h_{m+1}(x))]. \tag{3}<br />
+</div></p>
+<p>然而，直接优化上述函数以找到最佳的 <span class="math-inline">h_{m+1}</span> 通常是不可行的。因此，我们使用最陡下降步进行迭代优化：</p>
+<p><div class="math-display"><br />
+F_{m+1}(x) = F_m(x) - \alpha_m \nabla_{F_m} \mathbb{E}<em>{(x,y) \in D</em>{train}} [\ell(y, F_m(x))], \tag{4}<br />
+</div></p>
+<p>其中 <span class="math-inline">- \nabla_{F_m} \mathbb{E}<em>{(x,y) \in D</em>{train}} [\ell(y, F_m(x))]</span> 是 <span class="math-inline">h_{m+1}(x)</span> 要逼近的目标。具体来说，如果 <span class="math-inline">\ell(\cdot, \cdot)</span> 是均方误差（MSE），则它转化为：</p>
+<p><div class="math-display"><br />
+\nabla_{F_m} \mathbb{E}<em>{(x,y) \in D</em>{train}} [(y - F_m(x))^2] = 2 \times \mathbb{E}<em>{(x,y) \in D</em>{train}} [y - F_m(x)]. \tag{5}<br />
+</div></p>
+<p>理想情况下，设 <span class="math-inline">\alpha_m = 1/2</span>，如果 <span class="math-inline">h_{m+1}(x)</span> 可以拟合 <span class="math-inline">2 \alpha_m (y - F_m(x)) = (y - F_m(x))</span> 对于每个 <span class="math-inline">(x, y) \in D_{train}</span>，则 <span class="math-inline">F_{m+1}</span> 是最优函数，最小化经验误差。</p>
+<h3 id="32-类增量学习设置">3.2 类增量学习设置<a class="anchor-link" href="#32-类增量学习设置" title="Permanent link">&para;</a></h3>
+<p>与传统的模型在所有类别上使用所有训练数据进行训练的情况不同，在类增量学习中，模型在第 <span class="math-inline">t</span> 阶段接收一批新的训练数据 <span class="math-inline">D_t = {(x_{t_i}, y_{t_i})}<em>{i=1}^n</span>。具体来说，<span class="math-inline">n</span> 是训练样本的数量，<span class="math-inline">x</em>{t_i} \in X_t</span> 是输入图像，<span class="math-inline">y_{t_i} \in Y_t</span> 是 <span class="math-inline">x_{t_i}</span> 的对应标签。所有已见类别的标签空间表示为 <span class="math-inline">\hat{Y}<em>t = \cup</em>{i=0}^t Y_i</span>，其中 <span class="math-inline">Y_t \cap Y_{t'} = \emptyset</span> 对于 <span class="math-inline">t \neq t'</span>。在第 <span class="math-inline">t</span> 阶段，基于回放的方法还会保存一部分旧数据作为 <span class="math-inline">V_t</span>，它是 <span class="math-inline">\cup_{i=0}^{t-1} D_i</span> 的一个有限子集。我们的模型在 <span class="math-inline">\hat{D}_t = D_t \cup V_t</span> 上进行训练，并要求在所有已见类别上表现良好。</p>
+<h2 id="4-方法">4. 方法<a class="anchor-link" href="#4-方法" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们描述了 FOSTER 及其如何促使模型同时学习所有类别。下面，我们首先在第 4.1 节中详细演示如何将梯度提升算法的思想应用于类增量学习。然后我们在第 4.2 节中提出了新的策略以进一步增强和平衡学习，这大大提高了性能。最后，为了避免参数数量爆炸性增长并移除冗余参数和特征维度，我们在第 4.3 节中利用了一种基于知识蒸馏的简单而有效的压缩方法。</p>
+<h3 id="41-从梯度提升到类增量学习">4.1 从梯度提升到类增量学习<a class="anchor-link" href="#41-从梯度提升到类增量学习" title="Permanent link">&para;</a></h3>
+<p>假设在第 <span class="math-inline">t</span> 阶段，我们保存了上一阶段的模型 <span class="math-inline">F_{t-1}</span>。<span class="math-inline">F_{t-1}</span> 可以进一步分解为特征嵌入和线性分类器：<span class="math-inline">F_{t-1}(x) = (W_{t-1})^\top \Phi_{t-1}(x)</span>，其中 <span class="math-inline">\Phi_{t-1}(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^d</span> 和 <span class="math-inline">W_{t-1} \in \mathbb{R}^{d \times |\hat{Y}<em>{t-1}|}</span>。当新的数据流到来时，直接在新数据上微调 <span class="math-inline">F</em>{t-1}</span> 会损害其对旧类别的能力，这是不可取的。另一方面，简单地冻结 <span class="math-inline">F_{t-1}</span> 会导致其对新类别的可塑性丧失，使得对于 <span class="math-inline">(x, y) \in D_t</span>，目标 <span class="math-inline">y</span> 与 <span class="math-inline">F_{t-1}(x)</span> 之间的残差变大。受梯度提升的启发，我们训练一个新模型来拟合残差。具体来说，新模型 <span class="math-inline">F_t</span> 由一个特征提取器 <span class="math-inline">\phi_t(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^d</span> 和一个线性分类器 <span class="math-inline">W_t \in \mathbb{R}^{d \times |\hat{Y}<em>t|}</span> 组成。<span class="math-inline">W_t</span> 可以进一步分解为 <span class="math-inline">[W</em>{t}^{(o)}, W_{t}^{(n)}]</span>，其中 <span class="math-inline">W_{t}^{(o)} \in \mathbb{R}^{d \times |\hat{Y}<em>{t-1}|}</span> 和 <span class="math-inline">W</em>{t}^{(n)} \in \mathbb{R}^{d \times |Y_t|}</span>。因此，训练过程可以表示为：</p>
+<p><div class="math-display"><br />
+\mathrm F_{t}(\boldsymbol x) = \mathrm F_{t-1}(\boldsymbol x)+\mathop{\arg\min}<em>{\mathcal F</em>{t}} \mathbb E_{(\boldsymbol x,y)\in \hat{\mathcal D}<em>{t}}\left[\ell\left(y,\mathrm F</em>{t-1}(\boldsymbol x)+\mathcal F_{t}(\boldsymbol x)\right)\right]\, \tag{6}<br />
+</div></p>
+<p>类似于第 3.1 节，设 <span class="math-inline">\ell(\cdot, \cdot)</span> 为均方误差函数，考虑到神经网络的强大特征表示学习能力，我们期望 <span class="math-inline">F_t(x)</span> 能够拟合对于每个 <span class="math-inline">(x, y) \in \hat{D}<em>t</span>，<span class="math-inline">y</span> 与 <span class="math-inline">F</em>{t-1}(x)</span> 的残差。理想情况下，我们有：</p>
+<p><div class="math-display"><br />
+\boldsymbol y=\mathrm F_{t-1}(\boldsymbol x)+\mathcal F_{t}(\boldsymbol x)=\mathcal S\left(\left[\begin{array}{cc}\mathbf W_{t-1}^\top\ \mathbf O\end{array}\right] \mathrm \Phi_{t-1}(\boldsymbol x)\right)+\mathcal S\left(\left[\begin{array}{cc}(\mathcal W^{(o)}<em>{t})^\top\ (\mathcal W^{(n)}</em>{t})^\top\end{array}\right] \phi_{t}(\boldsymbol x)\right)\, \tag{7}<br />
+</div></p>
+<p>其中 <span class="math-inline">S(\cdot)</span> 是 softmax 操作，<span class="math-inline">\mathbf O \in \mathbb{R}^{d \times |Y_t|}</span> 设置为零矩阵或在 <span class="math-inline">\hat{D}<em>t</span> 上微调，<span class="math-inline">\Phi</em>{t-1}</span> 被冻结，<span class="math-inline">\boldsymbol y</span> 是 <span class="math-inline">y</span> 的对应 one-hot 向量。在我们的讨论中，默认将 <span class="math-inline">\mathbf O</span> 设置为零矩阵。</p>
+<p>将 <span class="math-inline">F_t</span> 的参数表示为 <span class="math-inline">\theta_t</span>，<span class="math-inline">Dis(\cdot, \cdot)</span> 为距离度量（例如欧几里得度量），这个过程可以表示为以下优化问题：</p>
+<p><div class="math-display"><br />
+\theta_t^*=\mathop{\arg\min}<em>{\theta_t}  \textrm{Dis}\left(\boldsymbol y, \mathcal S\left(\left[\begin{array}{cc}\mathbf W</em>{t-1}^\top\ \mathbf O\end{array}\right] \mathrm \Phi_{t-1}(\boldsymbol x)\right)+\mathcal S\left(\left[\begin{array}{cc}(\mathcal W^{(o)}<em>{t})^\top\ (\mathcal W^{(n)}</em>{t})^\top\end{array}\right]\mathcal \phi_{t}(\boldsymbol x)\right)\right) \tag{8}<br />
+</div></p>
+<p>我们将 <span class="math-inline">S(\cdot) + S(\cdot)</span> 替换为 <span class="math-inline">S(\cdot + \cdot)</span>，并将 <span class="math-inline">Dis(\cdot, \cdot)</span> 替换为 Kullback-Leibler 散度（KLD），则目标函数变为：</p>
+<p><div class="math-display"><br />
+\theta_t^* = \arg \min_{\theta_t} KL\left(y \parallel S\left(\begin{bmatrix} W_{t-1}^\top &amp; (W_{t}^{(o)})^\top \ O &amp; (W_{t}^{(n)})^\top \end{bmatrix} \begin{bmatrix} \Phi_{t-1}(x) \ \phi_t(x) \end{bmatrix}\right)\right). \tag{9}<br />
+</div></p>
+<p>我们在补充材料中提供了关于这种替换的原因的说明。因此，<span class="math-inline">F_t</span> 可以进一步分解为一个扩展的线性分类器 <span class="math-inline">W_t</span> 和一个连接的超级特征提取器 <span class="math-inline">\Phi_t(\cdot)</span>，其中：</p>
+<p><div class="math-display"><br />
+W_t^\top = \begin{bmatrix} W_{t-1}^\top &amp; (W_{t}^{(o)})^\top \ O &amp; (W_{t}^{(n)})^\top \end{bmatrix}, \quad \Phi_t(x) = \begin{bmatrix} \Phi_{t-1}(x) \ \phi_t(x) \end{bmatrix}. \tag{10}<br />
+</div></p>
+<p>需要注意的是，<span class="math-inline">W_{t-1}^\top</span>、<span class="math-inline">O</span> 和 <span class="math-inline">\Phi_{t-1}</span> 都被冻结，可训练的模块是 <span class="math-inline">\phi_t</span>、<span class="math-inline">W_{t}^{(o)}</span> 和 <span class="math-inline">W_{t}^{(n)}</span>。这里我们解释它们的作用。最终，<span class="math-inline">F_t</span> 的 logits 是：</p>
+<p><div class="math-display"><br />
+\mathbf W_{t}^\top \mathrm \Phi_{t}(\boldsymbol x)=\left[\begin{array}{cc}\mathbf W_{t-1}^\top \mathrm \Phi_{t-1}(\boldsymbol x)+(\mathcal W_{t}^{(o)})^\top\mathcal \phi_{t}(\boldsymbol x)\<br />
+(\mathcal W_{t}^{(n)})^\top\mathcal \phi_{t}(\boldsymbol x)\end{array}\right]. \tag{11}<br />
+</div></p>
+<p>下半部分是新类别的 logits，而上半部分是旧类别的 logits。正如我们在第 1 节中所提到的，下半部分要求新模块 <span class="math-inline">F_t</span> 学习如何正确分类新类别，从而增强模型的可塑性，以提升在新类别上的性能。上半部分则鼓励新模块拟合目标 <span class="math-inline">y</span> 与 <span class="math-inline">F_{t-1}</span> 之间的残差，从而促使 <span class="math-inline">F_t</span> 挖掘更多关键的分类模式。</p>
+<h3 id="42-新旧类别的校准">4.2 新旧类别的校准<a class="anchor-link" href="#42-新旧类别的校准" title="Permanent link">&para;</a></h3>
+<p>在训练新任务时，我们只有一个不平衡的训练集 <span class="math-inline">\hat{D}_t = D_t \cup V_t</span>。<span class="math-inline">D_t</span> 中类别的不平衡会导致模型出现强烈的分类偏差 [23,47,42,1]。此外，提升模型往往会由于监督不足而忽略少数类别的残差。为了缓解分类偏差并鼓励模型平等地学习新旧类别，我们在以下部分提出了 <strong>Logits 对齐</strong> 和 <strong>特征增强</strong> 策略。</p>
+<h4 id="logits-对齐">Logits 对齐<a class="anchor-link" href="#logits-对齐" title="Permanent link">&para;</a></h4>
+<p>为了加强对旧实例的学习并缓解分类偏差，我们在训练期间分别为旧类别和新类别的 logits 添加一个缩放因子。因此，训练期间的 logits 为：</p>
+<p><div class="math-display"><br />
+\gamma W_t^\top \Phi_t(x) = \begin{bmatrix} \gamma_1 \left( W_{t-1}^\top \Phi_{t-1}(x) + (W_{t}^{(o)})^\top \phi_t(x) \right) \ \gamma_2 (W_{t}^{(n)})^\top \phi_t(x) \end{bmatrix}, \tag{12}<br />
+</div></p>
+<p>其中 <span class="math-inline">0 &lt; \gamma_1 &lt; 1</span>, <span class="math-inline">\gamma_2 &gt; 1</span>，且 <span class="math-inline">\gamma</span> 是由 <span class="math-inline">\gamma_1</span> 和 <span class="math-inline">\gamma_2</span> 组成的对角矩阵。通过这种缩放策略，旧类别的 logits 绝对值被减小，而新类别的 logits 绝对值被放大，从而迫使模型 <span class="math-inline">F_t</span> 为旧类别产生更大的 logits，为新类别产生更小的 logits。</p>
+<p>我们通过每个类别的归一化有效数 <span class="math-inline">E_n</span> [4] 获取缩放因子 <span class="math-inline">\gamma_1</span> 和 <span class="math-inline">\gamma_2</span>，<span class="math-inline">E_n</span> 可以看作是等比数列的和，其中 <span class="math-inline">n</span> 是实例的数量，<span class="math-inline">\beta</span> 是一个可调的超参数：</p>
+<p><div class="math-display"><br />
+E_n = \begin{cases}<br />
+\frac{1 - \beta^n}{1 - \beta}, &amp; \beta \in [0, 1) \<br />
+n, &amp; \beta = 1<br />
+\end{cases}, \tag{13}<br />
+</div></p>
+<p>具体来说，<span class="math-inline">(\gamma_1, \gamma_2) = \left( \frac{E_{n_{\text{old}}}}{E_{n_{\text{old}}} + E_{n_{\text{new}}}}, \frac{E_{n_{\text{new}}}}{E_{n_{\text{old}}} + E_{n_{\text{new}}}} \right)</span>。因此，目标函数为：</p>
+<p><div class="math-display"><br />
+L_{LA} = KL\left( y \parallel S\left( \gamma W_t^\top \Phi_t(x) \right) \right). \tag{14}<br />
+</div></p>
+<h4 id="特征增强">特征增强<a class="anchor-link" href="#特征增强" title="Permanent link">&para;</a></h4>
+<p>我们认为，简单地让新模块 <span class="math-inline">F_t(x)</span> 拟合 <span class="math-inline">F_{t-1}(x)</span> 和目标 <span class="math-inline">y</span> 之间的残差有时是不够的。在极端情况下，例如 <span class="math-inline">F_{t-1}(x)</span> 和目标 <span class="math-inline">y</span> 之间的残差为零，新模块 <span class="math-inline">F_t</span> 无法学习到关于旧类别的任何信息，从而会损害模型在旧类别上的性能。因此，我们应该促使新模块 <span class="math-inline">F_t</span> 进一步学习旧类别。</p>
+<p>我们的特征增强由两部分组成。首先，我们初始化一个新的线性分类器 <span class="math-inline">W_{t}^{(a)} \in \mathbb{R}^{d \times |\hat{Y}_t|}</span>，将新特征 <span class="math-inline">\phi_t(x)</span> 转换为所有已见类别的 logits，并要求新特征本身能够正确分类所有这些类别：</p>
+<p><div class="math-display"><br />
+L_{FE} = KL\left( y \parallel S\left( (W_{t}^{(a)})^\top \phi_t(x) \right) \right). \tag{15}<br />
+</div></p>
+<p>因此，即使 <span class="math-inline">F_{t-1}(x)</span> 和目标 <span class="math-inline">y</span> 之间的残差为零，新特征提取器 <span class="math-inline">\phi_t</span> 仍然可以学习如何分类旧类别。此外，需要注意的是，简单地使用 one-hot 目标在不平衡数据集中训练新特征提取器可能会导致对小类别的过拟合，从而无法学习到对旧类别具有良好泛化能力的特征表示。为了缓解这种现象并为旧类别提供更多监督，我们利用知识蒸馏来鼓励 <span class="math-inline">F_t(x)</span> 在旧类别上具有与 <span class="math-inline">F_{t-1}</span> 相似的输出分布：</p>
+<p><div class="math-display"><br />
+L_{KD} = KL\left( S(F_{t-1}(x)) \parallel S\left( F_{t-1}(x) + (W_{t}^{(o)})^\top \phi_t(x) \right) \right). \tag{16}<br />
+</div></p>
+<p>需要注意的是，这个过程只需要一次额外的矩阵乘法计算，因为原始模型 <span class="math-inline">F_{t-1}</span> 和扩展模型 <span class="math-inline">F_t</span> 的前向过程是共享的，除了最终的线性分类器。</p>
+<h4 id="特征提升总结">特征提升总结<a class="anchor-link" href="#特征提升总结" title="Permanent link">&para;</a></h4>
+<p>综上所述，特征提升由三个部分组成。首先，我们创建一个新模块来拟合目标与原始模型输出之间的残差，遵循梯度提升的原则。通过合理的简化和推导，优化目标转化为最小化目标与连接模型输出之间的 Kullback-Leibler 散度。为了缓解由于训练数据不平衡导致的分类偏差，我们提出了 Logits 对齐（LA）来平衡新旧类别的训练。此外，我们认为简单地让新模块拟合残差有时是不够的。为了进一步鼓励新模块学习旧实例，我们提出了特征增强，其中 <span class="math-inline">L_{FE}</span> 旨在通过优化目标与新模块输出之间的交叉熵损失，使新模块学习所有类别之间的差异，而 <span class="math-inline">L_{KD}</span> 则利用原始输出来通过知识蒸馏指导扩展模型。最终的 FOSTER 提升损失结合了以上三个部分：</p>
+<p><div class="math-display"><br />
+L_{\text{Boosting}} = L_{LA} + L_{FE} + L_{KD}. \tag{17}<br />
+</div></p>
+<h3 id="43-特征压缩">4.3 特征压缩<a class="anchor-link" href="#43-特征压缩" title="Permanent link">&para;</a></h3>
+<p>我们的方法 FOSTER 通过梯度提升取得了优异的性能。然而，逐步向模型 <span class="math-inline">F_t</span> 添加新模块 <span class="math-inline">F</span> 会导致模型参数数量和特征维度的增加，使其无法应用于长期增量学习任务。我们真的需要这么多参数和特征维度吗？例如，我们创建相同的模块 <span class="math-inline">F</span> 来学习具有 2 个类别和 50 个类别的任务，并取得相似的效果。因此，在具有 2 个类别的任务中，一定存在冗余参数和无意义的特征维度。我们是否能够将 <span class="math-inline">F_t</span> 的扩展特征空间压缩到更小的空间，且几乎不损失性能？</p>
+<p>知识蒸馏 [19] 是实现这一目标的简单而有效的方法。由于我们的模型 <span class="math-inline">F_t</span> 能够以优异的性能处理所有已见类别，它可以为任何输入提供一个软目标，即所有已知类别的输出分布。因此，除了当前的训练集 <span class="math-inline">\hat{D}_t</span> 之外，我们还可以从类似领域采样其他未标记数据以进行进一步的蒸馏。需要注意的是，这些未标记数据可以在蒸馏期间从互联网获取，并在蒸馏后丢弃，因此不会占用额外的内存。</p>
+<p>在这里，我们不期望有任何额外的辅助数据可用，并且仅使用不平衡的数据集 <span class="math-inline">\hat{D}_t</span> 也能取得显著的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145448.png" style="zoom: 80%;" /></div>
+
+<h4 id="平衡蒸馏">平衡蒸馏<a class="anchor-link" href="#平衡蒸馏" title="Permanent link">&para;</a></h4>
+<p>假设有一个单一骨干的学生模型 <span class="math-inline">F_{t}^{(s)}</span> 需要被蒸馏。为了缓解由于不平衡训练数据集 <span class="math-inline">\hat{D}_t</span> 导致的分类偏差，我们应该考虑类别的先验概率，并调整不同类别蒸馏信息的权重 [46]。因此，平衡蒸馏损失公式为：</p>
+<p><div class="math-display"><br />
+L_{BKD} = KL\left( w \otimes S(F_t(x)) \parallel S(F_{t}^{(s)}(x)) \right), \tag{18}<br />
+</div></p>
+<p>其中 <span class="math-inline">\otimes</span> 表示张量积（即自动广播到不同的批量大小），<span class="math-inline">w</span> 是从公式 (13) 中获得的加权向量，使得具有较少实例的类别具有更大的权重。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们在基准增量学习数据集上将我们的 FOSTER 与其他最先进的方法进行了比较。我们还进行了消融实验，以验证 FOSTER 各组件的有效性及其对超参数的鲁棒性。</p>
+<h3 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>数据集</strong>。我们在广泛使用的类增量学习基准数据集 CIFAR-100 [26] 和 ImageNet100/1000 [6] 上验证了我们的方法。</p>
+<ul>
+<li><strong>CIFAR-100</strong>: CIFAR-100 包含 50,000 张训练图像，每类 500 张，以及 10,000 张测试图像，每类 100 张。  </li>
+<li><strong>ImageNet-1000</strong>: ImageNet-1000 是一个大规模数据集，包含约 128 万张训练图像和 50,000 张验证图像，每类 500 张。  </li>
+<li><strong>ImageNet-100</strong>: ImageNet-100 是从原始 ImageNet-1000 中随机选择的 100 个类别。</li>
+</ul>
+<p><strong>协议</strong>。对于 CIFAR-100 和 ImageNet-100，我们在两个广泛使用的协议上验证了我们的方法：</p>
+<ul>
+<li><strong>(i) CIFAR-100/ImageNet-100 B0 (base 0)</strong>: 在第一个协议中，我们逐步训练所有 100 个类别，每步 5、10、20 个类别，固定内存大小为 2,000 个样本。  </li>
+<li><strong>(ii) CIFAR-100/ImageNet-100 B50 (base 50)</strong>: 我们首先训练模型在 50 个类别上，然后训练剩余的 50 个类别，每步 2、5、10 个类别，每类 20 个样本。<br />
+对于 ImageNet-1000，我们逐步训练所有 1000 个类别，每步 100 个类别（总共 10 步），固定内存大小为 20,000 个样本。</li>
+</ul>
+<p><strong>实现细节</strong>。我们的方法和所有对比方法均使用 Pytorch [33] 和 PyCIL [49] 实现。对于 ImageNet，我们采用标准的 ResNet-18 [18] 作为特征提取器，并将批量大小设置为 256。学习率从 0.1 开始，并使用余弦退火调度器 [30]（总共 170 个 epoch）逐渐衰减到零。对于 CIFAR-100，我们使用修改后的 ResNet-32 [34] 作为大多数先前工作的特征提取器，并将批量大小设置为 128。学习率也从 0.1 开始，并使用余弦退火调度器（总共 170 个 epoch）逐渐衰减到零。对于 ImageNet 和 CIFAR-100，我们在提升阶段使用动量为 0.9、权重衰减为 5e-4 的 SGD。在压缩阶段，我们使用动量为 0.9、权重衰减为 0 的 SGD。我们将温度标量 <span class="math-inline">T</span> 设置为 2。对于数据增强，我们使用 AutoAugment [3]、随机裁剪、水平翻转和归一化来增强训练图像。公式 (18) 中的超参数 <span class="math-inline">\beta</span> 在大多数设置中设置为 0.97，而公式 (14) 中的 <span class="math-inline">\beta</span> 在 CIFAR-100 和 ImageNet-100/1000 上分别设置为 0.95 和 0.97。</p>
+<h3 id="52-定量结果">5.2 定量结果<a class="anchor-link" href="#52-定量结果" title="Permanent link">&para;</a></h3>
+<p><strong>CIFAR-100</strong>。表 1 和图 3 总结了 CIFAR-100 基准测试的结果。我们将回放作为基线方法，仅使用回放策略来缓解遗忘。实验结果表明，我们的方法在 CIFAR-100 的所有六种设置中均优于其他最先进的策略。我们的方法在长期增量学习任务和大步增量学习任务上均表现出色。特别是在 base 50 的 25 步和 base 0 的 20 步的长期增量设置下，我们分别取得了 3.11% 和 2.67% 的提升。在每步 20 个类别和每步 10 个类别的大步增量学习设置下，我们分别以 1.71% 和 3.06% 的优势超越了最先进的方法。值得注意的是，尽管我们的方法 FOSTER 每次都会扩展一个新模块，但我们每次都将其压缩为单一骨干。因此，我们的模型的参数和特征维度不会随着任务数量的增加而增加，这是我们相对于基于动态架构的方法 [44,29,9] 的优势。从图 3 中可以看出，压缩后的单一骨干模型 FOSTER 与 FOSTER B4 在每一步中的差距很小，这验证了我们蒸馏方法的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145539.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145551.png" style="zoom: 80%;" /></div>
+
+<p><strong>ImageNet</strong>。表 2 和图 4 总结了 ImageNet-100 和 ImageNet-1000 基准测试的实验结果。我们的方法 FOSTER 在大多数设置中仍然优于其他方法。在 ImageNet-100 B0 的设置中，我们分别在 5、10 和 20 步的设置中以 1.26、1.63 和 0.7 个百分点超越了最先进的方法。图 4 再次验证了我们蒸馏策略的有效性，压缩后的性能下降可以忽略不计。ImageNet-1000 基准测试的结果显示在表 2 的最右侧列中。我们的方法将 ImageNet-1000 在 10 步中的平均 top-1 准确率从 66.73% 提升到 68.34%（+1.61%），表明我们的方法在大规模增量学习中也同样有效。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145614.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145623.png" style="zoom: 80%;" /></div>
+
+<h3 id="53-消融实验">5.3 消融实验<a class="anchor-link" href="#53-消融实验" title="Permanent link">&para;</a></h3>
+<p><strong>FOSTER 的不同组件</strong>。表 5 展示了我们在 CIFAR-100 B50 的 5 步设置下的消融实验结果。具体来说，我们将 Logits 对齐（LA）替换为后处理方法权重对齐（WA）[47]。性能对比如图 5a 所示，其中 LA 在最终准确率上比 WA 高出约 4%。这表明我们的 LA 在校准新旧类别方面比 WA 更有效。我们移除特征增强并将其性能与原始结果进行比较，如图 5b 所示，模型在最后阶段的性能下降了超过 3%。我们发现，在最后一步中，使用特征增强的模型与不使用特征增强的模型在新类别上的准确率几乎没有差异。然而，使用特征增强的模型在旧类别上的表现比不使用特征增强的模型高出超过 4%，表明特征增强鼓励模型学习更多关于旧类别的信息。我们在图 5c 中比较了平衡知识蒸馏（BKD）与普通知识蒸馏（KD）的性能。BKD 在所有阶段均优于 KD，表明在训练不平衡数据集时 BKD 更有效。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145645.png" style="zoom: 80%;" /></div>
+
+<p><strong>超参数的敏感性研究</strong>。为了验证 FOSTER 的鲁棒性，我们在 CIFAR-100 B50 的 5 步设置下使用不同的超参数 <span class="math-inline">\beta \in (0, 1)</span> 进行了实验。通常，<span class="math-inline">\beta</span> 设置为大于 0.9。我们分别测试了 <span class="math-inline">\beta = 0.93, 0.95, 0.97, 0.99, 0.995, 0.999</span>。实验结果如图 6a 所示。我们可以看到，在不同 <span class="math-inline">\beta</span> 下的性能变化很小。</p>
+<p><strong>样本数量的影响</strong>。在图 6b 中，我们逐步将每类样本数量从 5 增加到 200，并记录了模型在 CIFAR-100 B50 的 5 步设置下的性能。最后一步的准确率从 53.53% 上升到 71.4%，随着每类样本数量从 5 增加到 200。从结果中可以看出，随着样本数量的增加，模型在最后阶段的准确率逐渐提高，表明我们的模型能够充分利用更多的样本来提升性能。此外，值得注意的是，即使每类只有 10 个样本，我们的模型在最后一轮中的准确率也超过了 60%，超越了大多数使用 20 个样本的最先进方法，如图 3c 所示。这表明 FOSTER 更加有效和鲁棒；即使在样本较少的情况下，它也能克服遗忘问题。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145700.png" style="zoom: 80%;" /></div>
+
+<p><strong>Grad-CAM 可视化</strong>。我们可视化了特征提升前后的 Grad-CAM。如图 7（左）所示，冻结的 CNN 只关注鸟类的头部，忽略了它们的身体其他部分，而新的 CNN 则学习到整个身体对于分类是重要的，这与我们在第 1 节中的主张一致。类似地，中间和右侧的图显示，新的 CNN 还发现了一些邮箱和狗的重要但被忽略的模式。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250224145715.png" style="zoom: 80%;" /></div>
+
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>在本工作中，我们将梯度提升的概念应用于类增量学习场景，并提出了一种基于此的新学习范式 FOSTER，使模型能够自适应地学习新类别。在每一步中，我们创建一个新模块来学习目标与原始模型之间的残差。我们还引入了 Logits 对齐来缓解分类偏差，并引入了特征增强来平衡新旧类别的表示学习。此外，我们提出了一种简单而有效的蒸馏策略来移除冗余参数和维度，将扩展模型压缩为单一骨干模型。在三个广泛使用的增量学习基准上进行的广泛实验表明，我们的方法取得了最先进的性能。</p>
+<p><strong>致谢</strong>。本研究得到了国家重点研发计划（2020AAA0109401）、国家自然科学基金（61773198, 61921006, 62006112）、国家自然科学基金-韩国国家研究基金会联合研究项目（61861146001）、南京大学软件新技术与产业化协同创新中心、江苏省自然科学基金（BK20200313）、CCF-海康威视开放基金（20210005）的资助。韩家业是本文的通讯作者。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

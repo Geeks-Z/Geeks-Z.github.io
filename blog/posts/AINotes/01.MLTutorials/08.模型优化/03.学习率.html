@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#调整学习速率">调整学习速率</a></li>
+<li><a href="#adagrad">AdaGrad</a><ul>
+<li><a href="#adagrad举例">Adagrad举例</a></li>
+<li><a href="#adagrad-存在的矛盾">Adagrad 存在的矛盾？</a></li>
+<li><a href="#多参数下结论不一定成立">多参数下结论不一定成立</a></li>
+<li><a href="#adagrad-进一步的解释">Adagrad 进一步的解释</a></li>
+</ul>
+</li>
+<li><a href="#rmsprop">RMSProp</a></li>
+<li><a href="#学习率调整">学习率调整</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/08.模型优化</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>临界点其实不一定是在训练一个网络的时候会遇到的最大的障碍。图 3.18 中的横坐标代表参数更新的次数，竖坐标表示损失。一般在训练一个网络的时候，损失原来很大，随着参数不断的更新，损失会越来越小，最后就卡住了，损失不再下降。当我们走到临界点的时候，意味着梯度非常小，但损失不再下降的时候，梯度并没有真的变得很小，图 3.19 给出了示例。图 3.19 中横轴是迭代次数，竖轴是梯度的范数（norm），即梯度这个向量的长度。随着迭代次数增多，虽然损失不再下降，但是梯度的范数并没有真的变得很小。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010154403.png" style="zoom: 60%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010154423.png" style="zoom: 60%;" /></div>
+
+<p>图 3.20 是误差表面，梯度在山谷的两个谷壁间，不断地来回“震荡”，这个时候损失不会再下降，它不是真的卡到了临界点，卡到了鞍点或局部最小值。但它的梯度仍然很大，只是损失不一定再减小了。所以训练一个网络，训练到后来发现损失不再下降的时候，有时候不是卡在局部最小值或鞍点，只是单纯的损失无法再下降。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010154432.png" style="zoom: 60%;" /></div>
+
+<p>我们现在训练一个网络，训练到现在参数在临界点附近，再根据特征值的正负号判断该临界点是鞍点还是局部最小值。实际上在训练的时候，要走到鞍点或局部最小值，是一件困难的事情。一般的梯度下降，其实是做不到的。用一般的梯度下降训练，往往会在梯度还很大的时候，损失就已经降了下去，这个是需要特别方法训练的。要走到一个临界点其实是比较困难的，多数时候训练在还没有走到临界点的时候就已经停止了。</p>
+<h2 id="调整学习速率">调整学习速率<a class="anchor-link" href="#调整学习速率" title="Permanent link">&para;</a></h2>
+<p>举例：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917141.png" /></p>
+<p>上图左边黑色为损失函数的曲线，假设从左边最高点开始，如果学习率调整的刚刚好，比如红色的线，就能顺利找到最低点。如果学习率调整的太小，比如蓝色的线，就会走的太慢，虽然这种情况给足够多的时间也可以找到最低点，实际情况可能会等不及出结果。如果 学习率调整的有点大，比如绿色的线，就会在上面震荡，走不下去，永远无法到达最低点。还有可能非常大，比如黄色的线，直接就飞出去了，更新参数的时候只会发现损失函数越更新越大。</p>
+<p>虽然这样的可视化可以很直观观察，但可视化也只是能在参数是一维或者二维的时候进行，更高维的情况已经无法可视化了。</p>
+<p>解决方法就是上图右边的方案，将参数改变对损失函数的影响进行可视化。比如学习率太小（蓝色的线），损失函数下降的非常慢；学习率太大（绿色的线），损失函数下降很快，但马上就卡住不下降了；学习率特别大（黄色的线），损失函数就飞出去了；红色的就是差不多刚好，可以得到一个好的结果。</p>
+<h2 id="adagrad">AdaGrad<a class="anchor-link" href="#adagrad" title="Permanent link">&para;</a></h2>
+<p>AdaGrad(Adaptive Gradient)是典型的自适应学习率方法，其能够根据梯度大小自动调整学习率。AdaGrad可以做到梯度比较大的时候，学习率就减小，梯度比较小的时候，学习率就放大。</p>
+<p>梯度下降更新某个参数 <span class="math-inline">\theta_t^i</span> 的过程为</p>
+<p><div class="math-display"><br />
+\theta_{t+1}^i \leftarrow \theta_t^i - \eta g_t^i \qquad(3.14)<br />
+</div></p>
+<p><span class="math-inline">\theta_t^i</span> 在第 <span class="math-inline">t</span> 个迭代的值减掉在第 <span class="math-inline">t</span> 迭代参数 <span class="math-inline">i</span> 出来的梯度</p>
+<p><div class="math-display"><br />
+g_t^i = \left. \frac{\partial L}{\partial\theta^i} \right|_{\theta = \theta_t} \quad(3.15)<br />
+</div></p>
+<p><span class="math-inline">g_t^i</span> 代表在第 <span class="math-inline">t</span> 迭代，即 <span class="math-inline">\theta = \theta_t</span> 时，损失 <span class="math-inline">L</span> 关于参数 <span class="math-inline">\theta^i</span> 的偏导，学习率是固定的。</p>
+<p>现在要有一个随着参数定制化的学习率，即把原来学习率 <span class="math-inline">\eta</span> 变成 <span class="math-inline">\frac{\eta}{\sigma_t^i}</span>：</p>
+<p><div class="math-display"><br />
+\theta_{t+1}^i \leftarrow \theta_t^i - \frac{\eta}{\sigma_t^i} g_t^i \qquad(3.16)<br />
+</div></p>
+<p><span class="math-inline">\sigma_t^i</span> 的上标为 <span class="math-inline">i</span>，这代表参数 <span class="math-inline">\sigma</span> 与 <span class="math-inline">i</span> 相关，不同的参数的 <span class="math-inline">\sigma</span> 不同。<span class="math-inline">\sigma_t^i</span> 的下标为 <span class="math-inline">t</span>，这代表参数 <span class="math-inline">\sigma</span> 与迭代相关，不同的迭代也会有不同的 <span class="math-inline">\sigma</span>。学习率从 <span class="math-inline">\eta</span> 改成 <span class="math-inline">\frac{\eta}{\sigma_t^i}</span> 的时候，学习率就变得参数相关（parameter dependent）。</p>
+<p>参数相关的一个常见的类型是算梯度的均方根（root mean square）。参数的更新过程为</p>
+<p><div class="math-display"><br />
+\theta_1^i \leftarrow \theta_0^i - \frac{\eta}{\sigma_0^i} g_0^i \qquad(3.17)<br />
+</div></p>
+<p>其中 <span class="math-inline">\theta_0^i</span> 是初始化参数。而 <span class="math-inline">\sigma_0^i</span> 的计算过程为</p>
+<p><div class="math-display"><br />
+\sigma_0^i = \sqrt{\left(g_0^i\right)^2} = \left|g_0^i\right| \qquad(3.18)<br />
+</div></p>
+<p>其中 <span class="math-inline">g_0^i</span> 是梯度。将 <span class="math-inline">\sigma_0^i</span> 的值代入更新的公式可知 <span class="math-inline">\frac{g_0^i}{\sigma_0^i}</span> 的值是 +1 或 -1。第一次在更新参数，从 <span class="math-inline">\theta_0^i</span> 更新到 <span class="math-inline">\theta_1^i</span> 的时候，要么是加上 <span class="math-inline">\eta</span>，要么是减掉 <span class="math-inline">\eta</span>，跟梯度的大小无关，这个是第一步的情况。</p>
+<p>第二次更新参数过程为</p>
+<p><div class="math-display"><br />
+\theta_2^i \leftarrow \theta_1^i - \frac{\eta}{\sigma_1^i} g_1^i \qquad(3.19)<br />
+</div></p>
+<p>其中 <span class="math-inline">\sigma_1^i</span> 是过去所有计算出来的梯度的平方的平均再开根号，即均方根，如式(3.20)所示。</p>
+<p><div class="math-display"><br />
+\sigma_1^i = \sqrt{\frac{1}{2}\left[\left(g_0^i\right)^2 + \left(g_1^i\right)^2\right]} \qquad(3.20)<br />
+</div></p>
+<p>同样的操作反复继续下去，如式(3.21)所示。</p>
+<p><div class="math-display"><br />
+\theta_3^i \leftarrow \theta_2^i - \frac{\eta}{\sigma_2^i} g_2^i \quad \sigma_2^i = \sqrt{\frac{1}{3}\left[\left(g_0^i\right)^2 + \left(g_1^i\right)^2 + \left(g_2^i\right)^2\right]} \qquad(3.21)<br />
+</div></p>
+<p>第 <span class="math-inline">t+1</span> 次更新参数的时候，即</p>
+<p><div class="math-display"><br />
+\theta_{t+1}^i \leftarrow \theta_t^i - \frac{\eta}{\sigma_t^i} g_t^i \quad \sigma_t^i = \sqrt{\frac{1}{t+1}\sum_{j=0}^t \left(g_j^i\right)^2} \qquad(3.22)<br />
+</div></p>
+<p><span class="math-inline">\frac{\eta}{\sigma_t^i}</span> 当作是新的学习率来更新参数。</p>
+<p>图 3.24中有两个参数：<span class="math-inline">\theta^1</span> 和 <span class="math-inline">\theta^2</span>。<span class="math-inline">\theta^1</span> 坡度小，<span class="math-inline">\theta^2</span> 坡度大。因为 <span class="math-inline">\theta^1</span> 坡度小，根据式(3.22), <span class="math-inline">\theta^1</span> 这个参数上面算出来的梯度值都比较小，因为梯度算出来的值比较小，所以算出来的 <span class="math-inline">\sigma_t^i</span> 就小，<span class="math-inline">\sigma_t^i</span> 小学习率就大。反过来，<span class="math-inline">\theta^2</span> 坡度大，所以计算出的梯度都比较大，<span class="math-inline">\sigma_t^i</span> 就比较大，在更新的时候，步伐（参数更新的量）就比较小。因此有了 <span class="math-inline">\sigma_t^i</span> 这一项以后，就可以随着梯度的不同，每一个参数的梯度的不同，来自动调整学习率的大小。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010164249.png" style="zoom: 60%;" /></div>
+
+<h3 id="adagrad举例">Adagrad举例<a class="anchor-link" href="#adagrad举例" title="Permanent link">&para;</a></h3>
+<p>下图是一个参数的更新过程</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917142.png" /></p>
+<p>将 Adagrad 的式子进行化简：<br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917143.png" /></p>
+<h3 id="adagrad-存在的矛盾">Adagrad 存在的矛盾？<a class="anchor-link" href="#adagrad-存在的矛盾" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917144.png" /></p>
+<p>在 Adagrad 中，当梯度越大的时候，步伐应该越大，但下面分母又导致当梯度越大的时候，步伐会越小。</p>
+<p>下图是一个直观的解释：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917145.png" /></p>
+<p>下面给一个正式的解释：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917146.png" /></p>
+<p>比如初始点在 <span class="math-inline">x_0</span>，最低点为 <span class="math-inline">−\frac{b}{2a}</span>，最佳的步伐就是 <span class="math-inline">x0</span> 到最低点之间的距离 <span class="math-inline">\left | x_0+\frac{b}{2a} \right |</span>，也可以写成 <span class="math-inline">\left | \frac{2ax_0+b}{2a} \right |</span>。而刚好 <span class="math-inline">|2ax_0+b|</span> 就是方程绝对值在 <span class="math-inline">x_0</span> 这一点的微分。</p>
+<p>这样可以认为如果算出来的微分越大，则距离最低点越远。而且最好的步伐和微分的大小成正比。所以如果踏出去的步伐和微分成正比，它可能是比较好的。</p>
+<p>结论1-1：梯度越大，就跟最低点的距离越远。</p>
+<p>这个结论在多个参数的时候就不一定成立了。</p>
+<h3 id="多参数下结论不一定成立">多参数下结论不一定成立<a class="anchor-link" href="#多参数下结论不一定成立" title="Permanent link">&para;</a></h3>
+<p>对比不同的参数</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917147.png" /></p>
+<p>上图左边是两个参数的损失函数，颜色代表损失函数的值。如果只考虑参数 <span class="math-inline">w_1</span>，就像图中蓝色的线，得到右边上图结果；如果只考虑参数 <span class="math-inline">w_2</span>，就像图中绿色的线，得到右边下图的结果。确实对于 <span class="math-inline">a</span> 和 <span class="math-inline">b</span>，结论1-1是成立的，同理 <span class="math-inline">c</span> 和 <span class="math-inline">b</span> 也成立。但是如果对比<span class="math-inline">a</span> 和 <span class="math-inline">c</span>，就不成立了，<span class="math-inline">c</span> 比 <span class="math-inline">a</span> 大，但 <span class="math-inline">c</span> 距离最低点是比较近的。</p>
+<p>所以结论1-1是在没有考虑跨参数对比的情况下，才能成立的。所以还不完善。</p>
+<p>之前说到的最佳距离 <span class="math-inline">\left | \frac{2ax_0+b}{2a} \right |</span>，还有个分母 <span class="math-inline">2a</span> 。对function进行二次微分刚好可以得到：<br />
+<div class="math-display">\frac{\partial ^2y}{\partial x^2} = 2a \tag7</div><br />
+所以最好的步伐应该是：<br />
+<div class="math-display"><br />
+\frac{一次微分}{二次微分}<br />
+</div></p>
+<p>即不止和一次微分成正比，还和二次微分成反比。最好的step应该考虑到二次微分：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917148.png" /></p>
+<h3 id="adagrad-进一步的解释">Adagrad 进一步的解释<a class="anchor-link" href="#adagrad-进一步的解释" title="Permanent link">&para;</a></h3>
+<p>再回到之前的 Adagrad</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409130917149.png" /></p>
+<p>对于 <span class="math-inline">\sqrt{\sum_{i=0}^t(g^i)^2}</span> 就是希望再尽可能不增加过多运算的情况下模拟二次微分。（如果计算二次微分，在实际情况中可能会增加很多的时间消耗）</p>
+<h2 id="rmsprop">RMSProp<a class="anchor-link" href="#rmsprop" title="Permanent link">&para;</a></h2>
+<p>同一个参数需要的学习率，也会随着时间而改变。在图 3.25中的误差表面中，如果考虑横轴方向，绿色箭头处坡度比较陡峭，需要较小的学习率，但是走到红色箭头处，坡度变得平坦了起来，需要较大的学习率。因此同一个参数的同个方向，学习率也是需要动态调整的，于是就有了一个新的方法 - RMSprop(Root Mean Squared propagation)。</p>
+<p>RMSprop没有论文，Geoffrey Hinton在 Coursera上开过深度学习的课程，他在他的课程里面讲了 RMSprop，如果要引用，需要引用对应视频的链接。</p>
+<p>RMSprop第一步跟 Adagrad的方法是相同的，即</p>
+<p><div class="math-display"><br />
+\sigma_0^i = \sqrt{\left(g_0^i\right)^2} = \left|g_0^i\right| \qquad(3.23)<br />
+</div></p>
+<p>第二步更新过程为</p>
+<p><div class="math-display"><br />
+\theta_2^i \leftarrow \theta_1^i - \frac{\eta}{\sigma_1^i} g_1^i \quad \sigma_1^i = \sqrt{\alpha\left(\sigma_0^i\right)^2 + (1-\alpha)\left(g_1^i\right)^2} \quad\text{(3.24)}<br />
+</div></p>
+<p>其中 <span class="math-inline">0 &lt; \alpha &lt; 1</span>，其是一个可以调整的超参数。计算 <span class="math-inline">\theta_1^i</span> 的方法跟 AdaGrad算均方根不一样，在算均方根的时候，每一个梯度都有同等的重要性，但在 RMSprop里面，可以自己调整现在的这个梯度的重要性。如果<span class="math-inline">\alpha</span> 很小趋近于0，代表g’相较于之前算出来的梯度而言，比较重要；如果<span class="math-inline">\alpha</span> 设很大趋近于1，代表g比较不重要，之前算出来的梯度比较重要。同样的过程就反复继续下去，如式（3.25）所示。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010170315.png" style="zoom: 60%;" /></div>
+
+<p><div class="math-display"><br />
+\theta_{t+1}^i \leftarrow \theta_t^i - \frac{\eta}{\sqrt{\alpha (\sigma_t^i)^2 + (1 - \alpha) (g_t^i)^2}} g_t^i \ \sigma_{t+1}^i = \sqrt{\alpha (\sigma_t^i)^2 + (1 - \alpha) (g_t^i)^2} \quad (3.25)<br />
+</div></p>
+<p>RMSProp 通过 <span class="math-inline">\alpha</span> 可以决定，<span class="math-inline">g_t^i</span> 相较于之前存在 <span class="math-inline">\sigma_t^i</span> 里面的 <span class="math-inline">g_0^i, g_1^i, \ldots, g_{t-1}^i</span> 的重要性有多大。如果使用 RMSprop，就可以动态调整 <span class="math-inline">\sigma_t^i</span> 这一项。图3.26 中黑线是误差表面，球就从A走到B，AB段的路很平坦，<span class="math-inline">g_t^i</span> 很小，更新参数的时候，我们会走比较大的步伐。走到 BC 段后梯度变大了，AdaGrad 反应比较慢，而 RMSprop 会把 <span class="math-inline">\alpha</span> 设小一点，让新的、刚看到的梯度的影响比较大，很快地让 <span class="math-inline">\sigma_t^i</span> 的值变大，很快地让步伐变小，RMSprop 可以很快地“踩刹车”。如果走到 CD 段，CD 段是平坦的地方，可以调整<span class="math-inline">\alpha</span>，让其比较看重最近算出来的梯度，梯度一变小，<span class="math-inline">\sigma_t^i</span> 的值就变小了，走的步伐就变大了。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010170759.png" style="zoom: 60%;" /></div>
+
+<h2 id="学习率调整">学习率调整<a class="anchor-link" href="#学习率调整" title="Permanent link">&para;</a></h2>
+<p>如图3.22所示的简单的误差表面，我们都训练不起来，加上自适应学习率以后，使用AdaGrad方法优化的结果如图3.27所示。一开始优化的时候很顺利，在左转的时候，有AdaGrad以后，可以再继续走下去，走到非常接近终点的位置。走到BC段时，因为横轴方向的梯度很小，所以学习率会自动变大，步伐就可以变大，从而不断前进。接下来的问题走到图3.27中红圈的地方，快走到终点的时候突然“爆炸”了。<span class="math-inline">\sigma_{t}^{i}</span> 把过去所有的梯度拿来作平均。在AB段梯度很大，但在BC段，纵轴的方向梯度很小，因此纵轴方向累积了很小的<span class="math-inline">\sigma_{t}^{i}</span>，累积到一定程度以后，步伐就变很大，但有办法修正回来。因为步伐很大，其会走到梯度比较大的地方。走到梯度比较大的地方后，<span class="math-inline">\sigma_{t}^{i}</span> 慢慢变大，更新的步伐大小会慢慢变小，从而回到原来的路线。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010171055.png" style="zoom: 60%;" /></div>
+
+<p>通过学习率调度 (learning rate scheduling) 可以解决这个问题。之前的学习率调整方法中 <span class="math-inline">\eta</span> 是一个固定的值，而在学习率调度中 <span class="math-inline">\eta</span> 跟时间有关，如式(3.26)所示。学习率调度中最常见的策略是学习率衰减 (learning rate decay)，也称为学习率退火 (learning rate annealing)。随着参数的不断更新，让 <span class="math-inline">\eta</span> 越来越小，如图 3.28所示。图 3.27的情况，如果加上学习率下降，可以很平顺地走到终点，如图 3.29所示。在图 3.27红圈的地方，虽然步伐很大，但 <span class="math-inline">\eta</span> 变得非常小，步伐乘上 <span class="math-inline">\eta</span> 就变小了，就可以慢慢地走到终点。</p>
+<p><div class="math-display"><br />
+\theta_{t+1}^i \leftarrow \theta_t^i - \frac{\eta_t}{\sigma_t^i} g_t^i \qquad(3.26)<br />
+</div></p>
+<p>除了学习率下降以外，还有另外一个经典的学习率调度的方式——预热。预热的方法是让学习率先变大后变小，至于变到多大、变大的速度、变小的速度是超参数。残差网络 <span class="math-inline">{}^{[8]}</span> 里面是有预热的，在残差网络里面，学习率先设置成 0.01，再设置成 0.1，并且其论文还特别说明，一开始用 0.1 反而训练不好。除了残差网络，BERT和 Transformer的训练也都使用了预热。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241010172107.png" style="zoom: 60%;" /></div>
+
+<blockquote>
+<p>Q: 为什么需要预热?<br />
+A: 当我们使用Adam、RMSprop或AdaGrad时，需要计算 <span class="math-inline">\sigma</span>。而 <span class="math-inline">\sigma</span> 是一个统计的结果。从 <span class="math-inline">\sigma</span> 可知某一个方向的陡峭程度。统计的结果需要足够多的数据才精准，一开始统计结果 <span class="math-inline">\sigma</span> 是不精准的。一开始学习率比较小是用来探索收集一些有关误差表面的情报，先收集有关 <span class="math-inline">\sigma</span> 的统计数据，等 <span class="math-inline">\sigma</span> 统计得比较精准以后，再让学习率慢慢爬升。如果读者想要学更多有关预热的东西可参考Adam的进阶版 - RAdam[9]。</p>
+</blockquote>
+<p>所以我们从最原始的梯度下降，进化到这一个版本，如式(3.27)所示。</p>
+<p><div class="math-display"><br />
+\theta_{t+1}^i \leftarrow \theta_t^i - \frac{\eta_t}{\sigma_t^i} m_t^i \qquad(3.27)<br />
+</div></p>
+<p>其中 <span class="math-inline">m_t^i</span> 是动量。</p>
+<p>这个版本里面有动量，其不是顺着某个时刻算出的梯度方向来更新参数，而是把过去所有算出梯度的方向做一个加权总和当作更新的方向。接下来的步伐大小为 <span class="math-inline">\frac{m_t^i}{\sigma_t^i}</span>。最后通过 <span class="math-inline">\eta_t</span> 来实现学习率调度。这个是目前优化的完整的版本，这种优化器除了 Adam以外，还有各种变形。但其实各种变形是使用不同的方式来计算 <span class="math-inline">m_t^i</span> 或 <span class="math-inline">\sigma_t^i</span>，或者是使用不同的学习率调度的方式。</p>
+<blockquote>
+<p>Q: 动量 <span class="math-inline">m_{t}^{i}</span> 考虑了过去所有的梯度，均方根 <span class="math-inline">\sigma_{t}^{i}</span> 考虑了过去所有的梯度，一个放在分子，一个放在分母，并且它们都考虑过去所有的梯度，不就是正好抵消了吗?<br />
+A: <span class="math-inline">m_{t}^{i}</span> 和 <span class="math-inline">\sigma_{t}^{i}</span> 在使用过去所有梯度的方式是不一样的，动量是直接把所有的梯度都加</p>
+</blockquote>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

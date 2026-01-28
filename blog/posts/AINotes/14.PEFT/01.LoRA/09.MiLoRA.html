@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#milora-effcient-mixture-of-low-rank-adaptation-for-large-language-models-fine-tuning">MiLoRA: Effcient Mixture of Low-Rank Adaptation for Large Language Models Fine-tuning</a></li>
+<li><a href="#1-简介">1 简介</a></li>
+<li><a href="#2-本文方法">2 本文方法</a><ul>
+<li><a href="#21-preliminaries">2.1 Preliminaries</a></li>
+<li><a href="#22-动机">2.2 动机</a></li>
+<li><a href="#23-prompt-aware-lora-router">2.3 Prompt-aware LoRA router</a></li>
+<li><a href="#24-学习激活函数">2.4 学习激活函数</a></li>
+</ul>
+</li>
+<li><a href="#3-实验">3 实验</a><ul>
+<li><a href="#31-数据集和评估指标">3.1 数据集和评估指标</a></li>
+<li><a href="#32-baselines">3.2 Baselines</a></li>
+<li><a href="#33-消融研究和进一步分析">3.3 消融研究和进一步分析</a></li>
+</ul>
+</li>
+<li><a href="#4-结论">4 结论</a></li>
+<li><a href="#5-限制">5 限制</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/14.PEFT/01.LoRA</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="milora-effcient-mixture-of-low-rank-adaptation-for-large-language-models-fine-tuning">MiLoRA: Effcient Mixture of Low-Rank Adaptation for Large Language Models Fine-tuning<a class="anchor-link" href="#milora-effcient-mixture-of-low-rank-adaptation-for-large-language-models-fine-tuning" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>低秩自适应（LoRA）及其混合专家（MOE）变体是高参数效率微调（PEFT）方法的有效途径。然而，由于在Transformer层中添加多个线性模块的LoRA模块和MOE路由器，它们在Multi-Tenant设置中引入了显著的延迟。</p>
+<p>为了解决这个问题，作者提出了混合低秩自适应（MiLoRA），这是一种新颖且高效的LoRA变体。与先前的MOE-LoRA方法不同，MiLoRA将每个LoRA模块视为专家，并采用 Prompt 感知路由机制。这种机制在生成第一个新 Token之前计算专家路由结果，并重复使用这些结果为后续 Token ，从而减少延迟。</p>
+<p>在常识推理任务、数学推理任务和广泛使用的LLM评估基准测试上的大量实验和分析表明，与具有可比可调参数预算的强PEFT Baseline相比，MiLoRA始终优于他们。此外，与先前的基于LoRA的方法相比，MiLoRA在 Multi-Tenant设置中的延迟显著降低。</p>
+</blockquote>
+<h2 id="1-简介">1 简介<a class="anchor-link" href="#1-简介" title="Permanent link">&para;</a></h2>
+<p>大语言模型（LLMs）在各种NLP任务上已经实现了最先进（SOTA）的结果，同时在许多具有挑战性的评估任务上也有显著表现，如问答、推理、数学、安全性和指令遵循等。尽管LLMs正在发展成为通用任务解决者，但微调仍然对于高效的LLM推理和生成内容的风格控制至关重要。然而，由于需要大量的GPU内存和计算资源，对这种大型模型的全参数微调是不切实际的。因此，参数高效的微调（PEFT）已经引起了研究界的广泛关注，因为它通常只需要调整不到1%的LLMs的参数，从而大大降低了计算成本。</p>
+<p>许多基于PEFT的AI方法中，基于重参化适应的低秩自适应（LoRA）方法被认为是用于LLM等模型最有效的方法之一。虽然LoRA有效，并能在原始设置下带来稳定性能，但在Multi-Tenant设置下仍然存在不便之处：它需要将LoRA模块添加到Transformer层的多个权重中，并在 Multi-Tenant设置下的每个生成步骤中引入显著的额外延迟。</p>
+<p>近年来，混合专家（MOE）风格LoRA方法迅速崛起，进一步推动了LoRA微调性能的提高。然而，它们引入了MOE路由器的计算，进一步增加了推理延迟。因此，有必要开发一种引入生成期间最小延迟的LoRA方法，同时仍然能够在下游任务中具有竞争力的新变体。</p>
+<p>在本研究中，作者提出了一种名为混合低秩自适应（MiLoRA）的新颖策略。MiLoRA方法与先前的MOE风格低秩自适应（LoRA）方法的不同之处在于以下两个方面。</p>
+<ul>
+<li>首先，在MiLoRA中，整个LoRA模块被视为LoRA专家，LoRA路由器负责确定要激活哪个LoRA专家。 </li>
+<li>其次，作者提出了一种 Prompt 感知路由机制，而不是为每个新 Token 计算专家路由结果。 </li>
+</ul>
+<p>给定一个输入 Prompt ，专家路由结果仅计算一次，即在生成第一个新 Token 之前。后续生成步骤将重用专家路由结果。在 Prompt感知路由机制下，作者的LoRA路由器包括池化操作、可学习的激活函数和稀疏MOE路由器。</p>
+<p>作者在各种具有挑战性的任务上进行了广泛实验和分析，包括五个常识推理任务，两个数学推理任务，以及三个广泛使用的LLM评估基准。MiLoRA可以在具有可比的可调参数预算的情况下，始终优于强大的PEFT Baseline ，特别是最近的LoRA变体。此外，MiLoRA方法在 Multi-Tenant设置下的延迟显著低于具有可比的可调参数的前一代基于LoRA的方法。</p>
+<p>MiLoRA总结如下：</p>
+<pre class="highlight"><code>1. 提出了一种新颖的LoRa变体MiLoRA，该变体将MOE机制与LoRa高效地结合在一起。
+
+2. 在 MiLoRA 中，作者将每个 LoRA 模块视为专家。
+
+3. 提出一个 Prompt 感知路由机制，以避免按字段的路由器计算。
+
+4. 进行了广泛的实验和分析，结果表明MiLoRA框架在（a）实际应用中表现出色，并在可比参数预算下优于 Baseline 。此外，（b）在LLM推理过程中具有高效性。
+</code></pre>
+
+<h2 id="2-本文方法">2 本文方法<a class="anchor-link" href="#2-本文方法" title="Permanent link">&para;</a></h2>
+<p>在本节中，作者首先介绍了LoRA和MoEs的基础概念，然后详细阐述了MiLoRA的架构设计。</p>
+<h3 id="21-preliminaries">2.1 Preliminaries<a class="anchor-link" href="#21-preliminaries" title="Permanent link">&para;</a></h3>
+<p><strong>Transformer模型</strong><br />
+如图1所示，LLM（如LlaMA-2）中的每个Transformer层包括多头自注意力（MHA）子层和全连接前馈（FFN）子层。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241120144129.png" style="zoom: 60%;" /></div>
+
+<p>MHA包含四个线性模块，分别是 Query<br />
+（Q）、Key（K）、Value（V）和输出（O）模块。FFN包含三个线性模块：Gate（G）、Up（U）和Down（D）。</p>
+<p>为了便于表示，作者将Transformer块中的模块数量表示为 <span class="math-inline">N_{mod}</span> 。因此，在LlaMA-2中，<span class="math-inline">N_{mod}=7</span>  。</p>
+<p>对于Transformer模块中的任意一个 <span class="math-inline">m \in {{Q, K, V, O, G, U, D}}</span> ，LoRA方法在其权重上增加一对低秩矩阵进行重参化。具体地，使用LoRA计算模块  的前向过程如下：</p>
+<p><div class="math-display">x^{\prime}=x W_{m}+x W_{m}^{A} W_{m}^{B}+b_{m}</div></p>
+<p>其中 <span class="math-inline">W_{m}\in R^{d_1 \times d_2}</span> 是模块 <span class="math-inline">m</span> 的权重矩阵，<span class="math-inline">b_m</span> 是其偏置项。<span class="math-inline">W_m^A \in \mathbb{R}^{d_1 \times r}</span>  和 <span class="math-inline">W_m^B \in \mathbb{R}^{r \times d_2}</span> 是 LoRA 模块的低秩矩阵，且 <span class="math-inline">r \ll min(d_1,d_2)</span> 。<span class="math-inline">r</span>  是两个矩阵的秩，也将被称为 LoRA 模块的秩。</p>
+<h3 id="22-动机">2.2 动机<a class="anchor-link" href="#22-动机" title="Permanent link">&para;</a></h3>
+<p>现有的MOE风格LoRA工作显著降低了LLM Backbone在推理过程中的tokens每秒（tps），约降低了20%。在这些工作中，每个LoRA模块都被分解为多个专家，并且需要一个路由器来确定哪些专家被激活。当生成每个新token时，每层都会执行多个LoRA模块和多个路由器，导致延迟不可忽视。</p>
+<p>为了提高这种MOE LoRA方法的效率，作者需要研究以下研究问题：</p>
+<pre class="highlight"><code>1. 能否将LoRA模块视为专家，使得每个Transformer层只有一个LoRA路由器，并且仅激活每个层的一个这样的专家？ 
+2. LoRA路由器可以被调用一次用于输入 Prompt 吗？
+</code></pre>
+
+<h3 id="23-prompt-aware-lora-router">2.3 Prompt-aware LoRA router<a class="anchor-link" href="#23-prompt-aware-lora-router" title="Permanent link">&para;</a></h3>
+<p>试图探究 RQ1 和 RQ2，作者现在试图提出 MiLoRA 方法的具体细节。MiLoRA 的核心是 Prompt 感知路由机制。在这个机制下，LoRA路由器将输入 Prompt 的隐藏状态作为输入，并输出当前层的激活 LoRA 专家。</p>
+<p>与之前的工作不同，MiLoRA：</p>
+<pre class="highlight"><code>1. 在输入 Prompt 通过 Transformer Backbone 网络第一次经过并即将生成第一个新 Token 时，只计算一次 MiLoRA 路由器。路由器的激活决策将在随后的生成步骤中重复使用。 
+2. 在 Transformer 层 Level 确定激活的 LoRA 专家，选择由其对应 LoRA 模块修改的 Transformer 模块。
+</code></pre>
+
+<p>如图1所示，为了生成响应，输入 Prompt 必须经过LLM Backbone 网以获取隐藏表示。在Transformer层 <span class="math-inline">l</span> 之前，将输入 Prompt的隐藏状态表示为 <span class="math-inline">H^l \in R^{n_p \times d}</span> 。然后进行一个池化操作 <span class="math-inline">Pooler</span> ，将 <span class="math-inline">H^l</span> 中的语义信息聚合为 <span class="math-inline">h^l \in R^{1 \times d}</span> ：</p>
+<p>Pooler操作可以是以下几种：</p>
+<pre class="highlight"><code>1. 最后一个 Token 池化，即将 Prompt 的最后一个 Token 的向量表示作为  。这种池化器在解码器基础的模型执行句子分类任务时广泛使用。 
+2. 平均池化。 
+3. 最大池化。 
+4. 自注意力池化
+</code></pre>
+
+<p>然后，  将在  层之前经过一个激活函数  ，并传入LoRA路由器  。  将当前输入 Prompt 分配给最合适的LoRA专家。该路由器包含</p>
+<pre class="highlight"><code>1. 一个线性层，计算  被路由到每个LoRA专家LoRA  的概率； 
+2. 一个softmax函数，模拟LoRA专家上的概率分布； 
+3. 一个Top-  函数，选择概率质量最高的Top-  个专家。
+</code></pre>
+
+<p>形式上，</p>
+<p>其中  是路由器的权重。LoRa 路由器在推理过程中动态地为每个输入 Prompt 选择最佳  个专家。请注意，路由器仅在生成新 Token<br />
+之前调用一次。激活的 LoRa 专家在整个生成过程中都被使用。</p>
+<p>作者在训练损失函数中添加了负载均衡损失。考虑一个训练批次B，包含N_B个样本，令  表示第  层中第  个LoRA专家分配到的 Prompt 的比例。</p>
+<p>是专家  的概率，由路由器  计算得出。令  为第  个专家接收到的概率质量的平均值，即  。然后，负载均衡损失由以下公式给出：</p>
+<p>损失项被添加到交叉熵损失中，其系数为  。</p>
+<h3 id="24-学习激活函数">2.4 学习激活函数<a class="anchor-link" href="#24-学习激活函数" title="Permanent link">&para;</a></h3>
+<p>之前的PEFT文献通常将PEFT模块中的激活函数设置为ReLU，并不过多讨论这种设置是否最优。此外，PEFT模块中不同Transformer层的激活函数通常设置为相同的。如将在表5中展示的，深度不同的LoRA路由器的激活函数应具有不同的设置。因此，如何找到LoRA路由器激活函数的最优设置？穷举超参数搜索需要时间和GPU。因此，作者鼓励在训练过程中将激活函数设置为可学习的。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1Ug0rTib693J7ASDhHa72rITebbOwrzP5gib5oeMapGGVCfzZ3cjf5O9g/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>作者采用可学习的有理激活函数，它们可以逼近常见的激活函数，并学习新的激活函数。具有阶数m和n的有理激活函数  定义如下：</p>
+<p>参数  和  是可学习的。有理激活函数在图像分类和序列建模中成功应用。</p>
+<p>受上述文献的启发，作者提出了一种在微调下游任务时，通过有理激活函数学习LoRa路由器中的激活函数的方法。将可学习的激活函数的参数集表示为<br />
+，LoRa路由器和LoRa专家中的其他参数集表示为  。遵循DARTS的做法，作者将  视为架构参数，并与  一起通过双层优化进行优化。</p>
+<h2 id="3-实验">3 实验<a class="anchor-link" href="#3-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，作者进行了一系列实验和分析来评估MiLoRA方法。</p>
+<h3 id="31-数据集和评估指标">3.1 数据集和评估指标<a class="anchor-link" href="#31-数据集和评估指标" title="Permanent link">&para;</a></h3>
+<p>作者将MiLoRA与基准对比在一批具有挑战性的任务上：</p>
+<pre class="highlight"><code>1. 五项基准常识性问题回答任务，包括 ARC-e 和 ARC-c ， OBQA， PIQA ， BoolQ。 
+2. 两项数学推理任务，包括 AQuA和 GSM8k。作者使用用于这些数学任务的思维链（COT）推理。所有推理都是通过零样本 CoT在 GPT-3.51 上，但未经任何错误过滤。 
+3. MT-Bench， MMLU。由于这些任务没有训练数据，作者使用 Alpaca Taori 等人（2023 年）的数据集进行指令调整。详细的统计数据和评估指标可以在附录 B 中找到。
+</code></pre>
+
+<h3 id="32-baselines">3.2 Baselines<a class="anchor-link" href="#32-baselines" title="Permanent link">&para;</a></h3>
+<p>作者将MiLoRA框架与当前最先进的SOTA PEFT Baseline 方法进行了比较。</p>
+<p>作者考虑以下LoRA变体作为基准：</p>
+<pre class="highlight"><code>1. 原始LoRA； 
+2. 自适应调整不同Transformer模块中的LoRA参数的AdaLoRA； 
+3. 将每个LoRA模块视为单秩LoRA专家的混合的MOELoAIA； 
+4. 最新LoRA变体之一DoRA，将预训练权重分解为两个部分，即幅度和方向，用于微调，具体采用LoRA进行方向性更新。
+</code></pre>
+
+<p>此外，作者还考虑了以下最新的PEFT方法：</p>
+<p>（a）Parallel-Adapter</p>
+<p>（b）Learned-Adapter</p>
+<p>（c）P-tuning v2</p>
+<p>（d）IAPT</p>
+<p>（e）BitFit</p>
+<p>（f）IA，在Transformer层的不同模块中，将可学习向量乘以隐藏状态</p>
+<p>（g）自适应系统结合不同PEFT方法的代表作，包括LoRA和BitFit</p>
+<p><strong>多任务设置。</strong> 表2展示了LLaMA2-7B在多任务学习中的LoRA、DoRA、MOELORA和MiLoRA的结果。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1CiakmOjILrrPcCpOHeLHoicoREDrxiaMdpqPtaggxKHAQZqng4MVPQtlQ/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>与表1中的单任务设置相比，在多任务学习中，作者将ARC、BoolQ、OBQA和PIQA的训练数据混合以训练模型，然后分别评估以研究每个方法的一般化能力。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1N2FUAlo8Gbia8jvjvXZ0UT7azYiafeIrgN3zzSUYbnKlX8YibQQAS7mdw/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>结果表明：（a）与单任务学习相比，LoRA和DoRA在多任务学习中的平均准确性有所下降（LoRA：-2.0%，DoRA：-2.25%）。同时，MOELORA和MiLoRA的平均准确性保持<br />
+nearly 相同。MiLoRA在平均得分方面几乎没有性能损失。</p>
+<p><strong>通用指令调优结果。</strong> 在使用作者的 MiLoRA 方法或 MOELoRA 方法对 LlaMA-2 7B 在<br />
+Alpaca数据集进行微调之后，作者利用具有挑战性的基准测试，如 MT-Bench，MMLU和 BBH进行评估。作者在 MT-Bench 上报告了<br />
+GPT-4 平均分数（gpt4-score）。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1QzQxoehEgpQwI6RZ4kOkSaicN1piam0GJiaT7hiaQmYIs5msDPFlcHp3hg/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>表3 呈现了结果。与之前的实验（表1 和 2）一致，MiLoRA 方法在三个基准测试中优于 MOELoRA 方法，这表明 MiLoRA<br />
+在提高大语言模型的指令调优质量方面具有优势。</p>
+<h3 id="33-消融研究和进一步分析">3.3 消融研究和进一步分析<a class="anchor-link" href="#33-消融研究和进一步分析" title="Permanent link">&para;</a></h3>
+<p><strong>分析推理效率</strong> 为了展示MiLoRA方法的推理效率，作者 now 比较了在不同的波束大小下，MiLoRA、DoRA 和<br />
+MOELoRA在波束搜索中的GPU内存和译码速度。在这个实验中，LoRA参数并未合并到 Backbone 网络中，以模拟单LLM Multi-<br />
+Tenant设置。作者提出了两个衡量效率的指标：（a）峰值内存成本（以 MiB 计）。（b）每秒生成的 Token 数（tps）。结果如表4所示。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI12A0mKeH8ia65l9uWiaHSoCg53icoT9ySzicc6biaHuM2BxBibFSm5NBFeg6g/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>从表4中，在光束大小1和3下，MiLoRA方法具有与MOELoRA和DoRA相当的内存成本。然而，在以tps为单位的生成速度方面，MiLoRA显著高于MOELoRA和DoRA。在光束大小1下，MiLoRA比MOELoRA快21.7%，比DoRA快19.7%。</p>
+<p>采用光束大小3时，MiLoRA比MOELORA快17.9%，比DoRA快13.2%。MiLoRA的速度优势来自于以下几个因素：(a) MiLoRA在输入<br />
+Prompt 首次经过LLM并即将生成第一个新 Token<br />
+之前，只在每个Transformer层调用一次LoRa路由器。相比之下，MOELORA和几乎所有现有的基于MOE的LoRa变体在生成每个新 Token<br />
+时，都需要调用多个路由器。(b) MiLoRA显著减少了每个解码步骤中激活的LoRa模块数量，从而提高了生成新 Token 的效率。</p>
+<p><strong>激活LoRA专家的分布</strong> 现在作者比较了在MT-<br />
+Bench、BoolQ和PIQA任务上的所有Transformer层中激活的LoRA专家的分布，如图2所示。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1l8IA9c58fgZwtrdXcNxfI4VbGH0s6Zt1zzQd54uoLw3lqB1Bib4icDMg/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>作者可以观察到：</p>
+<pre class="highlight"><code>1. 不同的Transformer层通过其相应的路由器选择不同的LoRA专家进行激活，而一个LoRA专家能够达到的最大比例小于30%。结果很直观，因为不同深度的Transformer层代表不同的知识，需要不同的LoRA专家来表达。
+
+2. 不同任务上的LoRA分布是不同的。例如，在MT-Bench和BoolQ任务上，几层会激活LoRA Q或LoRA K，而这两个LoRA专家在PIQA任务上经常被选择。
+</code></pre>
+
+<p>以下是对MiLoRA框架的消融研究：作者考虑了以下几种MiLoRA的变体：</p>
+<pre class="highlight"><code>1. MiLoRA-1用平均池化替代了自注意力池化； 
+2. MiLoRA-2用最后 Token 池化替代了自注意力池化； 
+3. MiLoRA-3在LoRA路由器中使用了GeLU激活函数g； 
+4. MiLoRA-4在前16层使用了ReLU，而在更深层的16层使用了GeLU； 
+5. MiLoRA-5在前16层使用了GeLU，而在更深层的16层使用了ReLU。BoolQ、PIQA和MMLU任务上的实验结果如表5所示。
+</code></pre>
+
+<p>结果显示，在默认设置（如表1所示）下，MiLoRA优于五个变体。此外，将MiLoRA-1与MiLoRA进行比较，发现自注意力池器提供高质量的信息聚合，从而实现正确的LoRA专家选择。将MiLoRA-5与MiLoRA-3和MiLoRA-4进行比较，发现为不同层的路由器使用不同的激活函数可以带来性能提升。然而，MiLoRA优于MiLoRA-3、MiLoRA-4和MiLoRA-5，表明可学习的激活函数可以为每个LoRA路由器提供适当的激活函数，并增强下游适应能力。</p>
+<p>** 的影响 ** 在表1和2中，作者将激活的LoRA专家数量  设置为3。现在，作者将  更改为{1, 2, 4, 5, 6,<br />
+7}，改变激活的LoRA专家的比例。作为比较，作者也改变了激活专家在MOELORA中的比例。BoolQ和PIQA任务的的结果分别如图3(a)和3(b)所示。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1HYQrS5mc5Neicgdj3zr4HJJCCL5z2icK0cr0Zdcvn7lzEfrDNNcxZ8NQ/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>结果表明：（a）随着激活专家数量的增加，两种方法的表现首先增加然后减少。当激活专家的比例为1时，两种方法简化为普通的LoRA。（b）MiLoRA始终优于MOELORA方法，这证明了MiLoRA在定位最需要LoRA模块的Transformer模块方面的有效性。</p>
+<p><strong>λlb系数的影响</strong> 在表1中，作者将路由器损失系数λlb设置为1e-2。现在，作者将  更改为<br />
+，并在BoolQ和PIQA任务上进行实验。结果报告在图4(a)和4(b)中。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1nibUtH8L2fodOBbR43qNrzE9Qd99A2eD2zQybxY4x2AnDibKY2KclrXg/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>结果表明：（a）MiLoRA在系数为1e-2时实现了最高的平均准确率。（b）禁用路由器损失或使用更高的系数会导致平均准确率降低。这些结果表明，一个合理的路由器损失系数可以帮助解决专家的不平衡问题，而更高的系数可以在微调过程中阻碍模型收敛。</p>
+<p><strong>在不同的可调参数预算下进行比较</strong> 在MiLoRA中通过修改m=32的值来改变可调参数预算，预算值为{8, 16, 64, 128,<br />
+256}。作者还改变了可调参数数量。图5(a)和5(b)展示了在BoolQ和PIQA任务上的实验结果。结果表明，在不同可调参数预算下，MiLoRA方法（a）可以持续优于LoRA和LPT方法，同时（b）对可调参数数量减少更为鲁棒。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI1KFdtyzWGJx98dbJ0XnjuKt87sz7WbeiahfXcQBzjdnS6ZJiaSvNnNibVg/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p><strong>在预训练的backbone上的消融</strong> 作者主要在LlaMA-2 7B模型上进行实验。为了证明MiLoRA的应用范围，作者将在LlaMA-2<br />
+13B和Gemma 2B模型上进行实验。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/xsV2V0iaianFib3FpoaCkUueBArmibMKUZI14lO53BDWqutsFAn2YFPwPWkAMDrDSjYma1VSqp0M29yYol0arpk1OQ/640?wx_fmt=jpeg&amp;from=appmsg" /></p>
+<p>结果已在附录E的表7中报告。作者可以看到，MiLoRA方法在这两个backbone上也可以超过 Baseline 方法。</p>
+<h2 id="4-结论">4 结论<a class="anchor-link" href="#4-结论" title="Permanent link">&para;</a></h2>
+<p>本研究提出了Mixture of LoRA (MiLoRA)<br />
+方法，一种用于大规模语言模型参数高效的微调新方法。与先前的MOE风格LoRA方法不同，MiLoRA：</p>
+<pre class="highlight"><code>1. 在Transformer层 Level 激活LoRA专家，确定哪个Transformer模块的LoRA被激活。 
+2. 激活哪个LoRA专家取决于输入 Prompt 。 
+3. 对于给定的 Prompt ，LoRA路由器只调用一次。随后的 Token 生成步骤重用路由器的决策。
+</code></pre>
+
+<p>为了提高MiLoRA的下游性能，作者在微调过程中学习不同深度的LoRA路由器的不同激活函数。MiLoRA易于实现且现成。在各种任务上的实验表明，MiLoRA方法在推理效率的同时，超过了基准方法。</p>
+<h2 id="5-限制">5 限制<a class="anchor-link" href="#5-限制" title="Permanent link">&para;</a></h2>
+<p>作者表明，作者提出的这种方法可以提高在各种任务和不同预训练模型（如LlaMA-2 7B，LlaMA-2 13B，Gemma 2B）上的参数有效调优性能。</p>
+<p>然而，作者承认以下限制：</p>
+<pre class="highlight"><code>1. 由于计算资源有限，没有实验更大规模的超大型开源LLM，如LlaMA-2 70B。 
+2. NLP中的其他任务，如信息提取，也没有考虑。但MiLoRA可以轻松地转移到其他 Backbone 架构和不同类型的任务。
+</code></pre>
+
+<p>研究MiLoRA在更大规模的 Backbone 模型和其他类型任务上的优越性将很有趣，作者将在未来的工作中进行探索。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="https://mp.weixin.qq.com/s/7xA8e-pPvqFn0tOi6QmB9A">LoRA再现高效全新变体MiLoRA | 通过Prompt 感知路由机制让LoRA加速的同时不忘涨点</a></li>
+<li><a href="https://mp.weixin.qq.com/s/-10BeAOFUzsN9JkXfmQegQ">你的LoRA需要更新了！科大讯飞等提出MiLoRA：新颖且高效的LoRA变体</a></li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

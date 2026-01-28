@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#写在前面">写在前面</a></li>
+<li><a href="#gradient-descentgd">Gradient Descent（GD）</a></li>
+<li><a href="#batch-gradient-descentbgd">Batch Gradient Descent（BGD）</a></li>
+<li><a href="#stochastic-gradient-descentsgd">Stochastic Gradient Descent（SGD）</a></li>
+<li><a href="#mini-batch-gradient-descentmbgd也叫作sgd">Mini-batch Gradient Descent（MBGD，也叫作SGD）</a></li>
+<li><a href="#momentum">Momentum</a></li>
+<li><a href="#nesterov-accelerated-gradient">Nesterov Accelerated Gradient</a></li>
+<li><a href="#adagrad">Adagrad</a></li>
+<li><a href="#adadelta">Adadelta</a></li>
+<li><a href="#rmsprop">RMSprop</a></li>
+<li><a href="#adaptive-moment-estimationadam">Adaptive Moment Estimation（Adam）</a></li>
+<li><a href="#adamax">AdaMax</a></li>
+<li><a href="#nadam">Nadam</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/08.模型优化</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><a href="https://zhuanlan.zhihu.com/p/343564175">论文阅读笔记：各种Optimizer梯度下降优化算法回顾和总结</a></p>
+<p>不管是使用PyTorch还是TensorFlow，用多了Optimizer优化器封装好的函数，对其内部使用的优化算法却没有仔细研究过，也很难对其优点和缺点进行实用的解释。所以打算以这一篇论文为主线并结合多篇优秀博文，回顾和总结目前主流的优化算法，对于没有深入了解过的算法，正好借这个机会学习一下。</p>
+<h2 id="写在前面">写在前面<a class="anchor-link" href="#写在前面" title="Permanent link">&para;</a></h2>
+<p>当前使用的许多优化算法，是对梯度下降法的衍生和优化。在微积分中，对多元函数的参数求 <span class="math-inline">\theta</span> 偏导数，把求得的各个参数的导数以向量的形式写出来就是梯度。梯度就是函数变化最快的地方。梯度下降是迭代法的一种，在求解机器学习算法的模型参数 <span class="math-inline">\theta</span> 时，即无约束问题时，梯度下降是最常采用的方法之一。</p>
+<p>这里定义一个通用的思路框架，方便我们后面理解各算法之间的关系和改进。首先定义待优化参数 <span class="math-inline">\theta</span> ，目标函数 <span class="math-inline">J(\theta)</span> ，学习率为 <span class="math-inline">\eta</span> ，然后我们进行迭代优化，假设当前的epoch为 <span class="math-inline">t</span> ，则有：</p>
+<ul>
+<li>计算目标函数关于当前参数的梯度： <span class="math-inline">g_t = \triangledown_{\theta_t} J(\theta_t)</span></li>
+<li>根据历史梯度计算一阶动量和二阶动量： <span class="math-inline">m_t=\phi(g_1,g_2,...,g_t);V_t=\psi(g_1,g_2,...,g_t)</span> ，</li>
+<li>计算当前时刻的下降梯度： <span class="math-inline">\triangledown_t=\eta\cdot \frac{m_t}{\sqrt{V_t}}</span></li>
+<li>根据下降梯度进行更新： <span class="math-inline">\theta_{t+1} = \theta_t -\triangledown_t</span></li>
+</ul>
+<p>其中， <span class="math-inline">\theta_{t+1}</span> 为下一个时刻的参数， <span class="math-inline">\theta_t</span> 为当前时刻 <span class="math-inline">t</span> 参数，后面的描述我们都将结合这个框架来进行。</p>
+<p>这里提一下一些概念：</p>
+<ul>
+<li>鞍点：一个光滑函数的鞍点邻域的曲线，曲面，或超曲面，都位于这点的切线的不同边。例如这个二维图形，像个马鞍：在x-轴方向往上曲，在y-轴方向往下曲，鞍点就是（0，0）。</li>
+</ul>
+<p><img alt="" src="https://pic2.zhimg.com/v2-e8518ceccc0db15274a9fb349eca1cb9_1440w.jpg" /></p>
+<ul>
+<li>指数加权平均、偏差修正：可参见这篇文章<a href="https://link.zhihu.com/?target=https%3A//www.cnblogs.com/guoyaohua/p/8544835.html">什么是指数加权平均、偏差修正？</a></li>
+</ul>
+<h2 id="gradient-descentgd">Gradient Descent（GD）<a class="anchor-link" href="#gradient-descentgd" title="Permanent link">&para;</a></h2>
+<p>在GD中没有动量的概念，也就是说在上述框架中： <span class="math-inline">m_t=g_t；V_t=I^2</span> ，则我们在当前时刻需要下降的梯度就是 <span class="math-inline">\triangledown_t=\eta\cdot g_t</span> ，则使用梯度下降法更新参数为（假设当前样本为 <span class="math-inline">(x_i,y_i)</span> ，每当样本输入时，参数即进行更新）：</p>
+<p><span class="math-inline">\theta_{t+1}=\theta_t-\triangledown_t=\theta_t-\eta\cdot g_t=\theta_t-\eta\cdot \triangledown_{\theta_t} J_i(\theta_t,x_i,y_i)</span></p>
+<p>梯度下降算法中，模型参数的更新调整，与代价函数关于模型参数的梯度有关，即沿着梯度的方向不断减小模型参数，从而最小化代价函数。基本策略可以理解为”在有限视距内寻找最快路径下山“，因此每走一步，参考当前位置最陡的方向(即梯度)进而迈出下一步，更形象的如下图：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-ba170a69e88426463723e671123a5c51_1440w.jpg" /></p>
+<p>标准的梯度下降主要有两个缺点：</p>
+<ul>
+<li>训练速度慢：在应用于大型数据集中，每输入一个样本都要更新一次参数，且每次迭代都要遍历所有的样本，会使得训练过程及其缓慢，需要花费很长时间才能得到收敛解。</li>
+<li>容易陷入局部最优解：由于是在有限视距内寻找下山的反向，当陷入平坦的洼地，会误以为到达了山地的最低点，从而不会继续往下走。所谓的局部最优解就是鞍点，落入鞍点，梯度为0，使得模型参数不在继续更新。</li>
+</ul>
+<h2 id="batch-gradient-descentbgd">Batch Gradient Descent（BGD）<a class="anchor-link" href="#batch-gradient-descentbgd" title="Permanent link">&para;</a></h2>
+<p>BGD相对于标准GD进行了改进，改进的地方通过它的名字应该也能看出来，也就是不再是想标准GD一样，对每个样本输入都进行参数更新，而是针对一个批量的数据输入进行参数更新。我们假设<strong>批量训练样本总数</strong>为 <span class="math-inline">n</span> ，样本为 <span class="math-inline">{(x_1,y_1),..,(x_n, y_n)}</span> ，则在第 <span class="math-inline">i</span> 对样本 <span class="math-inline">(x_i,y_i)</span> 上损失函数关于参数的梯度为 <span class="math-inline">\triangledown_\theta J_i(\theta, x_i, y_i)</span> , 则使用BGD更新参数为：</p>
+<p><span class="math-inline">\theta_{t+1}=\theta_t-\eta\cdot\frac{1}{n}\cdot\sum_{i=1}^{n}\triangledown_{\theta_t} J_i(\theta_t, x_i, y_i)</span></p>
+<p>从上面的公式我们可以看到，BGD其实是在一个批量的样本数据中，求取该批量样本梯度的均值来更新参数，即每次权值调整发生在批量样本输入之后，而不是每输入一个样本就更新一次模型参数，这样就会大大加快训练速度，但是还是不够，我们接着往下看。</p>
+<h2 id="stochastic-gradient-descentsgd">Stochastic Gradient Descent（SGD）<a class="anchor-link" href="#stochastic-gradient-descentsgd" title="Permanent link">&para;</a></h2>
+<p>随机梯度下降法，不像BGD每一次参数更新，需要计算整个数据样本集的梯度，而是每次参数更新时，仅仅选取一个样本 <span class="math-inline">(x_i,y_i)</span> 计算其梯度，参数更新公式为：</p>
+<p><span class="math-inline">\theta_{t+1}=\theta_t-\eta\cdot\triangledown_{\theta_t} J_i(\theta_t, x_i, y_i)</span></p>
+<p>公式看起来和上面标准GD一样，但是注意了，这里的样本是从批量中随机选取一个，而标准GD是所有的输入样本都进行计算。可以看到BGD和SGD是两个极端，SGD由于每次参数更新仅仅需要计算一个样本的梯度，训练速度很快，即使在样本量很大的情况下，可能只需要其中一部分样本就能迭代到最优解，由于每次迭代并不是都向着整体最优化方向，导致梯度下降的波动非常大（如下图），更容易从一个局部最优跳到另一个局部最优，准确度下降。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-2323ce37bc841f04944988ce4853e533_1440w.jpg" /></p>
+<p>论文中提到，当缓慢降低学习率时，SGD会显示与BGD相同的收敛行为，几乎一定会收敛到局部（非凸优化）或全局最小值（凸优化）。</p>
+<p>SGD的优点：</p>
+<ul>
+<li>虽然看起来SGD波动非常大，会走很多弯路，但是对梯度的要求很低（计算梯度快），而且对于引入噪声，大量的理论和实践工作证明，只要噪声不是特别大，SGD都能很好地收敛。</li>
+<li>应用大型数据集时，训练速度很快。比如每次从百万数据样本中，取几百个数据点，算一个SGD梯度，更新一下模型参数。相比于标准梯度下降法的遍历全部样本，每输入一个样本更新一次参数，要快得多。</li>
+</ul>
+<p>SGD的缺点：</p>
+<ul>
+<li>SGD在随机选择梯度的同时会引入噪声，使得权值更新的方向不一定正确（次要）。</li>
+<li>SGD也没能单独克服局部最优解的问题（主要）。</li>
+</ul>
+<h2 id="mini-batch-gradient-descentmbgd也叫作sgd">Mini-batch Gradient Descent（MBGD，也叫作SGD）<a class="anchor-link" href="#mini-batch-gradient-descentmbgd也叫作sgd" title="Permanent link">&para;</a></h2>
+<p>小批量梯度下降法就是结合BGD和SGD的折中，对于含有 <span class="math-inline">n</span> 个训练样本的数据集，每次参数更新，选择一个大小为 <span class="math-inline">m(m&lt;n)</span> 的mini-batch数据样本计算其梯度，其参数更新公式如下：</p>
+<p><span class="math-inline">\theta_{t+1}=\theta_t-\eta\cdot\frac{1}{m}\cdot\sum_{i=x}^{i=x+m-1}\triangledown_{\theta_t} J_i(\theta_t, x_i, y_i)</span></p>
+<p>小批量梯度下降法即保证了训练的速度，又能保证最后收敛的准确率，目前的SGD默认是小批量梯度下降算法。常用的小批量尺寸范围在50到256之间，但可能因不同的应用而异。</p>
+<p>MBGD的缺点：</p>
+<ul>
+<li>Mini-batch gradient descent 不能保证很好的收敛性，learning rate 如果选择的太小，收敛速度会很慢，如果太大，loss function 就会在极小值处不停地震荡甚至偏离（有一种措施是先设定大一点的学习率，当两次迭代之间的变化低于某个阈值后，就减小 learning rate，不过这个阈值的设定需要提前写好，这样的话就不能够适应数据集的特点）。对于非凸函数，还要避免陷于局部极小值处，或者鞍点处，因为鞍点所有维度的梯度都接近于0，SGD 很容易被困在这里（会在鞍点或者局部最小点震荡跳动，因为在此点处，如果是BGD的训练集全集带入，则优化会停止不动，如果是mini-batch或者SGD，每次找到的梯度都是不同的，就会发生震荡，来回跳动）。</li>
+<li>SGD对所有参数更新时应用同样的 learning rate，如果我们的数据是稀疏的，我们更希望对出现频率低的特征进行大一点的更新， 且learning rate会随着更新的次数逐渐变小。</li>
+</ul>
+<h2 id="momentum">Momentum<a class="anchor-link" href="#momentum" title="Permanent link">&para;</a></h2>
+<p>momentum算法思想：参数更新时在一定程度上保留之前更新的方向，同时又利用当前batch的梯度微调最终的更新方向，简言之就是通过积累之前的动量来加速当前的梯度。从这里开始，我们引入一阶动量的概念（在mini-batch SGD的基础之上），也就是说，在最开始说的框架中， <span class="math-inline">m_{t+1}=\beta_1\cdot m_{t}+(1-\beta_1)\cdot g_t</span> ，而 <span class="math-inline">V_t=I^2</span> 不变，参数更新公式如下：</p>
+<p><span class="math-inline">m_{t+1}=\beta_1\cdot m_{t}+(1-\beta_1)\cdot \triangledown_{\theta_t} J_i(\theta_t)\\theta_{t+1}=\theta_t-m_{t+1}</span></p>
+<p>一阶动量是各个时刻梯度方向的指数移动平均值，约等于最近 <span class="math-inline">\frac{1}{(1-\beta_1)}</span> 个时刻的梯度向量和的平均值。也就是说， <span class="math-inline">t</span> 时刻的下降方向，不仅由当前点的梯度方向决定，而且由此前累积的下降方向决定。 <span class="math-inline">\beta_1</span> 的经验值为0.9，这就意味着下降方向主要是此前累积的下降方向，并略微偏向当前时刻的下降方向。在梯度方向改变时，momentum能够降低参数更新速度，从而减少震荡，在梯度方向相同时，momentum可以加速参数更新， 从而加速收敛，如下图：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-4386faeed58d309407bf209c06ed255b_1440w.jpg" /></p>
+<p>动量主要解决SGD的两个问题：</p>
+<ul>
+<li>随机梯度的方法（引入的噪声）</li>
+<li>Hessian矩阵病态问题（可以理解为SGD在收敛过程中和正确梯度相比来回摆动比较大的问题）。</li>
+</ul>
+<h2 id="nesterov-accelerated-gradient">Nesterov Accelerated Gradient<a class="anchor-link" href="#nesterov-accelerated-gradient" title="Permanent link">&para;</a></h2>
+<p>NAG(Nesterov accelerated gradient）算法，是Momentum动量算法的变种。momentum保留了上一时刻的梯度 <span class="math-inline">\triangledown_\theta J(\theta)</span> ，对其没有进行任何改变，NAG是momentum的改进，在梯度更新时做一个矫正，具体做法就是在当前的梯度上添加上一时刻的动量 <span class="math-inline">\beta_1\cdot m_t</span> ，梯度改变为 <span class="math-inline">\triangledown_\theta J(\theta-\beta_1\cdot m_t)</span> ，参数更新公式如下：</p>
+<p><span class="math-inline">m_{t+1}=\beta_1\cdot m_{t}+(1-\beta_1)\cdot \triangledown_{\theta_t} J(\theta_t-\beta_1\cdot m_t)\\theta_{t+1}=\theta_t-m_{t+1}</span></p>
+<p>加上nesterov项后，梯度在大的跳跃后，进行计算对当前梯度进行校正。 下图是momentum和nesterrov的对比表述图如下：</p>
+<p><img alt="" src="https://picx.zhimg.com/v2-33e1f4120e929f3fe6d0b8649bb09221_1440w.jpg" /></p>
+<p><a href="https://zhida.zhihu.com/search?content_id=164477134&amp;content_type=Article&amp;match_order=1&amp;q=Nesterov%E5%8A%A8%E9%87%8F&amp;zhida_source=entity">Nesterov动量</a>梯度的计算在模型参数施加当前速度之后，因此可以理解为往标准动量中添加了一个校正因子。在凸批量梯度的情况下，Nesterov动量将额外误差收敛率从 <span class="math-inline">O(1/k)</span> (k步后)改进到 <span class="math-inline">O(1/k^2)</span> ，然而，在随机梯度情况下，Nesterov动量对收敛率的作用却不是很大。</p>
+<p>Momentum和Nexterov都是为了使梯度更新更灵活。但是人工设计的学习率总是有些生硬，下面介绍几种自适应学习率的方法。</p>
+<h2 id="adagrad">Adagrad<a class="anchor-link" href="#adagrad" title="Permanent link">&para;</a></h2>
+<p>Adagrad其实是对学习率进行了一个约束，对于经常更新的参数，我们已经积累了大量关于它的知识，不希望被单个样本影响太大，希望学习速率慢一些；对于偶尔更新的参数，我们了解的信息太少，希望能从每个偶然出现的样本身上多学一些，即学习速率大一些。而该方法中开始使用二阶动量，才意味着“自适应学习率”优化算法时代的到来。</p>
+<p>我们前面都没有好好的讨论二阶动量，二阶动量是个啥？它是用来度量历史更新频率的，二阶动量是迄今为止所有梯度值的平方和，即 <span class="math-inline">V_t = \sum_{i=1}^tg_t^2</span> ，在最上面的框架中 <span class="math-inline">\triangledown_t=\eta\cdot \frac{m_t}{\sqrt{V_t}}</span> （在这里 <span class="math-inline">m_t=I</span> ）， 也就是说，我们的学习率现在是 <span class="math-inline">\frac{\eta}{\sqrt{V_t+\epsilon}}</span> （一般为了避免分母为0，会在分母上加一个小的平滑项 <span class="math-inline">\epsilon</span> ），从这里我们就会发现 <span class="math-inline">\sqrt{V_t+\epsilon}</span> 是恒大于0的，而且参数更新越频繁，二阶动量越大，学习率就越小，这一方法在稀疏数据场景下表现非常好，参数更新公式如下：</p>
+<p><span class="math-inline">V_t = \sum_{i=1}^tg_t^2\\theta_{t+1}=\theta_t-\eta\frac{1}{\sqrt{V_t+\epsilon}}\cdot g_i</span></p>
+<p>细心的小伙伴应该会发现Adagrad还是存在一个很明显的缺点：</p>
+<ul>
+<li>仍需要手工设置一个全局学习率 <span class="math-inline">\eta</span> , 如果 <span class="math-inline">\eta</span> 设置过大的话，会使regularizer过于敏感，对梯度的调节太大</li>
+<li>中后期，分母上梯度累加的平方和会越来越大，使得参数更新量趋近于0，使得训练提前结束，无法学习</li>
+</ul>
+<h2 id="adadelta">Adadelta<a class="anchor-link" href="#adadelta" title="Permanent link">&para;</a></h2>
+<p>由于AdaGrad调整学习率变化过于激进，我们考虑一个改变二阶动量计算方法的策略：不累积全部历史梯度，而只关注过去一段时间窗口的下降梯度，即Adadelta只累加固定大小的项，并且也不直接存储这些项，仅仅是近似计算对应的平均值（指数移动平均值），这就避免了二阶动量持续累积、导致训练过程提前结束的问题了，参数更新公式如下：</p>
+<p><span class="math-inline">V_t = \beta_2\cdot V_{t-1} + (1-\beta_2)(\triangledown_{\theta_t} J(\theta_t))^2\\theta_{t+1}=\theta_t-\eta\frac{1}{\sqrt{V_t+\epsilon}}\cdot g_i</span></p>
+<p>观察上面的参数更新公式，我们发现还是依赖于全局学习率 <span class="math-inline">\eta</span> ，但是原作者在此基础之上做出了一定的处理，上式经过牛顿迭代法之后，得到Adadelta最终迭代公式如下式，其中 <span class="math-inline">g_t = \triangledown_{\theta_t} J(\theta_t)</span> ：</p>
+<p><span class="math-inline">E[g_t^2]<em>t=\rho\cdot E[g_t^2]</em>{t-1}+(1-\rho)\cdot g_t^2\\triangledown_t=\frac{\sum_{i=1}^{t-1}\triangle\theta_r}{\sqrt{E[g_t^2]_t+\epsilon}}</span></p>
+<p><strong>此时可以看出Adadelta已经不依赖全局learning rate了</strong>，Adadelta有如下特点：</p>
+<ul>
+<li>训练初中期，加速效果不错，很快</li>
+<li>训练后期，反复在局部最小值附近抖动</li>
+</ul>
+<h2 id="rmsprop">RMSprop<a class="anchor-link" href="#rmsprop" title="Permanent link">&para;</a></h2>
+<p>RMSProp算法修改了AdaGrad的梯度平方和累加为指数加权的移动平均，使得其在非凸设定下效果更好。设定参数：全局初始率 <span class="math-inline">\eta</span> , 默认设为0.001，decay rate <span class="math-inline">\rho</span> ，默认设置为0.9，一个极小的常量 <span class="math-inline">\epsilon</span> ，通常为10e-6，参数更新公式如下，其中 <span class="math-inline">g_t = \triangledown_{\theta_t} J(\theta_t)</span> ：</p>
+<p><span class="math-inline">E[g_t^2]<em>t=\rho\cdot E[g_t^2]</em>{t-1}+(1-\rho)\cdot g_t^2\\triangledown_t=\frac{\eta}{\sqrt{E[g_t^2]_t+\epsilon}}\cdot g_t </span></p>
+<ul>
+<li>其实RMSprop依然依赖于全局学习率 <span class="math-inline">\eta</span></li>
+<li>RMSprop算是Adagrad的一种发展，和Adadelta的变体，效果趋于二者之间</li>
+<li>适合处理非平稳目标(包括季节性和周期性)——对于RNN效果很好</li>
+</ul>
+<h2 id="adaptive-moment-estimationadam">Adaptive Moment Estimation（Adam）<a class="anchor-link" href="#adaptive-moment-estimationadam" title="Permanent link">&para;</a></h2>
+<p>其实有了前面的方法，Adam和Nadam的出现就很理所当然的了，因为它们结合了前面方法的一阶动量和二阶动量。我们看到，SGD-M和NAG在SGD基础上增加了一阶动量，AdaGrad和AdaDelta在SGD基础上增加了二阶动量，参数更新公式如下（按照最开始总结的计算框架）：</p>
+<p><span class="math-inline">m_{t+1}=\beta_1\cdot m_{t}+(1-\beta_1)\cdot \triangledown_{\theta_t} J_i(\theta_t)\V_{t+1} = \beta_2\cdot V_{t} + (1-\beta_2)(\triangledown_{\theta_t} J(\theta_t))^2\\theta_{t+1}=\theta_t-\eta\frac{m_{t+1}}{\sqrt{V_{t+1}+\epsilon}}</span></p>
+<p>通常情况下，默认值为 <span class="math-inline">\beta_1=0.9</span> 、 <span class="math-inline">\beta_2=0.999</span> 和 <span class="math-inline">\epsilon=10^{-8}</span> ，Adam通常被认为对超参数的选择相当鲁棒，特点如下：</p>
+<ul>
+<li>Adam梯度经过偏置校正后，每一次迭代学习率都有一个固定范围，使得参数比较平稳。</li>
+<li>结合了Adagrad善于处理稀疏梯度和RMSprop善于处理非平稳目标的优点</li>
+<li>为不同的参数计算不同的自适应学习率</li>
+<li>也适用于大多非凸优化问题——适用于大数据集和高维空间。</li>
+</ul>
+<h2 id="adamax">AdaMax<a class="anchor-link" href="#adamax" title="Permanent link">&para;</a></h2>
+<p>Adamax是Adam的一种变体，此方法对学习率的上限提供了一个更简单的范围，即使用无穷范式，参数更新公式如下：</p>
+<p><span class="math-inline">m_{t+1}=\beta_1\cdot m_{t}+(1-\beta_1)\cdot \triangledown_{\theta_t} J_i(\theta_t)\V_{t+1} = \beta_2^\infty\cdot V_{t} + (1-\beta_2^\infty)(\triangledown_{\theta_t} J(\theta_t))^\infty=max(\beta_2\cdot V_t, |\triangledown_{\theta_t}J(\theta_t)|)\\theta_{t+1}=\theta_t-\eta\frac{m_{t+1}}{\sqrt{V_{t+1}+\epsilon}}</span></p>
+<p>通常情况下，默认值为 <span class="math-inline">\beta_1=0.9</span> 、 <span class="math-inline">\beta_2=0.999</span> 和 <span class="math-inline">\eta=0.002</span></p>
+<h2 id="nadam">Nadam<a class="anchor-link" href="#nadam" title="Permanent link">&para;</a></h2>
+<p>其实如果说要集成所有方法的优点于一身的话，Nadam应该就是了，Adam遗漏了啥？没错，就是Nesterov项，我们在Adam的基础上，加上Nesterov项就是Nadam了，参数更新公式如下：</p>
+<p><span class="math-inline">m_{t+1}=\beta_1\cdot m_{t}+\frac{(1-\beta_1)}{(1-\beta_1^t)}\cdot \triangledown_{\theta_t} J_i(\theta_t)\V_{t+1} = \beta_2\cdot V_{t} + (1-\beta_2)(\triangledown_{\theta_t} J(\theta_t))^2\\theta_{t+1}=\theta_t-\eta\frac{m_{t+1}}{\sqrt{V_{t+1}+\epsilon}}</span></p>
+<p>可以看出，Nadam对学习率有更强的约束，同时对梯度的更新也有更直接的影响。一般而言，在使用带动量的RMSprop或Adam的问题上，使用Nadam可以取得更好的结果。</p>
+<p>来张直观的动态图展示上述优化算法的效果：</p>
+<ul>
+<li>下图描述了在一个曲面上，6种优化器的表现：</li>
+</ul>
+<p><img alt="动图封面" src="https://pic2.zhimg.com/v2-63628f546ad55fd31091e23c623cb9f5_b.jpg" /></p>
+<ul>
+<li>下图在一个存在鞍点的曲面，比较6中优化器的性能表现：</li>
+</ul>
+<p><img alt="动图封面" src="https://pic3.zhimg.com/v2-4a3b4a39ab8e5c556359147b882b4788_b.jpg" /></p>
+<ul>
+<li>下图图比较了6种优化器收敛到目标点（五角星）的运行过程</li>
+</ul>
+<p><img alt="动图封面" src="https://pic3.zhimg.com/v2-5d5166a3d3712e7c03af74b1ccacbeac_b.jpg" /></p>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<p>那种优化器最好？该选择哪种优化算法？目前还没能够达达成共识。Schaul et al (2014)展示了许多优化算法在大量学习任务上极具价值的比较。虽然结果表明，具有自适应学习率的优化器表现的很鲁棒，不分伯仲，但是没有哪种算法能够脱颖而出。</p>
+<p>目前，最流行并且使用很高的优化器（算法）包括SGD、具有动量的SGD、RMSprop、具有动量的RMSProp、AdaDelta和Adam。在实际应用中，选择哪种优化器应结合具体问题；同时，也优化器的选择也取决于使用者对优化器的熟悉程度（比如参数的调节等等）。</p>
+<ul>
+<li>
+<p>对于稀疏数据，尽量使用学习率可自适应的优化方法，不用手动调节，而且最好采用默认值</p>
+</li>
+<li>
+<p>SGD通常训练时间更长，但是在好的初始化和学习率调度方案的情况下，结果更可靠</p>
+</li>
+<li>
+<p>如果在意更快的收敛，并且需要训练较深较复杂的网络时，推荐使用学习率自适应的优化方法。</p>
+</li>
+<li>
+<p>Adadelta，RMSprop，Adam是比较相近的算法，在相似的情况下表现差不多。</p>
+</li>
+<li>
+<p>在想使用带动量的RMSprop，或者Adam的地方，大多可以使用Nadam取得更好的效果</p>
+</li>
+<li>
+<p>如果验证损失较长时间没有得到改善，可以停止训练。</p>
+</li>
+<li>
+<p>添加梯度噪声（高斯分布 <span class="math-inline">N(0,\sigma_t^2)</span> ）到参数更新，可使网络对不良初始化更加健壮，并有助于训练特别深而复杂的网络。</p>
+</li>
+</ul>
+<p><em>参考文献</em>：</p>
+<ul>
+<li><a href="https://link.zhihu.com/?target=https%3A//ruder.io/optimizing-gradient-descent/">An overview of gradient descent optimization algorithms</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/22252270">深度学习最全优化方法总结比较（SGD，Adagrad，Adadelta，Adam，Adamax，Nadam）</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//github.com/snnclsr/visualize_optimizers">visualize_optimizers</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//lossfunctions.tumblr.com/">lossfunctions</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/55150256">优化算法Optimizer比较和总结</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/32230623">一个框架看懂优化算法之异同 SGD/AdaGrad/Adam</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//www.cnblogs.com/guoyaohua/p/8542554.html">深度学习——优化器算法Optimizer详解（BGD、SGD、MBGD、Momentum、NAG、Adagrad、Adadelta、RMSprop、Adam）</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//blog.csdn.net/weixin_40170902/article/details/80092628">机器学习：各种优化器Optimizer的总结与比较</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//blog.csdn.net/muyu709287760/article/details/62531509%23%25E4%25B8%2589%25E7%25A7%258Dgradient-descent%25E5%25AF%25B9%25E6%25AF%2594">optimizer优化算法总结</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

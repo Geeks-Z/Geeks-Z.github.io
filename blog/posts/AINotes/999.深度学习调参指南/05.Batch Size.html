@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#选择batchsize">选择BatchSize</a><ul>
+<li><a href="#确定可行的batch-size并估计训练吞吐量">确定可行的Batch Size并估计训练吞吐量</a></li>
+<li><a href="#选择合适的batch-size以最小化训练时间">选择合适的Batch Size以最小化训练时间</a></li>
+<li><a href="#选择合适的batch-size以最小化资源消耗">选择合适的Batch Size以最小化资源消耗</a></li>
+<li><a href="#更改batch-size需要重新调整大多数超参数">更改Batch Size需要重新调整大多数超参数</a></li>
+</ul>
+</li>
+<li><a href="#batch-norm会对batch-size的选择造成什么影响">Batch Norm会对Batch Size的选择造成什么影响？</a></li>
+<li><a href="#为什么不应该调整batch-size来直接提高验证集性能">为什么不应该调整Batch Size来直接提高验证集性能?</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/999.深度学习调参指南</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <ul>
+<li>batch size不能太大，也不能太小；太小会浪费计算资源，太大则会浪费内存；一般设置为16的倍数。对于推荐来说32-64-128-512测试效果再高一般也不会正向了，再低训练太慢了。</li>
+<li>Learning rate和batch size是两个重要的参数，而且二者也是相互影响的，在反向传播时直接影响梯度。一般情况下，先调batch size，再调learning rate。</li>
+</ul>
+<h3 id="选择batchsize">选择BatchSize<a class="anchor-link" href="#选择batchsize" title="Permanent link">&para;</a></h3>
+<p><strong><em>总结</em></strong>： <em>Batch Size决定训练速度，并且不应该被直接用于调整验证集性能。通常来说，可用硬件支持的最大Batch Size是较为理想的数值。</em></p>
+<ul>
+<li>Batch Size是决定<em>训练时间</em>和<em>计算资源消耗</em>的关键因素。</li>
+<li>增加Batch Size通常会减少训练时间。这非常有益，因为它：<ul>
+<li>能使固定时间间隔内超参数调整更彻底，最终训练出更好的模型。</li>
+<li>减少开发周期的延迟，能更多地测试新想法。</li>
+</ul>
+</li>
+<li>资源消耗和Batch Size之间并没有明确的关系，增加Batch Size让资源消耗增加、减少或是保持不变都有可能。</li>
+<li>Batch Size<em>不应该</em>被当作验证集性能的可调超参数。<ul>
+<li>只要调整好所有超参数（尤其是学习率和正则化超参数）并且训练步数足够，理论上任意的Batch Size都能获得相同的最终性能（参见 <a href="https://arxiv.org/abs/1811.03600">Shallue et al. 2018</a>） </li>
+</ul>
+</li>
+</ul>
+<h4 id="确定可行的batch-size并估计训练吞吐量">确定可行的Batch Size并估计训练吞吐量<a class="anchor-link" href="#确定可行的batch-size并估计训练吞吐量" title="Permanent link">&para;</a></h4>
+<ul>
+<li>对于给定的模型和优化器，可用硬件通常能能够支持一系列Batch Size。限制因素通常是加速器（GPU/TPU 等）的内存。</li>
+<li>不幸的是，如果不运行或者编译完整的训练程序，就很难计算出适合内存的Batch Size。</li>
+<li>最简单的解决方案通常是以不同的批次大小（例如，用 2 的幂来尝试）运行少量的训练实验，直到其中一个实验超过可用内存。</li>
+<li>对于每个Batch Size，我们应该训练足够长的时间以准确估计<em>训练吞吐量</em></li>
+</ul>
+<p align="center">训练吞吐量 =每秒处理的样本数量</p>
+
+<p align="center">或者，我们可以估计<em>每步时间</em> :</p>
+
+<p align="center">每步时间 =（Batch Size）/（训练吞吐量）</p>
+
+<ul>
+<li>当加速器内存未饱和时，如果Batch Size加倍，训练吞吐量也应该加倍（或至少接近加倍）。等效地，随着Batch Size的增加，每步的时间应该是恒定的（或至少接近恒定的）。</li>
+<li>如果与上述情况不符，那么训练工作流可能存在瓶颈，例如 I/O 或计算节点间的同步。有必要在开始下一步前对此进行诊断和矫正。</li>
+<li>如果训练吞吐量到某个Batch Size之后就不再增加，那么我们只考虑使用该Batch Size（即使硬件支持更大的Batch Size）<ul>
+<li>使用更大Batch Size的所有好处都假定训练吞吐量增加。如果没有，请修复瓶颈或使用较小的Batch Size。</li>
+<li>使用<strong>梯度积累</strong>技术可以支持的更大的Batch Size。但其不提供任何训练吞吐量优势，故在应用工作中通常应避免使用它。</li>
+</ul>
+</li>
+<li>每次更改模型或优化器时，可能都需要重复这些步骤（例如，不同的模型架构可能允许更大的Batch Size）。</li>
+</ul>
+<h4 id="选择合适的batch-size以最小化训练时间">选择合适的Batch Size以最小化训练时间<a class="anchor-link" href="#选择合适的batch-size以最小化训练时间" title="Permanent link">&para;</a></h4>
+<p align="center">训练时间 =（每步时间）x（总步数）</p>
+
+<ul>
+<li>对于所有可行的Batch Size，我们通常可以认为每步的时间近似恒定(实际上，增加Batch Size通常会产生一些开销)。</li>
+<li>Batch Size越大，达到某一性能目标所需的步数通常会减少（前提是在更改Batch Size时重新调整所有相关超参数；<a href="https://arxiv.org/abs/1811.03600">Shallue et al. 2018</a>）。<ul>
+<li>例如，将Batch Size翻倍可能会使训练步数减半。这称为<strong>完美缩放</strong>。</li>
+<li>完美缩放适用于Batch Size在临界值之前，超过该临界总步数的减少效果将会下降。</li>
+<li>最终，增加Batch Size不会再使训练步数减少（永远不会增加）。</li>
+</ul>
+</li>
+<li>因此，最小化训练时间的Batch Size通常是最大的Batch Size，也同时减少了所需的训练步数。<ul>
+<li>Batch Size取决于数据集、模型和优化器，除了通过实验为每个新问题找到它之外，如何计算它是一个悬而未决的问题。</li>
+<li>比较Batch Size时，请注意效果(epoch)预算（运行所有实验，固定训练样本的数量达到设定的效果所花的时间）和步数预算（运行设定步数的试验）之间的区别。<ul>
+<li>将Batch Size与效果预算进行比较只会涉及到完美缩放的范围，即使更大的Batch Size仍可能通过减少所需的训练步数来提供有意义的加速。</li>
+</ul>
+</li>
+<li>通常，可用硬件支持的最大Batch Size将小于临界Batch Size。因此，一个好的经验法则（不运行任何实验）是使用尽可能大的Batch Size。</li>
+</ul>
+</li>
+<li>如果最终增加了训练时间，那么使用更大的Batch Size就没有意义了。</li>
+</ul>
+<h4 id="选择合适的batch-size以最小化资源消耗">选择合适的Batch Size以最小化资源消耗<a class="anchor-link" href="#选择合适的batch-size以最小化资源消耗" title="Permanent link">&para;</a></h4>
+<ul>
+<li>有两种类型的资源成本与增加 batch size有关。<ol>
+<li>前期成本，例如购买新硬件或重写训练工作流以实现多GPU/多TPU训练。</li>
+<li>使用成本，例如，根据团队的资源预算计费，从云供应商处计费，电力/维护成本。</li>
+</ol>
+</li>
+</ul>
+<p>如果增加 batch size有很大的前期成本，那么直到项目成熟且容易权衡成本效益前，推迟其的增加可能更好。实施多机并行训练程序可能会引入<a href="https://link.zhihu.com/?target=https%3A//github.com/google-research/tuning_playbook%23considerations-for-multi-host-pipelines">错误</a>和<a href="https://link.zhihu.com/?target=https%3A//github.com/google-research/tuning_playbook%23batch-normalization-implementation-details">一些棘手的细节</a>，所以无论如何，一开始最好是用一个比较简单的工作流。(另一方面，当需要进行大量的调优实验时，训练时间的大幅加速可能会在过程的早期非常有利）。</p>
+<p>我们把总的使用成本（可能包括多种不同类型的成本）称为 "资源消耗 "。我们可以将资源消耗分解为以下几个部分。</p>
+<p>资源消耗 = (每步的资源消耗) x (总步数)</p>
+<ul>
+<li>
+<p>增加 batch size通常可以减少总步骤数。资源消耗是增加还是减少，将取决于每步的消耗如何变化。</p>
+</li>
+<li>
+<ul>
+<li>增加 batch size可能会减少资源消耗。例如，如果大batch size的每一步都可以在与小batch size相同的硬件上运行（每一步只增加少量时间），那么每一步资源消耗的增加可能被步骤数的减少所抵消。</li>
+</ul>
+</li>
+<li>增加 batch size可能不会改变资源消耗。例如，如果将batch size增加一倍，所需的步骤数减少一半，所使用的GPU数量增加一倍，总消耗量（以GPU小时计）将不会改变。</li>
+<li>增加 batch size可能会增加资源消耗。例如，如果增加batch size需要升级硬件，那么每步消耗的增加可能超过训练所需步数的减少。</li>
+</ul>
+<h4 id="更改batch-size需要重新调整大多数超参数">更改Batch Size需要重新调整大多数超参数<a class="anchor-link" href="#更改batch-size需要重新调整大多数超参数" title="Permanent link">&para;</a></h4>
+<ul>
+<li>大多数超参数的最佳值对Batch Size敏感。因此，更改Batch Size通常需要重新开始调整过程。</li>
+<li>与Batch Size交互最强烈的超参数是优化器超参数（学习率、动量等）和正则化超参数，所以有必要对于针对每个Batch Size单独调整它们。</li>
+<li>在项目开始时选择Batch Size时请记住，如果您以后需要切换到不同的Batch Size，则为新的Batch Size重新调整所有内容可能会很困难、耗时且成本高昂。</li>
+</ul>
+<h3 id="batch-norm会对batch-size的选择造成什么影响">Batch Norm会对Batch Size的选择造成什么影响？<a class="anchor-link" href="#batch-norm会对batch-size的选择造成什么影响" title="Permanent link">&para;</a></h3>
+<p>Batch norm 很复杂，一般来说，应该使用与计算梯度不同的 batch size 来计算统计数据(像<a href="https://arxiv.org/abs/1705.08741">Ghost Batch Norm</a>采用固定值的batch size)。</p>
+<p><strong>BatchNorm的实现细节</strong></p>
+<p><strong><em>总结</em></strong>：<em>目前Batch Norm通常可以用Layer Norm代替，但在不能替换的情况下，在更改批大小或主机数量时会有一些棘手的细节。</em></p>
+<ul>
+<li>Batch norm 使用当前批次的均值和方差对激活值进行归一化，但在多设备设置中，除非明确同步处理，否则这些统计数据在每个设备上都是不同的。</li>
+<li>据说（主要在ImageNet上）仅使用约 64 个样本计算这些归一化统计数据在实际应用中效果更好（请参阅 <a href="https://arxiv.org/abs/1705.08741">Ghost Batch Norm</a>）。</li>
+<li>将总批大小与用于计算批归一化统计数据的样本数量分离对于批次大小的比较特别有用。</li>
+<li>Ghost batch norm 实现并不总能正确处理每台设备的批次大小 &gt; 虚拟批次大小的情况。在这种情况下，我们实际上需要在每个设备上对批次进行二次抽样，以获得适当数量的批归一化统计样本。</li>
+<li>在测试模式中使用的指数移动平均(EMA）仅仅是训练统计数据的线性组合，因此这些 EMA 只需要在将它们保存在检查点之前进行同步。然而一些常见的批归一化实现不同步这些EMA，并只保存第一个设备的EMA。</li>
+</ul>
+<h3 id="为什么不应该调整batch-size来直接提高验证集性能">为什么不应该调整Batch Size来直接提高验证集性能?<a class="anchor-link" href="#为什么不应该调整batch-size来直接提高验证集性能" title="Permanent link">&para;</a></h3>
+<ul>
+<li><em>在不更改训练工作流其他细节的情况下</em>， 修改batch size 通常会影响验证集的性能。</li>
+<li>但是，如果针对每个batch size单独调优，则两个batch size之间的验证集性能差异通常会消失。</li>
+<li>受batch size影响最强烈的那些超参数，即优化器超参数（例如：学习率、动量）和正则化超参数，这些东西对于每个batch size进行单独调优的时候是最重要的。<ul>
+<li>由于样本方差的原因，较小的batch size会在训练算法中引入更多的不确定性，并且这些不确定性可能存在着正则化效果。因此，较大的batch size可能更容易过度拟合。并且，这可能需要更强的正则化和/或额外的正则化技术。</li>
+</ul>
+</li>
+<li>此外， 当修改batch size的大小时，<a href="#choosing-the-batch-size-to-minimize-training-time">训练步骤的数量可能也需要进行调整</a>。</li>
+<li>一旦考虑了所有这些因素带来的影响，目前还没有任何能够令人信服的证据表明batch size会影响最大可实现的验证性能（具体请阅读 <a href="https://arxiv.org/abs/1811.03600">Shallue et al. 2018</a>）。</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pytorch Lightning 完全攻略</title>
+    <meta name="description" content="Pytorch Lightning 完全攻略 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#写在前面">写在前面</a></li>
+<li><a href="#核心">核心</a></li>
+<li><a href="#推荐使用方法">推荐使用方法</a></li>
+<li><a href="#lightning-module">Lightning Module</a><ul>
+<li><a href="#简介">简介</a></li>
+<li><a href="#组件与函数">组件与函数</a></li>
+<li><a href="#要点">要点</a></li>
+<li><a href="#模板">模板</a></li>
+</ul>
+</li>
+<li><a href="#trainer">Trainer</a><ul>
+<li><a href="#基础使用">基础使用</a></li>
+<li><a href="#伪代码与hooks">伪代码与hooks</a></li>
+<li><a href="#推荐参数">推荐参数</a></li>
+<li><a href="#fit函数">.fit()函数</a></li>
+<li><a href="#其他要点">其他要点</a></li>
+<li><a href="#使用样例">使用样例</a></li>
+<li><a href="#所有参数">所有参数</a></li>
+<li><a href="#log和return-loss到底在做什么">Log和return loss到底在做什么</a></li>
+<li><a href="#training-epoch-level-metrics">Training epoch-level metrics</a></li>
+<li><a href="#train-epoch-level-operations">Train epoch-level operations</a></li>
+</ul>
+</li>
+<li><a href="#datamodule">DataModule</a><ul>
+<li><a href="#介绍">介绍</a></li>
+<li><a href="#示例">示例</a></li>
+<li><a href="#要点_1">要点</a></li>
+</ul>
+</li>
+<li><a href="#saving-and-loading">Saving and Loading</a><ul>
+<li><a href="#saving">Saving</a></li>
+<li><a href="#loading">Loading</a></li>
+</ul>
+</li>
+<li><a href="#callbacks">Callbacks</a><ul>
+<li><a href="#callbacks推荐">Callbacks推荐</a></li>
+</ul>
+</li>
+<li><a href="#logging">Logging</a></li>
+<li><a href="#transfer-learning">Transfer Learning</a></li>
+<li><a href="#关于device操作">关于device操作</a></li>
+<li><a href="#points">Points</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Pytorch Lightning 完全攻略</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/10.Pytorch Lightning</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="pytorch-lightning-完全攻略">Pytorch Lightning 完全攻略<a class="anchor-link" href="#pytorch-lightning-完全攻略" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [Takanashi]</p>
+<p><strong>Link:</strong> [https://zhuanlan.zhihu.com/p/353985363]</p>
+<h2 id="写在前面">写在前面<a class="anchor-link" href="#写在前面" title="Permanent link">&para;</a></h2>
+<p>Pytorch-Lightning这个库我“发现”过两次。第一次发现时，感觉它很重很难学，而且似乎自己也用不上。但是后面随着做的项目开始出现了一些稍微高阶的要求，我发现我总是不断地在相似工程代码上花费大量时间，Debug也是这些代码花的时间最多，而且渐渐产生了一个矛盾之处：如果想要更多更好的功能，如TensorBoard支持，Early Stop，LR Scheduler，分布式训练，快速测试等，代码就无可避免地变得越来越长，看起来也越来越乱，同时核心的训练逻辑也渐渐被这些工程代码盖过。那么有没有更好的解决方案，甚至能一键解决所有这些问题呢？</p>
+<p>于是我第二次发现了Pytorch-Lightning。</p>
+<p>真香。</p>
+<p>但是问题还是来了。这个框架并没有因为香而变得更加易学。官网的教程很丰富，可以看出来开发者们在努力做了。但是很多相连的知识点都被分布在了不同的版块里，还有一些核心的理解要点并没有被强调出来，而是小字带过，这让我想做一个普惠的教程，包含所有我在学习过程中认为重要的概念，好用的参数，一些注意点、坑点，大量的示例代码段和一些核心问题的集中讲解。</p>
+<p>最后，第三部分提供了一个我总结出来的易用于大型项目、容易迁移、易于复用的模板，有兴趣的可以去<a href="https://github.com/miracleyoo/pytorch-lightning-template">https://github.com/miracleyoo/pytorch-lightning-template</a>试用。</p>
+<blockquote>
+<p><em>2023/08/18修改：在这几年的进一步使用中，由于这样那样的需求和问题，我发现了更多难以解决的问题/bug，所以又对Pytorch Lightning做了进一步的深入剖析。在”</em><a href="https://zhuanlan.zhihu.com/p/650979808">https://zhuanlan.zhihu.com/p/650979808</a><em>“一文中，针对hooks间的信息传递、Callbacks、DDP训练相关注意事项等又做了详细剖析。如果本文无法解决您的一些较为复杂的问题，不妨去这篇新文章看看，理解了hooks和Callbacks之后相信您可以自行写出各种能满足您个性化需求的方案。关于Pytorch DDP机制本身，如果你还不是很熟悉，或是需要对其中的深度机制进行进一步的理解，可以移步专门讲解这个问题的<a href="https://zhuanlan.zhihu.com/p/650764042">https://zhuanlan.zhihu.com/p/650764042</a>。</em></p>
+</blockquote>
+<h2 id="核心">核心<a class="anchor-link" href="#核心" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Pytorch-Lighting 的一大特点是把模型和系统分开来看。模型是像Resnet18， RNN之类的纯模型， 而系统定义了一组模型如何相互交互，如GAN（生成器网络与判别器网络）、Seq2Seq（Encoder与Decoder网络）和Bert。同时，有时候问题只涉及一个模型，那么这个系统则可以是一个通用的系统，用于描述模型如何使用，并可以被复用到很多其他项目。</li>
+<li>Pytorch-Lighting 的核心设计思想是“自给自足”。每个网络也同时包含了如何训练、如何测试、优化器定义等内容。</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503180907521.jpg" />  </p>
+<h2 id="推荐使用方法">推荐使用方法<a class="anchor-link" href="#推荐使用方法" title="Permanent link">&para;</a></h2>
+<p>这一部分放在最前面，因为全文内容太长，如果放后面容易忽略掉这部分精华。</p>
+<p>Pytorch-Lightning 是一个很好的库，或者说是pytorch的抽象和包装。它的好处是可复用性强，易维护，逻辑清晰等。缺点也很明显，这个包需要学习和理解的内容还是挺多的，或者换句话说，很重。如果直接按照官方的模板写代码，小型project还好，如果是大型项目，有复数个需要调试验证的模型和数据集，那就不太好办，甚至更加麻烦了。经过几天的摸索和调试，我总结出了下面这样一套好用的模板，也可以说是对Pytorch-Lightning的进一步抽象。</p>
+<p>欢迎大家尝试这一套代码风格，如果用习惯的话还是相当方便复用的，也不容易半道退坑。</p>
+<pre><code>root-
+    |-data
+        |-__init__.py
+        |-data_interface.py
+        |-xxxdataset1.py
+        |-xxxdataset2.py
+        |-...
+    |-model
+        |-__init__.py
+        |-model_interface.py
+        |-xxxmodel1.py
+        |-xxxmodel2.py
+        |-...
+    |-main.py
+</code></pre>
+<p>如果对每个模型直接上plmodule，对于已有项目、别人的代码等的转换将相当耗时。另外，这样的话，你需要给每个模型都加上一些相似的代码，如<code>training_step</code>，<code>validation_step</code>。显然，这并不是我们想要的，如果真的这样做，不但不易于维护，反而可能会更加杂乱。同理，如果把每个数据集类都直接转换成pl的DataModule，也会面临相似的问题。基于这样的考量，我建议使用上述架构：</p>
+<ul>
+<li>主目录下只放一个<code>main.py</code>文件。</li>
+<li><code>data</code>和<code>model</code>两个文件夹中放入<code>__init__.py</code>文件，做成包。这样方便导入。两个<code>init</code>文件分别是：</li>
+<li><code>from .data_interface import DInterface</code></li>
+<li>
+<p><code>from .model_interface import MInterface</code></p>
+</li>
+<li>
+<p>在<code>data_interface</code>中建立一个<code>class DInterface(pl.LightningDataModule):</code>用作所有数据集文件的接口。<code>__init__()</code>函数中import相应Dataset类，<code>setup()</code>进行实例化，并老老实实加入所需要的的<code>train_dataloader</code>, <code>val_dataloader</code>, <code>test_dataloader</code>函数。这些函数往往都是相似的，可以用几个输入args控制不同的部分。</p>
+</li>
+<li>同理，在<code>model_interface</code>中建立<code>class MInterface(pl.LightningModule):</code>类，作为模型的中间接口。<code>__init__()</code>函数中import相应模型类，然后老老实实加入<code>configure_optimizers</code>, <code>training_step</code>, <code>validation_step</code>等函数，用一个接口类控制所有模型。不同部分使用输入参数控制。</li>
+<li><code>main.py</code>函数只负责：</li>
+<li>定义parser，添加parse项。</li>
+<li>选好需要的<code>callback</code>函数们。</li>
+<li>实例化<code>MInterface</code>, <code>DInterface</code>, <code>Trainer</code>。</li>
+</ul>
+<p>完事。</p>
+<p><strong><em>完全版模板可以在<a href="https://github.com/miracleyoo/pytorch-lightning-template">https://github.com/miracleyoo/pytorch-lightning-template</a>找到。</em></strong></p>
+<h2 id="lightning-module">Lightning Module<a class="anchor-link" href="#lightning-module" title="Permanent link">&para;</a></h2>
+<h3 id="简介">简介<a class="anchor-link" href="#简介" title="Permanent link">&para;</a></h3>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html">https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html</a></p>
+<ul>
+<li>三个核心组件：</li>
+<li>模型</li>
+<li>优化器</li>
+<li>Train/Val/Test步骤</li>
+<li>数据流伪代码：</li>
+</ul>
+<pre><code>outs = []
+for batch in data:
+    out = training_step(batch)
+    outs.append(out)
+training_epoch_end(outs)
+</code></pre>
+<p>等价Lightning代码：</p>
+<pre><code>def training_step(self, batch, batch_idx):
+    prediction = ...
+    return prediction
+
+def training_epoch_end(self, training_step_outputs):
+    for prediction in predictions:
+        # do something with these
+</code></pre>
+<p>我们需要做的，就是像填空一样，填这些函数。</p>
+<h3 id="组件与函数">组件与函数<a class="anchor-link" href="#组件与函数" title="Permanent link">&para;</a></h3>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#lightningmodule-api">https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#lightningmodule-api</a></p>
+<ul>
+<li>一个Pytorch-Lighting 模型必须含有的部件是：</li>
+<li><code>init</code>: 初始化，包括模型和系统的定义。</li>
+<li><code>[https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.lightning.html#pytorch_lightning.core.lightning.LightningModule.training_step](https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.lightning.html#pytorch_lightning.core.lightning.LightningModule.training_step)</code>: 即每个batch的处理函数。<br />
+ 参数：</li>
+<li><strong>batch</strong> (<code>[https://pytorch.org/docs/stable/tensors.html#torch.Tensor](https://pytorch.org/docs/stable/tensors.html#torch.Tensor)</code> | (<code>[https://pytorch.org/docs/stable/tensors.html#torch.Tensor](https://pytorch.org/docs/stable/tensors.html#torch.Tensor)</code>, …) | [<code>[https://pytorch.org/docs/stable/tensors.html#torch.Tensor](https://pytorch.org/docs/stable/tensors.html#torch.Tensor)</code>, …]) – The output of your <code>[https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)</code>. A tensor, tuple or list.</li>
+<li><strong>batch_idx</strong> (<em><a href="https://docs.python.org/3/library/functions.html#int">https://docs.python.org/3/library/functions.html#int</a></em>) – Integer displaying index of this batch</li>
+<li><strong>optimizer_idx</strong> (<em><a href="https://docs.python.org/3/library/functions.html#int">https://docs.python.org/3/library/functions.html#int</a></em>) – When using multiple optimizers, this argument will also be present.</li>
+<li><strong>hiddens</strong> (<code>[https://pytorch.org/docs/stable/tensors.html#torch.Tensor](https://pytorch.org/docs/stable/tensors.html#torch.Tensor)</code>) – Passed in if <code>[https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.trainer.trainer.html#pytorch_lightning.trainer.trainer.Trainer.params.truncated_bptt_steps](https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.trainer.trainer.html#pytorch_lightning.trainer.trainer.Trainer.params.truncated_bptt_steps)</code> &gt; 0.</li>
+</ul>
+<p>返回值：Any of.</p>
+<ul>
+<li><code>[https://pytorch.org/docs/stable/tensors.html#torch.Tensor](https://pytorch.org/docs/stable/tensors.html#torch.Tensor)</code> - The loss tensor</li>
+<li><code>dict</code> - A dictionary. Can include any keys, but must include the key <code>'loss'</code></li>
+<li><code>None</code> - Training will skip to the next batch</li>
+</ul>
+<p>返回值无论如何也需要有一个loss量。如果是字典，要有这个key。没loss这个batch就被跳过了。例：</p>
+<pre><code>def training_step(self, batch, batch_idx):
+    x, y, z = batch
+    out = self.encoder(x)
+    loss = self.loss(out, x)
+    return loss
+
+# Multiple optimizers (e.g.: GANs)
+def training_step(self, batch, batch_idx, optimizer_idx):
+    if optimizer_idx == 0:
+        # do training_step with encoder
+    if optimizer_idx == 1:
+        # do training_step with decoder
+
+# Truncated back-propagation through time
+def training_step(self, batch, batch_idx, hiddens):
+    # hiddens are the hidden states from the previous truncated backprop step
+    ...
+    out, hiddens = self.lstm(data, hiddens)
+    ...
+    return {'loss': loss, 'hiddens': hiddens}
+</code></pre>
+<p><code>configure_optimizers</code>: 优化器定义，返回一个优化器，或数个优化器，或两个List（优化器，Scheduler）。如：</p>
+<pre><code># most cases
+def configure_optimizers(self):
+    opt = Adam(self.parameters(), lr=1e-3)
+    return opt
+
+# multiple optimizer case (e.g.: GAN)
+def configure_optimizers(self):
+    generator_opt = Adam(self.model_gen.parameters(), lr=0.01)
+    disriminator_opt = Adam(self.model_disc.parameters(), lr=0.02)
+    return generator_opt, disriminator_opt
+
+# example with learning rate schedulers
+def configure_optimizers(self):
+    generator_opt = Adam(self.model_gen.parameters(), lr=0.01)
+    disriminator_opt = Adam(self.model_disc.parameters(), lr=0.02)
+    discriminator_sched = CosineAnnealing(discriminator_opt, T_max=10)
+    return [generator_opt, disriminator_opt], [discriminator_sched]
+
+# example with step-based learning rate schedulers
+def configure_optimizers(self):
+    gen_opt = Adam(self.model_gen.parameters(), lr=0.01)
+    dis_opt = Adam(self.model_disc.parameters(), lr=0.02)
+    gen_sched = {'scheduler': ExponentialLR(gen_opt, 0.99),
+                 'interval': 'step'}  # called after each training step
+    dis_sched = CosineAnnealing(discriminator_opt, T_max=10) # called every epoch
+    return [gen_opt, dis_opt], [gen_sched, dis_sched]
+
+# example with optimizer frequencies
+# see training procedure in `Improved Training of Wasserstein GANs`, Algorithm 1
+# https://arxiv.org/abs/1704.00028
+def configure_optimizers(self):
+    gen_opt = Adam(self.model_gen.parameters(), lr=0.01)
+    dis_opt = Adam(self.model_disc.parameters(), lr=0.02)
+    n_critic = 5
+    return (
+        {'optimizer': dis_opt, 'frequency': n_critic},
+        {'optimizer': gen_opt, 'frequency': 1}
+    )
+</code></pre>
+<ul>
+<li>可以指定的部件有：</li>
+<li><code>forward</code>: 和正常的<code>nn.Module</code>一样，用于inference。内部调用时：<code>y=self(batch)</code></li>
+<li><code>training_step_end</code>: 只在使用多个node进行训练且结果涉及如softmax之类需要全部输出联合运算的步骤时使用该函数。同理，<code>validation_step_end</code>/<code>test_step_end</code>。</li>
+<li><code>training_epoch_end</code>:</li>
+<li>在一个训练epoch结尾处被调用。</li>
+<li>输入参数：一个List，List的内容是前面<code>training_step()</code>所返回的每次的内容。</li>
+<li>
+<p>返回：None</p>
+</li>
+<li>
+<p><code>validation_step(self, batch, batch_idx)</code>/<code>test_step(self, batch, batch_idx)</code>:</p>
+</li>
+<li>
+<p>没有返回值限制，不一定非要输出一个<code>val_loss</code>。</p>
+</li>
+<li>
+<p><code>validation_epoch_end</code>/<code>test_epoch_end</code></p>
+</li>
+<li>
+<p>工具函数有：</p>
+</li>
+<li><code>freeze</code>：冻结所有权重以供预测时候使用。仅当已经训练完成且后面只测试时使用。</li>
+<li><code>print</code>：尽管自带的<code>print</code>函数也可以使用，但如果程序运行在分布式系统时，会打印多次。而使用<code>self.print()</code>则只会打印一次。</li>
+<li><code>log</code>：像是TensorBoard等log记录器，对于每个log的标量，都会有一个相对应的横坐标，它可能是batch number或epoch number。而<code>on_step</code>就表示把这个log出去的量的横坐标表示为当前batch，而<code>on_epoch</code>则表示将log的量在整个epoch上进行累积后log，横坐标为当前epoch。<br />
+ | LightningMoule Hook | on_step | on_epoch | prog_bar | logger | | --------------------- | ------- | -------- | -------- | ------ | | training_step | T | F | F | T | | training_step_end | T | F | F | T | | training_epoch_end | F | T | F | T | | validation_step <em>| F | T | F | T | | validation_step_end</em> | F | T | F | T | | validation_epoch_end* | F | T | F | T |<br />
+<code>*</code> also applies to the test loop</li>
+</ul>
+<blockquote>
+<p>参数<br />
+<strong>name</strong> (<code>[https://docs.python.org/3/library/stdtypes.html#str](https://docs.python.org/3/library/stdtypes.html#str)</code>) – key name<br />
+<strong>value</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Any](https://docs.python.org/3/library/typing.html#typing.Any)</code>) – value name<br />
+<strong>prog_bar</strong> (<code>[https://docs.python.org/3/library/functions.html#bool](https://docs.python.org/3/library/functions.html#bool)</code>) – if True logs to the progress bar<br />
+<strong>logger</strong> (<code>[https://docs.python.org/3/library/functions.html#bool](https://docs.python.org/3/library/functions.html#bool)</code>) – if True logs to the logger<br />
+<strong>on_step</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Optional](https://docs.python.org/3/library/typing.html#typing.Optional)</code>[<code>[https://docs.python.org/3/library/functions.html#bool](https://docs.python.org/3/library/functions.html#bool)</code>]) – if True logs at this step. None auto-logs at the training_step but not validation/test_step<br />
+<strong>on_epoch</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Optional](https://docs.python.org/3/library/typing.html#typing.Optional)</code>[<code>[https://docs.python.org/3/library/functions.html#bool](https://docs.python.org/3/library/functions.html#bool)</code>]) – if True logs epoch accumulated metrics. None auto-logs at the val/test step but not training_step<br />
+<strong>reduce_fx</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Callable](https://docs.python.org/3/library/typing.html#typing.Callable)</code>) – reduction function over step values for end of epoch. Torch.mean by default<br />
+<strong>tbptt_reduce_fx</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Callable](https://docs.python.org/3/library/typing.html#typing.Callable)</code>) – function to reduce on truncated back prop<br />
+<strong>tbptt_pad_token</strong> (<code>[https://docs.python.org/3/library/functions.html#int](https://docs.python.org/3/library/functions.html#int)</code>) – token to use for padding<br />
+<strong>enable_graph</strong> (<code>[https://docs.python.org/3/library/functions.html#bool](https://docs.python.org/3/library/functions.html#bool)</code>) – if True, will not auto detach the graph<br />
+<strong>sync_dist</strong> (<code>[https://docs.python.org/3/library/functions.html#bool](https://docs.python.org/3/library/functions.html#bool)</code>) – if True, reduces the metric across GPUs/TPUs<br />
+<strong>sync_dist_op</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Union](https://docs.python.org/3/library/typing.html#typing.Union)</code>[<code>[https://docs.python.org/3/library/typing.html#typing.Any](https://docs.python.org/3/library/typing.html#typing.Any)</code>, <code>[https://docs.python.org/3/library/stdtypes.html#str](https://docs.python.org/3/library/stdtypes.html#str)</code>]) – the op to sync across GPUs/TPUs<br />
+<strong>sync_dist_group</strong> (<code>[https://docs.python.org/3/library/typing.html#typing.Optional](https://docs.python.org/3/library/typing.html#typing.Optional)</code>[<code>[https://docs.python.org/3/library/typing.html#typing.Any](https://docs.python.org/3/library/typing.html#typing.Any)</code>]) – the ddp group</p>
+</blockquote>
+<ul>
+<li><code>log_dict</code>：和<code>log</code>函数唯一的区别就是，<code>name</code>和<code>value</code>变量由一个字典替换。表示同时log多个值。如：<br />
+<code>python values = {'loss': loss, 'acc': acc, ..., 'metric_n': metric_n} self.log_dict(values)</code></li>
+<li>
+<p><code>save_hyperparameters</code>：储存<code>init</code>中输入的所有超参。后续访问可以由<code>self.hparams.argX</code>方式进行。同时，超参表也会被存到文件中。</p>
+</li>
+<li>
+<p>函数内建变量：</p>
+</li>
+<li><code>device</code>：可以使用<code>self.device</code>来构建设备无关型tensor。如：<code>z = torch.rand(2, 3, device=self.device)</code>。</li>
+<li><code>hparams</code>：含有所有前面存下来的输入超参。</li>
+<li><code>precision</code>：精确度。常见32和16。</li>
+</ul>
+<h3 id="要点">要点<a class="anchor-link" href="#要点" title="Permanent link">&para;</a></h3>
+<ul>
+<li>如果准备使用DataParallel，在写<code>training_step</code>的时候需要调用forward函数，<code>z=self(x)</code></li>
+</ul>
+<h3 id="模板">模板<a class="anchor-link" href="#模板" title="Permanent link">&para;</a></h3>
+<pre><code>class LitModel(pl.LightningModule):
+
+    def __init__(...):
+
+    def forward(...):
+
+    def training_step(...)
+
+    def training_step_end(...)
+
+    def training_epoch_end(...)
+
+    def validation_step(...)
+
+    def validation_step_end(...)
+
+    def validation_epoch_end(...)
+
+    def test_step(...)
+
+    def test_step_end(...)
+
+    def test_epoch_end(...)
+
+    def configure_optimizers(...)
+
+    def any_extra_hook(...)
+</code></pre>
+<h2 id="trainer">Trainer<a class="anchor-link" href="#trainer" title="Permanent link">&para;</a></h2>
+<h3 id="基础使用">基础使用<a class="anchor-link" href="#基础使用" title="Permanent link">&para;</a></h3>
+<pre><code>model = MyLightningModule()
+
+trainer = Trainer()
+trainer.fit(model, train_dataloader, val_dataloader)
+</code></pre>
+<p>如果连<code>validation_step</code>都没有，那<code>val_dataloader</code>也就算了。</p>
+<h3 id="伪代码与hooks">伪代码与hooks<a class="anchor-link" href="#伪代码与hooks" title="Permanent link">&para;</a></h3>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#hooks">https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#hooks</a></p>
+<pre><code>def fit(...):
+    on_fit_start()
+
+    if global_rank == 0:
+        # prepare data is called on GLOBAL_ZERO only
+        prepare_data()
+
+    for gpu/tpu in gpu/tpus:
+        train_on_device(model.copy())
+
+    on_fit_end()
+
+def train_on_device(model):
+    # setup is called PER DEVICE
+    setup()
+    configure_optimizers()
+    on_pretrain_routine_start()
+
+    for epoch in epochs:
+        train_loop()
+
+    teardown()
+
+def train_loop():
+    on_train_epoch_start()
+    train_outs = []
+    for train_batch in train_dataloader():
+        on_train_batch_start()
+
+        # ----- train_step methods -------
+        out = training_step(batch)
+        train_outs.append(out)
+
+        loss = out.loss
+
+        backward()
+        on_after_backward()
+        optimizer_step()
+        on_before_zero_grad()
+        optimizer_zero_grad()
+
+        on_train_batch_end(out)
+
+        if should_check_val:
+            val_loop()
+
+    # end training epoch
+    logs = training_epoch_end(outs)
+
+def val_loop():
+    model.eval()
+    torch.set_grad_enabled(False)
+
+    on_validation_epoch_start()
+    val_outs = []
+    for val_batch in val_dataloader():
+        on_validation_batch_start()
+
+        # -------- val step methods -------
+        out = validation_step(val_batch)
+        val_outs.append(out)
+
+        on_validation_batch_end(out)
+
+    validation_epoch_end(val_outs)
+    on_validation_epoch_end()
+
+    # set up for train
+    model.train()
+    torch.set_grad_enabled(True)
+</code></pre>
+<h3 id="推荐参数">推荐参数<a class="anchor-link" href="#推荐参数" title="Permanent link">&para;</a></h3>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#trainer-flags">https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#trainer-flags</a> </p>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#trainer-class-api">https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#trainer-class-api</a></p>
+<ul>
+<li><code>default_root_dir</code>：默认存储地址。所有的实验变量和权重全部会被存到这个文件夹里面。推荐是，每个模型有一个独立的文件夹。每次重新训练会产生一个新的<code>version_x</code>子文件夹。</li>
+<li><code>max_epochs</code>：最大训练周期数。<code>trainer = Trainer(max_epochs=1000)</code></li>
+<li><code>min_epochs</code>：至少训练周期数。当有Early Stop时使用。</li>
+<li><code>auto_scale_batch_size</code>：在进行任何训练前自动选择合适的batch size。</li>
+</ul>
+<pre><code># default used by the Trainer (no scaling of batch size)
+trainer = Trainer(auto_scale_batch_size=None)
+
+# run batch size scaling, result overrides hparams.batch_size
+trainer = Trainer(auto_scale_batch_size='binsearch')
+
+# call tune to find the batch size
+trainer.tune(model)
+</code></pre>
+<ul>
+<li><code>auto_select_gpus</code>：自动选择合适的GPU。尤其是在有GPU处于独占模式时候，非常有用。</li>
+<li><code>auto_lr_find</code>：自动找到合适的初始学习率。使用了该<a href="https://arxiv.org/abs/1506.01186">https://arxiv.org/abs/1506.01186</a>的技术。当且仅当执行<code>trainer.tune(model)</code>代码时工作。</li>
+</ul>
+<pre><code># run learning rate finder, results override hparams.learning_rate
+trainer = Trainer(auto_lr_find=True)
+
+# run learning rate finder, results override hparams.my_lr_arg
+trainer = Trainer(auto_lr_find='my_lr_arg')
+
+# call tune to find the lr
+trainer.tune(model)
+</code></pre>
+<ul>
+<li><code>precision</code>：精确度。正常是32，使用16可以减小内存消耗，增大batch。</li>
+</ul>
+<pre><code># default used by the Trainer
+trainer = Trainer(precision=32)
+
+# 16-bit precision
+trainer = Trainer(precision=16, gpus=1)
+</code></pre>
+<ul>
+<li><code>val_check_interval</code>：进行Validation测试的周期。正常为1，训练1个epoch测试4次是0.25，每1000 batch测试一次是1000。</li>
+</ul>
+<blockquote>
+<p>use (float) to check within a training epoch：此时这个值为一个epoch的百分比。每百分之多少测试一次。<br />
+use (int) to check every n steps (batches)：每多少个batch测试一次。</p>
+</blockquote>
+<pre><code># default used by the Trainer
+trainer = Trainer(val_check_interval=1.0)
+
+# check validation set 4 times during a training epoch
+trainer = Trainer(val_check_interval=0.25)
+
+# check validation set every 1000 training batches
+# use this when using iterableDataset and your dataset has no length
+# (ie: production cases with streaming data)
+trainer = Trainer(val_check_interval=1000) 
+</code></pre>
+<ul>
+<li><code>[https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#gpus](https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#gpus)</code>：控制使用的GPU数。当设定为None时，使用cpu。</li>
+</ul>
+<pre><code># default used by the Trainer (ie: train on CPU)
+trainer = Trainer(gpus=None)
+
+# equivalent
+trainer = Trainer(gpus=0)
+
+# int: train on 2 gpus
+trainer = Trainer(gpus=2)
+
+# list: train on GPUs 1, 4 (by bus ordering)
+trainer = Trainer(gpus=[1, 4])
+trainer = Trainer(gpus='1, 4') # equivalent
+
+# -1: train on all gpus
+trainer = Trainer(gpus=-1)
+trainer = Trainer(gpus='-1') # equivalent
+
+# combine with num_nodes to train on multiple GPUs across nodes
+# uses 8 gpus in total
+trainer = Trainer(gpus=2, num_nodes=4)
+
+# train only on GPUs 1 and 4 across nodes
+trainer = Trainer(gpus=[1, 4], num_nodes=4)
+</code></pre>
+<ul>
+<li><code>[https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#limit-train-batches](https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#limit-train-batches)</code>：使用训练数据的百分比。如果数据过多，或正在调试，可以使用这个。值的范围为0~1。同样，有<code>limit_test_batches</code>，<code>limit_val_batches</code>。</li>
+</ul>
+<pre><code># default used by the Trainer
+trainer = Trainer(limit_train_batches=1.0)
+
+# run through only 25% of the training set each epoch
+trainer = Trainer(limit_train_batches=0.25)
+
+# run through only 10 batches of the training set each epoch
+trainer = Trainer(limit_train_batches=10)
+</code></pre>
+<ul>
+<li><code>[https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#fast-dev-run](https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#fast-dev-run)</code>：bool量。如果设定为true，会只执行一个batch的train, val 和 test，然后结束。仅用于debug。</li>
+</ul>
+<blockquote>
+<p>Setting this argument will disable tuner, checkpoint callbacks, early stopping callbacks, loggers and logger callbacks like <code>LearningRateLogger</code> and runs for only 1 epoch</p>
+</blockquote>
+<pre><code># default used by the Trainer
+trainer = Trainer(fast_dev_run=False)
+
+# runs 1 train, val, test batch and program ends
+trainer = Trainer(fast_dev_run=True)
+
+# runs 7 train, val, test batches and program ends
+trainer = Trainer(fast_dev_run=7)
+</code></pre>
+<h3 id="fit函数">.fit()函数<a class="anchor-link" href="#fit函数" title="Permanent link">&para;</a></h3>
+<p><code>Trainer.fit(model, train_dataloader=None, val_dataloaders=None, datamodule=None)</code>：输入第一个量一定是model，然后可以跟一个LigntningDataModule或一个普通的Train DataLoader。如果定义了Val step，也要有Val DataLoader。</p>
+<blockquote>
+<p>参数<br />
+<strong>datamodule</strong> (<a href="https://docs.python.org/3/library/typing.html#typing.Optional">https://docs.python.org/3/library/typing.html#typing.Optional</a>[<a href="https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.datamodule.html#pytorch_lightning.core.datamodule.LightningDataModule">https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.datamodule.html#pytorch_lightning.core.datamodule.LightningDataModule</a>]) – A instance of LightningDataModule.<br />
+<strong>model</strong> (<a href="https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.lightning.html#pytorch_lightning.core.lightning.LightningModule">https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.lightning.html#pytorch_lightning.core.lightning.LightningModule</a>) – Model to fit.<br />
+<strong>train_dataloader</strong> (<a href="https://docs.python.org/3/library/typing.html#typing.Optional">https://docs.python.org/3/library/typing.html#typing.Optional</a>[<a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader</a>]) – A Pytorch DataLoader with training samples. If the model has a predefined train_dataloader method this will be skipped.<br />
+<strong>val_dataloaders</strong> (<a href="https://docs.python.org/3/library/typing.html#typing.Union">https://docs.python.org/3/library/typing.html#typing.Union</a>[<a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader</a>, <a href="https://docs.python.org/3/library/typing.html#typing.List">https://docs.python.org/3/library/typing.html#typing.List</a>[<a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader">https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader</a>], <a href="https://docs.python.org/3/library/constants.html#None">https://docs.python.org/3/library/constants.html#None</a>]) – Either a single Pytorch Dataloader or a list of them, specifying validation samples. If the model has a predefined val_dataloaders method this will be skipped</p>
+</blockquote>
+<h3 id="其他要点">其他要点<a class="anchor-link" href="#其他要点" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>.test()</code>若非直接调用，不会运行。<code>trainer.test()</code></li>
+<li><code>.test()</code>会自动load最优模型。</li>
+<li><code>model.eval()</code> and <code>torch.no_grad()</code> 在进行测试时会被自动调用。</li>
+<li>默认情况下，<code>Trainer()</code>运行于CPU上。</li>
+</ul>
+<h3 id="使用样例">使用样例<a class="anchor-link" href="#使用样例" title="Permanent link">&para;</a></h3>
+<ol>
+<li>手动添加命令行参数：</li>
+</ol>
+<pre><code>from argparse import ArgumentParser
+
+def main(hparams):
+    model = LightningModule()
+    trainer = Trainer(gpus=hparams.gpus)
+    trainer.fit(model)
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('--gpus', default=None)
+    args = parser.parse_args()
+
+    main(args)
+</code></pre>
+<ol>
+<li>自动添加所有<code>Trainer</code>会用到的命令行参数：</li>
+</ol>
+<pre><code>from argparse import ArgumentParser
+
+def main(args):
+    model = LightningModule()
+    trainer = Trainer.from_argparse_args(args)
+    trainer.fit(model)
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser = Trainer.add_argparse_args(
+        # group the Trainer arguments together
+        parser.add_argument_group(title=&quot;pl.Trainer args&quot;)
+    )
+    args = parser.parse_args()
+
+    main(args)
+</code></pre>
+<ol>
+<li>混合式，既使用<code>Trainer</code>相关参数，又使用一些自定义参数，如各种模型超参：</li>
+</ol>
+<pre><code>from argparse import ArgumentParser
+import pytorch_lightning as pl
+from pytorch_lightning import LightningModule, Trainer
+
+def main(args):
+    model = LightningModule()
+    trainer = Trainer.from_argparse_args(args)
+    trainer.fit(model)
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--hidden_dim', type=int, default=128)
+    parser = Trainer.add_argparse_args(
+        # group the Trainer arguments together
+        parser.add_argument_group(title=&quot;pl.Trainer args&quot;)
+    )
+    args = parser.parse_args()
+
+    main(args)
+</code></pre>
+<h3 id="所有参数">所有参数<a class="anchor-link" href="#所有参数" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><code>Trainer.``__init__</code>(<em>logger=True</em>, <em>checkpoint_callback=True</em>, <em>callbacks=None</em>, <em>default_root_dir=None</em>, <em>gradient_clip_val=0</em>, <em>process_position=0</em>, <em>num_nodes=1</em>, <em>num_processes=1</em>, <em>gpus=None</em>, <em>auto_select_gpus=False</em>, <em>tpu_cores=None</em>, <em>log_gpu_memory=None</em>, <em>progress_bar_refresh_rate=None</em>, <em>overfit_batches=0.0</em>, <em>track_grad_norm=- 1</em>, <em>check_val_every_n_epoch=1</em>, <em>fast_dev_run=False</em>, <em>accumulate_grad_batches=1</em>, <em>max_epochs=None</em>, <em>min_epochs=None</em>, <em>max_steps=None</em>, <em>min_steps=None</em>, <em>limit_train_batches=1.0</em>, <em>limit_val_batches=1.0</em>, <em>limit_test_batches=1.0</em>, <em>limit_predict_batches=1.0</em>, <em>val_check_interval=1.0</em>, <em>flush_logs_every_n_steps=100</em>, <em>log_every_n_steps=50</em>, <em>accelerator=None</em>, <em>sync_batchnorm=False</em>, <em>precision=32</em>, <em>weights_summary='top'</em>, <em>weights_save_path=None</em>, <em>num_sanity_val_steps=2</em>, <em>truncated_bptt_steps=None</em>, <em>resume_from_checkpoint=None</em>, <em>profiler=None</em>, <em>benchmark=False</em>, <em>deterministic=False</em>, <em>reload_dataloaders_every_epoch=False</em>, <em>auto_lr_find=False</em>, <em>replace_sampler_ddp=True</em>, <em>terminate_on_nan=False</em>, <em>auto_scale_batch_size=False</em>, <em>prepare_data_per_node=True</em>, <em>plugins=None</em>, <em>amp_backend='native'</em>, <em>amp_level='O2'</em>, <em>distributed_backend=None</em>, <em>move_metrics_to_cpu=False</em>, <em>multiple_trainloader_mode='max_size_cycle'</em>, <em>stochastic_weight_avg=False</em>)</p>
+</blockquote>
+<h3 id="log和return-loss到底在做什么">Log和return loss到底在做什么<a class="anchor-link" href="#log和return-loss到底在做什么" title="Permanent link">&para;</a></h3>
+<p>To add a training loop use the training_step method</p>
+<pre><code>class LitClassifier(pl.LightningModule):
+
+     def __init__(self, model):
+         super().__init__()
+         self.model = model
+
+     def training_step(self, batch, batch_idx):
+         x, y = batch
+         y_hat = self.model(x)
+         loss = F.cross_entropy(y_hat, y)
+         return loss
+</code></pre>
+<ul>
+<li>无论是<code>training_step</code>，还是<code>validation_step</code>，<code>test_step</code>返回值都是<code>loss</code>。返回的loss会被用一个list收集起来。</li>
+</ul>
+<p>Under the hood, Lightning does the following (pseudocode):</p>
+<pre><code># put model in train mode
+model.train()
+torch.set_grad_enabled(True)
+
+losses = []
+for batch in train_dataloader:
+    # forward
+    loss = training_step(batch)
+    losses.append(loss.detach())
+
+    # backward
+    loss.backward()
+
+    # apply and clear grads
+    optimizer.step()
+    optimizer.zero_grad()
+</code></pre>
+<h3 id="training-epoch-level-metrics">Training epoch-level metrics<a class="anchor-link" href="#training-epoch-level-metrics" title="Permanent link">&para;</a></h3>
+<p>If you want to calculate epoch-level metrics and log them, use the <code>.log</code> method</p>
+<pre><code>def training_step(self, batch, batch_idx):
+    x, y = batch
+    y_hat = self.model(x)
+    loss = F.cross_entropy(y_hat, y)
+
+    # logs metrics for each training_step,
+    # and the average across the epoch, to the progress bar and logger
+    self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+    return loss
+</code></pre>
+<ul>
+<li>如果在<code>x_step</code>函数中使用了<code>.log()</code>函数，那么这个量将会被逐步记录下来。每一个<code>log</code>出去的变量都会被记录下来，每一个<code>step</code>会集中生成一个字典dict，而每个epoch都会把这些字典收集起来，形成一个字典的list。</li>
+</ul>
+<p>The .log object automatically reduces the requested metrics across the full epoch. Here’s the pseudocode of what it does under the hood:</p>
+<pre><code>outs = []
+for batch in train_dataloader:
+    # forward
+    out = training_step(val_batch)
+
+    # backward
+    loss.backward()
+
+    # apply and clear grads
+    optimizer.step()
+    optimizer.zero_grad()
+
+epoch_metric = torch.mean(torch.stack([x['train_loss'] for x in outs]))
+</code></pre>
+<h3 id="train-epoch-level-operations">Train epoch-level operations<a class="anchor-link" href="#train-epoch-level-operations" title="Permanent link">&para;</a></h3>
+<p>If you need to do something with all the outputs of each training_step, override training_epoch_end yourself.</p>
+<pre><code>def training_step(self, batch, batch_idx):
+    x, y = batch
+    y_hat = self.model(x)
+    loss = F.cross_entropy(y_hat, y)
+    preds = ...
+    return {'loss': loss, 'other_stuff': preds}
+
+def training_epoch_end(self, training_step_outputs):
+   for pred in training_step_outputs:
+       # do something
+</code></pre>
+<p>The matching pseudocode is:</p>
+<pre><code>outs = []
+for batch in train_dataloader:
+    # forward
+    out = training_step(val_batch)
+
+    # backward
+    loss.backward()
+
+    # apply and clear grads
+    optimizer.step()
+    optimizer.zero_grad()
+
+training_epoch_end(outs)
+</code></pre>
+<h2 id="datamodule">DataModule<a class="anchor-link" href="#datamodule" title="Permanent link">&para;</a></h2>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html">https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html</a></p>
+<h3 id="介绍">介绍<a class="anchor-link" href="#介绍" title="Permanent link">&para;</a></h3>
+<ul>
+<li>首先，这个<code>DataModule</code>和之前写的Dataset完全不冲突。前者是后者的一个包装，并且这个包装可以被用于多个torch Dataset 中。在我看来，其最大的作用就是把各种train/val/test划分、DataLoader初始化之类的重复代码通过包装类的方式得以被简单的复用。</li>
+<li>具体作用项目：</li>
+<li>Download instructions：下载</li>
+<li>Processing instructions：处理</li>
+<li>Split instructions：分割</li>
+<li>Train dataloader：训练集Dataloader</li>
+<li>Val dataloader(s)：验证集Dataloader</li>
+<li>
+<p>Test dataloader(s)：测试集Dataloader</p>
+</li>
+<li>
+<p>其次，<code>pl.LightningDataModule</code>相当于一个功能加强版的torch Dataset，加强的功能包括：</p>
+</li>
+<li><code>prepare_data(self)</code>：</li>
+<li>最最开始的时候，进行一些无论GPU有多少只要执行一次的操作，如写入磁盘的下载操作、分词操作(tokenize)等。</li>
+<li>这里是一劳永逸式准备数据的函数。</li>
+<li>由于只在单线程中调用，不要在这个函数中进行<code>self.x=y</code>似的赋值操作。</li>
+<li>
+<p>但如果是自己用而不是给大众分发的话，这个函数可能并不需要调用，因为数据提前处理好就好了。</p>
+</li>
+<li>
+<p><code>setup(self, stage=None)</code>：</p>
+</li>
+<li>实例化数据集（Dataset），并进行相关操作，如：清点类数，划分train/val/test集合等。</li>
+<li>参数<code>stage</code>用于指示是处于训练周期(<code>fit</code>)还是测试周期(<code>test</code>)，其中，<code>fit</code>周期需要构建train和val两者的数据集。</li>
+<li>
+<p>setup函数不需要返回值。初始化好的train/val/test set直接赋值给self即可。</p>
+</li>
+<li>
+<p><code>train_dataloader/val_dataloader/test_dataloader</code>：</p>
+</li>
+<li>初始化<code>DataLoader</code>。</li>
+<li>返回一个DataLoader量。</li>
+</ul>
+<h3 id="示例">示例<a class="anchor-link" href="#示例" title="Permanent link">&para;</a></h3>
+<pre><code>class MNISTDataModule(pl.LightningDataModule):
+
+    def __init__(self, data_dir: str = './', batch_size: int = 64, num_workers: int = 8):
+        super().__init__()
+        self.data_dir = data_dir
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+        ])
+
+        # self.dims is returned when you call dm.size()
+        # Setting default dims here because we know them.
+        # Could optionally be assigned dynamically in dm.setup()
+        self.dims = (1, 28, 28)
+        self.num_classes = 10
+
+    def prepare_data(self):
+        # download
+        MNIST(self.data_dir, train=True, download=True)
+        MNIST(self.data_dir, train=False, download=True)
+
+    def setup(self, stage=None):
+        # Assign train/val datasets for use in dataloaders
+        if stage == 'fit' or stage is None:
+            mnist_full = MNIST(self.data_dir, train=True, transform=self.transform)
+            self.mnist_train, self.mnist_val = random_split(mnist_full, [55000, 5000])
+
+        # Assign test dataset for use in dataloader(s)
+        if stage == 'test' or stage is None:
+            self.mnist_test = MNIST(self.data_dir, train=False, transform=self.transform)
+
+    def train_dataloader(self):
+        return DataLoader(self.mnist_train, batch_size=self.batch_size, num_workers=self.num_workers)
+
+    def val_dataloader(self):
+        return DataLoader(self.mnist_val, batch_size=self.batch_size, num_workers=self.num_workers)
+
+    def test_dataloader(self):
+        return DataLoader(self.mnist_test, batch_size=self.batch_size, num_workers=self.num_workers)
+</code></pre>
+<h3 id="要点_1">要点<a class="anchor-link" href="#要点_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>若在DataModule中定义了一个<code>self.dims</code> 变量，后面可以调用<code>dm.size()</code>获取该变量。</li>
+</ul>
+<h2 id="saving-and-loading">Saving and Loading<a class="anchor-link" href="#saving-and-loading" title="Permanent link">&para;</a></h2>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/common/weights_loading.html">https://pytorch-lightning.readthedocs.io/en/latest/common/weights_loading.html</a></p>
+<h3 id="saving">Saving<a class="anchor-link" href="#saving" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://pytorch-lightning.readthedocs.io/en/latest/extensions/generated/pytorch_lightning.callbacks.ModelCheckpoint.html#pytorch_lightning.callbacks.ModelCheckpoint">https://pytorch-lightning.readthedocs.io/en/latest/extensions/generated/pytorch_lightning.callbacks.ModelCheckpoint.html#pytorch_lightning.callbacks.ModelCheckpoint</a>: 自动储存的callback module。默认情况下training过程中只会自动储存最新的模型与相关参数，而用户可以通过这个module自定义。如观测一个<code>val_loss</code>的量，并储存top 3好的模型，且同时储存最后一个epoch的模型，等等。例：</li>
+</ul>
+<pre><code>from pytorch_lightning.callbacks import ModelCheckpoint
+
+# saves a file like: my/path/sample-mnist-epoch=02-val_loss=0.32.ckpt
+checkpoint_callback = ModelCheckpoint(
+    monitor='val_loss',
+    filename='sample-mnist-{epoch:02d}-{val_loss:.2f}',
+    save_top_k=3,
+    mode='min',
+    save_last=True
+)
+
+trainer = pl.Trainer(gpus=1, max_epochs=3, progress_bar_refresh_rate=20, callbacks=[checkpoint_callback])
+</code></pre>
+<ul>
+<li>另外，也可以手动存储checkpoint: <code>trainer.save_checkpoint("example.ckpt")</code></li>
+<li><code>ModelCheckpoint</code> Callback中，如果<code>save_weights_only =True</code>，那么将会只储存模型的权重（相当于<code>model.save_weights(filepath)</code>），反之会储存整个模型（相当于<code>model.save(filepath)</code>）。</li>
+</ul>
+<h3 id="loading">Loading<a class="anchor-link" href="#loading" title="Permanent link">&para;</a></h3>
+<ul>
+<li>load一个模型，包括它的weights、biases和超参数：</li>
+</ul>
+<pre><code>model = MyLightingModule.load_from_checkpoint(PATH)
+
+print(model.learning_rate)
+# prints the learning_rate you used in this checkpoint
+
+model.eval()
+y_hat = model(x)
+</code></pre>
+<p>load模型时替换一些超参数：</p>
+<pre><code>class LitModel(LightningModule):
+    def __init__(self, in_dim, out_dim):
+      super().__init__()
+      self.save_hyperparameters()
+      self.l1 = nn.Linear(self.hparams.in_dim, self.hparams.out_dim)
+
+# if you train and save the model like this it will use these values when loading
+# the weights. But you can overwrite this
+LitModel(in_dim=32, out_dim=10)
+
+# uses in_dim=32, out_dim=10
+model = LitModel.load_from_checkpoint(PATH)
+
+# uses in_dim=128, out_dim=10
+model = LitModel.load_from_checkpoint(PATH, in_dim=128, out_dim=10)
+</code></pre>
+<ul>
+<li>完全load训练状态：load包括模型的一切，以及和训练相关的一切参数，如<code>model, epoch, step, LR schedulers, apex</code>等</li>
+</ul>
+<pre><code>model = LitModel()
+trainer = Trainer(resume_from_checkpoint='some/path/to/my_checkpoint.ckpt')
+
+# automatically restores model, epoch, step, LR schedulers, apex, etc...
+trainer.fit(model)
+</code></pre>
+<h2 id="callbacks">Callbacks<a class="anchor-link" href="#callbacks" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Callback 是一个自包含的程序，可以与训练流程交织在一起，而不会污染主要的研究逻辑。</li>
+<li>Callback 并非只会在epoch结尾调用。pytorch-lightning 提供了数十个hook（接口，调用位置）可供选择，也可以自定义callback，实现任何想实现的模块。</li>
+<li>推荐使用方式是，随问题和项目变化的操作，这些函数写到lightning module里面，而相对独立，相对辅助性的，需要复用的内容则可以定义单独的模块，供后续方便地插拔使用。</li>
+</ul>
+<h3 id="callbacks推荐">Callbacks推荐<a class="anchor-link" href="#callbacks推荐" title="Permanent link">&para;</a></h3>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/extensions/callbacks.html#built-in-callbacks">https://pytorch-lightning.readthedocs.io/en/latest/extensions/callbacks.html#built-in-callbacks</a></p>
+<ul>
+<li><code>EarlyStopping(monitor='early_stop_on', min_delta=0.0, patience=3, verbose=False, mode='min', strict=True)</code>：根据某个值，在数个epoch没有提升的情况下提前停止训练。</li>
+</ul>
+<blockquote>
+<p>参数：<br />
+<strong>monitor</strong> (<a href="https://docs.python.org/3/library/stdtypes.html#str">https://docs.python.org/3/library/stdtypes.html#str</a>) – quantity to be monitored. Default: 'early_stop_on'.<br />
+<strong>min_delta</strong> (<a href="https://docs.python.org/3/library/functions.html#float">https://docs.python.org/3/library/functions.html#float</a>) – minimum change in the monitored quantity to qualify as an improvement, i.e. an absolute change of less than min_delta, will count as no improvement. Default: 0.0.<br />
+<strong>patience</strong> (<a href="https://docs.python.org/3/library/functions.html#int">https://docs.python.org/3/library/functions.html#int</a>) – number of validation epochs with no improvement after which training will be stopped. Default: 3.<br />
+<strong>verbose</strong> (<a href="https://docs.python.org/3/library/functions.html#bool">https://docs.python.org/3/library/functions.html#bool</a>) – verbosity mode. Default: False.<br />
+<strong>mode</strong> (<a href="https://docs.python.org/3/library/stdtypes.html#str">https://docs.python.org/3/library/stdtypes.html#str</a>) – one of 'min', 'max'. In 'min' mode, training will stop when the quantity monitored has stopped decreasing and in 'max' mode it will stop when the quantity monitored has stopped increasing.<br />
+<strong>strict</strong> (<a href="https://docs.python.org/3/library/functions.html#bool">https://docs.python.org/3/library/functions.html#bool</a>) – whether to crash the training if monitor is not found in the validation metrics. Default: True.</p>
+</blockquote>
+<p>示例：</p>
+<pre><code>from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping('val_loss')
+trainer = Trainer(callbacks=[early_stopping])
+</code></pre>
+<ul>
+<li><code>ModelCheckpoint</code>：见上文<strong>Saving and Loading</strong>.</li>
+<li><code>PrintTableMetricsCallback</code>：在每个epoch结束后打印一份结果整理表格。</li>
+</ul>
+<pre><code>from pl_bolts.callbacks import PrintTableMetricsCallback
+
+callback = PrintTableMetricsCallback()
+trainer = pl.Trainer(callbacks=[callback])
+trainer.fit(...)
+
+# ------------------------------
+# at the end of every epoch it will print
+# ------------------------------
+
+# loss│train_loss│val_loss│epoch
+# ──────────────────────────────
+# 2.2541470527648926│2.2541470527648926│2.2158432006835938│0
+</code></pre>
+<h2 id="logging">Logging<a class="anchor-link" href="#logging" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://pytorch-lightning.readthedocs.io/en/latest/extensions/logging.html">https://pytorch-lightning.readthedocs.io/en/latest/extensions/logging.html</a>：Logger默认是TensorBoard，但可以指定各种主流Logger<a href="https://pytorch-lightning.readthedocs.io/en/latest/extensions/logging.html#supported-loggers">https://pytorch-lightning.readthedocs.io/en/latest/extensions/logging.html#supported-loggers</a>，如Comet.ml，MLflow，Netpune，或直接CSV文件。可以同时使用复数个logger。</li>
+</ul>
+<pre><code>from pytorch_lightning import loggers as pl_loggers
+
+# Default
+tb_logger = pl_loggers.TensorBoardLogger(
+    save_dir=os.getcwd(),
+    version=None,
+    name='lightning_logs'
+)
+trainer = Trainer(logger=tb_logger)
+
+# Or use the same format as others
+tb_logger = pl_loggers.TensorBoardLogger('logs/')
+
+# One Logger
+comet_logger = pl_loggers.CometLogger(save_dir='logs/')
+trainer = Trainer(logger=comet_logger)
+
+# Save code snapshot
+logger = pl_loggers.TestTubeLogger('logs/', create_git_tag=True)
+
+# Multiple Logger
+tb_logger = pl_loggers.TensorBoardLogger('logs/')
+comet_logger = pl_loggers.CometLogger(save_dir='logs/')
+trainer = Trainer(logger=[tb_logger, comet_logger])
+</code></pre>
+<p>默认情况下，每50个batch log一次，可以通过调整参数</p>
+<ul>
+<li>如果想要log输出非scalar（标量）的内容，如图片，文本，直方图等等，可以直接调用<code>self.logger.experiment.add_xxx()</code>来实现所需操作。</li>
+</ul>
+<pre><code>def training_step(...):
+    ...
+    # the logger you used (in this case tensorboard)
+    tensorboard = self.logger.experiment
+    tensorboard.add_image()
+    tensorboard.add_histogram(...)
+    tensorboard.add_figure(...)
+</code></pre>
+<ul>
+<li>使用log：如果是TensorBoard，那么：<code>tensorboard --logdir ./lightning_logs</code>。在Jupyter Notebook中，可以使用：</li>
+</ul>
+<pre><code># Start tensorboard.
+%load_ext tensorboard
+%tensorboard --logdir lightning_logs/
+</code></pre>
+<p>在行内打开TensorBoard。</p>
+<ul>
+<li>小技巧：如果在局域网内开启了TensorBoard，加上flag <code>--bind_all</code>即可使用主机名访问：</li>
+</ul>
+<p><code>tensorboard --logdir lightning_logs --bind_all</code> -&gt; <code>http://SERVER-NAME:6006/</code></p>
+<h2 id="transfer-learning">Transfer Learning<a class="anchor-link" href="#transfer-learning" title="Permanent link">&para;</a></h2>
+<p><a href="https://pytorch-lightning.readthedocs.io/en/latest/starter/introduction_guide.html#transfer-learning">https://pytorch-lightning.readthedocs.io/en/latest/starter/introduction_guide.html#transfer-learning</a></p>
+<pre><code>import torchvision.models as models
+
+class ImagenetTransferLearning(LightningModule):
+    def __init__(self):
+        super().__init__()
+
+        # init a pretrained resnet
+        backbone = models.resnet50(pretrained=True)
+        num_filters = backbone.fc.in_features
+        layers = list(backbone.children())[:-1]
+        self.feature_extractor = nn.Sequential(*layers)
+
+        # use the pretrained model to classify cifar-10 (10 image classes)
+        num_target_classes = 10
+        self.classifier = nn.Linear(num_filters, num_target_classes)
+
+    def forward(self, x):
+        self.feature_extractor.eval()
+        with torch.no_grad():
+            representations = self.feature_extractor(x).flatten(1)
+        x = self.classifier(representations)
+        ...
+</code></pre>
+<h2 id="关于device操作">关于device操作<a class="anchor-link" href="#关于device操作" title="Permanent link">&para;</a></h2>
+<p>LightningModules know what device they are on! Construct tensors on the device directly to avoid CPU-&gt;Device transfer.</p>
+<pre><code># bad
+t = torch.rand(2, 2).cuda()
+
+# good (self is LightningModule)
+t = torch.rand(2, 2, device=self.device)
+</code></pre>
+<p>For tensors that need to be model attributes, it is best practice to register them as buffers in the modules’ <code>__init__</code> method:</p>
+<pre><code># bad
+self.t = torch.rand(2, 2, device=self.device)
+
+# good
+self.register_buffer(&quot;t&quot;, torch.rand(2, 2))
+</code></pre>
+<p>前面两段是教程中的文本。然而实际上有一个暗坑：</p>
+<p>如果你使用了一个中继的<code>pl.LightningModule</code>，而这个module里面实例化了某个普通的<code>nn.Module</code>，而这个模型中又需要内部生成一些tensor，比如图片每个通道的mean，std之类，那么如果你从<code>pl.LightningModule</code>中pass一个<code>self.device</code>，实际上在一开始这个<code>self.device</code>永远是<code>cpu</code>。所以如果你在调用的<code>nn.Module</code>的<code>__init__()</code>中初始化，使用<code>to(device)</code>或干脆什么都不用，结果就是它永远都在<code>cpu</code>上。</p>
+<p>但是，经过实验，虽然<code>pl.LightningModule</code>在<code>__init__()</code>阶段<code>self.device</code>还是<code>cpu</code>，当进入了<code>training_step()</code>之后，就迅速变为了<code>cuda</code>。所以，对于子模块，最佳方案是，使用一个<code>forward</code>中传入的量，如<code>x</code>，作为一个reference变量，用<code>type_as</code>函数将在模型中生成的tensor都放到和这个参考变量相同的device上即可。</p>
+<pre><code>class RDNFuse(nn.Module):
+    ...
+    def init_norm_func(self, ref):
+        self.mean = torch.tensor(np.array(self.mean_sen), dtype=torch.float32).type_as(ref)
+
+    def forward(self, x):
+        if not hasattr(self, 'mean'):
+            self.init_norm_func(x)
+</code></pre>
+<h2 id="points">Points<a class="anchor-link" href="#points" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pl.seed_everything(1234)</code>：对所有相关的随机量固定种子。</li>
+<li>使用LR Scheduler时候，不用自己<code>.step()</code>。它也被Trainer自动处理了。<a href="https://pytorch-lightning.readthedocs.io/en/latest/common/optimizers.html?highlight=scheduler#">https://pytorch-lightning.readthedocs.io/en/latest/common/optimizers.html?highlight=scheduler#</a></li>
+</ul>
+<pre><code># Single optimizer
+for epoch in epochs:
+    for batch in data:
+        loss = model.training_step(batch, batch_idx, ...)
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+
+    for scheduler in schedulers:
+        scheduler.step()
+
+# Multiple optimizers
+for epoch in epochs:
+  for batch in data:
+     for opt in optimizers:
+        disable_grads_for_other_optimizers()
+        train_step(opt)
+        opt.step()
+
+  for scheduler in schedulers:
+     scheduler.step()
+</code></pre>
+<ul>
+<li>关于划分train和val集合的方法。与PL无关，但很常用，两个例子：</li>
+<li><code>random_split(range(10), [3, 7], generator=torch.Generator().manual_seed(42))</code></li>
+<li>如下：</li>
+</ul>
+<pre><code>from torch.utils.data import DataLoader, random_split
+from torchvision.datasets import MNIST
+
+mnist_full = MNIST(self.data_dir, train=True, transform=self.transform)
+self.mnist_train, self.mnist_val = random_split(mnist_full, [55000, 5000])
+</code></pre>
+<blockquote>
+<p>Parameters：<br />
+<strong>dataset</strong> (<em><a href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset">https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset</a></em>) – Dataset to be split<br />
+<strong>lengths</strong> (<em>sequence</em>) – lengths of splits to be produced<br />
+<strong>generator</strong> (<em><a href="https://pytorch.org/docs/stable/generated/torch.Generator.html#torch.Generator">https://pytorch.org/docs/stable/generated/torch.Generator.html#torch.Generator</a></em>) – Generator used for the random permutation.</p>
+</blockquote>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

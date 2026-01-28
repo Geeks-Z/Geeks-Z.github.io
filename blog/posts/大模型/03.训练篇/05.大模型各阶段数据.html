@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-预训练阶段pretraining">1. 预训练阶段（Pretraining）</a><ul>
+<li><a href="#常见方案">常见方案</a></li>
+<li><a href="#样例数据">样例数据</a></li>
+</ul>
+</li>
+<li><a href="#2-有监督微调sft-supervised-fine-tuning">2. 有监督微调（SFT, Supervised Fine-Tuning）</a><ul>
+<li><a href="#常见方案_1">常见方案</a></li>
+<li><a href="#样例数据_1">样例数据</a></li>
+</ul>
+</li>
+<li><a href="#3-奖励模型训练rm-reward-modeling">3. 奖励模型训练（RM, Reward Modeling）</a><ul>
+<li><a href="#常见方案_2">常见方案</a></li>
+<li><a href="#样例数据_2">样例数据</a></li>
+</ul>
+</li>
+<li><a href="#4-强化学习阶段rlhf-reinforcement-learning-from-human-feedback">4. 强化学习阶段（RLHF, Reinforcement Learning from Human Feedback）</a><ul>
+<li><a href="#常见方案_3">常见方案</a></li>
+<li><a href="#样例数据_3">样例数据</a></li>
+</ul>
+</li>
+<li><a href="#5-领域适应与持续预训练">5. 领域适应与持续预训练</a><ul>
+<li><a href="#常见方案_4">常见方案</a></li>
+<li><a href="#样例数据_4">样例数据</a></li>
+</ul>
+</li>
+<li><a href="#关键工具与数据集">关键工具与数据集</a></li>
+<li><a href="#总结对比表">总结对比表</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/03.训练篇</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>以下是目前常见大模型在不同训练阶段的方案总结及对应阶段的样例数据：</p>
+<hr />
+<h3 id="1-预训练阶段pretraining"><strong>1. 预训练阶段（Pretraining）</strong><a class="anchor-link" href="#1-预训练阶段pretraining" title="Permanent link">&para;</a></h3>
+<h4 id="常见方案"><strong>常见方案</strong><a class="anchor-link" href="#常见方案" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>数据来源</strong>：大规模无监督文本（如网页、书籍、代码、多语言语料），强调数据多样性和规模。</li>
+<li><strong>关键技术</strong>：分层采样、去重、多模态融合（图文/视频对）。</li>
+<li><strong>代表模型</strong>：  </li>
+<li><strong>GPT-3</strong>：使用45TB的Common Crawl、维基百科、书籍等数据，覆盖多领域文本和代码。</li>
+<li><strong>T5</strong>：基于750GB的C4数据集（清洗后的Common Crawl英文文本），强调格式统一化处理。</li>
+<li><strong>DeepSeek-V3</strong>：聚焦高质量代码和数学数据，总量达14.8万亿token。</li>
+<li><strong>智源BGE</strong>：采用3亿对中英文文本对（MTP数据集），支持语义向量模型训练。</li>
+</ul>
+<h4 id="样例数据"><strong>样例数据</strong><a class="anchor-link" href="#样例数据" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>格式</strong>：纯文本或JSONL，每行一个文档或段落。<br />
+<code>text
+  《活着》，是中国著名作家余华所写的一部长篇小说...（来自维基百科）</code><br />
+<code>jsonl
+  {"text":"Flights from New York to Florida are available daily."}</code></li>
+</ul>
+<hr />
+<h3 id="2-有监督微调sft-supervised-fine-tuning"><strong>2. 有监督微调（SFT, Supervised Fine-Tuning）</strong><a class="anchor-link" href="#2-有监督微调sft-supervised-fine-tuning" title="Permanent link">&para;</a></h3>
+<h4 id="常见方案_1"><strong>常见方案</strong><a class="anchor-link" href="#常见方案_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>数据来源</strong>：人工标注的指令-响应对、多轮对话数据，强调任务对齐和多样性。</li>
+<li><strong>关键技术</strong>：数据增强（如回译、同义词替换）、领域平衡。</li>
+<li><strong>代表模型</strong>：  </li>
+<li><strong>Alpaca</strong>：基于52K条指令数据，覆盖问答、推理等任务。</li>
+<li><strong>盘古大模型</strong>：支持单轮（CSV/JSONL）和多轮对话（带人设的JSONL格式），单条token长度限制4K或32K。</li>
+<li><strong>T5</strong>：统一文本到文本格式，输入示例如<code>translate English to German: That is good.</code>。</li>
+</ul>
+<h4 id="样例数据_1"><strong>样例数据</strong><a class="anchor-link" href="#样例数据_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>单轮对话</strong>（JSONL）：<br />
+<code>json
+  {"context":"如何制作蛋糕？","target":"首先准备面粉、鸡蛋和糖..."}</code></li>
+<li><strong>多轮对话</strong>（带人设）：<br />
+<code>json
+  [{"system":"你是一个客服助手"},{"context":"我的订单未送达","target":"请提供订单号以便查询。"}]</code></li>
+</ul>
+<hr />
+<h3 id="3-奖励模型训练rm-reward-modeling"><strong>3. 奖励模型训练（RM, Reward Modeling）</strong><a class="anchor-link" href="#3-奖励模型训练rm-reward-modeling" title="Permanent link">&para;</a></h3>
+<h4 id="常见方案_2"><strong>常见方案</strong><a class="anchor-link" href="#常见方案_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>数据来源</strong>：人工标注的偏好排序数据或对比对，需覆盖正负样本和对抗性提问。</li>
+<li><strong>关键技术</strong>：多维度评分（安全性、有用性、事实性）。</li>
+<li><strong>代表模型</strong>：  </li>
+<li><strong>Anthropic HH-RLHF</strong>：人工标注的对话优劣对比数据，用于对齐模型价值观。</li>
+<li><strong>GPT-4</strong>：基于数百万条对比数据，结合用户反馈动态更新。</li>
+</ul>
+<h4 id="样例数据_2"><strong>样例数据</strong><a class="anchor-link" href="#样例数据_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>偏好排序</strong>（JSON）：<br />
+<code>json
+  {"prompt":"解释量子力学","responses":[{"text":"量子力学研究微观粒子...","score":4},{"text":"物理的一个分支...","score":2}]}</code></li>
+</ul>
+<hr />
+<h3 id="4-强化学习阶段rlhf-reinforcement-learning-from-human-feedback"><strong>4. 强化学习阶段（RLHF, Reinforcement Learning from Human Feedback）</strong><a class="anchor-link" href="#4-强化学习阶段rlhf-reinforcement-learning-from-human-feedback" title="Permanent link">&para;</a></h3>
+<h4 id="常见方案_3"><strong>常见方案</strong><a class="anchor-link" href="#常见方案_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>数据来源</strong>：模型生成响应结合奖励模型打分，或在线交互数据。</li>
+<li><strong>关键技术</strong>：动态策略优化、稀疏奖励增强。</li>
+<li><strong>代表模型</strong>：  </li>
+<li><strong>ChatGPT</strong>：通过PPO算法优化策略，结合用户实时反馈。</li>
+<li><strong>DeepSeek-R1</strong>：结合准确性奖励（数学/编程任务）和格式奖励（结构化输出），使用GRPO算法优化。</li>
+</ul>
+<h4 id="样例数据_3"><strong>样例数据</strong><a class="anchor-link" href="#样例数据_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>策略生成数据</strong>（JSON）：<br />
+<code>json
+  {"prompt":"如何降低碳排放？","generated_response":"推广可再生能源...","reward":0.92}</code></li>
+</ul>
+<hr />
+<h3 id="5-领域适应与持续预训练"><strong>5. 领域适应与持续预训练</strong><a class="anchor-link" href="#5-领域适应与持续预训练" title="Permanent link">&para;</a></h3>
+<h4 id="常见方案_4"><strong>常见方案</strong><a class="anchor-link" href="#常见方案_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>数据来源</strong>：垂直领域文本（医学、法律、代码等），混合新旧数据防止遗忘。</li>
+<li><strong>关键技术</strong>：术语一致性检查、增量学习。</li>
+<li><strong>代表模型</strong>：  </li>
+<li><strong>Codex</strong>：基于GitHub代码数据，增强代码生成能力。</li>
+<li><strong>智源COIG</strong>：开源指令数据集，覆盖多领域中文任务。</li>
+</ul>
+<h4 id="样例数据_4"><strong>样例数据</strong><a class="anchor-link" href="#样例数据_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>医学领域</strong>（JSONL）：<br />
+<code>json
+  {"text":"患者主诉持续头痛，MRI显示左侧颞叶异常信号..."}</code></li>
+</ul>
+<hr />
+<h3 id="关键工具与数据集"><strong>关键工具与数据集</strong><a class="anchor-link" href="#关键工具与数据集" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>数据处理工具</strong>：<br />
+   - <strong>FlagData 2.0</strong>：支持PDF/HTML转JSON、分布式去重（MinHashLSH算法）。<br />
+   - <strong>PAWS-X</strong>：多语言释义对数据集，提升模型对语序的敏感性。</li>
+<li><strong>典型数据集</strong>：<br />
+   - <strong>C4</strong>：750GB清洗后的英文文本，用于T5预训练。<br />
+   - <strong>MTP</strong>：3亿对中英文文本对，支持语义向量模型。</li>
+</ol>
+<hr />
+<h3 id="总结对比表"><strong>总结对比表</strong><a class="anchor-link" href="#总结对比表" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>代表模型</th>
+<th>数据方案特点</th>
+<th>样例数据来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>预训练</td>
+<td>GPT-3、T5</td>
+<td>大规模无监督文本，多语言/多领域混合</td>
+<td>Common Crawl、维基百科</td>
+</tr>
+<tr>
+<td>SFT</td>
+<td>Alpaca、盘古</td>
+<td>高质量指令对，单轮/多轮结构化数据</td>
+<td>人工标注问答</td>
+</tr>
+<tr>
+<td>RM</td>
+<td>GPT-4、Anthropic</td>
+<td>人工偏好排序，对抗性样本覆盖</td>
+<td>对比对标注</td>
+</tr>
+<tr>
+<td>RLHF</td>
+<td>ChatGPT、DeepSeek</td>
+<td>动态策略生成，在线交互优化</td>
+<td>模型生成+奖励反馈</td>
+</tr>
+<tr>
+<td>领域适应</td>
+<td>Codex、COIG</td>
+<td>垂直领域数据增强，术语一致性检查</td>
+<td>GitHub代码、医学文献</td>
+</tr>
+</tbody>
+</table>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

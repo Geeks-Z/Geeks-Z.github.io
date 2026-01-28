@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#半监督增量学习">半监督增量学习</a><ul>
+<li><a href="#learning-from-within-data">Learning from Within Data</a></li>
+<li><a href="#cnnl">CNNL</a></li>
+<li><a href="#distillmatch">DistillMatch</a></li>
+<li><a href="#ordisco">ORDisCo</a></li>
+<li><a href="#metaco">MetaCo</a></li>
+<li><a href="#pgl">PGL</a></li>
+<li><a href="#learning-from-auxiliary-data">Learning from Auxiliary Data</a></li>
+<li><a href="#dmc">DMC</a></li>
+<li><a href="#cil-qud">CIL-QUD</a></li>
+<li><a href="#learning-from-test-data">Learning from Test Data</a></li>
+<li><a href="#cotta">CoTTA</a></li>
+<li><a href="#note">NOTE</a></li>
+</ul>
+</li>
+<li><a href="#自监督增量学习">自监督增量学习</a><ul>
+<li><a href="#pre-training">Pre-training</a><ul>
+<li><a href="#ssl-ocl">SSL-OCL</a></li>
+</ul>
+</li>
+<li><a href="#auxiliary-training">Auxiliary-training</a><ul>
+<li><a href="#pass">PASS</a></li>
+</ul>
+</li>
+<li><a href="#main-training">Main-training</a><ul>
+<li><a href="#buffer-ssl">Buffer-SSL</a></li>
+<li><a href="#lump">LUMP</a></li>
+<li><a href="#cassle">CaSSLe</a></li>
+<li><a href="#pfr">PFR</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/42.UCIL/00.Survey</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="半监督增量学习">半监督增量学习<a class="anchor-link" href="#半监督增量学习" title="Permanent link">&para;</a></h2>
+<p>首先，让我们先学习下半监督式的增量学习，其旨在通过利用未标记的数据来减少对标签的依赖。常规的做法是先利用一小部分带有标签的数据集训练出一个深度学习模型，然后利用该模型对未标记的数据打上标签。通常，我们将这种用非人工标注的标签信息称之为——<strong>伪标签</strong>(<code>pseudo labels</code>)。</p>
+<p>因此，根据未标记数据的类型，我们可以简单的划分为三种类型：</p>
+<ul>
+<li><code>Within-data</code>，即属于同一份数据集内的没有打标签的那部分数据；</li>
+<li><code>Auxiliary-data</code>，即辅助数据，例如大家从网络上爬下来的数据；</li>
+<li><code>Test-data</code>，即最简单的测试集数据</li>
+</ul>
+<p>其中，Within-data 需要模型从头开始训练，而另外两种方式则是建立在预训练好的模型基础之上。下面分别为大家介绍下典型的方法。</p>
+<h3 id="learning-from-within-data">Learning from Within Data<a class="anchor-link" href="#learning-from-within-data" title="Permanent link">&para;</a></h3>
+<h3 id="cnnl">CNNL<a class="anchor-link" href="#cnnl" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://dl.acm.org/doi/abs/10.1145/3094243.3094247</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233815.jpg"/></div>
+<p><code>CNNL</code>，即<strong>连续神经网络学习</strong>，是半监督和增量学习交叉领域的早期工作之一。作者在标记好的数据集上训练一个基础的卷积神经网络模型，然后将其用于在未标记数据集上生成伪标签。最后，通过在伪标签上微调增量学习器以实现自训练(<code>self-training</code>)的过程。</p>
+<h3 id="distillmatch">DistillMatch<a class="anchor-link" href="#distillmatch" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://t.co/1sdMip6kuw</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233816.jpg"/></div>
+<p>与需要大量内存预算的标准回放方案不同，<code>DistillMatch</code> 中探索了无标签数据流作为回放的潜力，并显著降低了所需的内存预算。与之前的工作需要访问与环境无关的外部数据流不同，作者认为数据流是持续学习代理环境的产物。此外，通过对域外检测器进一步的优化，从而识别出与当前增量学习任务无关的数据分布，以减轻对先前类别的遗忘。</p>
+<blockquote>
+<p>值得注意的是, 知识蒸馏最初是为模型压缩而设计的。随着<strong>LwF[4]</strong>(Learning without forgetting)方法首次将其应用于增量学习, 知识蒸馏损失已成为了众多增量学习方法的基础模块。如下图所示，后续的工作主要可分为基于重要特征蒸馏，基于样本关系蒸馏和基于辅助数据的蒸馏，这些方法有效的改进类别增量学习中的知识蒸馏策略。</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233817.jpg"/></div>
+
+<p>Knowledge distillation strategies in class incremental learning</p>
+<h3 id="ordisco">ORDisCo<a class="anchor-link" href="#ordisco" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://openaccess.thecvf.com/content/CVPR2021/papers/Wang_ORDisCo_Effective_and_Efficient_Usage_of_Incremental_Unlabeled_Data_for_CVPR_2021_paper.pdf</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233818.jpg"/></div>
+<p>具有判别器一致性的<strong>在线回放</strong>(<code>online replay</code>)遵循生成回放策略来回放数据和标签。<code>ORDisCo</code>利用标记数据来训练条件 GAN 生成器，并采用未标记数据作为区分 real-fake 的额外示例。此外，为了进一步提高增量学习任务的一致性，作者还对判别器权重的突变部分进行了惩罚（可理解为加正则）。</p>
+<h3 id="metaco">MetaCo<a class="anchor-link" href="#metaco" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://arxiv.org/abs/2110.01856</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233819.jpg"/></div>
+<p><code>MetaCon</code>, 即<code>Meta-Consolidation</code>，是将 <code>ORDisCO</code> 的生成重放方案扩展到元学习设置。作者没有直接训练条件 GAN 进行生成回放，而是优化了生成 GAN 权重的条件超网络。作者以当前任务的语义词嵌入为条件，将超网络参数化为<strong>变分自编码器</strong>(<code>Variational Auto-Encoder</code>, <code>VAE</code>)。为了稳定超网络，他们存储增量学习类的一阶统计数据以更好的进行数据回放。</p>
+<blockquote>
+<p>关于变分自编码器的详细介绍，可关注公众号『CVHub』翻阅历史文章学习。</p>
+</blockquote>
+<h3 id="pgl">PGL<a class="anchor-link" href="#pgl" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://arxiv.org/pdf/2201.09196.pdf</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233820.jpg"/></div>
+<p><code>PGL</code> 全称是 <code>Pseudo Gradient Learners</code>，即伪梯度的学习器，其基于元学习预测每个输入的梯度。 作者声称伪标签的使用会给分类器带来负优化，导致梯度的错误累积，同时其性能会随时间下降。因此，本文方法通过预测梯度而非标签，该模型不像伪标签那样与一组预定义的类相关联，同时能够利用分布外的数据来提高性能。</p>
+<h3 id="learning-from-auxiliary-data">Learning from Auxiliary Data<a class="anchor-link" href="#learning-from-auxiliary-data" title="Permanent link">&para;</a></h3>
+<h3 id="dmc">DMC<a class="anchor-link" href="#dmc" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://openaccess.thecvf.com/content_WACV_2020/papers/Zhang_Class-incremental_Learning_via_Deep_Model_Consolidation_WACV_2020_paper.pdf</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233821.jpg"/></div>
+<p><code>DMC</code>，<code>Deep Model Consolidation</code>，即深度模型整合应该是最早利用未标记的辅助数据来减轻灾难性遗忘的代表作之一。作者首先在标记好的数据集上训练深度分类器，然后用于在辅助数据上生成伪标签。其中，伪标签充当当前模型和先前模型之间的正则化器，以减少对先前“看到”的类的遗忘。</p>
+<h3 id="cil-qud">CIL-QUD<a class="anchor-link" href="#cil-qud" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://openreview.net/pdf?id=oLvlPJheCD</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233822.jpg"/></div>
+<p><code>CIL-QUD</code> 是一种使用查询未标记数据的类增量学习方法，其建立在 <code>DMC</code> 的基础上，但是采用基于<strong>检索</strong>的方法。作者在内存中将每个增量类的少量实例存储为查询 Anchor。查询锚用于在辅助数据集中检索视觉上相似的样本，然后用于记忆重放。</p>
+<h3 id="learning-from-test-data">Learning from Test Data<a class="anchor-link" href="#learning-from-test-data" title="Permanent link">&para;</a></h3>
+<h3 id="cotta">CoTTA<a class="anchor-link" href="#cotta" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>https://openaccess.thecvf.com/content/CVPR2022/papers/Wang_Continual_Test-Time_Domain_Adaptation_CVPR_2022_paper.pdf</p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233823.jpg"/></div>
+<p><code>CoTTA</code>，<code>Continual Test-Time Adaptation</code>，即在推理时调整预训练的深度分类器。这种情况是很常见的，以自动驾驶为例，想象一辆自动驾驶汽车在不断变化的天气条件下持续行驶，这种情况下我们无法保证喂给模型的数据能够覆盖各类天气状况。因此，这种自适应的能力是非常有必要的，尤其是当测试数据与原始训练源不同并且源数据不再可用时。为了解决这个新问题，作者提出了一种基于<strong>正则化</strong>的方法，通过在同一输入的多个增强中强制执行一致性正则化，以及对一些网络参数进行选择性微调。</p>
+<h3 id="note">NOTE<a class="anchor-link" href="#note" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233824.jpg"/></div>
+<p><code>NOTE</code>，即<code>No i.i.d. TEst-time adaptation</code>，即非独立同分布的测试时适应，是将 COTTA 进一步扩展到现实场景的工作，其后续测试示例具有高度的时间相关性。作者声称，在这种情况下，依赖伪标签形式的 BN 统计可能会严重地使学习器偏向当前批次。因此，本文方法采用 IN 替代 BN。值得一提的是，相对 CoTTA 其性能要好得多。此外，相关的工作还有去年发表在 CVPR 2022 上的 <strong>LAME[11]</strong>，有兴趣的小伙伴也可以自己的读读原文。</p>
+<hr />
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233825.jpg"/></div>
+
+<blockquote>
+<p>Incremental Learning with Semi-Supervision</p>
+</blockquote>
+<h2 id="自监督增量学习">自监督增量学习<a class="anchor-link" href="#自监督增量学习" title="Permanent link">&para;</a></h2>
+<p>基于自监督模式的增量学习主要有三种主要范式：</p>
+<ul>
+<li>Pre-training</li>
+<li>Auxiliary-training</li>
+<li>Main-training</li>
+</ul>
+<h3 id="pre-training">Pre-training<a class="anchor-link" href="#pre-training" title="Permanent link">&para;</a></h3>
+<p><code>Pre-training</code> 主要就是在增量学习任务开始之前先对主干网络预训练一波，大家可以理解为是一种“预热”操作。这方面的研究主要是建立在自监督预训练可以显著减少后续（迁移）学习任务中对标签监督的需求的想法之上。</p>
+<h4 id="ssl-ocl">SSL-OCL<a class="anchor-link" href="#ssl-ocl" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p><a href="https://www.bmvc2021-virtualconference.com/assets/papers/0636.pdf">SSL-OCL</a></p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233834.jpg"/></div>
+
+<p>用于在线持续学习的自监督学习(<code>SSL-OCL</code>)方法提议在通过自监督进行增量训练之前预训练骨干网络的权重。通过这种方式，作者旨在充分利用预训练数据集带来的迁移学习能力。通过采用 MoCo-V2 和 SwAV 等方法的自监督预训练方式，本文方法获得了性能上的提升。</p>
+<h3 id="auxiliary-training">Auxiliary-training<a class="anchor-link" href="#auxiliary-training" title="Permanent link">&para;</a></h3>
+<p>辅助训练指的是在训练期间用自监督的方法提供监督信号，以获得更具辨别力的特征空间。这类方法建立在自监督学习任务可以向学习者提供额外的监督信号以防止过拟合的想法之上。</p>
+<h4 id="pass">PASS<a class="anchor-link" href="#pass" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p><a href="https://openaccess.thecvf.com/content/CVPR2021/papers/Zhu_Prototype_Augmentation_and_Self-Supervision_for_Incremental_Learning_CVPR_2021_paper.pdf">PASS</a></p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233835.jpg"/></div>
+
+<p><code>Prototype-Augmented Self-Supervision(PASS)</code> 是一种基于<strong>正则化</strong>的增量学习技术。该模型优化了每个增量类的单个原型，其中原型是通过原始标签进行监督学习的。为了提高模型的泛化能力并避免过拟合现象，作者引入了更多的数据增强技巧。例如，采用自监督标签增强(SLA)生成原始输入的四种不同变换角度([0°, 90°, 180°, 270°])，然后将其用作额外的前置文本任务来区分模型。作者展示了这种方法减轻了对先前学习的类的过度拟合，从而获得了更好的结果。</p>
+<h3 id="main-training">Main-training<a class="anchor-link" href="#main-training" title="Permanent link">&para;</a></h3>
+<p>这是一种完全基于自监督学习目标进行训练的方法，并在训练后通过线性探测对其进行评估。此类方法主要的核心思想是认为自监督可以完全取代人工标签。</p>
+<h4 id="buffer-ssl">Buffer-SSL<a class="anchor-link" href="#buffer-ssl" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p><a href="https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136860687.pdf">Buffer-SSL</a></p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233836.jpg"/></div>
+
+<p><code>Buffer-SSL</code> 即缓冲自监督学习，是一种基于记忆的方法，它是在现成的自监督算法 <code>SimSiam</code> 进行扩展的并推广到增量学习任务当中。SimSiam 的一个主要弊端是无法保留以前学到的知识，因此 Buffer-SSL 为其补充了一个用于回放的内存缓冲区。一种简单的方法是将所有示例存储在内存中，但是这会导致内存开销太大，并且是对于视频帧这种帧之间存在高度的冗余性。为此，作者只存储簇质心，这减少了内存大小并增加了内存可扩展性。通过构建缓冲区可以显著缓解自监督表示的遗忘。</p>
+<h4 id="lump">LUMP<a class="anchor-link" href="#lump" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p><a href="https://openreview.net/forum?id=9Hrka5PA7LW">LUMP</a></p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233837.jpg"/></div>
+<p><code>Lifelong Unsupervised Mixup</code> 也是一种基于记忆的方法，利用<strong>混合增强</strong>来减轻健忘。具体来说，网络通过学习将输入实例与存储在内存中的先前学习任务中用到的的实例进行混合。这种思想比较简单，说白了就是回放此类示例来达到减少遗忘并提高性能的目的。</p>
+<h4 id="cassle">CaSSLe<a class="anchor-link" href="#cassle" title="Permanent link">&para;</a></h4>
+<p><a href="https://arxiv.org/abs/2112.04215">CaSSLe</a></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233838.jpg"/></div>
+
+<p><code>CaSSLe</code> 是一种基于<strong>正则化</strong>的自监督增量学习方法。由于存储来自先前学习任务的数据会导致内存效率低下并且可能侵犯隐私的动机，本文方法转而学习在当前模型和过去模型之间提取自监督的表示。其中，蒸馏以预测方式执行，当前模型的特征会被投影到先前模型的特征空间。</p>
+<h4 id="pfr">PFR<a class="anchor-link" href="#pfr" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p><a href="https://openaccess.thecvf.com/content/CVPR2022W/CLVision/papers/Gomez-Villa_Continually_Learning_Self-Supervised_Representations_With_Projected_Functional_Regularization_CVPRW_2022_paper.pdf">PFR</a></p>
+</blockquote>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408052233839.jpg"/></div>
+
+<p><code>PFR</code>，即投影函数正则化同样是一种基于正则化的技术，与 <code>CaSSLe</code> 非常类似。作者使用基于蒸馏的目标扩展了 <code>Barlow-Twins</code> 方法，学习将当前的视觉表示投射到先前的模型表示。 此外，论文展示了具有 PFR 目标的 Barlow-Twins 表现出更低的遗忘和更高的准确性。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

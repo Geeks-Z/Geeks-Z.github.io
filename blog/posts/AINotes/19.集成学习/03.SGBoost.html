@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-xgboost">1. XGBoost</a><ul>
+<li><a href="#11-数学原理">1.1 数学原理</a></li>
+<li><a href="#12-工程实现">1.2 工程实现</a></li>
+<li><a href="#13-优缺点">1.3 优缺点</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/19.集成学习</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/87885678">【机器学习】决策树（下）——XGBoost、LightGBM（非常详细）</a></p>
+</blockquote>
+<p>本文是决策树的第三篇，主要介绍基于 Boosting 框架的主流集成算法，包括 XGBoost 和 LightGBM。</p>
+<p>不知道为什么知乎文章封面的照片会显示不全，在这里补上完整的思维导图：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050703.jpg" />  </p>
+<h2 id="1-xgboost">1. XGBoost<a class="anchor-link" href="#1-xgboost" title="Permanent link">&para;</a></h2>
+<p>XGBoost 是大规模并行 boosting tree 的工具，它是目前最快最好的开源 boosting tree 工具包，比常见的工具包快 10 倍以上。Xgboost 和 GBDT 两者都是 boosting 方法，除了工程实现、解决问题上的一些差异外，最大的不同就是目标函数的定义。故本文将从数学原理和工程实现上进行介绍，并在最后介绍下 Xgboost 的优点。</p>
+<h3 id="11-数学原理">1.1 数学原理<a class="anchor-link" href="#11-数学原理" title="Permanent link">&para;</a></h3>
+<p><strong>1.1.1 目标函数</strong></p>
+<p>我们知道 XGBoost 是由 <span class="math-inline">k</span> 个基模型组成的一个加法运算式：</p>
+<p><div class="math-display">\hat{y}<em>i=\sum</em>{t=1}^{k}\ f_t(x_i) \</div></p>
+<p>其中 <span class="math-inline">f_k</span> 为第 <span class="math-inline">k</span> 个基模型， <span class="math-inline">\hat{y}_i</span> 为第 <span class="math-inline">i</span> 个样本的预测值。</p>
+<p>损失函数可由预测值 <span class="math-inline">\hat{y}_i</span> 与真实值 <span class="math-inline">y_i</span> 进行表示：</p>
+<p><div class="math-display">L=\sum_{i=1}^n l( y_i, \hat{y}_i) \</div></p>
+<p>其中 <span class="math-inline">n</span> 为样本数量。</p>
+<p>我们知道模型的预测精度由模型的偏差和方差共同决定，损失函数代表了模型的偏差，想要方差小则需要简单的模型，所以目标函数由模型的损失函数 <span class="math-inline">L</span> 与抑制模型复杂度的正则项 <span class="math-inline">\Omega</span> 组成，所以我们有：</p>
+<p><span class="math-inline">Obj =\sum_{i=1}^n l(\hat{y}<em>i, y_i) + \sum</em>{t=1}^k \Omega(f_t) \ </span></p>
+<p><span class="math-inline">\Omega</span> 为模型的正则项，由于 XGBoost 支持决策树也支持线性模型，所以这里再不展开描述。</p>
+<p>我们知道 boosting 模型是前向加法，以第 <span class="math-inline">t</span> 步的模型为例，模型对第 <span class="math-inline">i</span> 个样本 <span class="math-inline">x_{i}</span> 的预测为：</p>
+<p><div class="math-display">  \hat{y}_i^t= \hat{y}_i^{t-1} + f_t(x_i)  \</div></p>
+<p>其中 <span class="math-inline">\hat{y}_i^{t-1}</span> 由第 <span class="math-inline">t-1</span> 步的模型给出的预测值，是已知常数，<span class="math-inline">f_t(x_i)</span> 是我们这次需要加入的新模型的预测值，此时，目标函数就可以写成：</p>
+<p><div class="math-display">\begin{align} Obj^{(t)} &amp;= \sum_{i=1}^nl(y_i, \hat{y}<em>i^t) + \sum</em>{i=1}^t\Omega(f_i) \    &amp;= \sum_{i=1}^n l\left(y_i, \hat{y}<em>i^{t-1} + f_t(x_i) \right) + \sum</em>{i=1}^t  \Omega(f_i)  \end{align} \</div></p>
+<p>求此时最优化目标函数，就相当于求解 <span class="math-inline">f_t(x_i)</span> 。</p>
+<blockquote>
+<p>泰勒公式是将一个在 <span class="math-inline">x=x_0</span> 处具有 <span class="math-inline">n</span> 阶导数的函数 <span class="math-inline">f(x)</span> 利用关于 <span class="math-inline">x-x_0</span> 的 <span class="math-inline">n</span> 次多项式来逼近函数的方法，若函数 <span class="math-inline">f(x)</span> 在包含 <span class="math-inline">x_0</span> 的某个闭区间 <span class="math-inline">[a,b]</span> 上具有 <span class="math-inline">n</span> 阶导数，且在开区间 <span class="math-inline">(a,b)</span> 上具有 <span class="math-inline">n+1</span> 阶导数，则对闭区间 <span class="math-inline">[a,b]</span> 上任意一点 <span class="math-inline">x</span> 有 <span class="math-inline">\displaystyle f(x)=\sum_{i=0}^{n}\frac{f^{(i)}(x_0)}{i!}(x-x_0)^ i+R_n(x) </span> ，其中的多项式称为函数在 <span class="math-inline">x_0</span> 处的泰勒展开式， <span class="math-inline">R_n(x)</span> 是泰勒公式的余项且是 <span class="math-inline">(x−x_0)^n</span> 的高阶无穷小。</p>
+</blockquote>
+<p>根据泰勒公式我们把函数 <span class="math-inline">f(x+\Delta x)</span> 在点 <span class="math-inline">x</span> 处进行泰勒的二阶展开，可得到如下等式：</p>
+<p><div class="math-display">f(x+\Delta x) \approx f(x) + f'(x)\Delta x + \frac12 f''(x)\Delta x^2  \</div></p>
+<p>我们把 <span class="math-inline">\hat{y}_i^{t-1}</span> 视为 <span class="math-inline">x</span> ， <span class="math-inline">f_t(x_i)</span> 视为 <span class="math-inline">\Delta x</span> ，故可以将目标函数写为：</p>
+<p><div class="math-display">Obj^{(t)} = \sum_{i=1}^n \left[ l(y_i, \hat{y}<em>i^{t-1}) + g_if_t(x_i) + \frac12h_if_t^2(x_i) \right] + \sum</em>{i=1}^t  \Omega(f_i) \</div></p>
+<p>其中 <span class="math-inline">g_{i}</span> 为损失函数的一阶导， <span class="math-inline">h_{i}</span> 为损失函数的二阶导，<strong>注意这里的导是对 <span class="math-inline">\hat{y}_i^{t-1}</span> 求导</strong>。</p>
+<p>我们以平方损失函数为例：</p>
+<p><div class="math-display">\sum_{i=1}^n \left(y_i - (\hat{y}_i^{t-1} + f_t(x_i)) \right)^2  \</div></p>
+<p>则：</p>
+<p><div class="math-display">  \begin{align}      g_i &amp;= \frac{\partial (\hat{y}^{t-1} - y_i)^2}{\partial {\hat{y}^{t-1}}} = 2(\hat{y}^{t-1} - y_i) \      h_i &amp;=\frac{\partial^2(\hat{y}^{t-1} - y_i)^2}{{\hat{y}^{t-1}}} = 2    \end{align}  \</div></p>
+<p>由于在第 <span class="math-inline">t</span> 步时 <span class="math-inline">\hat{y}_i^{t-1}</span> 其实是一个已知的值，所以 <span class="math-inline">l(y_i, \hat{y}_i^{t-1})</span> 是一个常数，其对函数的优化不会产生影响，因此目标函数可以写成：</p>
+<p><div class="math-display"> Obj^{(t)} \approx \sum_{i=1}^n \left[ g_if_t(x_i) + \frac12h_if_t^2(x_i) \right] + \sum_{i=1}^t  \Omega(f_i) \</div></p>
+<p>所以我们只需要求出每一步损失函数的一阶导和二阶导的值（由于前一步的 <span class="math-inline">\hat{y}^{t-1}</span> 是已知的，所以这两个值就是常数），然后最优化目标函数，就可以得到每一步的 <span class="math-inline">f(x)</span> ，最后根据加法模型得到一个整体模型。</p>
+<p><strong>1.1.2 基于决策树的目标函数</strong></p>
+<p>我们知道 Xgboost 的基模型<strong>不仅支持决策树，还支持线性模型</strong>，这里我们主要介绍基于决策树的目标函数。</p>
+<p>我们可以将决策树定义为 <span class="math-inline">f_t(x)=w_{q(x)}</span> ， <span class="math-inline">x</span> 为某一样本，这里的 <span class="math-inline">q(x)</span> 代表了该样本在哪个叶子结点上，而 <span class="math-inline">w_q</span> 则代表了叶子结点取值 <span class="math-inline">w</span> ，所以 <span class="math-inline">w_{q(x)}</span> 就代表了每个样本的取值 <span class="math-inline">w</span> （即预测值）。</p>
+<p>决策树的复杂度可由叶子数 <span class="math-inline">T</span> 组成，叶子节点越少模型越简单，此外叶子节点也不应该含有过高的权重 <span class="math-inline">w</span> （类比 LR 的每个变量的权重），所以目标函数的正则项可以定义为：</p>
+<p><div class="math-display">\Omega(f_t)=\gamma T + \frac12 \lambda \sum_{j=1}^T w_j^2 \</div></p>
+<p>即决策树模型的复杂度由生成的所有决策树的叶子节点数量，和所有节点权重所组成的向量的 <span class="math-inline">L_2</span> 范式共同决定。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050704.jpg" />  </p>
+<p>这张图给出了基于决策树的 XGBoost 的正则项的求解方式。</p>
+<p>我们设 <span class="math-inline">I_j= { i \vert q(x_i)=j }</span> 为第 <span class="math-inline">j</span> 个叶子节点的样本集合，故我们的目标函数可以写成：</p>
+<p><div class="math-display">\begin{align} Obj^{(t)} &amp;\approx \sum_{i=1}^n \left[ g_if_t(x_i) + \frac12h_if_t^2(x_i) \right] + \Omega(f_t) \    &amp;= \sum_{i=1}^n \left[ g_iw_{q(x_i)} + \frac12h_iw_{q(x_i)}^2 \right] + \gamma T + \frac12 \lambda \sum_{j=1}^Tw_j^2 \    &amp;= \sum_{j=1}^T \left[(\sum_{i \in I_j}g_i)w_j + \frac12(\sum_{i \in I_j}h_i + \lambda)w_j^2 \right] + \gamma T \end{align} \</div></p>
+<p>第二步到第三步可能看的不是特别明白，这边做些解释：第二步是遍历所有的样本后求每个样本的损失函数，但样本最终会落在叶子节点上，所以我们也可以遍历叶子节点，然后获取叶子节点上的样本集合，最后在求损失函数。即我们之前样本的集合，现在都改写成叶子结点的集合，由于一个叶子结点有多个样本存在，因此才有了 <span class="math-inline">\sum_{i \in I_j}g_i</span> 和 <span class="math-inline">\sum_{i \in I_j}h_i</span> 这两项， <span class="math-inline">w_j</span> 为第 <span class="math-inline">j</span> 个叶子节点取值。</p>
+<p>为简化表达式，我们定义 <span class="math-inline">G_j=\sum_{i \in I_j}g_i</span> ， <span class="math-inline">H_j=\sum_{i \in I_j}h_i</span> ，则目标函数为：</p>
+<p><div class="math-display">Obj^{(t)} = \sum_{j=1}^T \left[G_jw_j + \frac12(H_j + \lambda)w_j^2 \right] + \gamma T \</div></p>
+<p>这里我们要注意 <span class="math-inline">G_j</span> 和 <span class="math-inline">H_j</span> 是前 <span class="math-inline">t-1</span> 步得到的结果，其值已知可视为常数，只有最后一棵树的叶子节点 <span class="math-inline">w_j</span> 不确定，那么将目标函数对 <span class="math-inline">w_j</span> 求一阶导，并令其等于 <span class="math-inline">0</span> ，则可以求得叶子结点 <span class="math-inline">j</span> 对应的权值：</p>
+<p><div class="math-display">w_j^*=-\frac{G_j}{H_j+\lambda}  \</div></p>
+<p>所以目标函数可以化简为：</p>
+<p><div class="math-display">Obj = -\frac12 \sum_{j=1}^T \frac{G_j^2}{H_j+\lambda} + \gamma T \</div></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050705.jpg" />  </p>
+<p>上图给出目标函数计算的例子，求每个节点每个样本的一阶导数 <span class="math-inline">g_i</span> 和二阶导数 <span class="math-inline">h_i</span> ，然后针对每个节点对所含样本求和得到的 <span class="math-inline">G_j</span> 和 <span class="math-inline">H_j</span> ，最后遍历决策树的节点即可得到目标函数。</p>
+<p><strong>1.1.3 最优切分点划分算法</strong></p>
+<p>在决策树的生长过程中，一个非常关键的问题是如何找到叶子的节点的最优切分点，Xgboost 支持两种分裂节点的方法——贪心算法和近似算法。</p>
+<p><strong>1）贪心算法</strong></p>
+<ol>
+<li>从深度为 <span class="math-inline">0</span> 的树开始，对每个叶节点枚举所有的可用特征；</li>
+<li>针对每个特征，把属于该节点的训练样本根据该特征值进行升序排列，通过线性扫描的方式来决定该特征的最佳分裂点，并记录该特征的分裂收益；</li>
+<li>选择收益最大的特征作为分裂特征，用该特征的最佳分裂点作为分裂位置，在该节点上分裂出左右两个新的叶节点，并为每个新节点关联对应的样本集</li>
+<li>回到第 1 步，递归执行到满足特定条件为止</li>
+</ol>
+<p>那么如何计算每个特征的分裂收益呢？</p>
+<p>假设我们在某一节点完成特征分裂，则分列前的目标函数可以写为：</p>
+<p><div class="math-display">Obj_{1} =-\frac12 [\frac{(G_L+G_R)^2}{H_L+H_R+\lambda}] + \gamma  \</div></p>
+<p>分裂后的目标函数为：</p>
+<p><div class="math-display">Obj_2 =  -\frac12 [ \frac{G_L^2}{H_L+\lambda} + \frac{G_R^2}{H_R+\lambda}] +2\gamma \</div></p>
+<p>则对于目标函数来说，分裂后的收益为：</p>
+<p><div class="math-display">Gain=\frac12 \left[ \frac{G_L^2}{H_L+\lambda} + \frac{G_R^2}{H_R+\lambda} - \frac{(G_L+G_R)^2}{H_L+H_R+\lambda}\right] - \gamma \</div></p>
+<p>注意该特征收益也可作为特征重要性输出的重要依据。</p>
+<p>对于每次分裂，我们都需要枚举所有特征可能的分割方案，如何高效地枚举所有的分割呢？</p>
+<p>我假设我们要枚举所有 <span class="math-inline">x &lt; a</span> 这样的条件，对于某个特定的分割点 <span class="math-inline">a</span> 我们要计算 <span class="math-inline">a</span> 左边和右边的导数和。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050706.jpg" />  </p>
+<p>我们可以发现对于所有的分裂点 <span class="math-inline">a</span> ，我们只要做一遍从左到右的扫描就可以枚举出所有分割的梯度和 <span class="math-inline">G_L</span> 和 <span class="math-inline">G_R</span> 。然后用上面的公式计算每个分割方案的分数就可以了。</p>
+<p>观察分裂后的收益，我们会发现节点划分不一定会使得结果变好，因为我们有一个引入新叶子的惩罚项，也就是说引入的分割带来的增益如果小于一个阀值的时候，我们可以剪掉这个分割。</p>
+<p><strong>2）近似算法</strong></p>
+<p>贪婪算法可以的到最优解，但当数据量太大时则无法读入内存进行计算，近似算法主要针对贪婪算法这一缺点给出了近似最优解。</p>
+<p>对于每个特征，只考察分位点可以减少计算复杂度。</p>
+<p>该算法会首先根据特征分布的分位数提出候选划分点，然后将连续型特征映射到由这些候选点划分的桶中，然后聚合统计信息找到所有区间的最佳分裂点。</p>
+<p>在提出候选切分点时有两种策略：</p>
+<ul>
+<li>Global：学习每棵树前就提出候选切分点，并在每次分裂时都采用这种分割；</li>
+<li>Local：每次分裂前将重新提出候选切分点。</li>
+</ul>
+<p>直观上来看，Local 策略需要更多的计算步骤，而 Global 策略因为节点没有划分所以需要更多的候选点。</p>
+<p>下图给出不同种分裂策略的 AUC 变换曲线，横坐标为迭代次数，纵坐标为测试集 AUC，eps 为近似算法的精度，其倒数为桶的数量。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050707.jpg" />  </p>
+<p>我们可以看到 Global 策略在候选点数多时（eps 小）可以和 Local 策略在候选点少时（eps 大）具有相似的精度。此外我们还发现，在 eps 取值合理的情况下，分位数策略可以获得与贪婪算法相同的精度。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050708.jpg" />  </p>
+<ul>
+<li><strong>第一个 for 循环</strong>：对特征 k 根据该特征分布的分位数找到切割点的候选集合 <span class="math-inline">S_k={s_{k1},s_{k2},...,s_{kl} }</span> 。XGBoost 支持 Global 策略和 Local 策略。</li>
+<li><strong>第二个 for 循环</strong>：针对每个特征的候选集合，将样本映射到由该特征对应的候选点集构成的分桶区间中，即 <span class="math-inline">{s_{k,v}≥x_{jk}&gt;s_{k,v−1}}</span> ，对每个桶统计 <span class="math-inline">G,H </span> 值，最后在这些统计量上寻找最佳分裂点。</li>
+</ul>
+<p>下图给出近似算法的具体例子，以三分位为例：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050709.jpg" />  </p>
+<p>根据样本特征进行排序，然后基于分位数进行划分，并统计三个桶内的 <span class="math-inline">G,H</span> 值，最终求解节点划分的增益。</p>
+<p><strong>1.1.4 加权分位数缩略图</strong></p>
+<p>事实上， XGBoost 不是简单地按照样本个数进行分位，而是以二阶导数值 <span class="math-inline">h_i </span> 作为样本的权重进行划分，如下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050710.jpg" />  </p>
+<p>那么问题来了：为什么要用 <span class="math-inline">h_i</span> 进行样本加权？</p>
+<p>我们知道模型的目标函数为：</p>
+<p><div class="math-display"> Obj^{(t)} \approx \sum_{i=1}^n \left[ g_if_t(x_i) + \frac12h_if_t^2(x_i) \right] + \sum_{i=1}^t  \Omega(f_i) \</div></p>
+<p>我们稍作整理，便可以看出 <span class="math-inline">h_i</span> 有对 loss 加权的作用。</p>
+<p><div class="math-display">\begin{align}  Obj^{(t)} &amp; \approx \sum_{i=1}^n \left[ g_if_t(x_i) + \frac12h_if_t^2(x_i) \right] + \sum_{i=1}^t  \Omega(f_i) \ \    &amp;= \sum_{i=1}^{n} [ g_i f_t(x_i) + \frac{1}{2}h_i f_t^2(x_i) \color{red}{+ \frac{1}{2}\frac{g_i^2}{h_i}}]+\Omega(f_t) \color{red}{+ C} \    &amp;= \sum_{i=1}^{n} \color{red}{\frac{1}{2}h_i} \left[ f_t(x_i) - \left( -\frac{g_i}{h_i} \right) \right]^2 + \Omega(f_t) + C \end{align} \</div></p>
+<p>其中 <span class="math-inline">\frac{1}{2}\frac{g_i^2}{h_i}</span> 与 <span class="math-inline">C</span> 皆为常数。我们可以看到 <span class="math-inline">h_i</span> 就是平方损失函数中样本的权重。</p>
+<p>对于样本权值相同的数据集来说，找到候选分位点已经有了解决方案（GK 算法），但是当样本权值不一样时，该如何找到候选分位点呢？（作者给出了一个 Weighted Quantile Sketch 算法，这里将不做介绍。）</p>
+<p><strong>1.1.5 稀疏感知算法</strong></p>
+<p>在决策树的第一篇文章中我们介绍 CART 树在应对数据缺失时的分裂策略，XGBoost 也给出了其解决方案。</p>
+<p>XGBoost 在构建树的节点过程中只考虑非缺失值的数据遍历，而为每个节点增加了一个缺省方向，当样本相应的特征值缺失时，可以被归类到缺省方向上，最优的缺省方向可以从数据中学到。至于如何学到缺省值的分支，其实很简单，分别枚举特征缺省的样本归为左右分支后的增益，选择增益最大的枚举项即为最优缺省方向。</p>
+<p>在构建树的过程中需要枚举特征缺失的样本，乍一看该算法的计算量增加了一倍，但其实该算法在构建树的过程中只考虑了特征未缺失的样本遍历，而特征值缺失的样本无需遍历只需直接分配到左右节点，故算法所需遍历的样本量减少，下图可以看到稀疏感知算法比 basic 算法速度块了超过 50 倍。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050711.jpg" />  </p>
+<h3 id="12-工程实现">1.2 工程实现<a class="anchor-link" href="#12-工程实现" title="Permanent link">&para;</a></h3>
+<p><strong>1.2.1 块结构设计</strong></p>
+<p>我们知道，决策树的学习最耗时的一个步骤就是在每次寻找最佳分裂点是都需要对特征的值进行排序。而 XGBoost 在训练之前对根据特征对数据进行了排序，然后保存到块结构中，并在每个块结构中都采用了稀疏矩阵存储格式（Compressed Sparse Columns Format，CSC）进行存储，后面的训练过程中会重复地使用块结构，可以大大减小计算量。</p>
+<ul>
+<li>每一个块结构包括一个或多个已经排序好的特征；</li>
+<li>缺失特征值将不进行排序；</li>
+<li>每个特征会存储指向样本梯度统计值的索引，方便计算一阶导和二阶导数值；</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412312050712.jpg" />  </p>
+<p>这种块结构存储的特征之间相互独立，方便计算机进行并行计算。在对节点进行分裂时需要选择增益最大的特征作为分裂，这时各个特征的增益计算可以同时进行，这也是 Xgboost 能够实现分布式或者多线程计算的原因。</p>
+<p><strong>1.2.2 缓存访问优化算法</strong></p>
+<p>块结构的设计可以减少节点分裂时的计算量，但特征值通过索引访问样本梯度统计值的设计会导致访问操作的内存空间不连续，这样会造成缓存命中率低，从而影响到算法的效率。</p>
+<p>为了解决缓存命中率低的问题，XGBoost 提出了缓存访问优化算法：为每个线程分配一个连续的缓存区，将需要的梯度信息存放在缓冲区中，这样就是实现了非连续空间到连续空间的转换，提高了算法效率。</p>
+<p>此外适当调整块大小，也可以有助于缓存优化。</p>
+<p><strong>1.2.3 “核外”块计算</strong></p>
+<p>当数据量过大时无法将数据全部加载到内存中，只能先将无法加载到内存中的数据暂存到硬盘中，直到需要时再进行加载计算，而这种操作必然涉及到因内存与硬盘速度不同而造成的资源浪费和性能瓶颈。为了解决这个问题，XGBoost 独立一个线程专门用于从硬盘读入数据，以实现处理数据和读入数据同时进行。</p>
+<p>此外，XGBoost 还用了两种方法来降低硬盘读写的开销：</p>
+<ul>
+<li><strong>块压缩</strong>：对 Block 进行按列压缩，并在读取时进行解压；</li>
+<li><strong>块拆分</strong>：将每个块存储到不同的磁盘中，从多个磁盘读取可以增加吞吐量。</li>
+</ul>
+<h3 id="13-优缺点">1.3 优缺点<a class="anchor-link" href="#13-优缺点" title="Permanent link">&para;</a></h3>
+<p><strong>1.3.1 优点</strong></p>
+<ol>
+<li><strong>精度更高</strong>：GBDT 只用到一阶泰勒展开，而 XGBoost 对损失函数进行了二阶泰勒展开。XGBoost 引入二阶导一方面是为了增加精度，另一方面也是为了能够自定义损失函数，二阶泰勒展开可以近似大量损失函数；</li>
+<li><strong>灵活性更强</strong>：GBDT 以 CART 作为基分类器，XGBoost 不仅支持 CART 还支持线性分类器，（使用线性分类器的 XGBoost 相当于带 L1 和 L2 正则化项的逻辑斯蒂回归（分类问题）或者线性回归（回归问题））。此外，XGBoost 工具支持自定义损失函数，只需函数支持一阶和二阶求导；</li>
+<li><strong>正则化</strong>：XGBoost 在目标函数中加入了正则项，用于控制模型的复杂度。正则项里包含了树的叶子节点个数、叶子节点权重的 L2 范式。正则项降低了模型的方差，使学习出来的模型更加简单，有助于防止过拟合；</li>
+<li><strong>Shrinkage（缩减）</strong>：相当于学习速率。XGBoost 在进行完一次迭代后，会将叶子节点的权重乘上该系数，主要是为了削弱每棵树的影响，让后面有更大的学习空间；</li>
+<li><strong>列抽样</strong>：XGBoost 借鉴了随机森林的做法，支持列抽样，不仅能降低过拟合，还能减少计算；</li>
+<li><strong>缺失值处理</strong>：XGBoost 采用的稀疏感知算法极大的加快了节点分裂的速度；</li>
+<li><strong>可以并行化操作</strong>：块结构可以很好的支持并行计算。</li>
+</ol>
+<p><strong>1.3.2 缺点</strong></p>
+<ol>
+<li>虽然利用预排序和近似算法可以降低寻找最佳分裂点的计算量，但在节点分裂过程中仍需要遍历数据集；</li>
+<li>预排序过程的空间复杂度过高，不仅需要存储特征值，还需要存储特征对应样本的梯度统计值的索引，相当于消耗了两倍的内存。</li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

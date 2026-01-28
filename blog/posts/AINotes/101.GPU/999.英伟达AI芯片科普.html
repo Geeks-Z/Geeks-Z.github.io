@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1英伟达-gpu-架构演进史">1.英伟达 GPU 架构演进史</a></li>
+<li><a href="#2-a100-vs-a800h100-vs-h800">2. A100 VS A800，H100 VS H800</a></li>
+<li><a href="#显卡">显卡</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/101.GPU</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="1英伟达-gpu-架构演进史">1.英伟达 GPU 架构演进史<a class="anchor-link" href="#1英伟达-gpu-架构演进史" title="Permanent link">&para;</a></h2>
+<p><strong>第一代 AI 加速卡叫 Volta</strong> ，是英伟达第一次为 AI 运算专门设计的张量运算（Tensor Core）架构。</p>
+<p><strong>第二代张量计算架构叫图灵（Turing）</strong>，代表显卡 T4。</p>
+<p><strong>第三代张量运算架构安培（Ampere）</strong>，终于来到我们比较熟悉的 A100 系列显卡了。</p>
+<p>在芯片工艺升级的加持下，单卡 SM 翻倍到了 108 个，SM 内的核心数和 V100 相同，但是通过计算单元电路升级，核心每一个周期可以完成 256 个浮点数乘累加，是老架构的两倍。加入了更符合当时深度学习需要的 8 位浮点（FP8）运算模式，一个 16 位浮点核心可以当作 2 个 8 位浮点核心计算，算力再翻倍。主频稍有下降，为 1.41GHz。因此最后，A100 显卡的算力达到了 V100 的近 5 倍，为 108<em>8</em>256<em>1.41GHz</em>2 =624 TFLOPS (FP8)。</p>
+<p><strong>第四代架构 Hopper</strong>，也就是英伟达 2023 年发布、OpenAI 大语言模型训练已经采用、且因算力问题被禁运的 H100 系列显卡。</p>
+<p>该显卡的 SM 数（132 个）相较前代并未大幅提升，但是因为全新的 Tensor Core 架构和异步内存设计，单个 SM 核心一个周期可以完成的 FP16 乘累加数再翻一倍，达到 512 次。主频稍微提高到 1.83GHz，最终单卡算力达成惊人的 1978 Tera FLOPS（FP8)，也即首次来到了 PFLOPS（1.97 Peta FLOPS）领域。</p>
+<p><strong>第五代架构 Blackwell</strong>，在这个算力天梯上又取得了什么样的进展呢？根据公开的数据，如果采用全新的 FP4 数据单元，GB200 将能在推理任务中达到 20 Peta FLOPS 算力。将其还原回 FP8，应该也有惊人的 10 PFLOPS，这相对 H100 提升将达到 5 倍左右。</p>
+<p>公开数据显示，Blackwell 的处理器主频为 2.1GHz。假设架构没有大幅更新，这意味着 Blackwell 将有 600 个 SM，是 H100 的接近 4 倍。Blackwell 有两个 Die，那么单 Die 显卡的 SM 数也达到了 H100 的 2 倍。</p>
+<p>可以说，每一代架构的升级，单个 GPU 算力实现数倍增长。这里，我们将从 Volta 架构至今的算力天梯进展图列表如下，方便大家查阅：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240620153644.png"/></div>
+
+<h2 id="2-a100-vs-a800h100-vs-h800">2. A100 VS A800，H100 VS H800<a class="anchor-link" href="#2-a100-vs-a800h100-vs-h800" title="Permanent link">&para;</a></h2>
+<p>为什么有 A100 还要 A800 呢？先说说背景</p>
+<p>2022 年 10 月，美国出台了对华半导体出口限制新规，其中就包括了对于高性能计算芯片对中国大陆的出口限制。并且以 NVIDIA 的 A100 芯片的性能指标作为限制标准；即同时满足以下两个条件的即为受管制的高性能计算芯片：</p>
+<p>（1）芯片的 I/O 带宽传输速率大于或等于 600 Gbyte/s；</p>
+<p>（2）“数字处理单元 原始计算单元”每次操作的比特长度乘以 TOPS 计算出的的算力之和大于或等于 4800TOPS。</p>
+<p>这也使得 NVIDIA A100/H100 系列、AMD MI200/300 系列 AI 芯片无法对华出口。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240620154436.png"/></div>
+
+<p>为了在遵守美国限制规则的前提下，同时满足中国客户的需求，英伟达推出 A100 的替代产品 A800。从官方公布的参数来看，A800 主要是将 NVLink 的传输速率由 A100 的 600GB/s 降至了 400GB/s，其他参数与 A100 基本一致。</p>
+<p>2023 年，英伟达发布了新一代基于 4nm 工艺，拥有 800 亿个晶体管、18432 个核心的 H100 GPU。同样，NVIDIA 也推出了针对中国市场的特供版 H800。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240620154452.png"/></div>
+
+<p>实际上，A800 在互联带宽，即 N 维链和链路部分做了调整，从 A100 的 600G/s 降到了 400G/s。但是在其他方面，如双精、单精、半精等在 AI 算力方面并没有变化。</p>
+<p>相对而言，H800 则做了较大的调整。它不仅在链路方面进行了调整，保持了 8 条的 NVlink，双向互联带宽仍为 400G，并且对双精度算力进行了几乎归零的处理。这对 HPC 领域来说非常关键，因为 FP64 的双精度算力直接减少到了一，也就是说几乎不让你使用了。</p>
+<p>接下来，我们来看一下阉割后对哪些业务有很大的影响。</p>
+<p>大模型战场: A800 阉割后降低了大模型的训练的效率, A800 SXMM 主要是 GPU 卡之间的数据传输效率降低,带宽降低 33%。以 GPT-3 为例, 规模达到 1750 亿, 需要多张 GPU 组合训练, 如果带宽不足则使性能下降约 4 成 (出现 GPU 算力高需要等待数据的情况), 考虑到 A 800 和 H 800 性价比, 国内用户还是倾向于 A 800。由于阉割后的 A800 和 H800 在训练效率上有所下降，因为他们需要在卡之间交互训练过程中的一些数据，所以他们的传输速率的降低导致了他们的效率的降低。</p>
+<p>HPC 领域: A800 和 A100 在双精方面算力一致, 所以在高性能科学计算领域没有影响, 但是可恶的是 H800 直接将双精算力直接降到了 1 TFLOPS, 直接不让用了；这对超算领域的影响还是很大的。</p>
+<p>所以影响是显而易见的，在 AIGC 、HPC 领域中，国内的一些企业可能会被国外的企业拉开一定的差距。这是可预见到的，所以说在一些情况下，如果我们要计算能力要达到一定的性能，它的投入可能会更高。此外，我们只能从国外借壳，通过成立分公司的方式，把大模型训练的任务放在国外，我们只是把训练好的成果放在国内去用就可以了。但是，这只是一种临时性的方案，特别是面临数据出境风险。</p>
+<h2 id="显卡">显卡<a class="anchor-link" href="#显卡" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>显卡类型</th>
+<th>显存容量</th>
+<th>显存带宽</th>
+<th>Tensor BF16/FP16/FP32 性能</th>
+<th>FP16/FP32性能</th>
+<th>功耗</th>
+<th>发布日期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NVIDIA GeForce RTX 4090</td>
+<td>24GB</td>
+<td>1.01TB/s</td>
+<td>165.2 /165.2/82.58 TFLOPS</td>
+<td>82.58/82.58 TFLOPS</td>
+<td>450W</td>
+<td>2022年9月</td>
+</tr>
+<tr>
+<td>NVIDIA GeForce RTX 4090 D</td>
+<td>24GB</td>
+<td>1008GB/s</td>
+<td>约156/156/78 TFLOPS</td>
+<td>73.54/73.54 TFLOPS</td>
+<td>425W</td>
+<td>2023年12月</td>
+</tr>
+<tr>
+<td>NVIDIA GeForce RTX 3090</td>
+<td>24GB</td>
+<td>936.2GB/s</td>
+<td>71/71/35.58 TFLOPS</td>
+<td>35.58/35.58 TFLOPS</td>
+<td>425W</td>
+<td>2020年9月</td>
+</tr>
+<tr>
+<td>NVIDIA A10</td>
+<td>24GB</td>
+<td>600.2GB/s</td>
+<td>125/125/62.5 TFLOPS</td>
+<td>23.44/31.2 TFLOPS</td>
+<td>150W</td>
+<td>2022年2月</td>
+</tr>
+<tr>
+<td>NVIDIA A40 PCIe</td>
+<td>48GB</td>
+<td>695.8GB/s</td>
+<td>149.7/149.7/74.8 TFLOPS</td>
+<td>37.42/37.42 TFLOPS</td>
+<td>300W</td>
+<td>2020年10月</td>
+</tr>
+<tr>
+<td>NVIDIA A100 PCIe</td>
+<td>80GB</td>
+<td>1935GB/s</td>
+<td>312/312/156 TFLOPS</td>
+<td>77.97/19.49 TFLOPS</td>
+<td>300W</td>
+<td>2021年6月</td>
+</tr>
+<tr>
+<td>NVIDIA A100 SXM4</td>
+<td>80GB</td>
+<td>2039GB/s</td>
+<td></td>
+<td>77.97/19.49 TFLOPS</td>
+<td>400W</td>
+<td>2020年11月</td>
+</tr>
+<tr>
+<td>NVIDIA A800 PCIe</td>
+<td>80GB</td>
+<td>2039GB/s</td>
+<td>312/312/156 TFLOPS</td>
+<td>77.97/19.49 TFLOPS</td>
+<td>250W</td>
+<td>2022年11月</td>
+</tr>
+<tr>
+<td>NVIDIA A800 SXM4</td>
+<td>80GB</td>
+<td>2039GB/s</td>
+<td></td>
+<td>77.97/19.49 TFLOPS</td>
+<td>400W</td>
+<td>2022年8月</td>
+</tr>
+<tr>
+<td>NVIDIA L20</td>
+<td>48GB</td>
+<td>864.0GB/s</td>
+<td>119.5/119.5/59.8 TFLOPS</td>
+<td>59.35/59.35 TFLOPS</td>
+<td>275W</td>
+<td>2023年11月</td>
+</tr>
+<tr>
+<td>NVIDIA L40</td>
+<td>48GB</td>
+<td>864.0GB/s</td>
+<td>181.05/181.05/90.5 TFLOPS</td>
+<td>90.52/90.52 TFLOPS</td>
+<td>300W</td>
+<td>2022年10月</td>
+</tr>
+<tr>
+<td>NVIDIA H100 SXM5</td>
+<td>80GB</td>
+<td>1681GB/s</td>
+<td>1979/1979/989 TFLOPS</td>
+<td>267.6/66.91 TFLOPS</td>
+<td>700W</td>
+<td>2023年3月</td>
+</tr>
+<tr>
+<td>NVIDIA H100 PCIe</td>
+<td>80GB</td>
+<td>2040GB/s</td>
+<td>1513/1513/756 TFLOPS</td>
+<td>204.9/51.22 TFLOPS</td>
+<td>350W</td>
+<td>2023年3月</td>
+</tr>
+<tr>
+<td>[NVIDIA H100 NVL]</td>
+<td>80GB</td>
+<td>2040GB/s</td>
+<td>3958/3958/1979 TFLOPS</td>
+<td>204.9/51.22 TFLOPS</td>
+<td>350W</td>
+<td>2023年3月</td>
+</tr>
+<tr>
+<td>NVIDIA H800 SXM5</td>
+<td>80GB</td>
+<td>1681GB/s</td>
+<td>1979/1979/989 TFLOPS</td>
+<td>237.2/59.30 TFLOPS</td>
+<td>350W</td>
+<td>2023年3月</td>
+</tr>
+<tr>
+<td>NVIDIA H800 PCIe</td>
+<td>80GB</td>
+<td>2039GB/s</td>
+<td>1513/1513/756 TFLOPS</td>
+<td>204.9/51.22 TFLOPS</td>
+<td>700W</td>
+<td>2023年3月</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/kX7xykrFoLUpt4JMvoDu8Q">英伟达 AI 芯片 A100 A800 H100 H800 B200，不要再傻傻分不清！</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

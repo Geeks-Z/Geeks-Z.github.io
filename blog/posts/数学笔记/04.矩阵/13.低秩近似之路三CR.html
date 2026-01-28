@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低秩近似之路（三）：CR</title>
+    <meta name="description" content="低秩近似之路（三）：CR - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#问题背景">问题背景</a></li>
+<li><a href="#初步近似">初步近似</a></li>
+<li><a href="#采样视角">采样视角</a></li>
+<li><a href="#延伸讨论">延伸讨论</a></li>
+<li><a href="#文章小结">文章小结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>低秩近似之路（三）：CR</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/04.矩阵</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="低秩近似之路三cr">低秩近似之路（三）：CR<a class="anchor-link" href="#低秩近似之路三cr" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [苏剑林]</p>
+<p><strong>Link:</strong> [https://zhuanlan.zhihu.com/p/3977810830]</p>
+<p>最佳排版请看原博客：</p>
+<p><a href="https://kexue.fm/archives/10427">低秩近似之路（三）：CR - 科学空间|Scientific Spaces</a>在<a href="https://kexue.fm/archives/10407">https://kexue.fm/archives/10407</a>中，我们证明了SVD可以给出任意矩阵的最优低秩近似。那里的最优近似是无约束的，也就是说SVD给出的结果只管误差上的最小，不在乎矩阵的具体结构，而在很多应用场景中，出于可解释性或者非线性处理等需求，我们往往希望得到具有某些特殊结构的近似分解。</p>
+<p>因此，从这篇文章开始，我们将探究一些具有特定结构的低秩近似，而本文将聚焦于其中的CR近似（Column-Row Approximation），它提供了加速矩阵乘法运算的一种简单方案。</p>
+<h2 id="问题背景">问题背景<a class="anchor-link" href="#问题背景" title="Permanent link">&para;</a></h2>
+<p>矩阵的最优<span class="math-inline">r</span> 近似的一般提法是</p>
+<p><span class="math-inline">\mathop{\text{argmin}}_{\text{rank}(\tilde{\boldsymbol{M}})\leq r}\Vert \tilde{\boldsymbol{M}} - \boldsymbol{M}\Vert_F^2\label{eq:loss-m2}\</span> 其中<span class="math-inline">\boldsymbol{M},\tilde{\boldsymbol{M}}\in\mathbb{R}^{n\times m},r &lt; \min(n,m)</span>。在前两篇文章中，我们已经讨论了两种情况： </p>
+<blockquote>
+<p>1、如果<span class="math-inline">\tilde{\boldsymbol{M}}</span> 再有其他约束，那么<span class="math-inline">\tilde{\boldsymbol{M}}</span> 最优解就是<span class="math-inline">\boldsymbol{U}<em>{[:,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]}\boldsymbol{V}_{[:,:r]}^{\top}</span>，其中<span class="math-inline">\boldsymbol{M}=\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span> <span class="math-inline">\boldsymbol{M}</span> 奇异值分解（SVD）；  </p>
+<p>2、如果约定<span class="math-inline">\tilde{\boldsymbol{M}}=\boldsymbol{A}\boldsymbol{B}</span>（<span class="math-inline">\boldsymbol{A}\in\mathbb{R}^{n\times r},\boldsymbol{B}\in\mathbb{R}^{r\times m}</span>），且<span class="math-inline">\boldsymbol{A}</span>（或<span class="math-inline">\boldsymbol{B}</span>）已经给定，那么<span class="math-inline">\tilde{\boldsymbol{M}}</span> 最优解是<span class="math-inline">\boldsymbol{A} \boldsymbol{A}^{\dagger} \boldsymbol{M}</span>（或<span class="math-inline">\boldsymbol{M} \boldsymbol{B}^{\dagger} \boldsymbol{B}</span>），这里的<span class="math-inline">{}^\dagger</span> “<a href="https://kexue.fm/archives/10366">https://kexue.fm/archives/10366</a>”。</p>
+</blockquote>
+<p>这两个结果都有很广泛的应用，但它们都没有显式地引入<span class="math-inline">\tilde{\boldsymbol{M}}</span> <span class="math-inline">\boldsymbol{M}</span> 构上的关联，这就导致了很难直观地看到<span class="math-inline">\tilde{\boldsymbol{M}}</span> <span class="math-inline">\boldsymbol{M}</span> 关联，换言之<span class="math-inline">\tilde{\boldsymbol{M}}</span> 可解释性不强。 此外，如果目标中包含非线性运算如<span class="math-inline">\phi(\boldsymbol{X}\boldsymbol{W})</span>，通常也不允许我们使用任意实投影矩阵来降维，而是要求使用“选择矩阵（Selective Matrix）”，比如<span class="math-inline">\phi(\boldsymbol{X}\boldsymbol{W})\boldsymbol{S} = \phi(\boldsymbol{X}\boldsymbol{W}\boldsymbol{S})</span> 于任意矩阵<span class="math-inline">\boldsymbol{S}</span> 是恒成立的，但对于选择矩阵<span class="math-inline">\boldsymbol{S}</span> 恒成立的。 所以，接下来我们关注选择矩阵约束下的低秩近似。具体来说，我们有<span class="math-inline">\boldsymbol{X}\in\mathbb{R}^{n\times l},\boldsymbol{Y}\in\mathbb{R}^{l\times m}</span>，然后选定<span class="math-inline">\boldsymbol{M}=\boldsymbol{X}\boldsymbol{Y}</span>，我们的任务是从<span class="math-inline">\boldsymbol{X}</span> 选出<span class="math-inline">r</span> 、从<span class="math-inline">\boldsymbol{Y}</span> 选出相应的<span class="math-inline">r</span> 来构建<span class="math-inline">\tilde{\boldsymbol{M}}</span>，即 <span class="math-inline">\mathop{\text{argmin}}<em>S\Vert \underbrace{\boldsymbol{X}</em>{[:,S]}}<em>{\boldsymbol{C}}\underbrace{\boldsymbol{Y}</em>{[S,:]}}_{\boldsymbol{R}} - \boldsymbol{X}\boldsymbol{Y}\Vert_F^2\quad\text{s.t.}\quad S\subset {0,1,\cdots,l-1}, |S|=r\</span></p>
+<p>这里的<span class="math-inline">S</span> 以理解为slice，即按照Python的切片规则来理解，我们称<span class="math-inline">\boldsymbol{X}<em>{[:,S]}\boldsymbol{Y}</em>{[S,:]}</span> <span class="math-inline">\boldsymbol{X}\boldsymbol{Y}</span> “CR近似”。注意这种切片结果也可以用选择矩阵来等价描述，假设<span class="math-inline">\boldsymbol{X}_{[:,S]}</span> 第<span class="math-inline">1,2,\cdots,r</span> 分别为<span class="math-inline">\boldsymbol{X}</span> 第<span class="math-inline">s_1,s_2,\cdots,s_r</span> ，那么可以定义选择矩阵<span class="math-inline">\boldsymbol{S}\in{0,1}^{l\times r}</span>：</p>
+<p><span class="math-inline">S_{i,j}=\left{\begin{aligned}&amp;1, &amp;i = s_j \ &amp;0, &amp;i\neq s_j\end{aligned}\right. \</span></p>
+<p>即<span class="math-inline">\boldsymbol{S}</span> 第<span class="math-inline">j</span> 的第<span class="math-inline">s_j</span> 元素为1，其余都为0，这样一来就有<span class="math-inline">\boldsymbol{X}<em>{[:,S]}=\boldsymbol{X}\boldsymbol{S}</span> 及<span class="math-inline">\boldsymbol{Y}</em>{[S,:]}=\boldsymbol{S}^{\top} \boldsymbol{Y}</span>。</p>
+<h2 id="初步近似">初步近似<a class="anchor-link" href="#初步近似" title="Permanent link">&para;</a></h2>
+<p>如果我们将<span class="math-inline">\boldsymbol{X},\boldsymbol{Y}</span> 别表示成</p>
+<p><span class="math-inline">\boldsymbol{X} = (\boldsymbol{x}_1,\boldsymbol{x}_2,\cdots,\boldsymbol{x}_l),\quad \boldsymbol{Y}=\begin{pmatrix}\boldsymbol{y}_1^{\top} \ \boldsymbol{y}_2^{\top} \ \vdots \ \boldsymbol{y}_l^{\top}\end{pmatrix} \</span></p>
+<p>其中<span class="math-inline">\boldsymbol{x}_i\in\mathbb{R}^{n\times 1},\boldsymbol{y}_i\in\mathbb{R}^{m\times 1}</span> 是列向量，那么<span class="math-inline">\boldsymbol{X}\boldsymbol{Y}</span> 以写成</p>
+<p><span class="math-inline">\boldsymbol{X}\boldsymbol{Y} = \sum_{i=1}^l \boldsymbol{x}_i\boldsymbol{y}_i^{\top} \</span></p>
+<p>而找<span class="math-inline">\boldsymbol{X}\boldsymbol{Y}</span> 最优CR近似则可以等价地写成</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\lambda_1,\lambda_2,\cdots,\lambda_l\in{0,1}}\left\Vert\sum</em>{i=1}^l \lambda_i \boldsymbol{x}<em>i\boldsymbol{y}_i^{\top} - \sum</em>{i=1}^l\boldsymbol{x}<em>i\boldsymbol{y}_i^{\top}\right\Vert_F^2\quad\text{s.t.}\quad \sum</em>{i=1}^l \lambda_i = r\label{eq:xy-l-k} \</span></p>
+<p>我们知道，矩阵的<span class="math-inline">F</span> 数实际上就是将矩阵展平成向量来算模长，所以这个优化问题本质上就相当于给定<span class="math-inline">l</span> 向量<span class="math-inline">\boldsymbol{v}_1,\boldsymbol{v}_2,\cdots,\boldsymbol{v}_l\in\mathbb{R}^d</span>，求</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\lambda_1,\lambda_2,\cdots,\lambda_l\in{0,1}}\left\Vert\sum</em>{i=1}^l \lambda_i \boldsymbol{v}<em>i - \sum</em>{i=1}^l\boldsymbol{v}<em>i\right\Vert^2\quad\text{s.t.}\quad \sum</em>{i=1}^l \lambda_i = r\label{eq:v-l-k} \</span></p>
+<p>其中<span class="math-inline">\boldsymbol{v}_i = \text{vec}(\boldsymbol{x}_i \boldsymbol{y}_i^{\top})</span>，<span class="math-inline">d=nm</span>。记<span class="math-inline">\gamma_i = 1 - \lambda_i</span>，那么可以进一步简化成</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\gamma_1,\gamma_2,\cdots,\gamma_l\in{0,1}}\left\Vert\sum</em>{i=1}^l \gamma_i \boldsymbol{v}<em>i\right\Vert^2\quad\text{s.t.}\quad \sum</em>{i=1}^l \gamma_i = l-r\label{eq:v-l-k-0} \</span></p>
+<p>如果笔者没有理解错，这个优化问题的精确求解是NP-Hard的，所以一般情况下只能寻求近似算法。一个可精确求解的简单例子是<span class="math-inline">\boldsymbol{v}_1,\boldsymbol{v}_2,\cdots,\boldsymbol{v}_l</span> 两垂直，此时</p>
+<p><span class="math-inline">\left\Vert\sum_{i=1}^l \gamma_i \boldsymbol{v}<em>i\right\Vert^2 = \sum</em>{i=1}^l \gamma_i^2 \Vert\boldsymbol{v}_i\Vert^2 \</span></p>
+<p>所以它的最小值就是最小的<span class="math-inline">l-r</span> <span class="math-inline">\Vert\boldsymbol{v}_i\Vert^2</span> 和，即让模长最小的<span class="math-inline">l-r</span> <span class="math-inline">\boldsymbol{v}_i</span> <span class="math-inline">\gamma_i</span> 于1，剩下的<span class="math-inline">\gamma_i</span> 等于0。当两两正交的条件不严格成立时，我们依然可以将选择模长最小的<span class="math-inline">l-r</span> <span class="math-inline">\boldsymbol{v}_i</span> 为一个近似解。回到原始的CR近似问题上，我们有<span class="math-inline">\Vert\boldsymbol{x}_i\boldsymbol{y}_i^{\top}\Vert_F = \Vert\boldsymbol{x}_i\Vert \Vert \boldsymbol{y}_i\Vert</span>，所以<span class="math-inline">\boldsymbol{X}\boldsymbol{Y}</span> 最优CR近似的一个baseline，就是保留<span class="math-inline">\boldsymbol{X}</span> 列向量与<span class="math-inline">\boldsymbol{Y}</span> 应的行向量模长乘积最大的<span class="math-inline">r</span> 列/行向量。</p>
+<h2 id="采样视角">采样视角<a class="anchor-link" href="#采样视角" title="Permanent link">&para;</a></h2>
+<p>有一些场景允许我们将式<span class="math-inline">\eqref{eq:xy-l-k}</span> 宽为</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\lambda_1,\lambda_2,\cdots,\lambda_l\in\mathbb{R}}\left\Vert\sum</em>{i=1}^l \lambda_i \boldsymbol{x}<em>i\boldsymbol{y}_i^{\top} - \sum</em>{i=1}^l\boldsymbol{x}<em>i\boldsymbol{y}_i^{\top}\right\Vert_F^2\quad\text{s.t.}\quad \sum</em>{i=1}^l #[\lambda_i\neq 0] = r \</span></p>
+<p>其中<span class="math-inline">#[\lambda_i\neq 0]</span> 示<span class="math-inline">\lambda_i\neq 0</span> 输出1，否则输出0。这个宽松版本其实就是将CR近似的形式从<span class="math-inline">\boldsymbol{C}\boldsymbol{R}</span> 展成<span class="math-inline">\boldsymbol{C}\boldsymbol{\Lambda}\boldsymbol{R}</span>，其中<span class="math-inline">\boldsymbol{\Lambda}\in\mathbb{R}^{r\times r}</span> 对角阵，即允许我们调整对角阵<span class="math-inline">\boldsymbol{\Lambda}\in\mathbb{R}^{r\times r}</span> 达到更高的精度。相应地，式<span class="math-inline">\eqref{eq:v-l-k}</span> 为</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\lambda_1,\lambda_2,\cdots,\lambda_l\in\mathbb{R}}\left\Vert\sum</em>{i=1}^l \lambda_i \boldsymbol{v}<em>i - \sum</em>{i=1}^l\boldsymbol{v}<em>i\right\Vert^2\quad\text{s.t.}\quad \sum</em>{i=1}^l #[\lambda_i\neq 0] = r \</span></p>
+<p>这样放宽之后，我们可以从采样视角来看待这个问题。首先我们引入任意<span class="math-inline">l</span> 分布<span class="math-inline">\boldsymbol{p}=(p_1,p_2,\cdots,p_l)</span>，然后我们就可以写出</p>
+<p><span class="math-inline">\sum_{i=1}^l\boldsymbol{v}<em>i = \sum</em>{i=1}^l p_i\times\frac{\boldsymbol{v}<em>i}{p_i} = \mathbb{E}</em>{i\sim \boldsymbol{p}} \left[\frac{\boldsymbol{v}_i}{p_i}\right]  \</span></p>
+<p>也就是说，<span class="math-inline">\boldsymbol{v}_i/p_i</span> 数学期望正好是我们要逼近的目标，所以我们可以通过从<span class="math-inline">\boldsymbol{p}</span> 布<strong>独立重复采样</strong>来构建近似：</p>
+<p><span class="math-inline">\sum_{i=1}^l\boldsymbol{v}<em>i = \mathbb{E}</em>{i\sim \boldsymbol{p}} \left[\frac{\boldsymbol{v}<em>i}{p_i}\right] \approx \frac{1}{r}\sum</em>{j=1}^r \frac{\boldsymbol{v}<em>{s_j}}{p</em>{s_j}},\quad s_1,s_2,\cdots,s_r\sim \boldsymbol{p} \</span></p>
+<p>这意味着当<span class="math-inline">i</span> <span class="math-inline">s_1,s_2,\cdots,s_r</span> 一时有<span class="math-inline">\lambda_i = (r p_i)^{-1}</span>，否则<span class="math-inline">\lambda_i=0</span>。可能有读者疑问为什么要独立重复采样，而不是更符合逼近需求的不放回采样呢？无他，纯粹是因为独立重复采样使得后面的分析更简单。</p>
+<p>到目前为止，我们的理论结果跟分布<span class="math-inline">\boldsymbol{p}</span> 选择无关，也就是说对于任意<span class="math-inline">\boldsymbol{p}</span> 是成立的，这给我们提供了选择最优<span class="math-inline">\boldsymbol{p}</span> 可能性。那如何衡量<span class="math-inline">\boldsymbol{p}</span> 优劣呢？很显然我们希望每次采样估计的误差越小越好，因此可以用采样估计的误差</p>
+<p><span class="math-inline">\mathbb{E}<em>{i\sim \boldsymbol{p}} \left[\left\Vert\frac{\boldsymbol{v}_i}{p_i} - \sum</em>{i=1}^l\boldsymbol{v}<em>i\right\Vert^2\right] = \left(\sum</em>{i=1}^l \frac{\Vert\boldsymbol{v}<em>i\Vert^2}{p_i}\right) - \left\Vert\sum</em>{i=1}^l\boldsymbol{v}_i\right\Vert^2  \</span></p>
+<p>来比较不同的<span class="math-inline">\boldsymbol{p}</span> 间的优劣。接着利用均值不等式有</p>
+<p><span class="math-inline">\sum_{i=1}^l \frac{\Vert\boldsymbol{v}<em>i\Vert^2}{p_i} = \left(\sum</em>{i=1}^l \frac{\Vert\boldsymbol{v}<em>i\Vert^2}{p_i} + p_i Z^2\right) - Z^2\geq \left(\sum</em>{i=1}^l 2\Vert\boldsymbol{v}_i\Vert Z\right) - Z^2 \</span></p>
+<p>等号在<span class="math-inline">\Vert\boldsymbol{v}_i\Vert^2 / p_i = p_i Z^2</span> 取到，由此可得最优的<span class="math-inline">\boldsymbol{p}</span> </p>
+<p><span class="math-inline">p_i^* = \frac{\Vert\boldsymbol{v}<em>i\Vert}{Z},\quad Z = \sum\limits</em>{i=1}^l \Vert\boldsymbol{v}_i\Vert \</span></p>
+<p>对应的误差为</p>
+<p><span class="math-inline">\mathbb{E}<em>{i\sim \boldsymbol{p}} \left[\left\Vert\frac{\boldsymbol{v}_i}{p_i} - \sum</em>{i=1}^l\boldsymbol{v}<em>i\right\Vert^2\right] = \left(\sum</em>{i=1}^l \Vert\boldsymbol{v}<em>i\Vert\right)^2 - \left\Vert\sum</em>{i=1}^l\boldsymbol{v}_i\right\Vert^2  \</span></p>
+<p>最优的<span class="math-inline">p_i</span> 好正比于<span class="math-inline">\Vert\boldsymbol{v}_i\Vert</span>，所以概率最大的<span class="math-inline">r</span> <span class="math-inline">\boldsymbol{v}_i</span> 正是模长最大的<span class="math-inline">r</span> <span class="math-inline">\boldsymbol{v}_i</span>，这就跟上一节的近似联系起来了。该结果出自2006年的论文<a href="https://www.stat.berkeley.edu/~mmahoney/pubs/matrix1_SICOMP.pdf">https://www.stat.berkeley.edu/~mmahoney/pubs/matrix1_SICOMP.pdf</a>，初衷是加速矩阵乘法，它表明只要按照<span class="math-inline">p_i\propto \Vert \boldsymbol{x}_i\boldsymbol{y}_i^{\top}\Vert_F = \Vert \boldsymbol{x}_i\Vert \Vert\boldsymbol{y}_i\Vert</span> 采样<span class="math-inline">\boldsymbol{X},\boldsymbol{Y}</span> 应的列/行，并乘以<span class="math-inline">(r p_i)^{-1/2}</span>，就可以得到<span class="math-inline">\boldsymbol{X}\boldsymbol{Y}</span> 一个CR近似，从而将乘法复杂度从<span class="math-inline">\mathcal{O}(lmn)</span> 低到<span class="math-inline">\mathcal{O}(rmn)</span>。</p>
+<h2 id="延伸讨论">延伸讨论<a class="anchor-link" href="#延伸讨论" title="Permanent link">&para;</a></h2>
+<p>不管是按模长排序还是按<span class="math-inline">p_i\propto \Vert\boldsymbol{v}_i\Vert</span> 机采样，它们都允许我们在线性复杂度【即<span class="math-inline">\mathcal{O}(l)</span>】内构建一个CR近似，这对于实时计算来说当然是很理想的，但由于排序或采样都只依赖于<span class="math-inline">\Vert\boldsymbol{v}_i\Vert</span>，所以精度只能说一般。如果我们可以接受更高的复杂度，那么如何提高CR近似的精度呢？</p>
+<p>我们可以尝试将排序的单位改为<span class="math-inline">k</span> 组。简单起见，假设<span class="math-inline">k \leq l-r</span> <span class="math-inline">l-r</span> 一个因数，<span class="math-inline">l</span> 向量<span class="math-inline">\boldsymbol{v}<em>1,\boldsymbol{v}_2,\cdots,\boldsymbol{v}_l</span> <span class="math-inline">k</span> 的组合数为<span class="math-inline">C_l^k</span>，对于每个组合<span class="math-inline">{s_1,s_2,\cdots,s_k}</span> 们都可以算出向量和的模长<span class="math-inline">\Vert \boldsymbol{v}</em>{s_1} + \boldsymbol{v}<em>{s_2} + \cdots + \boldsymbol{v}</em>{s_k}\Vert</span>。有了这些数据，我们就可以贪婪地构建<span class="math-inline">\eqref{eq:v-l-k-0}</span> 近似解：</p>
+<blockquote>
+<p>初始化<span class="math-inline">\Omega = {1,2,\cdots,l},\Theta={}</span>  </p>
+<p>对于<span class="math-inline">t=1,2,\cdots,(l-r)/k</span>，执行：  </p>
+<p><span class="math-inline">\Theta = \Theta\,\cup\,\mathop{\text{argmin}}\limits_{{s_1,s_2,\cdots,s_k}\subset \Omega}\Vert \boldsymbol{v}<em>{s_1} + \boldsymbol{v}</em>{s_2} + \cdots + \boldsymbol{v}_{s_k}\Vert</span>；  </p>
+<p><span class="math-inline">\Omega = \Omega\,\backslash\,\Theta</span>；  </p>
+<p>返回<span class="math-inline">\Theta</span>。</p>
+</blockquote>
+<p>说白了，就是每次都从剩下的向量中挑选和模长最小的<span class="math-inline">k</span> 向量，重复挑选<span class="math-inline">(l-r)/k</span> 即得到<span class="math-inline">l-r</span> 向量，它是按照单个向量模长来排序的自然推广，其复杂度为<span class="math-inline">\mathcal{O}(C_l^k)</span>，当<span class="math-inline">k &gt; 1</span> <span class="math-inline">l</span> 较大时可能难以承受，这也侧面体现了原问题精确求解的复杂性。</p>
+<p>另一个值得思考的问题是如果允许CR近似放宽为<span class="math-inline">\boldsymbol{C}\boldsymbol{\Lambda}\boldsymbol{R}</span>，那么<span class="math-inline">\boldsymbol{\Lambda}</span> 最优解是什么呢？如果不限定<span class="math-inline">\boldsymbol{\Lambda}</span> 结构，那么答案可以由伪逆给出</p>
+<p><span class="math-inline">\boldsymbol{\Lambda}^* = \mathop{\text{argmin}}_{\boldsymbol{\Lambda}}\Vert \boldsymbol{C}\boldsymbol{\Lambda}\boldsymbol{R} - \boldsymbol{X}\boldsymbol{Y}\Vert_F^2 = \boldsymbol{C}^{\dagger}\boldsymbol{X}\boldsymbol{Y}\boldsymbol{R}^{\dagger} \</span></p>
+<p>如果<span class="math-inline">\boldsymbol{\Lambda}</span> 须是对角阵呢？那可以先将问题重述为给定<span class="math-inline">{\boldsymbol{u}_1,\boldsymbol{u}_2,\cdots,\boldsymbol{u}_r}\subset{\boldsymbol{v}_1,\boldsymbol{v}_2,\cdots,\boldsymbol{v}_l}</span>，求</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\lambda_1,\lambda_2,\cdots,\lambda_r}\left\Vert\sum</em>{i=1}^r \lambda_i \boldsymbol{u}<em>i - \sum</em>{i=1}^l\boldsymbol{v}_i\right\Vert^2 \</span></p>
+<p>我们记<span class="math-inline">\boldsymbol{U} = (\boldsymbol{u}_1,\boldsymbol{u}_2,\cdots,\boldsymbol{u}_r), \boldsymbol{V} = (\boldsymbol{v}_1,\boldsymbol{v}_2,\cdots,\boldsymbol{v}_l), \boldsymbol{\lambda}=(\lambda_1,\lambda_2,\cdots,\lambda_r)^{\top}</span>，那么优化目标可以写成</p>
+<p><span class="math-inline">\mathop{\text{argmin}}<em>{\boldsymbol{\lambda}}\left\Vert\boldsymbol{U}\boldsymbol{\lambda} - \boldsymbol{V}\boldsymbol{1}</em>{l\times 1}\right\Vert^2 \</span></p>
+<p>这同样可以通过伪逆写出最优解</p>
+<p><span class="math-inline">\boldsymbol{\lambda}^* =  \boldsymbol{U}^{\dagger}\boldsymbol{V}\boldsymbol{1}<em>{l\times 1} = (\boldsymbol{U}^{\top}\boldsymbol{U})^{-1}\boldsymbol{U}^{\top}\boldsymbol{V}\boldsymbol{1}</em>{l\times 1}  \</span></p>
+<p>最后一个等号假设了<span class="math-inline">\boldsymbol{U}^{\top}\boldsymbol{U}</span> 逆，这通常能满足，如果不满足的话<span class="math-inline">(\boldsymbol{U}^{\top}\boldsymbol{U})^{-1}</span> <span class="math-inline">(\boldsymbol{U}^{\top}\boldsymbol{U})^{\dagger}</span> 行。</p>
+<p>现在的问题是直接套用上式的话对原始问题来说计算量太大，因为<span class="math-inline">\boldsymbol{v}_i = \text{vec}(\boldsymbol{x}_i \boldsymbol{y}_i^{\top})</span>，即<span class="math-inline">\boldsymbol{v}_i</span> <span class="math-inline">mn</span> 向量，所以<span class="math-inline">\boldsymbol{V}</span> 小为<span class="math-inline">mn\times l</span>、<span class="math-inline">\boldsymbol{U}</span> 小为<span class="math-inline">mn\times r</span>，这在<span class="math-inline">m,n</span> 大时比较难受。利用<span class="math-inline">\boldsymbol{v}_i = \text{vec}(\boldsymbol{x}_i \boldsymbol{y}_i^{\top})</span> 帮我们进一步化简上式。不妨设<span class="math-inline">\boldsymbol{u}_i = \text{vec}(\boldsymbol{c}_i \boldsymbol{r}_i^{\top})</span>，那么</p>
+<p><span class="math-inline">\begin{aligned}(\boldsymbol{U}^{\top}\boldsymbol{V})<em>{i,j} =&amp;\, \langle \boldsymbol{c}_i \boldsymbol{r}_i^{\top}, \boldsymbol{x}_j \boldsymbol{y}_j^{\top}\rangle_F = \text{Tr}(\boldsymbol{r}_i \boldsymbol{c}_i^{\top}\boldsymbol{x}_j \boldsymbol{y}_j^{\top}) = (\boldsymbol{c}_i^{\top}\boldsymbol{x}_j)(\boldsymbol{r}_i^{\top} \boldsymbol{y}_j) \[5pt] =&amp;\, [(\boldsymbol{C}^{\top}\boldsymbol{X})\otimes (\boldsymbol{R}\boldsymbol{Y}^{\top})]</em>{i,j} \end{aligned}\</span></p>
+<p>即<span class="math-inline">\boldsymbol{U}^{\top}\boldsymbol{V}=(\boldsymbol{C}^{\top}\boldsymbol{X})\otimes (\boldsymbol{R}\boldsymbol{Y}^{\top}),\boldsymbol{U}^{\top}\boldsymbol{U}=(\boldsymbol{C}^{\top}\boldsymbol{C})\otimes (\boldsymbol{R}\boldsymbol{R}^{\top})</span>，这里的<span class="math-inline">\otimes</span> <a href="https://en.wikipedia.org/wiki/Hadamard_product_(matrices)">https://en.wikipedia.org/wiki/Hadamard_product_(matrices)</a>，这样恒等变换之后<span class="math-inline">\boldsymbol{U}^{\top}\boldsymbol{V}</span> <span class="math-inline">\boldsymbol{U}^{\top}\boldsymbol{U}</span> 计算量就降低了。</p>
+<h2 id="文章小结">文章小结<a class="anchor-link" href="#文章小结" title="Permanent link">&para;</a></h2>
+<p>本文介绍了矩阵乘法的CR近似，这是一种具有特定行列结构的低秩近似，相比由SVD给出的最优低秩近似，CR近似具有更直观的物理意义以及更好的可解释性。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

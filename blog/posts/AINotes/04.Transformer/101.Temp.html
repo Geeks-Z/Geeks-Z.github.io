@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#a-high-level-look">A High-Level Look</a></li>
+<li><a href="#bringing-the-tensors-into-the-picture">Bringing The Tensors Into The Picture</a></li>
+<li><a href="#encoding">Encoding</a></li>
+<li><a href="#self-attention-at-a-high-level">Self-Attention at a High Level</a></li>
+<li><a href="#tips">Tips</a><ul>
+<li><a href="#copy-mechanism">Copy Mechanism</a></li>
+<li><a href="#summarization">Summarization</a></li>
+<li><a href="#guided-attention">Guided Attention</a></li>
+<li><a href="#beam-search">Beam Search</a></li>
+<li><a href="#optimizing-evaluation-metrics">Optimizing Evaluation Metrics?</a></li>
+<li><a href="#scheduled-sampling">Scheduled Sampling</a><ul>
+<li><a href="#mask">Mask</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#the-final-linear-and-softmax-layer">The Final Linear and Softmax Layer</a></li>
+<li><a href="#recap-of-training">Recap Of Training</a></li>
+<li><a href="#loss-function">Loss function</a></li>
+<li><a href="#advanced">Advanced</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/04.Transformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="a-high-level-look">A High-Level Look<a class="anchor-link" href="#a-high-level-look" title="Permanent link">&para;</a></h2>
+<p>首先将这个模型看成是一个黑箱操作。在机器翻译中，就是输入一种语言，输出另一种语言。</p>
+<p><img style="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202311042102645.png" alt="image-20211204100325983" style="zoom:40%;" align=center/></p>
+<p>那么拆开这个黑箱，我们可以看到它是由编码组件、解码组件和它们之间的连接组成。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003042.png" alt="image-20211204100818589" style="zoom: 40%;" align=center/></p>
+<p>编码组件部分由一堆编码器（encoder）构成（论文中是将6个编码器叠在一起——数字6没有什么神奇之处，你也可以尝试其他数字）。解码组件部分也是由相同数量（与编码器对应）的解码器（decoder）组成的。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003154.png" alt="image-20211204100940669" style="zoom: 70%;" /></p>
+<p>所有的编码器在结构上都是相同的，但它们没有共享参数。每个编码器都可以分解成两个子层。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003617.png" alt="image-20211204101019196" style="zoom:30%;" /></p>
+<p>从编码器输入的句子首先会经过一个自注意力（self-attention）层，这层帮助编码器在对每个单词编码时关注输入句子的其他单词。自注意力层的输出会传递到前馈（feed-forward）神经网络中。每个位置的单词对应的前馈神经网络都完全一样（译注：另一种解读就是一层窗口为一个单词的一维卷积神经网络）。</p>
+<p>解码器中也有编码器的自注意力（self-attention）层和前馈（feed-forward）层。除此之外，这两个层之间还有一个注意力层，用来关注输入句子的相关部分（和seq2seq模型的注意力作用相似）。</p>
+<p><img alt="image-20211204112415496" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003072.png" /></p>
+<h2 id="bringing-the-tensors-into-the-picture">Bringing The Tensors Into The Picture<a class="anchor-link" href="#bringing-the-tensors-into-the-picture" title="Permanent link">&para;</a></h2>
+<p>像大部分NLP应用一样，我们首先将每个输入单词通过词嵌入算法转换为词向量。</p>
+<p><img alt="image-20211204112944004" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003304.png" /></p>
+<p>每个单词都被嵌入为512维的向量，我们用这些简单的方框来表示这些向量。</p>
+<p>词嵌入过程只发生在最底层的编码器中。所有的编码器都有一个相同的特点，即它们接收一个向量列表，列表中的每个向量大小为512维。在底层（最开始）编码器中它就是词向量，但是在其他编码器中，它就是下一层编码器的输出（也是一个向量列表）。向量列表大小是我们可以设置的超参数——一般是我们训练集中最长句子的长度。</p>
+<p>将输入序列进行词嵌入之后，每个单词都会流经编码器中的两个子层。</p>
+<p><img alt="image-20231104205925101" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202311042059161.png" /></p>
+<p>接下来我们看看Transformer的一个核心特性，在这里输入序列中每个位置的单词都有自己独特的路径流入编码器。在自注意力层中，这些路径之间存在依赖关系。而前馈（feed-forward）层没有这些依赖关系。因此在前馈（feed-forward）层时可以并行执行各种路径。</p>
+<h2 id="encoding">Encoding<a class="anchor-link" href="#encoding" title="Permanent link">&para;</a></h2>
+<p>如上述已经提到的，一个编码器接收向量列表作为输入，接着将向量列表中的向量传递到自注意力层进行处理，然后传递到前馈神经网络层中，将输出结果传递到下一个编码器中。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003271.png" alt="image-20211204113712657" style="zoom:60%;" /></p>
+<p>输入序列的每个单词都经过自编码过程。然后，他们各自通过前向传播神经网络——完全相同的网络，而每个向量都分别通过它。</p>
+<h2 id="self-attention-at-a-high-level">Self-Attention at a High Level<a class="anchor-link" href="#self-attention-at-a-high-level" title="Permanent link">&para;</a></h2>
+<p>参考Attention is All You Need 这篇论文，让我们精炼一下它的工作原理。</p>
+<p>例如，下列句子是我们想要翻译的输入句子：</p>
+<blockquote>
+<p>The animal didn’t cross the street because it was too tired</p>
+</blockquote>
+<p>这个“it”在这个句子是指什么呢？它指的是street还是这个animal呢？这对于人类来说是一个简单的问题，但是对于算法则不是。</p>
+<p>当模型处理这个单词“it”的时候，自注意力机制会允许“it”与“animal”建立联系。</p>
+<p>随着模型处理输入序列的每个单词，自注意力会关注整个输入序列的所有单词，帮助模型对本单词更好地进行编码。<br />
+<img alt="image-20211204122402935" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161003752.png" /></p>
+<p>如果你熟悉RNN（循环神经网络），回忆一下它是如何维持隐藏层的。RNN会将它<strong>已经处理过的</strong>前面的所有单词/向量的表示与它正在处理的当前单词/向量结合起来。而自注意力机制会将<strong>所有相关单词</strong>的理解融入到我们正在处理的单词中。</p>
+<p>当我们在编码器#5（栈中最上层编码器）中编码“it”这个单词的时，注意力机制的部分会去关注“The Animal”，将它的表示的一部分编入“it”的编码中。</p>
+<h2 id="tips">Tips<a class="anchor-link" href="#tips" title="Permanent link">&para;</a></h2>
+<p>那接下来，不侷限于 Transformer ，讲一些训练这种 Sequence To Sequence Model 的Tips</p>
+<h3 id="copy-mechanism">Copy Mechanism<a class="anchor-link" href="#copy-mechanism" title="Permanent link">&para;</a></h3>
+<p>在我们刚才的讨论里面，我们都要求 Decoder 自己产生输出，但是对很多任务而言，也许 <strong>Decoder 没有必要自己创造输出</strong>出来，它需要做的事情，也许是<strong>从输入的东西里面复製</strong>一些东西出来</p>
+<p>像这种复製的行为在哪些任务会用得上呢，一个例子是做聊天机器人</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004250.png" alt="image-20210506160219468" style="zoom: 67%;" /></div>
+
+<ul>
+<li>
+<p>人对机器说:你好 我是库洛洛，</p>
+</li>
+<li>
+<p>机器应该回答说:库洛洛你好 很高兴认识你</p>
+</li>
+</ul>
+<p>对机器来说，它其实<strong>没有必要创造</strong>库洛洛这个词汇，这对机器来说一定会是一个非常怪异的词汇，所以它可能很难，在训练资料里面可能一次也没有出现过，所以它不太可能正确地产生这段词汇出来</p>
+<p>但是假设今天机器它在学的时候，它学到的是看到输入的时候说我是某某某，就直接把某某某，不管这边是什么复製出来说某某某你好</p>
+<p>那这样子机器的<strong>训练显然会比较容易</strong>，它显然比较有可能得到正确的结果，所以复製对于对话来说，可能是一个需要的技术 需要的能力</p>
+<h3 id="summarization">Summarization<a class="anchor-link" href="#summarization" title="Permanent link">&para;</a></h3>
+<p>或者是在做摘要的时候，你可能更需要 Copy 这样子的技能</p>
+<div align=center><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210506160548411.png" alt="image-20210506160548411" style="zoom:67%;" /></div>
+
+<p>摘要就是，你要训练一个模型，然后这个<strong>模型去读一篇文章，然后产生这篇文章的摘要</strong></p>
+<p>那这个任务完全是有办法做的，你就是收集大量的文章，那每一篇文章都有人写的摘要，然后你就训练一个，Sequence-To-Sequence 的 Model，就结束了</p>
+<p>你要做这样的任务，<strong>只有一点点的资料是做不起来的</strong>，有的同学收集个几万篇文章，然后训练一个这样的，Sequence-To-Sequence Model，发现结果有点差</p>
+<p>你要训练这种，你要叫机器说合理的句子，通常这个 百万篇文章 是需要的，所以如果你有百万篇文章，那些文章都有人标的摘要，那有时候你会把，直接把文章标题当作摘要，那这样就不需要花太多人力来标，你是可以训练一个，直接可以帮你读一篇文章，做个摘要的模型</p>
+<p>对<strong>摘要</strong>这个任务而言，其实<strong>从文章里面直接复製一些资讯出来</strong>，可能是一个很关键的能力，那 Sequence-To-Sequence Model，有没有办法做到这件事呢，那简单来说就是有，那我们就不会细讲</p>
+<p>最早有从输入复製东西的能力的模型，叫做 Pointer Network</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004824.png" alt="image-20210506161130631" style="zoom: 67%;" /></div>
+
+<p>那这个过去上课是有讲过的，我把<a href="https://youtu.be/VdOyqNQ9aww">录影</a>放在这边给大家参考，好 那后来还有一个变形，叫做 Copy Network，那你可以看一下这一篇，Copy Mechanism，就是 Sequence-To-Sequence，有没有问题，你看 Sequence-To-Sequence Model，是怎么做到从输入复製东西到输出来的</p>
+<h3 id="guided-attention">Guided Attention<a class="anchor-link" href="#guided-attention" title="Permanent link">&para;</a></h3>
+<p>机器就是一个黑盒子，有时候它里面学到什么东西，你实在是搞不清楚，那有时候它会犯<strong>非常低级的错误</strong></p>
+<p>这边举的例子是<strong>语音合成</strong></p>
+<p>你完全可以就是训练一个，Sequence-To-Sequence 的 Model，Transformer 就是一个例子</p>
+<ul>
+<li>收集很多的声音，文字跟声音讯号的对应关係</li>
+<li>然后接下来告诉你的，Sequence-To-Sequence Model ，看到这段中文的句子，你就输出这段声音</li>
+<li>然后就没有然后，就 硬 Train 一发 就结束了，然后机器就可以学会做语音合成了</li>
+</ul>
+<p>像这样的方法做出来结果，其实还不错，</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004133.png" alt="image-20210506161940442" style="zoom:67%;" /></div>
+
+<p>举例来说我叫机器连说 4 次发财，看看它会怎么讲，机器输出的结果是:发财 发财 发财 发财</p>
+<p>就发现很神奇，我输入的发财是明明是同样的词汇，只是重复 4 次，机器居然自己有一些抑扬顿挫，它怎么学到这件事，不知道，它自己训练出来就是这个样子</p>
+<p>那你让它讲 3 次发财也没问题，那它讲 2 次发财也没问题，让它讲 1 次发财，<strong>它不念“发”</strong> </p>
+<p>不知道为什么这样子，就是你这个 Sequence-To-Sequence Model，有时候 Train 出来就是，会产生莫名其妙的结果，<strong>也许在训练资料里面，这种非常短的句子很少</strong>，所以机器不知道要怎么处理这种非常短的句子，你叫它念发财，它把发省略掉只念财，你居然叫它念 4 次的发财，重复 4 次没问题，叫它只念一次，居然会有问题，就是这么的奇怪</p>
+<p>当然其实这个例子并没有那么常出现，就这个用 Sequence-To-Sequence，Learn 出来 TTS，也没有你想像的那么差，这个要找这种差的例子也是挺花时间的，要花很多时间才找得到这种差的例子，但这样子的例子是存在的</p>
+<p>所以怎么办呢</p>
+<p>我们刚才发现说机器居然<strong>漏字</strong>了，输入有一些东西它居然没有看到，我们能不能<strong>够强迫它，一定要把输入的每一个东西通通看过</strong>呢</p>
+<p>这个是有可能的，这招就叫做  Guided Attention </p>
+<div align=center><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210506162647905.png" alt="image-20210506162647905" style="zoom:80%;" /></div>
+
+<p>像语音辨识这种任务，你其实很难接受说，你讲一句话，今天辨识出来，居然有一段机器没听到，或语音合成你输入一段文字，语音合出来居然有一段没有念到，这个人很难接受</p>
+<p>那如果是其它应用，比如说 Chat Bot，或者是 Summary，可能就没有那么严格，因为对一个 Chat Bot 来说，输入后一句话，它就回一句话，它到底有没有把整句话看完，其实你 Somehow 也不在乎，你其实也搞不清楚</p>
+<p>但是<strong>对语音辨识 语音合成，Guiding Attention，可能就是一个比较重要的技术</strong></p>
+<p>Guiding Attention 要做的事情就是，<strong>要求机器它在做 Attention 的时候，是有固定的方式的</strong>，举例来说，对语音合成或者是语音辨识来说，我们想像中的 <strong>Attention，应该就是由左向右</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004859.png" alt="image-20210506163030902" style="zoom:67%;" /></div>
+
+<p>在这个例子里面，我们用红色的这个曲线，来代表 Attention 的分数，这个越高就代表 Attention 的值越大</p>
+<p>我们以语音合成为例，那你的输入就是一串文字，那你在合成声音的时候，显然是<strong>由左念到右</strong>，所以机器应该是，先看最左边输入的词汇产生声音，再看中间的词汇产生声音，再看右边的词汇产生声音</p>
+<p>如果你今天在做语音合成的时候，你发现机器的 Attention，是<strong>颠三倒四的</strong>，它先看最后面，接下来再看前面，那再胡乱看整个句子，那显然有些是做错了，显然有些是，Something is wrong，有些是做错了，</p>
+<p>所以 Guiding Attention 要做的事情就是，强迫 Attention 有一个固定的样貌，那如果你对这个问题，本身就已经有理解知道说，语音合成 TTS 这样的问题，你的 Attention 的分数，Attention 的位置都应该由左向右，那不如就直接把这个限制，放进你的 Training 里面，要求机器学到 Attention，就应该要由左向右</p>
+<p>那这件事怎么做呢，有一些关键词汇我就放在这边，让大家自己 Google 了，比如说某某 Mnotonic Attention，或 Location-Aware 的 Attention，那这个部分也是大坑，也不细讲，那就留给大家自己研究</p>
+<h3 id="beam-search">Beam Search<a class="anchor-link" href="#beam-search" title="Permanent link">&para;</a></h3>
+<p>Beam Search ，我们这边举一个例子，在这个例子里面我们假设说，我们现在的这个 <strong>Decoder就只能产生两个字</strong>，一个叫做 A 一个叫做 B</p>
+<p>那对 Decoder 而言，它做的事情就是，<strong>每一次在第一个 Time Step，它在 A B 里面决定一个，然后决定了 A 以后，再把 A 当做输入，然后再决定 A B 要选哪一个</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004412.png" alt="image-20210506163652097" style="zoom: 50%;" /></div>
+
+<p>那举例来说，它可能选 B 当作输入，再决定 A B 要选哪一个，那在我们刚才讲的 Process 里面，每一次 Decoder 都是选，分数最高的那一个</p>
+<p>我们<strong>每次都是选Max 的那一个</strong>，所以假设 A 的分数 0.6，B 的分数 0.4，Decoder 的第一次就会输出 A，然后接下来假设 B 的分数 0.6，A 的分数 0.4，Decoder 就会输出 B，好，然后再假设把 B 当做 Input，就现在输入已经有 A 有 B 了，然后接下来，A 的分数 0.4，B 的分数 0.6，那 Decoder 就会选择输出 B，所以输出就是 A 跟 B 跟 B</p>
+<p>那像这样子每次找分数最高的那个 Token，每次找分数最高的那个字，来当做输出这件事情叫做， Greedy Decoding </p>
+<p>但是 Greedy Decoding，一定是更好的方法吗，有没有可能我们在第一步的时候，先稍微捨弃一点东西</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004940.png" alt="image-20210506164137822"   /></div>
+
+<p>比如说第一步虽然 B 是 0.4，但我们就先选 0.4 这个 B，然后接下来我们选了 B 以后，也许接下来的 B 的可能性就大增，就变成 0.9，然后接下来第三个步骤，B 的可能性也是 0.9</p>
+<p>如果你比较红色的这一条路，跟绿色这条路的话，你会发现说绿色这一条路，虽然一开始第一个步骤，你选了一个比较差的输出，但是<strong>接下来的结果是好的</strong></p>
+<p>这个就跟那个天龙八部的真龙棋局一样，对不对，先堵死自己一块，结果接下来反而赢了</p>
+<p>那所以我，如果我们要怎么找到，这个最好的绿色这一条路呢，也许一个可能是，<strong>爆搜所有可能的路径</strong>，但问题是我们实际上，<strong>并没有办法爆搜所有可能的路径</strong>，因为实际上每一个转捩点可以的选择太多了，如果是在对中文而言，我们中文有 4000 个字，所以这个树每一个地方分叉，都是 4000 个可能的路径，你走两三步以后，你就无法穷举</p>
+<p>所以怎么办呢，有一个演算法叫做  Beam Search ，它用比较有效的方法，找一个 Approximate，找一个估测的 Solution，找一个不是很精准的，不是完全精准的 Solution，这个技术叫做 Beam Search，那这个也留给大家自己 Google，好 </p>
+<p>那这个 Beam Search 这个技术，到底有没有用呢，有趣的事就是，<strong>它有时候有用，有时候没有用，</strong>你会看到有些文献告诉你说，Beam Search 是一个很烂的东西</p>
+<p>举例来说这篇 Paper 叫做，The Curious Case Of Neural Text Degeneration，那这个任务要做的事情是，Sentence Completion，也就是机器先读一段句子，接下来它要把这个句子的后半段，把它完成，你给它一则新闻，或者是一个故事的前半部，哇 它自己发挥它的想像创造力，把这个文章，把故事的后半部把它写完</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004551.png" alt="image-20210506164817398" style="zoom:67%;" /></div>
+
+<p>那你会发现说，Beam Search 在这篇文章里面，一开头就告诉你说，Beam Search 自己有问题：如果你用 Beam Search 的话，会发现说机器不断讲重复的话，它不断开始陷入鬼打墙 无穷迴圈，不断说重复的话</p>
+<p>如果你今天不是用 Beam Search，有加一些随机性，虽然结果不一定完全好，但是看起来至少是比较正常的句子，所以有趣的事情是，有时候对 Decorder 来说，没有找出分数最高的路，反而结果是比较好的</p>
+<p>这个时候你又觉得乱乱的 对不对，就是刚才前一页投影片才说，要找出分数最高的路，现在又要讲说<strong>找出分数最高的路不见得比较好</strong>，到底是怎么回事呢</p>
+<p>那其实这个就是要，<strong>看你的任务的本身的特性</strong></p>
+<ul>
+<li>就假设一个任务，它的<strong>答案非常地明确</strong></li>
+</ul>
+<p>举例来说，什么叫答案非常明确呢，比如说语音辨识，说一句话辨识的结果就只有一个可能，就那一串文字就是你唯一可能的正确答案，并没有什么模糊的地带</p>
+<p>对这种任务而言，通常 Beam Search 就会比较有帮助，那什么样的任务</p>
+<ul>
+<li><strong>你需要机器发挥一点创造力的时候，这时候 Beam Search 就比较没有帮助</strong>，</li>
+</ul>
+<p>举例来说在这边的 Sentence Completion，给你一个句子，给你故事的前半部，后半部有无穷多可能的发展方式，那这种需要有一些创造力的，有不是只有一个答案的任务，往往会比较需要在 Decoder 里面，加入随机性，还有另外一个 Decoder，也非常需要随机性的任务，叫做语音合成，TTS 就是语音合成的缩写</p>
+<p>这也许就呼应了一个英文的谚语，就是要<strong>接受没有事情是完美的，那真正的美也许就在不完美之中</strong>，对于 TTS 或 Sentence Completion 来说，Decoder 找出最好的结果，不见得是人类觉得最好的结果，反而是奇怪的结果，那你加入一些随机性，结果反而会是比较好的</p>
+<h3 id="optimizing-evaluation-metrics">Optimizing Evaluation Metrics?<a class="anchor-link" href="#optimizing-evaluation-metrics" title="Permanent link">&para;</a></h3>
+<p>在作业里面，我们评估的标准用的是，BLEU Score，BLEU Score 是你的 Decoder，先产生一个完整的句子以后，再去跟正确的答案一整句做比较，我们是拿两个句子之间做比较，才算出 BLEU Score</p>
+<p>但我们在训练的时候显然不是这样，<strong>训练</strong>的时候，<strong>每一个词汇是分开考虑的</strong>，训练的时候，我们 Minimize 的是 Cross Entropy，Minimize Cross Entropy，真的可以 Maximize BLEU Score 吗</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004934.png" alt="image-20210506165953175" style="zoom: 67%;" /></div>
+
+<p>不一定，因为这两个根本就是，它们可能有一点点的关联，但它们又没有那么直接相关，它们根本就是两个不同的数值，所以我们 Minimize Cross Entropy，不见得可以让 BLEU Score 比较大</p>
+<p>所以你发现说在助教的程式里面，助教在做 Validation 的时候，并不是拿 Cross Entropy 来挑最好的 Model，而是挑 BLEU Score 最高的那一个 Model，所以我们训练的时候，是看 Cross Entropy，但是我们实际上你作业真正评估的时候，看的是 BLEU Score，所以你 Validation Set，其实应该考虑用 BLEU Score</p>
+<p>那接下来有人就会想说，那我们能不能<strong>在 Training 的时候，就考虑 BLEU Score 呢</strong>，我们能不能够训练的时候就说，我的 Loss 就是，BLEU Score 乘一个负号，那我们要 Minimize 那个 Loss，假设你的 Loss 是，BLEU Score乘一个负号，它也等于就是 Maximize BLEU Score</p>
+<p>但是<strong>这件事实际上没有那么容易</strong>，你当然可以把 BLEU Score，当做你训练的时候，你要最大化的一个目标，但是 BLEU Score 本身很复杂，它是不能微分的，</p>
+<p>这边之所以採用 Cross Entropy，而且是每一个中文的字分开来算，就是因为这样我们才有办法处理，如果你是要计算，两个句子之间的 BLEU Score，这一个 Loss，根本就没有办法做微分，那怎么办呢</p>
+<p>这边就教大家一个口诀，遇到你在 Optimization 无法解决的问题， 用 RL 硬 Train 一发 就对了这样，遇到你无法 Optimize 的 Loss Function，把它当做是 RL 的 Reward，把你的 Decoder 当做是 Agent，它当作是 RL，Reinforcement Learning 的问题硬做</p>
+<p>其实也是有可能可以做的，<strong>有人真的这样试过</strong>，我把 Reference 列在这边给大家参考，当然这是一个比较难的做法，那并没有特别推荐你在作业里面用这一招</p>
+<h3 id="scheduled-sampling">Scheduled Sampling<a class="anchor-link" href="#scheduled-sampling" title="Permanent link">&para;</a></h3>
+<p>那我们要讲到，我们刚才反覆提到的问题了，就是<strong>训练跟测试居然是不一致</strong>的</p>
+<p>测试的时候，Decoder 看到的是自己的输出，所以测试的时候，Decoder 会看到一些错误的东西，但是在训练的时候，Decoder 看到的是完全正确的，那这个不一致的现象叫做， Exposure Bias </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004445.png" alt="image-20210506170906750" style="zoom:67%;" /></div>
+
+<p>假设 Decoder 在训练的时候，永远只看过正确的东西，那在测试的时候，你只要有一个错，那就会<strong>一步错 步步错</strong>，因为对 Decoder 来说，它从来没有看过错的东西，它看到错的东西会非常的惊奇，然后接下来它产生的结果可能都会错掉</p>
+<p>所以要怎么解决这个问题呢</p>
+<p>有一个可以的思考的方向是，<strong>给 Decoder 的输入加一些错误的东西</strong>，就这么直觉，你不要给 Decoder 都是正确的答案，偶尔给它一些错的东西，它反而会学得更好，这一招叫做， Scheduled Sampling ，它不是那个 Schedule Learning Rate，刚才助教有讲 Schedule Learning Rate，那是另外一件事，不相干的事情，这个是 Scheduled Sampling</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004954.png" alt="image-20210506171120911" style="zoom:67%;" /></div>
+
+<p>Scheduled Sampling 其实很早就有了，这个是 15 年的 Paper，很早就有 Scheduled Sampling，在还没有 Transformer，只有 LSTM 的时候，就已经有 Scheduled Sampling，但是 Scheduled Sampling 这一招，它其实会伤害到，Transformer 的平行化的能力，那细节可以再自己去了解一下，所以对 Transformer 来说，它的 Scheduled Sampling，另有招数跟传统的招数，跟原来最早提在，这个 LSTM上被提出来的招数，也不太一样，那我把一些 Reference 的，列在这边给大家参考</p>
+<div align=center><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210506171143270.png" alt="image-20210506171143270" style="zoom:67%;" /></div>
+
+<p>好 那以上我们就讲完了，Transformer 和种种的训练技巧，这个我们已经讲完了 Encoder，讲完了 Decoder，也讲完了它们中间的关係，也讲了怎么训练，也讲了种种的 Tip</p>
+<p>上图是transformer的一个详细结构，相比本文一开始结束的结构图会更详细些，接下来，我们会按照这个结构图讲解下decoder部分。可以看到decoder部分其实和encoder部分大同小异，不过在最下面额外多了一个<strong>masked mutil-head attetion</strong>，这里的mask也是transformer一个很关键的技术，我们一起来看一下。</p>
+<h4 id="mask">Mask<a class="anchor-link" href="#mask" title="Permanent link">&para;</a></h4>
+<p>mask 表示掩码，它对某些值进行掩盖，使其在参数更新时不产生效果。Transformer 模型里面涉及两种 mask，分别是 padding mask 和 sequence mask。</p>
+<p>其中，padding mask 在所有的 scaled dot-product attention 里面都需要用到，而 sequence mask 只有在 decoder 的 self-attention 里面用到。</p>
+<h5 id="padding-mask">Padding Mask<a class="anchor-link" href="#padding-mask" title="Permanent link">&para;</a></h5>
+<p>什么是 padding mask 呢？因为每个批次输入序列长度是不一样的也就是说，我们要对输入序列进行对齐。具体来说，就是给在较短的序列后面填充 0。但是如果输入的序列太长，则是截取左边的内容，把多余的直接舍弃。因为这些填充的位置，其实是没什么意义的，所以我们的attention机制不应该把注意力放在这些位置上，所以我们需要进行一些处理。</p>
+<p>具体的做法是，把这些位置的值加上一个非常大的负数(负无穷)，这样的话，经过 softmax，这些位置的概率就会接近0！</p>
+<p>而我们的 padding mask 实际上是一个张量，每个值都是一个Boolean，值为 false 的地方就是我们要进行处理的地方。</p>
+<h5 id="sequence-mask">Sequence mask<a class="anchor-link" href="#sequence-mask" title="Permanent link">&para;</a></h5>
+<p>文章前面也提到，sequence mask 是为了使得 decoder 不能看见未来的信息。也就是对于一个序列，在 time_step 为 <span class="math-inline"> t </span> 的时刻，我们的解码输出应该只能依赖于 <span class="math-inline"> t </span> 时刻之前的输出，而不能依赖 <span class="math-inline">t </span> 之后的输出。因此我们需要想一个办法，把 <span class="math-inline"> t </span> 之后的信息给隐藏起来。</p>
+<p>那么具体怎么做呢？也很简单：产生一个上三角矩阵，上三角的值全为0。把这个矩阵作用在每一个序列上，就可以达到我们的目的。</p>
+<ul>
+<li>对于 decoder 的 self-attention，里面使用到的 scaled dot-product attention，同时需要padding mask 和 sequence mask 作为 attn_mask，具体实现就是两个mask相加作为attn_mask。</li>
+<li>其他情况，attn_mask 一律等于 padding mask。</li>
+</ul>
+<p>编码器通过处理输入序列开启工作。顶端编码器的输出之后会变转化为一个包含向量<span class="math-inline">K</span>（ 键向量 ）和<span class="math-inline">V</span>（ 值向量 ）的注意力向量集 。这些向量将被每个解码器用于自身的“编码-解码注意力层”，而这些层可以帮助解码器关注输入序列哪些位置合适：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004289.gif" /></p>
+<p>在完成编码阶段后，则开始解码阶段。解码阶段的每个步骤都会输出一个输出序列（在这个例子里，是英语翻译的句子）的元素</p>
+<p>接下来的步骤重复了这个过程，直到到达一个特殊的终止符号，它表示transformer的解码器已经完成了它的输出。每个步骤的输出在下一个时间步被提供给底端解码器，并且就像编码器之前做的那样，这些解码器会输出它们的解码结果 。另外，就像我们对编码器的输入所做的那样，我们会嵌入并添加位置编码给那些解码器，来表示每个单词的位置。</p>
+<p><img alt="transformer_decoding_2" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004814.gif" /></p>
+<p>而那些解码器中的自注意力层表现的模式与编码器不同：在解码器中，自注意力层只被允许处理输出序列中更靠前的那些位置。在softmax步骤前，它会把后面的位置给隐去（把它们设为-inf）。</p>
+<p>这个“编码-解码注意力层”工作方式基本就像多头自注意力层一样，只不过它是通过在它下面的层来创造查询矩阵，并且从编码器的输出中取得键/值矩阵。</p>
+<h2 id="the-final-linear-and-softmax-layer">The Final Linear and Softmax Layer<a class="anchor-link" href="#the-final-linear-and-softmax-layer" title="Permanent link">&para;</a></h2>
+<p>解码组件最后会输出一个实数向量。我们如何把浮点数变成一个单词？这便是线性变换层要做的工作，它之后就是Softmax层。</p>
+<p>线性变换层是一个简单的全连接神经网络，它可以把解码组件产生的向量投射到一个比它大得多的、被称作对数几率（logits）的向量里。</p>
+<p>不妨假设我们的模型从训练集中学习一万个不同的英语单词（我们模型的“输出词表”）。因此对数几率向量为一万个单元格长度的向量——每个单元格对应某一个单词的分数。</p>
+<p>接下来的Softmax 层便会把那些分数变成概率（都为正数、上限1.0）。概率最高的单元格被选中，并且它对应的单词被作为这个时间步的输出。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004326.png" alt="image-20211204133929121" style="zoom:67%;" /></div>
+
+<p>这张图片从底部以解码器组件产生的输出向量开始。之后它会转化出一个输出单词。</p>
+<h2 id="recap-of-training">Recap Of Training<a class="anchor-link" href="#recap-of-training" title="Permanent link">&para;</a></h2>
+<p>既然我们已经过了一遍完整的transformer的前向传播过程，那我们就可以直观感受一下它的训练过程。</p>
+<p>在训练过程中，一个未经训练的模型会通过一个完全一样的前向传播。但因为我们用有标记的训练集来训练它，所以我们可以用它的输出去与真实的输出做比较。</p>
+<p>为了把这个流程可视化，不妨假设我们的输出词汇仅仅包含六个单词：“a”， “am”， “i”， “thanks”， “student”以及 “eos”（end of sentence的缩写形式）。</p>
+<p><img alt="image-20211204134014280" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004618.png" /></p>
+<p>我们模型的输出词表在我们训练之前的预处理流程中就被设定好。</p>
+<p>一旦我们定义了我们的输出词表，我们可以使用一个相同宽度的向量来表示我们词汇表中的每一个单词。这也被认为是一个one-hot 编码。所以，我们可以用下面这个向量来表示单词“am”：</p>
+<p><img alt="image-20211204134031706" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004072.png" /></p>
+<h2 id="loss-function">Loss function<a class="anchor-link" href="#loss-function" title="Permanent link">&para;</a></h2>
+<p>比如说我们正在训练模型，现在是第一步，一个简单的例子——把“merci”翻译为“thanks”。</p>
+<p>这意味着我们想要一个表示单词“thanks”概率分布的输出。但是因为这个模型还没被训练好，所以不太可能现在就出现这个结果。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004389.jpeg" /></p>
+<p>因为模型的参数（权重）都被随机的生成，（未经训练的）模型产生的概率分布在每个单元格/单词里都赋予了随机的数值。我们可以用真实的输出来比较它，然后用反向传播算法来略微调整所有模型的权重，生成更接近结果的输出。</p>
+<p>你会如何比较两个概率分布呢？我们可以简单地用其中一个减去另一个。更多细节请参考交叉熵和KL散度。</p>
+<p>交叉熵：https://colah.github.io/posts/2015-09-Visual-Information/</p>
+<p>KL散度：https://www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained</p>
+<p>但注意到这是一个过于简化的例子。更现实的情况是处理一个句子。例如，输入“je suis étudiant”并期望输出是“i am a student”。那我们就希望我们的模型能够成功地在这些情况下输出概率分布：</p>
+<p>每个概率分布被一个以词表大小（我们的例子里是6，但现实情况通常是3000或10000）为宽度的向量所代表。</p>
+<p>第一个概率分布在与“i”关联的单元格有最高的概率;</p>
+<p>第二个概率分布在与“am”关联的单元格有最高的概率;</p>
+<p>以此类推，第五个输出的分布表示“eos”关联的单元格有最高的概率.</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004675.jpg" /><br />
+依据例子训练模型得到的目标概率分布</p>
+<p>在一个足够大的数据集上充分训练后，我们希望模型输出的概率分布看起来像这个样子：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161004964.jpg" /></p>
+<p>我们期望训练过后，模型会输出正确的翻译。当然如果这段话完全来自训练集，它并不是一个很好的评估指标（参考：交叉验证，链接https://www.youtube.com/watch?v=TIgfjmp-4BA）。注意到每个位置（词）都得到了一点概率，即使它不太可能成为那个时间步的输出——这是softmax的一个很有用的性质，它可以帮助模型训练。</p>
+<p>因为这个模型一次只产生一个输出，不妨假设这个模型只选择概率最高的单词，并把剩下的词抛弃。这是其中一种方法（叫贪心解码）。另一个完成这个任务的方法是留住概率最靠高的两个单词（例如I和a），那么在下一步里，跑模型两次：其中一次假设第一个位置输出是单词“I”，而另一次假设第一个位置输出是单词“me”，并且无论哪个版本产生更少的误差，都保留概率最高的两个翻译结果。然后我们为第二和第三个位置重复这一步骤。这个方法被称作集束搜索（beam search）。在我们的例子中，集束宽度是2（因为保留了2个集束的结果，如第一和第二个位置），并且最终也返回两个集束的结果（top_beams也是2）。这些都是可以提前设定的参数。</p>
+<h2 id="advanced">Advanced<a class="anchor-link" href="#advanced" title="Permanent link">&para;</a></h2>
+<p>我希望通过上文已经让你们了解到Transformer的主要概念了。如果你想在这个领域深入，我建议可以走以下几步：阅读Attention Is All You Need，Transformer博客和Tensor2Tensor announcement，以及看看Łukasz Kaiser的介绍，了解模型和细节。</p>
+<p>Attention Is All You Need：https://arxiv.org/abs/1706.03762</p>
+<p>Transformer博客：https://ai.googleblog.com/2017/08/transformer-novel-neural-network.html</p>
+<p>Tensor2Tensor announcement：https://ai.googleblog.com/2017/06/accelerating-deep-learning-research.html</p>
+<p>Łukasz Kaiser的介绍：https://colab.research.google.com/github/tensorflow/tensor2tensor/blob/master/tensor2tensor/notebooks/hello_t2t.ipynb</p>
+<p>接下来可以研究的工作：</p>
+<p>Depthwise Separable Convolutions for Neural Machine Translation</p>
+<p>https://arxiv.org/abs/1706.03059</p>
+<p>One Model To Learn Them All</p>
+<p>https://arxiv.org/abs/1706.05137</p>
+<p>Discrete Autoencoders for Sequence Models</p>
+<p>https://arxiv.org/abs/1801.09797</p>
+<p>Generating Wikipedia by Summarizing Long Sequences</p>
+<p>https://arxiv.org/abs/1801.10198</p>
+<p>Image Transformer</p>
+<p>https://arxiv.org/abs/1802.05751</p>
+<p>Training Tips for the Transformer Model</p>
+<p>https://arxiv.org/abs/1804.00247</p>
+<p>Self-Attention with Relative Position Representations</p>
+<p>https://arxiv.org/abs/1803.02155</p>
+<p>Fast Decoding in Sequence Models using Discrete Latent Variables</p>
+<p>https://arxiv.org/abs/1803.03382</p>
+<p>Adafactor: Adaptive Learning Rates with Sublinear Memory Cost</p>
+<p>https://arxiv.org/abs/1804.04235</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

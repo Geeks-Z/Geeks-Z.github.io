@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>convolutional neural network (2 convolutional layers)</title>
+    <meta name="description" content="convolutional neural network (2 convolutional layers) - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#模型定义和操作">模型定义和操作</a></li>
+<li><a href="#模型保存与加载">模型保存与加载</a></li>
+<li><a href="#获取模型每层输出">获取模型每层输出</a><ul>
+<li><a href="#示例代码">示例代码</a></li>
+<li><a href="#关键点说明">关键点说明</a></li>
+<li><a href="#输出形状的解释">输出形状的解释</a></li>
+<li><a href="#扩展">扩展</a></li>
+</ul>
+</li>
+<li><a href="#模型权重初始化">模型权重初始化</a></li>
+<li><a href="#提取模型中的某一层">提取模型中的某一层</a></li>
+<li><a href="#部分层使用预训练模型">部分层使用预训练模型</a></li>
+<li><a href="#导入另一个模型的相同部分到新的模型">导入另一个模型的相同部分到新的模型</a></li>
+<li><a href="#模型训练和测试">模型训练和测试</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>convolutional neural network (2 convolutional layers)</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/103.常用代码片段</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="模型定义和操作">模型定义和操作<a class="anchor-link" href="#模型定义和操作" title="Permanent link">&para;</a></h2>
+<p>一个简单两层卷积网络的示例</p>
+<pre><code class="language-python"># convolutional neural network (2 convolutional layers)
+class ConvNet(nn.Module):
+    def __init__(self, num_classes=10):
+        super(ConvNet, self).__init__()
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
+        self.fc = nn.Linear(7*7*32, num_classes)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = out.reshape(out.size(0), -1)
+        out = self.fc(out)
+        return out
+
+model = ConvNet(num_classes).to(device)
+</code></pre>
+<p>双线性汇合（bilinear pooling）</p>
+<pre><code class="language-python">X = torch.reshape(N, D, H * W)                        # Assume X has shape N*D*H*W
+X = torch.bmm(X, torch.transpose(X, 1, 2)) / (H * W)  # Bilinear pooling
+assert X.size() == (N, D, D)
+X = torch.reshape(X, (N, D * D))
+X = torch.sign(X) * torch.sqrt(torch.abs(X) + 1e-5)   # Signed-sqrt normalization
+X = torch.nn.functional.normalize(X)                  # L2 normalization
+</code></pre>
+<h2 id="模型保存与加载">模型保存与加载<a class="anchor-link" href="#模型保存与加载" title="Permanent link">&para;</a></h2>
+<h2 id="获取模型每层输出">获取模型每层输出<a class="anchor-link" href="#获取模型每层输出" title="Permanent link">&para;</a></h2>
+<p>要获取每个 Transformer Block 层的输出，你可以通过修改 <code>timm</code> 库中的 ViT 模型或利用 PyTorch 的 <code>forward_hooks</code> 功能来捕获中间层的输出。</p>
+<p>以下是一个使用 <strong><code>forward_hooks</code></strong> 的方法：</p>
+<h3 id="示例代码">示例代码<a class="anchor-link" href="#示例代码" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import timm
+import torch
+
+# 初始化模型
+vit = timm.create_model(&quot;vit_base_patch16_224_in21k&quot;, pretrained=True, num_classes=0)
+vit.eval()  # 设置模型为评估模式
+
+# 用于存储每个 block 的输出
+block_outputs = []
+
+# 定义 hook 函数
+def hook_fn(module, input, output):
+    block_outputs.append(output)
+
+# 注册 hook 到每个 Transformer Block
+hooks = []
+for i, block in enumerate(vit.blocks):
+    hook = block.register_forward_hook(hook_fn)
+    hooks.append(hook)
+
+# 输入张量 (一个随机图像，shape: [1, 3, 224, 224])
+dummy_input = torch.randn(1, 3, 224, 224)
+
+# 前向传播
+with torch.no_grad():
+    _ = vit(dummy_input)
+
+# 打印每个 Block 的输出形状
+for i, output in enumerate(block_outputs):
+    print(f&quot;Block {i} output shape: {output.shape}&quot;)
+
+# 清理 hooks
+for hook in hooks:
+    hook.remove()
+</code></pre>
+<h3 id="关键点说明">关键点说明<a class="anchor-link" href="#关键点说明" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong><code>vit.blocks</code></strong>：<br />
+   - ViT 模型中的 <code>blocks</code> 是 Transformer 的主要组成部分，每个 <code>block</code> 是一个完整的 Transformer 层。</p>
+</li>
+<li>
+<p><strong><code>forward_hook</code></strong>：<br />
+   - <code>forward_hook</code> 是 PyTorch 提供的功能，可以捕获模块的输入或输出。<br />
+   - 在这里，我们捕获每个 <code>block</code> 的输出。</p>
+</li>
+<li>
+<p><strong><code>block_outputs</code></strong>：<br />
+   - 用于保存每个 Block 的输出结果，输出的形状通常为 <code>[batch_size, num_patches+1, hidden_dim]</code>，其中 <code>num_patches+1</code> 包括 <code>class_token</code>。</p>
+</li>
+<li>
+<p><strong>清理 hooks</strong>：<br />
+   - 使用完 hooks 后，务必调用 <code>hook.remove()</code> 清理，避免重复注册或潜在的内存泄漏。</p>
+</li>
+</ol>
+<h3 id="输出形状的解释">输出形状的解释<a class="anchor-link" href="#输出形状的解释" title="Permanent link">&para;</a></h3>
+<ul>
+<li>对于 <code>vit_base_patch16_224_in21k</code>，默认配置如下：</li>
+<li><code>hidden_dim = 768</code>（嵌入维度）</li>
+<li><code>num_patches = 196</code>（14x14 = 196，假设输入图像为 224x224，patch 大小为 16x16）</li>
+<li>包括 <code>class_token</code> 后，输出维度为 <code>[batch_size, 197, 768]</code>。</li>
+</ul>
+<h3 id="扩展">扩展<a class="anchor-link" href="#扩展" title="Permanent link">&para;</a></h3>
+<p>如果你还需要获取其他层（如 patch embedding 或最后的 MLP 层）输出，可以类似地注册 hooks。</p>
+<h2 id="模型权重初始化">模型权重初始化<a class="anchor-link" href="#模型权重初始化" title="Permanent link">&para;</a></h2>
+<p>注意 model.modules() 和 model.children() 的区别：model.modules() 会迭代地遍历模型的所有子层，而 model.children() 只会遍历模型下的一层。</p>
+<pre><code class="language-python"># Common practise for initialization.
+for layer in model.modules():
+    if isinstance(layer, torch.nn.Conv2d):
+        torch.nn.init.kaiming_normal_(layer.weight, mode='fan_out',
+                                      nonlinearity='relu')
+        if layer.bias is not None:
+            torch.nn.init.constant_(layer.bias, val=0.0)
+    elif isinstance(layer, torch.nn.BatchNorm2d):
+        torch.nn.init.constant_(layer.weight, val=1.0)
+        torch.nn.init.constant_(layer.bias, val=0.0)
+    elif isinstance(layer, torch.nn.Linear):
+        torch.nn.init.xavier_normal_(layer.weight)
+        if layer.bias is not None:
+            torch.nn.init.constant_(layer.bias, val=0.0)
+
+# Initialization with given tensor.
+layer.weight = torch.nn.Parameter(tensor)
+</code></pre>
+<h2 id="提取模型中的某一层">提取模型中的某一层<a class="anchor-link" href="#提取模型中的某一层" title="Permanent link">&para;</a></h2>
+<p><strong>modules</strong>()会返回模型中所有模块的迭代器，它能够访问到最内层，比如 self.layer1.conv1 这个模块，还有一个与它们相对应的是<strong>name_children()</strong>属性以及<strong>named_modules()</strong>,这两个不仅会返回模块的迭代器，还会返回网络层的名字。</p>
+<pre><code class="language-python"># 取模型中的前两层
+new_model = nn.Sequential(*list(model.children())[:2]
+# 如果希望提取出模型中的所有卷积层，可以像下面这样操作：
+for layer in model.named_modules():
+    if isinstance(layer[1],nn.Conv2d):
+         conv_model.add_module(layer[0],layer[1])
+
+</code></pre>
+<h2 id="部分层使用预训练模型">部分层使用预训练模型<a class="anchor-link" href="#部分层使用预训练模型" title="Permanent link">&para;</a></h2>
+<p>注意如果保存的模型是 torch.nn.DataParallel，则当前的模型也需要是</p>
+<pre><code class="language-python">model.load_state_dict(torch.load('model.pth'), strict=False)
+</code></pre>
+<p>将在 GPU 保存的模型加载到 CPU</p>
+<pre><code class="language-python">model.load_state_dict(torch.load('model.pth', map_location='cpu'))
+</code></pre>
+<h2 id="导入另一个模型的相同部分到新的模型">导入另一个模型的相同部分到新的模型<a class="anchor-link" href="#导入另一个模型的相同部分到新的模型" title="Permanent link">&para;</a></h2>
+<p>模型导入参数时，如果两个模型结构不一致，则直接导入参数会报错。用下面方法可以把另一个模型的相同的部分导入到新的模型中。</p>
+<pre><code class="language-python"># model_new代表新的模型
+# model_saved代表其他模型，比如用torch.load导入的已保存的模型
+model_new_dict = model_new.state_dict()
+model_common_dict = {k:v for k, v in model_saved.items() if k in model_new_dict.keys()}
+model_new_dict.update(model_common_dict)
+model_new.load_state_dict(model_new_dict)
+</code></pre>
+<h2 id="模型训练和测试">模型训练和测试<a class="anchor-link" href="#模型训练和测试" title="Permanent link">&para;</a></h2>
+<p>分类模型训练代码</p>
+<pre><code class="language-python"># Loss and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+# Train the model
+total_step = len(train_loader)
+for epoch in range(num_epochs):
+    for i ,(images, labels) in enumerate(train_loader):
+        images = images.to(device)
+        labels = labels.to(device)
+
+        # Forward pass
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+
+        # Backward and optimizer
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        if (i+1) % 100 == 0:
+            print('Epoch: [{}/{}], Step: [{}/{}], Loss: {}'
+                  .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+</code></pre>
+<p>分类模型测试代码</p>
+<pre><code class="language-python"># Test the model
+model.eval()  # eval mode(batch norm uses moving mean/variance
+              #instead of mini-batch mean/variance)
+with torch.no_grad():
+    correct = 0
+    total = 0
+    for images, labels in test_loader:
+        images = images.to(device)
+        labels = labels.to(device)
+        outputs = model(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+    print('Test accuracy of the model on the 10000 test images: {} %'
+          .format(100 * correct / total))
+
+</code></pre>
+<p>自定义 loss</p>
+<p>继承 torch.nn.Module 类写自己的 loss。</p>
+<pre><code class="language-python">class MyLoss(torch.nn.Moudle):
+    def __init__(self):
+        super(MyLoss, self).__init__()
+
+    def forward(self, x, y):
+        loss = torch.mean((x - y) ** 2)
+        return loss
+
+</code></pre>
+<p>标签平滑（label smoothing）</p>
+<p>写一个 label_smoothing.py 的文件，然后在训练代码里引用，用 LSR 代替交叉熵损失即可。label_smoothing.py 内容如下：</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+
+class LSR(nn.Module):
+
+    def __init__(self, e=0.1, reduction='mean'):
+        super().__init__()
+
+        self.log_softmax = nn.LogSoftmax(dim=1)
+        self.e = e
+        self.reduction = reduction
+
+    def _one_hot(self, labels, classes, value=1):
+        &quot;&quot;&quot;
+            Convert labels to one hot vectors
+
+        Args:
+            labels: torch tensor in format [label1, label2, label3, ...]
+            classes: int, number of classes
+            value: label value in one hot vector, default to 1
+
+        Returns:
+            return one hot format labels in shape [batchsize, classes]
+        &quot;&quot;&quot;
+
+        one_hot = torch.zeros(labels.size(0), classes)
+
+        #labels and value_added  size must match
+        labels = labels.view(labels.size(0), -1)
+        value_added = torch.Tensor(labels.size(0), 1).fill_(value)
+
+        value_added = value_added.to(labels.device)
+        one_hot = one_hot.to(labels.device)
+
+        one_hot.scatter_add_(1, labels, value_added)
+
+        return one_hot
+
+    def _smooth_label(self, target, length, smooth_factor):
+        &quot;&quot;&quot;convert targets to one-hot format, and smooth
+        them.
+        Args:
+            target: target in form with [label1, label2, label_batchsize]
+            length: length of one-hot format(number of classes)
+            smooth_factor: smooth factor for label smooth
+
+        Returns:
+            smoothed labels in one hot format
+        &quot;&quot;&quot;
+        one_hot = self._one_hot(target, length, value=1 - smooth_factor)
+        one_hot += smooth_factor / (length - 1)
+
+        return one_hot.to(target.device)
+
+    def forward(self, x, target):
+
+        if x.size(0) != target.size(0):
+            raise ValueError('Expected input batchsize ({}) to match target batch_size({})'
+                    .format(x.size(0), target.size(0)))
+
+        if x.dim() &lt; 2:
+            raise ValueError('Expected input tensor to have least 2 dimensions(got {})'
+                    .format(x.size(0)))
+
+        if x.dim() != 2:
+            raise ValueError('Only 2 dimension tensor are implemented, (got {})'
+                    .format(x.size()))
+
+
+        smoothed_target = self._smooth_label(target, x.size(1), self.e)
+        x = self.log_softmax(x)
+        loss = torch.sum(- x * smoothed_target, dim=1)
+
+        if self.reduction == 'none':
+            return loss
+
+        elif self.reduction == 'sum':
+            return torch.sum(loss)
+
+        elif self.reduction == 'mean':
+            return torch.mean(loss)
+
+        else:
+            raise ValueError('unrecognized option, expect reduction to be one of none, mean, sum')
+
+</code></pre>
+<p>或者直接在训练文件里做 label smoothing</p>
+<pre><code class="language-python">for images, labels in train_loader:
+    images, labels = images.cuda(), labels.cuda()
+    N = labels.size(0)
+    # C is the number of classes.
+    smoothed_labels = torch.full(size=(N, C), fill_value=0.1 / (C - 1)).cuda()
+    smoothed_labels.scatter_(dim=1, index=torch.unsqueeze(labels, dim=1), value=0.9)
+
+    score = model(images)
+    log_prob = torch.nn.functional.log_softmax(score, dim=1)
+    loss = -torch.sum(log_prob * smoothed_labels) / N
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+</code></pre>
+<p>Mixup 训练</p>
+<pre><code class="language-python">beta_distribution = torch.distributions.beta.Beta(alpha, alpha)
+for images, labels in train_loader:
+    images, labels = images.cuda(), labels.cuda()
+
+    # Mixup images and labels.
+    lambda_ = beta_distribution.sample([]).item()
+    index = torch.randperm(images.size(0)).cuda()
+    mixed_images = lambda_ * images + (1 - lambda_) * images[index, :]
+    label_a, label_b = labels, labels[index]
+
+    # Mixup loss.
+    scores = model(mixed_images)
+    loss = (lambda_ * loss_function(scores, label_a)
+            + (1 - lambda_) * loss_function(scores, label_b))
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+</code></pre>
+<p>L1 正则化</p>
+<pre><code class="language-python">l1_regularization = torch.nn.L1Loss(reduction='sum')
+loss = ...  # Standard cross-entropy loss
+
+for param in model.parameters():
+    loss += torch.sum(torch.abs(param))
+loss.backward()
+</code></pre>
+<p>不对偏置项进行权重衰减（weight decay)</p>
+<p>pytorch 里的 weight decay 相当于 l2 正则</p>
+<pre><code class="language-python">bias_list = (param for name, param in model.named_parameters() if name[-4:] == 'bias')
+others_list = (param for name, param in model.named_parameters() if name[-4:] != 'bias')
+parameters = [{'parameters': bias_list, 'weight_decay': 0},
+              {'parameters': others_list}]
+optimizer = torch.optim.SGD(parameters, lr=1e-2, momentum=0.9, weight_decay=1e-4)
+</code></pre>
+<p>梯度裁剪（gradient clipping）</p>
+<pre><code class="language-python">torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=20)
+</code></pre>
+<p>得到当前学习率</p>
+<pre><code class="language-python"># If there is one global learning rate (which is the common case).
+lr = next(iter(optimizer.param_groups))['lr']
+
+# If there are multiple learning rates for different layers.
+all_lr = []
+for param_group in optimizer.param_groups:
+    all_lr.append(param_group['lr'])
+</code></pre>
+<p>另一种方法，在一个 batch 训练代码里，当前的 lr 是 optimizer.param_groups[0]['lr']</p>
+<p>学习率衰减</p>
+<pre><code class="language-python"># Reduce learning rate when validation accuarcy plateau.
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=5, verbose=True)
+for t in range(0, 80):
+    train(...)
+    val(...)
+    scheduler.step(val_acc)
+
+# Cosine annealing learning rate.
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=80)
+# Reduce learning rate by 10 at given epochs.
+scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[50, 70], gamma=0.1)
+for t in range(0, 80):
+    scheduler.step()
+    train(...)
+    val(...)
+
+# Learning rate warmup by 10 epochs.
+scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda t: t / 10)
+for t in range(0, 10):
+    scheduler.step()
+    train(...)
+    val(...)
+</code></pre>
+<p>优化器链式更新</p>
+<p>从 1.4 版本开始，torch.optim.lr_scheduler 支持链式更新（chaining），即用户可以定义两个 schedulers，并交替在训练中使用。</p>
+<pre><code class="language-python">import torch
+from torch.optim import SGD
+from torch.optim.lr_scheduler import ExponentialLR, StepLR
+model = [torch.nn.Parameter(torch.randn(2, 2, requires_grad=True))]
+optimizer = SGD(model, 0.1)
+scheduler1 = ExponentialLR(optimizer, gamma=0.9)
+scheduler2 = StepLR(optimizer, step_size=3, gamma=0.1)
+for epoch in range(4):
+    print(epoch, scheduler2.get_last_lr()[0])
+    optimizer.step()
+    scheduler1.step()
+    scheduler2.step()
+</code></pre>
+<p>模型训练可视化</p>
+<p>PyTorch 可以使用 tensorboard 来可视化训练过程。</p>
+<p>安装和运行 TensorBoard。</p>
+<pre><code class="language-python">pip install tensorboard
+tensorboard --logdir=runs
+</code></pre>
+<p>使用 SummaryWriter 类来收集和可视化相应的数据，放了方便查看，可以使用不同的文件夹，比如'Loss/train'和'Loss/test'。</p>
+<pre><code class="language-python">from torch.utils.tensorboard import SummaryWriter
+import numpy as np
+
+writer = SummaryWriter()
+
+for n_iter in range(100):
+    writer.add_scalar('Loss/train', np.random.random(), n_iter)
+    writer.add_scalar('Loss/test', np.random.random(), n_iter)
+    writer.add_scalar('Accuracy/train', np.random.random(), n_iter)
+    writer.add_scalar('Accuracy/test', np.random.random(), n_iter)
+</code></pre>
+<p>保存与加载断点</p>
+<p>注意为了能够恢复训练，我们需要同时保存模型和优化器的状态，以及当前的训练轮数。</p>
+<pre><code class="language-python">start_epoch = 0
+# Load checkpoint.
+if resume: # resume为参数，第一次训练时设为0，中断再训练时设为1
+    model_path = os.path.join('model', 'best_checkpoint.pth.tar')
+    assert os.path.isfile(model_path)
+    checkpoint = torch.load(model_path)
+    best_acc = checkpoint['best_acc']
+    start_epoch = checkpoint['epoch']
+    model.load_state_dict(checkpoint['model'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    print('Load checkpoint at epoch {}.'.format(start_epoch))
+    print('Best accuracy so far {}.'.format(best_acc))
+
+# Train the model
+for epoch in range(start_epoch, num_epochs):
+    ...
+
+    # Test the model
+    ...
+
+    # save checkpoint
+    is_best = current_acc &gt; best_acc
+    best_acc = max(current_acc, best_acc)
+    checkpoint = {
+        'best_acc': best_acc,
+        'epoch': epoch + 1,
+        'model': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }
+    model_path = os.path.join('model', 'checkpoint.pth.tar')
+    best_model_path = os.path.join('model', 'best_checkpoint.pth.tar')
+    torch.save(checkpoint, model_path)
+    if is_best:
+        shutil.copy(model_path, best_model_path)
+</code></pre>
+<p>提取 ImageNet 预训练模型某层的卷积特征</p>
+<pre><code class="language-python"># VGG-16 relu5-3 feature.
+model = torchvision.models.vgg16(pretrained=True).features[:-1]
+# VGG-16 pool5 feature.
+model = torchvision.models.vgg16(pretrained=True).features
+# VGG-16 fc7 feature.
+model = torchvision.models.vgg16(pretrained=True)
+model.classifier = torch.nn.Sequential(*list(model.classifier.children())[:-3])
+# ResNet GAP feature.
+model = torchvision.models.resnet18(pretrained=True)
+model = torch.nn.Sequential(collections.OrderedDict(
+    list(model.named_children())[:-1]))
+
+with torch.no_grad():
+    model.eval()
+    conv_representation = model(image)
+</code></pre>
+<p>提取 ImageNet 预训练模型多层的卷积特征</p>
+<pre><code class="language-python">class FeatureExtractor(torch.nn.Module):
+    &quot;&quot;&quot;Helper class to extract several convolution features from the given
+    pre-trained model.
+
+    Attributes:
+        _model, torch.nn.Module.
+        _layers_to_extract, list&lt;str&gt; or set&lt;str&gt;
+
+    Example:
+        &gt;&gt;&gt; model = torchvision.models.resnet152(pretrained=True)
+        &gt;&gt;&gt; model = torch.nn.Sequential(collections.OrderedDict(
+                list(model.named_children())[:-1]))
+        &gt;&gt;&gt; conv_representation = FeatureExtractor(
+                pretrained_model=model,
+                layers_to_extract={'layer1', 'layer2', 'layer3', 'layer4'})(image)
+    &quot;&quot;&quot;
+    def __init__(self, pretrained_model, layers_to_extract):
+        torch.nn.Module.__init__(self)
+        self._model = pretrained_model
+        self._model.eval()
+        self._layers_to_extract = set(layers_to_extract)
+
+    def forward(self, x):
+        with torch.no_grad():
+            conv_representation = []
+            for name, layer in self._model.named_children():
+                x = layer(x)
+                if name in self._layers_to_extract:
+                    conv_representation.append(x)
+            return conv_representation
+</code></pre>
+<p>微调全连接层</p>
+<pre><code class="language-python">model = torchvision.models.resnet18(pretrained=True)
+for param in model.parameters():
+    param.requires_grad = False
+model.fc = nn.Linear(512, 100)  # Replace the last fc layer
+optimizer = torch.optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4)
+以较大学习率微调全连接层，较小学习率微调卷积层
+model = torchvision.models.resnet18(pretrained=True)
+finetuned_parameters = list(map(id, model.fc.parameters()))
+conv_parameters = (p for p in model.parameters() if id(p) not in finetuned_parameters)
+parameters = [{'params': conv_parameters, 'lr': 1e-3},
+              {'params': model.fc.parameters()}]
+optimizer = torch.optim.SGD(parameters, lr=1e-2, momentum=0.9, weight_decay=1e-4)
+</code></pre>
+<p>以较大学习率微调全连接层，较小学习率微调卷积层</p>
+<pre><code class="language-python">model = torchvision.models.resnet18(pretrained=True)
+finetuned_parameters = list(map(id, model.fc.parameters()))
+conv_parameters = (p for p in model.parameters() if id(p) not in finetuned_parameters)
+parameters = [{'params': conv_parameters, 'lr': 1e-3},
+              {'params': model.fc.parameters()}]
+optimizer = torch.optim.SGD(parameters, lr=1e-2, momentum=0.9, weight_decay=1e-4)
+</code></pre>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

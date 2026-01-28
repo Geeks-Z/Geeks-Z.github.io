@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#universal-representation-learning-from-multiple-domains-for-few-shot-classification">Universal representation learning from multiple domains for few-shot classification</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#基于元学习的少样本分类">基于元学习的少样本分类</a></li>
+<li><a href="#基于迁移学习的少样本分类">基于迁移学习的少样本分类</a></li>
+<li><a href="#跨领域少样本分类">跨领域少样本分类</a></li>
+<li><a href="#知识蒸馏">知识蒸馏</a></li>
+<li><a href="#通用表示">通用表示</a></li>
+</ul>
+</li>
+<li><a href="#3-方法">3. 方法</a><ul>
+<li><a href="#31-少样本任务的公式化">3.1 少样本任务的公式化</a></li>
+<li><a href="#32-学习多个领域的表示">3.2 学习多个领域的表示</a></li>
+<li><a href="#33-特征适配与元测试">3.3 特征适配与元测试</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-实验设置">4.1 实验设置</a></li>
+<li><a href="#42-结果">4.2 结果</a></li>
+<li><a href="#43-进一步的结果">4.3 进一步的结果</a></li>
+<li><a href="#44-分析">4.4 分析</a></li>
+<li><a href="#45-全局检索">4.5 全局检索</a></li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a></li>
+<li><a href="#a-实现细节">A. 实现细节</a><ul>
+<li><a href="#a1-单领域模型的训练细节">A.1 单领域模型的训练细节</a></li>
+<li><a href="#a2-我们方法的训练细节">A.2 我们方法的训练细节</a></li>
+<li><a href="#a3-元测试阶段特征适配的优化">A.3 元测试阶段特征适配的优化</a></li>
+</ul>
+</li>
+<li><a href="#b-更多结果">B. 更多结果</a><ul>
+<li><a href="#b1-单领域学习的完整结果">B.1 单领域学习的完整结果</a></li>
+<li><a href="#b2-适配器在知识蒸馏中的作用">B.2 适配器在知识蒸馏中的作用</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/16.小样本学习</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="universal-representation-learning-from-multiple-domains-for-few-shot-classification"><a href="https://arxiv.org/abs/2103.13841">Universal representation learning from multiple domains for few-shot classification</a><a class="anchor-link" href="#universal-representation-learning-from-multiple-domains-for-few-shot-classification" title="Permanent link">&para;</a></h2>
+<p>要翻译这篇文章到中文并符合您的要求，我将逐步翻译以下内容，并按照您的格式需求进行整理，包括标题层级、公式用 LaTeX 表示，以及标题和内容之间的空行。请稍等，我将从摘要部分开始翻译。</p>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>本文探讨了少样本分类问题，其目标是在仅有少量标注样本的情况下，为先前未见过的类别和领域学习分类器。近期的方法通过使用适配网络对新领域的特征进行对齐，或从多个领域特定的特征提取器中选择相关特征。在本文中，我们提出了一种方法，通过使用适配器和中心核对齐技术（Centered Kernel Alignment, CKA）对多个单独训练的网络的特征进行对齐后，将其知识蒸馏到一个统一的深度表示集内，从而实现单一的通用表示学习。我们证明，这些通用表示可以通过一种类似距离学习方法的高效适配步骤进一步优化，以适应先前未见过的领域。在最新的 Meta-Dataset 基准测试中，我们严格评估了该模型，并展示了其显著优于之前的方法，同时具备更高效的性能。代码将开源，地址为：<a href="https://github.com/VICO-UoE/URL">https://github.com/VICO-UoE/URL</a>。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>随着深度神经网络在许多标准计算机视觉任务中的显著进展，人们对更具挑战性的目标越来越感兴趣。其中之一是提升标准监督方法的数据效率，这些方法通常依赖于大量昂贵且耗时的人工标注数据。与人类智能能够从少量标注样本中学习概念类似，少样本学习（Few-shot Learning）【24, 33】旨在通过少量类别样本的标注数据，快速适配分类器，以容纳训练中未见的类别。</p>
+<p>传统的少样本学习研究主要集中在同质的学习任务中，例如 Omniglot【25】、miniImageNet【53】、tieredImageNet【43】，这些任务的元训练和元测试样本来自单一数据分布（或数据集）。然而，近期的研究兴趣转向了一个更现实且更具挑战性的实验设置：目标是学习少样本模型，不仅能在单一数据分布内泛化，还能推广到先前未见的数据分布。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="基于元学习的少样本分类">基于元学习的少样本分类<a class="anchor-link" href="#基于元学习的少样本分类" title="Permanent link">&para;</a></h3>
+<p>一种直接训练模型以执行少样本分类的方式是元学习。元学习方法可以大致分为两类：基于度量的和基于优化的。前者的关键思想是将原始图像映射到向量表示，并通过学习判别特征空间来使用最近邻分类器，利用不同的距离函数，例如使用孪生网络【21】、加权最近邻分类器【53】、通过支持集中的样本平均来表示每个类别【48】。后者则专注于学习能够从少量支持样本中快速适应新任务的模型。成功的方法包括 MAML【14】、Reptile【35】（通过一阶近似解决 MAML 中昂贵的二阶导数计算）、MAML++【1】（对 MAML 进行了速度和稳定性改进）。</p>
+<h3 id="基于迁移学习的少样本分类">基于迁移学习的少样本分类<a class="anchor-link" href="#基于迁移学习的少样本分类" title="Permanent link">&para;</a></h3>
+<p>也有一些简单且有效的方法【6, 7, 11】首先在所有可用的训练数据上学习神经网络，然后在测试时将其迁移到少样本任务中。Baseline++【6】仅通过余弦距离更新一个参数化的分类器，而 Meta-Baseline【7】则通过最近中心余弦相似度和缩放参数微调整个网络。Dhillon 等【11】探讨了在转导性设置中的微调，其中查询集被假定与支持集同时可用。</p>
+<h3 id="跨领域少样本分类">跨领域少样本分类<a class="anchor-link" href="#跨领域少样本分类" title="Permanent link">&para;</a></h3>
+<p>近年来，一些少样本技术【5, 13, 29, 44】专注于使少样本学习能够在测试时泛化到未见过的领域，在最近提出的 Meta-Dataset【52】中得到了测试。CNAPS【44】通过 FiLM 层【39】调整特征编码器和分类器的参数，以适应新类别，并进一步在 Simple CNAPS【2】中扩展，采用基于马氏距离的非参数分类器。而与此不同，SUR【13】通过为每个领域学习独立的特征提取器，存储领域特定的知识，并通过线性组合从多个域的特征中选择最相关的表示。URT【29】则通过 Transformer 层进行元学习，以选择新任务的特征。与 SUR 和 URT 相似，我们的方法也使用多域特征，但我们通过学习一个单一的网络来实现多领域学习，这比 SUR 和 URT 在推理时需要通过多个单领域网络进行前向传播更加高效。与 Simple CNAPS【2】类似，我们的方法在应用最近邻分类器之前将特征映射到任务特定的空间，但我们通过优化一个适配变换来学习映射的参数。</p>
+<h3 id="知识蒸馏">知识蒸馏<a class="anchor-link" href="#知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>我们的工作与知识蒸馏（KD）方法【17, 27, 30, 40, 45, 50】密切相关，这些方法将大规模教师模型的知识蒸馏到一个小型学生神经网络的分类器【17】和中间层【45】。Born-Again 神经网络【15】通过连续地从相同的教师网络将知识蒸馏到学生网络中，进一步应用于少样本学习【51】和多任务学习【10】。最接近我们工作的是 Li 和 Bilen【27】的工作，他们通过引入任务特定的适配器，将学生多任务网络的特征与多个单任务学习网络的特征对齐。虽然我们像【27】一样使用任务特定的适配器对齐多个网络的特征，但我们的工作应用于一个更具挑战性的多领域学习设置，其中不同领域之间存在显著的差异。为了应对这一挑战，我们引入了更加有效的特征匹配损失，灵感来自于中心化核对齐（CKA），以对齐不同领域间的特征。</p>
+<h3 id="通用表示">通用表示<a class="anchor-link" href="#通用表示" title="Permanent link">&para;</a></h3>
+<p>在多个领域中都能良好工作的表示被称为通用表示，这一概念首次由【3】提出。为了在多个领域中学习通用表示，SUR【13】和 URT【29】提出了为每个领域学习一个独立的模型，并学习在新任务中检索或混合适当的模型。另一类方法【3, 41, 42】则提出通过共享大多数参数并通过归一化层【3】、轻量级残差适配器【41, 42】或特征线性调制（FiLM）【39】在多个领域上执行图像分类。我们的工作受到这些方法的启发，因此我们在没有领域特定权重的情况下学习通用表示，并将其应用于少样本学习。</p>
+<h2 id="3-方法">3. 方法<a class="anchor-link" href="#3-方法" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们描述了问题的设置，并介绍了我们的方法，包括多领域特征学习和特征适配两部分。</p>
+<h3 id="31-少样本任务的公式化">3.1 少样本任务的公式化<a class="anchor-link" href="#31-少样本任务的公式化" title="Permanent link">&para;</a></h3>
+<p>少样本分类的目标是通过少量每个类别的训练样本来学习分类器。该任务包含两组图像：支持集 <span class="math-inline">S = {(x_i, y_i)}<em>{i=1}^{|S|}</span>，包含 <span class="math-inline">|S|</span> 对图像和标签，定义了分类任务，以及查询集 <span class="math-inline">Q = {(x_j)}</em>{j=1}^{|Q|}</span>，包含 <span class="math-inline">|Q|</span> 个待分类的样本。换句话说，我们希望在支持集上学习一个分类器，该分类器能够准确预测查询集的标签。</p>
+<p>与【13, 29】中的方法类似，我们通过两个步骤来解决这个问题：第一，元训练阶段，学习算法接收一个大型数据集 <span class="math-inline">D_b</span> 并输出一个通用的特征提取器 <span class="math-inline">f</span>；第二，元测试阶段，从另一个大型数据集 <span class="math-inline">D_t</span> 中采样目标任务 <span class="math-inline">(S, Q)</span>，构建支持集 <span class="math-inline">S</span> 和查询集 <span class="math-inline">Q</span>。注意，<span class="math-inline">D_b</span> 和 <span class="math-inline">D_t</span> 包含互不重叠的类别。</p>
+<h3 id="32-学习多个领域的表示">3.2 学习多个领域的表示<a class="anchor-link" href="#32-学习多个领域的表示" title="Permanent link">&para;</a></h3>
+<p>我们的重点是学习能够不仅在先前见过的视觉领域内泛化，也能在未见过的领域中泛化的少样本图像分类。由于在未见过的领域中，只有少量样本很难获取领域特定的知识，因此我们受到【3, 41】的启发，假设使用领域无关或通用表示是跨领域泛化成功的关键。为此，我们提出了学习一个多领域网络，该网络能够同时在所有领域特定任务上表现良好，并作为目标任务的特征提取器。</p>
+<p>假设 <span class="math-inline">D_b</span> 包含来自 <span class="math-inline">K</span> 个不同领域的子数据集。一个可能的解决方案是通过在所有 <span class="math-inline">K</span> 个领域（数据集）的图像上联合优化其参数来训练一个多领域网络：<br />
+<div class="math-display"><br />
+    \min_{\phi, \psi_\tau} \sum_{\tau=1}^K \frac{1}{|D_\tau|} \sum_{x,y \in D_\tau} \ell \left( h_{\psi_\tau} \circ f_\phi(x), y \right),<br />
+</div><br />
+其中 <span class="math-inline">\ell</span> 是交叉熵损失，<span class="math-inline">f</span> 是一个多领域特征提取器，它将图像作为输入并输出一个 <span class="math-inline">d</span> 维特征，参数化为一组共享的参数 <span class="math-inline">\phi</span>，这些参数在 <span class="math-inline">K</span> 个领域中共享。 <span class="math-inline">h</span> 是一个领域特定的分类器，接收 <span class="math-inline">f_\phi(x)</span> 并输出目标类别的概率向量，参数化为 <span class="math-inline">\psi_\tau</span>。虽然最小化公式（1）能够得到一个多领域特征提取器 <span class="math-inline">f</span>，但许多先前的研究表明，由于不同任务之间的干扰【8, 56】、数据集大小和难度的变化【20, 27】等问题，这种优化可能会导致较差的结果，相比之下，单一领域的网络效果更好。</p>
+<p>为了应对这一挑战，我们提出了一种两阶段的程序来学习多领域表示，灵感来自于先前的蒸馏方法【17, 27】。具体而言，我们首先训练领域特定的深度网络，每个网络包括一个特定的特征提取器 <span class="math-inline">f_{\phi^<em><em>\tau}</span> 和分类器 <span class="math-inline">h</em>{\psi^</em><em>\tau}</span>，其中参数 <span class="math-inline">\phi^<em>_\tau</span> 和 <span class="math-inline">\psi^</em></em>\tau</span> 是为每个领域专门学习的【13, 29】。然而，与其使用 <span class="math-inline">K</span> 个领域特定的特征提取器并选择最相关的特征，我们提出了一种通过蒸馏 <span class="math-inline">K</span> 个预训练特征提取器的知识，学习一个单一的多领域网络。这样做有两个关键优势：首先，使用一个特征提取器，它的计算能力与每个领域特定的特征提取器相同，在推理时效率更高，因为它只需要执行一次前向传播，而不是多次；其次，学习如何为给定的支持集和查询集找到最相关的特征在【29】中并不简单，且可能由于训练集数据量较少而导致过拟合，而多领域表示自动包含了来自相关领域的所需信息。</p>
+<h3 id="33-特征适配与元测试">3.3 特征适配与元测试<a class="anchor-link" href="#33-特征适配与元测试" title="Permanent link">&para;</a></h3>
+<p>在元测试阶段，给定一个新的学习任务的支持集 <span class="math-inline">S = {(x_i, y_i)}<em>{i=1}^{|S|}</span>，我们使用多领域模型提取特征 <span class="math-inline">{f</em>\phi(x_i)}<em>{i=1}^{|S|}</span>，并将其适配到目标任务中。为此，我们应用一个线性变换 <span class="math-inline">A</em>\theta : \mathbb{R}^d \to \mathbb{R}^d</span>，其可学习的参数为 <span class="math-inline">\theta</span>，即 <span class="math-inline">{z_i}<em>{i=1}^{|S|} = {A</em>\theta \circ f_\phi(x_i)}<em>{i=1}^{|S|}</span>，其中 <span class="math-inline">\theta \in \mathbb{R}^{d \times d}</span>。然后，我们按照【13, 32, 48】中的类似流程，通过对属于同一类别的嵌入向量取平均，来构建一个类中心分类器：<br />
+<div class="math-display"><br />
+    c_j = \frac{1}{|S_j|} \sum</em>{z_i \in S_j} z_i, \quad S_j = { z_k : y_k = j }, \quad j = 1, \ldots, C,<br />
+</div><br />
+其中 <span class="math-inline">C</span> 是支持集中的类别数。接下来，我们通过以下公式估算支持样本 <span class="math-inline">z</span> 的似然度：<br />
+<div class="math-display"><br />
+    p(y = l | z) = \frac{\exp(-d(z, c_l))}{\sum_{j=1}^{C} \exp(-d(z, c_j))},<br />
+</div><br />
+其中 <span class="math-inline">d(z, c_l)</span> 是负余弦相似度。</p>
+<p>然后，我们优化 <span class="math-inline">\theta</span> 来最小化以下在支持集 <span class="math-inline">S</span> 上的目标函数：<br />
+<div class="math-display"><br />
+    \min_\theta \frac{1}{|S|} \sum_{x_i, y_i \in S} \left[ \log(p(y = y_i | x_i)) \right].<br />
+</div><br />
+通过求解公式（6），我们可以获得高内类相似度和低类间相似度的适配空间。我们然后使用 <span class="math-inline">\theta</span> 和公式（5）来预测查询样本 <span class="math-inline">Q</span> 的标签，通过选择与类中心 <span class="math-inline">c_j</span> 最近的一个来进行分类。我们的元测试流程如图 3 所示。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先描述基准数据集、实现细节和对比方法。然后，我们将严格比较我们的方法与最先进的方法，并在消融实验中研究每个提议的组成部分。我们还将对我们的方法进行定性分析。最后，我们将在一个全球检索任务中评估我们学习的特征表示，以进一步验证其在少样本分类任务中的效果。</p>
+<h3 id="41-实验设置">4.1 实验设置<a class="anchor-link" href="#41-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>数据集</strong>。Meta-Dataset【52】是一个少样本分类基准，最初由十个数据集组成：ILSVRC 2012【46】（ImageNet）、Omniglot【25】、FGVC-Aircraft【31】（飞机）、CUB-200-2011【54】（鸟类）、Describable Textures【9】（DTD）、QuickDraw【19】、FGVCx Fungi【4】（真菌）、VGG Flower【36】（花卉）、交通标志【18】和 MSCOCO【28】，后来扩展了 MNIST【26】、CIFAR-10【23】和 CIFAR-100【23】。我们遵循标准程序，使用前八个数据集进行元训练，每个数据集进一步划分为训练集、验证集和测试集，并确保类别不重叠。对这些数据集的评估用于衡量在已见领域中的泛化能力。其余五个数据集作为未见领域用于元测试，测量跨领域泛化能力。</p>
+<h3 id="42-结果">4.2 结果<a class="anchor-link" href="#42-结果" title="Permanent link">&para;</a></h3>
+<p>如 Meta-Dataset【52】中所述，我们在不同的方式和样本数下进行任务采样，并在表 1 中报告结果。我们的方法在八个已见数据集中的七个以及五个未见数据集中的四个上都超越了最先进的方法。我们还根据【52】中的推荐计算了平均排名，我们的方法的平均排名为 1.3，而最先进的方法 SUR 和 URT 分别排名为 5.0 和 4.4。具体而言，我们在 Aircraft（+2.8）、Birds（+2.1）、Textures（+4.2）和 VGG Flower（+1.5）等已见领域中获得了显著更好的结果，在 Traffic Sign（+6.1）和 MSCOCO（+3.8）等领域中也有所领先。这些结果表明，联合学习一个统一的表示比将来自多个单领域特征提取器的表示融合要更有利，因为它能够提供更好的泛化能力。值得注意的是，我们的方法在推理时只需要使用一个统一的网络提取特征，而 SUR 和 URT 需要将查询集输入到多个单领域网络中，因此我们的推理计算量显著较小。</p>
+<p>我们还看到，我们的方法在所有数据集上都优于两个强基准：最佳单领域模型（Best SDL）和多领域学习基准（MDL），除了 Quick-Draw 数据集外。这表明：i）通用表示在新任务中，尤其是在已见和未见领域中，能够显著优于单领域表示，且在参数量上大大减少（相比 8 个神经网络只需要 1 个）；ii）我们的蒸馏策略对于获得良好的性能至关重要。</p>
+<p>尽管 MDL 在某些领域通过跨领域的表示转移超过了最佳单领域模型，但在其他领域其表现不如 SDL，这可能是由于在领域间存在较大的负迁移。然而，MDL 在平均排名上获得了第三名，表明多领域表示的优势。</p>
+<h3 id="43-进一步的结果">4.3 进一步的结果<a class="anchor-link" href="#43-进一步的结果" title="Permanent link">&para;</a></h3>
+<p><strong>五样本设置中的变化</strong>。在报告了在广泛的不同样本数（例如在一些极端情况下最多 100 个样本）下的结果之后，我们进一步分析了在 5 样本设置下，采用不同类别数量的情况。为此，我们遵循【12】中的设置，并与最先进的三种方法（包括 Simple CNAPS、SUR 和 URT）进行了比较。在此设置中，我们以 Meta-Dataset 中的标准设置为基础，随机选择每个数据集的样本并为其构建平衡的支持集和查询集，如表 2 所示。所有方法在大多数数据集上的性能相较于表 1 中的标准设置有所下降，说明这是一个更具挑战性的设置，因为 5 样本设置下支持集的样本数量远少于标准设置。在该设置下，排名变化略微发生了变化。前两名方法保持不变，而 Simple CNAPS 和 SUR 在平均排名上都为 3.0。SUR 在 MNIST 上表现最佳，Simple CNAPS 在 CIFAR-100 上表现最佳，而 URT 在 Quick Draw 上表现最好。我们的方法在其余的 10 个数据集上仍然取得了显著的更好结果。</p>
+<p><strong>五类一样本设置中的结果</strong>。接下来，我们在 Meta-Dataset 上测试了一个极具挑战性的五类一样本设置。在该设置中，每个任务仅看到每个类别的一个图像作为支持集。这个设置通常用于评估单一领域中的不同方法【25, 43, 53】，而我们将其用于多个领域。如表 2 所示，我们的方法在此设置下依然显著优于其他方法，这进一步验证了在元测试中样本有限时通用表示的重要性。令人有趣的是，Simple CNAPS 在该设置下的排名优于 SUR，这与在前两个设置中的表现正好相反。</p>
+<h3 id="44-分析">4.4 分析<a class="anchor-link" href="#44-分析" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们通过改变蒸馏损失函数和元测试中分类器的类型，进行了一次消融实验，分析我们框架中的不同组件。</p>
+<p><strong>不同的蒸馏损失函数</strong>。我们首先研究了不同的蒸馏损失函数，包括 L2 损失、余弦距离、KL 散度和 CKA，用于学习多领域网络，并报告了它们的性能，如表 3 所示。我们在【17】中采用 KL 散度损失来匹配单领域和多领域网络的预测，而其他损失函数用于匹配这些模型之间的内部表示（即送入分类器的特征）。在所有单独的损失函数中，使用 CKA 或 KL 散度损失的模型表现最好，其中 CKA 在大多数领域中表现优于 KL 散度。尽管特征通过适配器先进行对齐，L2 和余弦损失函数不足以匹配来自不同领域的特征，因此进一步用 CKA 对齐特征非常关键。需要注意的是，这里的 L2 基线对应于【27】中的方法。最后，结合 CKA 和 KL 散度损失的组合在所有使用单独损失函数训练的多领域模型中表现最好。</p>
+<p><strong>元测试中的不同分类器</strong>。接下来，我们评估了在元测试阶段使用最近邻分类器（NCC）的自适应映射策略【3.3 节】与其他参数化分类器（如支持向量机 SVM 和逻辑回归 LR）的表现【51】，并将其与非参数分类器（如不使用适配映射的 NCC 以及带有马氏距离的 NCC+MD【2】）进行比较，结果如表 4 所示。对于非参数分类器，NCC 在未见领域中与马氏距离结合使用时表现最好。</p>
+<p>我们的框架结合了参数化和非参数分类器的优点，整体上，在已见领域中超越了 SVM、LR 和 NCC+MD，而在某些未见领域（如 Traffic Sign 和 MNIST）中的表现稍微逊色。</p>
+<p><strong>定性结果</strong>。我们定性地分析了我们的方法，并与 URT【29】在图 4 中进行了对比，展示了在四个不同数据集上给定查询图像时，最近邻的结果（更多示例见附录）。从结果可以看出，我们的方法比 URT 提供了更多正确的邻居。URT 检索到的图像更多地具有相似的颜色、形状和背景，而我们的方法能够检索到语义上更相似的图像。这再次表明，我们的方法能够学习到更有用和更通用的表示。</p>
+<h3 id="45-全局检索">4.5 全局检索<a class="anchor-link" href="#45-全局检索" title="Permanent link">&para;</a></h3>
+<p>在这一部分，我们超越了少样本分类实验，并在检索任务中评估了我们从多领域网络中学习到的表示的泛化能力，这一任务灵感来自于度量学习文献【37, 55】。为此，我们对每个测试图像，在整个测试集中找到最接近的图像，并检查它们是否属于同一类别。我们使用 Recall@k 作为评估指标，考虑到在 k 个最近邻中，任何一个与查询样本属于相同类别的邻居都被视为正例。如表 5 所示，我们将我们的方法与 Simple CNAPS 在 Recall@1 和 Recall@2 中进行了比较（更多结果见附录）。由于 URT 和 SUR 需要在检索任务中进行适配，而没有这种适配的情况下，我们用两种基线方法（连接或求和多个领域特定网络的特征）来代替它们。我们的模型在十个数据集中的表现超越了其他方法，尤其是在 Aircraft、Birds、Textures 和 Fungi 数据集上取得了显著的提升。这强烈表明，我们的多领域表示是我们方法成功的关键，尤其是在之前的少样本分类任务中。</p>
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>在本文中，我们展示了学习一个统一的通用表示并通过特征优化步骤进一步改进，可以在最近的 Meta-Dataset 基准中实现最先进的性能。为此，我们提出了一种方法，通过使用适配器和一个受 CKA 启发的损失函数，将深度神经网络的参数同时优化在多个领域中，并通过对多个单领域网络的特征对齐来实现知识蒸馏。我们表明，通用特征可以通过学习一个变换进一步从少量样本中优化，以适应未见任务，这一过程类似于距离学习。我们的模型在提高泛化能力的同时，所需的参数更少，计算效率更高，相比其他多领域方法更具优势。</p>
+<h2 id="a-实现细节">A. 实现细节<a class="anchor-link" href="#a-实现细节" title="Permanent link">&para;</a></h2>
+<p>在所有实验中，我们使用 ResNet-18【16】作为特征提取器的骨干网络，既用于单领域网络，也用于多领域网络。</p>
+<h3 id="a1-单领域模型的训练细节">A.1 单领域模型的训练细节<a class="anchor-link" href="#a1-单领域模型的训练细节" title="Permanent link">&para;</a></h3>
+<p>我们为每个训练数据集训练一个 ResNet-18 模型。优化时，我们遵循【13】中的训练协议。具体来说，我们使用 SGD 优化器，并为所有实验设置 0.9 的动量和 <span class="math-inline">7 \times 10^{-4}</span> 的权重衰减，学习率、批量大小、退火频率和最大迭代次数如表 6 所示。为了正则化训练，我们还使用与【13】中完全相同的数据增强方法，例如随机裁剪和随机颜色增强。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">数据集</th>
+<th style="text-align: left;">学习率</th>
+<th style="text-align: left;">批量大小</th>
+<th style="text-align: left;">退火频率</th>
+<th style="text-align: left;">最大迭代次数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ImageNet</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">48,000</td>
+<td style="text-align: left;">480,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">Omniglot</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">3,000</td>
+<td style="text-align: left;">50,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">Aircraft</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">3,000</td>
+<td style="text-align: left;">50,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">Birds</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">3,000</td>
+<td style="text-align: left;">50,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">Textures</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">1,500</td>
+<td style="text-align: left;">50,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">Quick Draw</td>
+<td style="text-align: left;"><span class="math-inline">1 \times 10^{-2}</span></td>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">48,000</td>
+<td style="text-align: left;">480,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">Fungi</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">15,000</td>
+<td style="text-align: left;">480,000</td>
+</tr>
+<tr>
+<td style="text-align: left;">VGG Flower</td>
+<td style="text-align: left;"><span class="math-inline">3 \times 10^{-2}</span></td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">1,500</td>
+<td style="text-align: left;">50,000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>表 6.</strong> 单领域学习的训练超参数。</p>
+<h3 id="a2-我们方法的训练细节">A.2 我们方法的训练细节<a class="anchor-link" href="#a2-我们方法的训练细节" title="Permanent link">&para;</a></h3>
+<p>在多领域网络中，我们在各个领域共享所有层（除了最后一个分类器）。为了训练多领域网络，我们使用与单领域学习模型相同的优化器和调度器，学习 240,000 次迭代，学习率为 0.03，退火频率为 48,000。与【52】中的设置类似，训练批次有 50% 的数据来自 ImageNet 数据集，另一半数据来自其余的 7 个数据集。具体而言，ImageNet 的批量大小为 64×7，其他 7 个数据集的批量大小为 64。</p>
+<p>我们将 <span class="math-inline">\lambda_f</span> 和 <span class="math-inline">\lambda_p</span> 设置为 ImageNet 数据集为 4，其他数据集为 1。我们对 <span class="math-inline">\lambda</span> 进行线性退火，退火过程为 <span class="math-inline">\lambda \leftarrow \lambda \times (1 - t / T)</span>，其中 <span class="math-inline">t</span> 为当前迭代次数，<span class="math-inline">T</span> 为总迭代次数。我们设置 <span class="math-inline">T = k \times \text{退火频率}</span>，其中退火频率为 48,000。我们根据 8 个训练数据集的交叉验证搜索 <span class="math-inline">k = {1, 2, 3, 4, 5}</span>，对于 ImageNet，设置 <span class="math-inline">k = 5</span>（即 <span class="math-inline">T = 240,000</span>），对于 Omniglot、Quick Draw、Fungi 设置 <span class="math-inline">k = 2</span>，对于其他数据集设置 <span class="math-inline">k = 1</span>。</p>
+<p>对于所有实验，我们在 8 个训练数据集的验证集上执行早停。</p>
+<h3 id="a3-元测试阶段特征适配的优化">A.3 元测试阶段特征适配的优化<a class="anchor-link" href="#a3-元测试阶段特征适配的优化" title="Permanent link">&para;</a></h3>
+<p>在元测试阶段，优化特征适配时，我们将 <span class="math-inline">\theta</span> 初始化为单位矩阵，这样 NCC 可以使用多领域网络产生的原始特征，并从一个较好的起点优化适配器 <span class="math-inline">\theta</span>。与【13】中的优化类似，我们优化 <span class="math-inline">\theta</span> 40 次，使用 Adadelta【57】作为优化器，学习率为 0.1（对于前八个数据集）或 1（对于最后五个数据集）。</p>
+<h2 id="b-更多结果">B. 更多结果<a class="anchor-link" href="#b-更多结果" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先评估了每个单领域模型在每个测试数据集上的少样本分类性能。然后，我们评估了适配器在知识蒸馏中的作用。接下来，我们展示了五样本设置和五类一样本设置的完整结果。最后，我们报告了更多的定性结果和全局检索结果。</p>
+<h3 id="b1-单领域学习的完整结果">B.1 单领域学习的完整结果<a class="anchor-link" href="#b1-单领域学习的完整结果" title="Permanent link">&para;</a></h3>
+<p>为了研究从多个数据集中学习通用表示，我们为每个训练数据集训练一个网络，并使用每个单领域网络作为特征提取器，测试它在每个数据集上的少样本分类性能。这包括在 13 个测试数据集上评估 8 个单领域网络，使用最近邻分类器（NCC）。表 7 显示了单领域学习模型的结果，其中每列显示一个单领域网络在 13 个测试数据集上的平均准确率和 95% 置信区间。每个数据集的最佳结果用粗体字标出。</p>
+<p>如表 7 所示，ImageNet 模型的特征在多个数据集上泛化良好，在四个已见数据集（如 ImageNet、Birds、Texture 和 VGG Flower）以及五个未见数据集（如 Traffic Sign、MSCOCO、CIFAR-10 和 CIFAR-100）上取得了最佳结果。Omniglot、Aircraft、Quick Draw 和 Fungi 上训练的模型在相应数据集上表现最好，而 Omniglot 模型在 MNIST 上也具有较好的泛化能力，因为这两个数据集的图像风格类似。我们随后选择性能最好的模型，形成最佳单领域模型（Best SDL），这为通用表示学习提供了一个非常有竞争力的基准。</p>
+<h3 id="b2-适配器在知识蒸馏中的作用">B.2 适配器在知识蒸馏中的作用<a class="anchor-link" href="#b2-适配器在知识蒸馏中的作用" title="Permanent link">&para;</a></h3>
+<p>在这一部分，我们评估了我们的方法是否使用适配器来对齐特征（使用 CKA 进行知识蒸馏）。从表 9 可以看出，使用适配器确实有助于提高性能，尤其是在 Birds（+1.7）、VGG Flower（+3.6）、MSCOCO（+1.3）等数据集上。这表明，适配器 <span class="math-inline">A_\theta</span> 在对齐来自多领域和单领域学习网络的特征时起到了重要作用，这些网络是从不同的领域中学习到的。</p>
+<p>到此为止，已经完成了《Universal Representation Learning from Multiple Domains for Few-shot Classification》论文的中文翻译。如果有其他问题或需要调整的地方，随时告诉我！</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多变量线性回归(Linear Regression with Multiple Variables)</title>
+    <meta name="description" content="多变量线性回归(Linear Regression with Multiple Variables) - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#多特征multiple-features">多特征(Multiple Features)</a></li>
+<li><a href="#多变量梯度下降gradient-descent-for-multiple-variables">多变量梯度下降(Gradient Descent for Multiple Variables)</a></li>
+<li><a href="#梯度下降实践1-特征值缩放gradient-descent-in-practice-i---feature-scaling">梯度下降实践1-特征值缩放(Gradient Descent in Practice I - Feature Scaling)</a></li>
+<li><a href="#梯度下降实践2-学习速率gradient-descent-in-practice-ii---learning-rate">梯度下降实践2-学习速率(Gradient Descent in Practice II - Learning Rate)</a></li>
+<li><a href="#特征和多项式回归features-and-polynomial-regression">特征和多项式回归(Features and Polynomial Regression)</a></li>
+<li><a href="#正规方程normal-equation">正规方程(Normal Equation)</a></li>
+<li><a href="#不可逆性正规方程normal-equation-noninvertibility">不可逆性正规方程(Normal Equation Noninvertibility)</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>多变量线性回归(Linear Regression with Multiple Variables)</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="多变量线性回归linear-regression-with-multiple-variables">多变量线性回归(Linear Regression with Multiple Variables)<a class="anchor-link" href="#多变量线性回归linear-regression-with-multiple-variables" title="Permanent link">&para;</a></h1>
+<h2 id="多特征multiple-features">多特征(Multiple Features)<a class="anchor-link" href="#多特征multiple-features" title="Permanent link">&para;</a></h2>
+<p>对于一个要度量的对象，一般来说会有不同维度的多个特征。比如之前的房屋价格预测例子中，除了房屋的面积大小，可能还有房屋的年限、房屋的层数等等其他特征：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003986.png" /></p>
+<p>这里由于特征不再只有一个，引入一些新的记号</p>
+<blockquote>
+<p><span class="math-inline">n</span>: 特征的总数 </p>
+<p><span class="math-inline">{x}^{\left( i \right)}</span>: 代表样本矩阵中第 <span class="math-inline">i</span> 行，也就是第 <span class="math-inline">i</span> 个训练实例。</p>
+<p><span class="math-inline">{x}_{j}^{\left( i \right)}</span>: 代表样本矩阵中第 <span class="math-inline">i</span> 行的第 <span class="math-inline">j</span> 列，也就是第 <span class="math-inline">i</span> 个训练实例的第 <span class="math-inline">j</span> 个特征。</p>
+</blockquote>
+<p>参照上图，则有 <span class="math-inline">{x}^{(2)}\text{=}\begin{bmatrix} 1416\\ 3\\ 2\\ 40 \end{bmatrix}, {x}^{(2)}_{1} = 1416</span></p>
+<p>多变量假设函数 <span class="math-inline">h</span> 表示为：<span class="math-inline">h_{\theta}\left( x \right)={\theta_{0}}+{\theta_{1}}{x_{1}}+{\theta_{2}}{x_{2}}+...+{\theta_{n}}{x_{n}}</span></p>
+<p>对于 <span class="math-inline">\theta_0</span>，和单特征中一样，我们将其看作基础数值。例如，房价的基础价格。</p>
+<p>参数向量的维度为 <span class="math-inline">n+1</span>，在特征向量中添加 <span class="math-inline">x_{0}</span> 后，其维度也变为 <span class="math-inline">n+1</span>， 则运用线性代数，可简化 <span class="math-inline">h</span>：</p>
+<p><div class="math-display"><br />
+h_\theta\left(x\right)=\begin{bmatrix}\theta_0\; \theta_1\; ... \;\theta_n \end{bmatrix}\begin{bmatrix}x_0 \newline x_1 \newline \vdots \newline x_n\end{bmatrix}= \theta^T x<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">\theta^T</span>: <span class="math-inline">\theta</span> 矩阵的转置</p>
+<p><span class="math-inline">x</span>: 某个样本的特征向量，<span class="math-inline">n+1</span> 维特征量向量</p>
+<p><span class="math-inline">x_0</span>: 为了计算方便我们会假设 <span class="math-inline">x_0^{(i)} = 1</span></p>
+</blockquote>
+<h2 id="多变量梯度下降gradient-descent-for-multiple-variables">多变量梯度下降(Gradient Descent for Multiple Variables)<a class="anchor-link" href="#多变量梯度下降gradient-descent-for-multiple-variables" title="Permanent link">&para;</a></h2>
+<p>多变量代价函数类似于单变量代价函数，</p>
+<p>即 <span class="math-inline">J\left( {\theta_{0}},{\theta_{1}}...{\theta_{n}} \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{{{\left( h_{\theta} \left({x}^{\left( i \right)} \right)-{y}^{\left( i \right)} \right)}^{2}}}</span> ，其中 <span class="math-inline">h_\theta\left(x\right)= \theta^T x</span>。</p>
+<p>前文提到梯度下降对于最小化代价函数的通用性，则多变量梯度下降公式即</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{Repeat until convergence:} \; \lbrace \<br />
+&amp;{{\theta }<em>{j}}:={{\theta }</em>{j}}-\alpha \frac{\partial }{\partial {{\theta }<em>{j}}}J\left( {\theta</em>{0}},{\theta_{1}}...{\theta_{n}}  \right) \<br />
+\rbrace<br />
+\end{align</em>}<br />
+</div></p>
+<p>解出偏导得：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{repeat until convergence:} \; \lbrace \<br />
+&amp; \theta_j := \theta_j - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_j^{(i)} \; &amp; \text{for j := 0,1...n}\<br />
+\rbrace<br />
+\end{align</em>}<br />
+</div></p>
+<p>可展开为：</p>
+<p><div class="math-display"><br />
+\begin{aligned}<br />
+&amp; \text{repeat until convergence:} \; \lbrace \<br />
+&amp; \theta_0 := \theta_0 - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_0^{(i)}\<br />
+&amp; \theta_1 := \theta_1 - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_1^{(i)} \<br />
+&amp; \theta_2 := \theta_2 - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_2^{(i)} \<br />
+&amp; \vdots \<br />
+&amp; \theta_n := \theta_n - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_n^{(i)} &amp;\<br />
+\rbrace<br />
+\end{aligned}<br />
+</div></p>
+<p>当然，同单变量梯度下降一样，计算时需要<strong>同时更新</strong>所有参数。</p>
+<p><span class="math-inline">h_\theta\left(x\right)= \theta^T x</span>，则得到同时更新参数的向量化(Vectorization)实现：<br />
+<div class="math-display"><br />
+\theta = \theta - \alpha \frac{1}{m}(X^T(X\theta-y))<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">X</span>: 训练集数据，<span class="math-inline">m\times(n+1)</span> 维矩阵（包含基本特征 <span class="math-inline">x_0=1</span>）</p>
+</blockquote>
+<h2 id="梯度下降实践1-特征值缩放gradient-descent-in-practice-i---feature-scaling">梯度下降实践1-特征值缩放(Gradient Descent in Practice I - Feature Scaling)<a class="anchor-link" href="#梯度下降实践1-特征值缩放gradient-descent-in-practice-i---feature-scaling" title="Permanent link">&para;</a></h2>
+<p>在应用梯度下降算法实践时，由于各特征值的范围不一，可能会影响代价函数收敛速度。</p>
+<p>以房价预测问题为例，这里选取房屋面积大小和房间数量这两个特征。</p>
+<p>下图中，左图是以原始数据绘制的代价函数轮廓图，右图为采用特征缩放（都除以最大值）后图像。左图中呈现的图像较扁，相对于使用特征缩放方法的右图，梯度下降算法需要更多次的迭代。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003814.png" /></p>
+<p>为了优化梯度下降的收敛速度，采用特征缩放的技巧，使各特征值的<strong>范围尽量一致</strong>。</p>
+<p>除了以上图人工选择并除以一个参数的方式，<strong>均值归一化(Mean normalization)</strong>方法更为便捷，可采用它来对所有特征值统一缩放：</p>
+<p><strong><span class="math-inline">x_i:=\frac{x_i-average(x)}{maximum(x)-minimum(x)}</span></strong>, 使得  <span class="math-inline">x_i \in (-1,1)</span></p>
+<p>对于特征的范围，并不一定需要使得 <span class="math-inline">-1 \leqslant x \leqslant 1</span>，类似于 <span class="math-inline">1\leqslant x \leqslant 3</span> 等也是可取的，而诸如 <span class="math-inline">-100 \leqslant x \leqslant 100 </span>，<span class="math-inline">-0.00001 \leqslant x \leqslant 0.00001</span>，就显得过大/过小了。</p>
+<p>另外注意，一旦采用特征缩放，我们就需对所有的输入采用特征缩放，包括训练集、测试集、预测输入等。</p>
+<h2 id="梯度下降实践2-学习速率gradient-descent-in-practice-ii---learning-rate">梯度下降实践2-学习速率(Gradient Descent in Practice II - Learning Rate)<a class="anchor-link" href="#梯度下降实践2-学习速率gradient-descent-in-practice-ii---learning-rate" title="Permanent link">&para;</a></h2>
+<p>通常，有两种方法来确定函数是否收敛</p>
+<ul>
+<li>多次迭代收敛法</li>
+<li>无法确定需要多少次迭代</li>
+<li>较易绘制关于迭代次数的图像</li>
+<li>根据图像易预测所需的迭代次数</li>
+<li>自动化测试收敛法（比较阈值）</li>
+<li>不易选取阈值</li>
+<li>代价函数近乎直线时无法确定收敛情况</li>
+</ul>
+<p>对于梯度下降，一般采用多次迭代收敛法来得出最小化代价函数的参数值，自动化测试收敛法（如设定 <span class="math-inline">J\left(\theta\right) &lt; {10}^{-3}</span> 时判定收敛）则几乎不会被使用。</p>
+<p>我们可以通过绘制<strong>代价函数关于迭代次数的图像</strong>，可视化梯度下降的执行过程，借助直观的图形来发现代价函数趋向于多少时能趋于收敛，依据图像变化情况，确定诸如学习速率的取值，迭代次数的大小等问题。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003496.png" /></p>
+<p>对于学习速率 <span class="math-inline">\alpha</span>，一般上图展现的为适中情况，下图中，左图可能表明 <strong><span class="math-inline">\alpha</span> 过大</strong>，代价函数<strong>无法收敛</strong>，右图可能表明 <strong><span class="math-inline">\alpha</span> 过小</strong>，代价函数<strong>收敛的太慢</strong>。当然，<span class="math-inline">\alpha</span> 足够小时，代价函数在每轮迭代后一定会减少。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003995.png" /></p>
+<p>通过不断改变 <span class="math-inline">\alpha</span> 值，绘制并观察图像，并以此来确定合适的学习速率。 尝试时可取 <span class="math-inline">\alpha</span> 如 <span class="math-inline">\dots\;0,001,\;0.003,\;0.01,\;0.03,\;0.1,\;\dots</span></p>
+<h2 id="特征和多项式回归features-and-polynomial-regression">特征和多项式回归(Features and Polynomial Regression)<a class="anchor-link" href="#特征和多项式回归features-and-polynomial-regression" title="Permanent link">&para;</a></h2>
+<p>在特征选取时，我们也可以自己归纳总结，定义一个新的特征，用来<strong>取代或拆分</strong>旧的一个或多个特征。比如，对于房屋面积特征来说，我们可以将其拆分为长度和宽度两个特征，反之，我们也可以合并长度和宽度这两个特征为面积这一个特征。</p>
+<p>线性回归只能以直线来对数据进行拟合，有时候需要使用<strong>曲线</strong>来对数据进行拟合，即<strong>多项式回归(Polynomial Regression)</strong>。</p>
+<p>比如一个二次方模型：<span class="math-inline">h_{\theta}\left( x \right)={\theta_{0}}+{\theta_{1}}{x_{1}}+{\theta_{2}}{x_{2}^2}</span></p>
+<p>或者三次方模型：<span class="math-inline">h_{\theta}\left( x \right)={\theta_{0}}+{\theta_{1}}{x_{1}}+{\theta_{2}}{x_{2}^2}+{\theta_{3}}{x_{3}^3}</span> </p>
+<p>或者平方根模型： <span class="math-inline">h_{\theta}\left( x \right)={\theta_{0}}+{\theta_{1}}{x_{1}}+{\theta_{2}}{x_{2}^2}+{\theta_{3}}{\sqrt{x_3}}</span></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003600.png" /></p>
+<p>在使用多项式回归时，要记住非常有必要进行特征缩放，比如 <span class="math-inline">x_1</span> 的范围为 1-1000，那么 <span class="math-inline">x_1^2</span> 的范围则为 1- 1000000，不适用特征缩放的话，范围更有不一致，也更易影响效率。</p>
+<h2 id="正规方程normal-equation">正规方程(Normal Equation)<a class="anchor-link" href="#正规方程normal-equation" title="Permanent link">&para;</a></h2>
+<p>对于一些线性回归问题来说，正规方程法给出了一个更好的解决问题的方式。</p>
+<p>正规方程法，即令 <span class="math-inline">\frac{\partial}{\partial{\theta_{j}}}J\left( {\theta_{j}} \right)=0</span> ，通过解析函数的方式直接计算得出参数向量的值  <span class="math-inline">\theta ={{\left( {X^T}X \right)}^{-1}}{X^{T}}y</span> ，Octave/Matlab 代码： <code>theta = inv(X'*X)*X'*y</code>。</p>
+<blockquote>
+<p><span class="math-inline">{X}^{-1}</span>: 矩阵 <span class="math-inline">X</span> 的逆，在 Octave 中，<code>inv</code> 函数用于计算矩阵的逆，类似的还有 <code>pinv</code> 函数。</p>
+<p><code>X'</code>: 在 Octave 中表示矩阵 X 的转置，即 <span class="math-inline">X^T</span></p>
+</blockquote>
+<p>下表列出了正规方程法与梯度下降算法的对比</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>梯度下降</th>
+<th>正规方程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>是否需要选取 <span class="math-inline">\alpha</span></td>
+<td>需要</td>
+<td>不需要</td>
+</tr>
+<tr>
+<td>是否需要迭代运算</td>
+<td>需要</td>
+<td>不需要</td>
+</tr>
+<tr>
+<td>特征量大[^1]时</td>
+<td>适用，<span class="math-inline">O\left(kn^2\right)</span></td>
+<td>不适用，<span class="math-inline">(X^TX)^{-1}</span> 复杂度 <span class="math-inline">O\left( {{n}^{3}} \right)</span></td>
+</tr>
+<tr>
+<td>适用范围<a href="梯度下降算法的普适性好，而对于特定的线性回归模型，正规方程是很好的替代品。">^2</a></td>
+<td>各类模型</td>
+<td>只适用线性模型，且矩阵需可逆</td>
+</tr>
+</tbody>
+</table>
+<p>[^1]: 一般来说，当 <span class="math-inline">n</span> 超过 10000 时，对于正规方程而言，特征量较大。</p>
+<p><strong>正规方程法的推导过程</strong>：<br />
+<div class="math-display"><br />
+\begin{aligned}<br />
+J\left( \theta  \right)&amp; =\frac{1}{2m}\sum\limits_{i=1}^{m}{{{\left( {h_{\theta}}\left( {x^{(i)}} \right)-{y^{(i)}} \right)}^{2}}}\<br />
+&amp; =\frac{1}{2m}||X\theta-y||^2 \<br />
+&amp; =\frac{1}{2m}(X\theta-y)^T(X\theta-y) \hspace{15cm}<br />
+\end{aligned}<br />
+</div></p>
+<p>展开上式可得</p>
+<p><span class="math-inline">J(\theta )= \frac{1}{2m}\left( {{\theta }^{T}}{{X}^{T}}X\theta -{{\theta}^{T}}{{X}^{T}}y-{{y}^{T}}X\theta + {{y}^{T}}y \right)</span></p>
+<p>注意到 <span class="math-inline">{{\theta}^{T}}{{X}^{T}}y</span> 与 <span class="math-inline">{{y}^{T}}X\theta</span> 都为标量，实际上是等价的，则：</p>
+<p><span class="math-inline">J(\theta) = \frac{1}{2m}[X^TX\theta-2\theta^TX^Ty+y^Ty]</span></p>
+<p>接下来对<span class="math-inline">J(\theta )</span> 求偏导，根据矩阵的求导法则:</p>
+<p><span class="math-inline">\frac{dX^TAX}{dX}=(A+A^\mathrm{T})X</span></p>
+<p><span class="math-inline">\frac{dX^TA}{dX}={A}</span></p>
+<p>所以有:</p>
+<p><span class="math-inline">\frac{\partial J\left( \theta  \right)}{\partial \theta }=\frac{1}{2m}\left(2{{X}^{T}}X\theta -2{{X}^{T}}y \right)={{X}^{T}}X\theta -{{X}^{T}}y</span></p>
+<p>令<span class="math-inline">\frac{\partial J\left( \theta  \right)}{\partial \theta }=0</span>, 则有<br />
+<div class="math-display"><br />
+\theta ={{\left( {X^{T}}X \right)}^{-1}}{X^{T}}y<br />
+</div></p>
+<h2 id="不可逆性正规方程normal-equation-noninvertibility">不可逆性正规方程(Normal Equation Noninvertibility)<a class="anchor-link" href="#不可逆性正规方程normal-equation-noninvertibility" title="Permanent link">&para;</a></h2>
+<p>（本部分内容为选讲）</p>
+<p>正规方程无法应用于不可逆的矩阵，发生这种问题的概率很小，通常由于</p>
+<ul>
+<li>特征之间线性相关</li>
+</ul>
+<p>比如同时包含英寸的尺寸和米为单位的尺寸两个特征，它们是线性相关的</p>
+<p>即 <span class="math-inline">{x_{1}}={x_{2}}*{{\left( 3.28 \right)}^{2}}</span>。</p>
+<ul>
+<li>特征数量大于训练集的数量<span class="math-inline">\left(m \leqslant n \right)</span>。</li>
+</ul>
+<p>如果发现 <span class="math-inline">X^TX</span> 的结果不可逆，可尝试：</p>
+<ul>
+<li>减少多余/重复特征</li>
+<li>增加训练集数量</li>
+<li>使用正则化（后文）</li>
+</ul>
+<p>对于这类不可逆的矩阵，我们称之为<strong>奇异矩阵</strong>或<strong>退化矩阵</strong>。</p>
+<p>这种情况下，如果还想使用正规方程法，在Octave中，可以选用 <code>pinv</code> 函数，<code>pinv</code> 区别于 <code>inv</code>，<code>pinv</code> 函数被称为伪逆函数，在矩阵不可逆的时候，使用这个函数仍可正确地计算出 <span class="math-inline">\theta</span> 的值。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

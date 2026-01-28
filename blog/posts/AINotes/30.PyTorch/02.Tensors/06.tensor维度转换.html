@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建一个形状为 (4, 4) 的张量</title>
+    <meta name="description" content="创建一个形状为 (4, 4) 的张量 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#view-转换维度">view() 转换维度</a></li>
+<li><a href="#reshape-转换维度">reshape() 转换维度</a></li>
+<li><a href="#permute-坐标系变换">permute() 坐标系变换</a><ul>
+<li><a href="#基本用法">基本用法</a></li>
+<li><a href="#示例">示例</a></li>
+<li><a href="#注意点">注意点</a></li>
+<li><a href="#与其他函数的关系">与其他函数的关系</a></li>
+</ul>
+</li>
+<li><a href="#squeezeunsqueeze-降维升维">squeeze()/unsqueeze() 降维/升维</a><ul>
+<li><a href="#参数">参数</a></li>
+<li><a href="#返回值">返回值</a></li>
+<li><a href="#示例_1">示例</a><ul>
+<li><a href="#示例-1移除所有大小为-1-的维度">示例 1：移除所有大小为 1 的维度</a></li>
+<li><a href="#示例-2仅移除指定维度">示例 2：仅移除指定维度</a></li>
+</ul>
+</li>
+<li><a href="#注意事项">注意事项</a></li>
+<li><a href="#参数_1">参数</a></li>
+<li><a href="#示例_2">示例</a></li>
+<li><a href="#注意事项_1">注意事项</a></li>
+</ul>
+</li>
+<li><a href="#expand-扩张张量">expand() 扩张张量</a></li>
+<li><a href="#narraw-缩小张量">narraw() 缩小张量</a></li>
+<li><a href="#resize_-重设尺寸">resize_() 重设尺寸</a></li>
+<li><a href="#repeat">repeat()</a></li>
+<li><a href="#unfold-重复张量">unfold() 重复张量</a></li>
+<li><a href="#cat">cat()</a><ul>
+<li><a href="#参数_2">参数</a></li>
+<li><a href="#返回值_1">返回值</a></li>
+<li><a href="#示例_3">示例</a><ul>
+<li><a href="#示例-1沿第一个维度连接张量">示例 1：沿第一个维度连接张量</a></li>
+<li><a href="#示例-2沿第二个维度连接张量">示例 2：沿第二个维度连接张量</a></li>
+</ul>
+</li>
+<li><a href="#注意事项_2">注意事项</a></li>
+</ul>
+</li>
+<li><a href="#stack-拼接张量">stack() 拼接张量</a><ul>
+<li><a href="#1-函数签名">1. 函数签名</a></li>
+<li><a href="#2-用法示例">2. 用法示例</a></li>
+<li><a href="#3-与cat的区别">3. 与cat()的区别</a></li>
+<li><a href="#4-注意事项">4. 注意事项</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>创建一个形状为 (4, 4) 的张量</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/02.Tensors</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="view-转换维度">view() 转换维度<a class="anchor-link" href="#view-转换维度" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><code>torch.view</code> 是 PyTorch 中用于重新塑形张量（tensor）的函数，它返回一个新的张量，这个张量与原始张量具有相同的数据但不同的形状。它不会改变张量中的数据，只是改变数据的视图方式。</p>
+</blockquote>
+<p><code>Tensor.view(*shape) → Tensor</code></p>
+<ul>
+<li><strong>shape (torch.Size or int...)</strong>: 期望的新张量的形状。可以是一个 <code>torch.Size</code> 对象，也可以是一个整数序列。这个形状描述了新张量的各个维度的大小。</li>
+</ul>
+<p><code>torch.view</code> 的使用有一些重要的注意事项：</p>
+<ol>
+<li>
+<p><strong>元素总数必须保持不变</strong>：重新塑形后的张量必须包含与原始张量相同数量的元素。换句话说，原始张量和新张量的元素总数必须相等。</p>
+</li>
+<li>
+<p><strong>-1 的特殊用法</strong>：在 <code>torch.view</code> 的形状参数中，可以使用 <code>-1</code> 来自动计算该维度的大小。<code>-1</code> 的位置表示该维度的大小将根据张量中的元素总数和其他维度的大小自动计算。这通常用于当我们知道除了一个维度以外的所有维度大小，但不想手动计算那个维度的大小时。</p>
+</li>
+</ol>
+<p>下面是一些使用 <code>torch.view</code> 的示例：</p>
+<pre><code class="language-python">import torch
+
+# 创建一个形状为 (4, 4) 的张量
+x = torch.randn(4, 4)
+print(x.size())  # 输出: torch.Size([4, 4])
+
+# 使用 torch.view 将 x 重塑为形状 (16,) 的一维张量
+y = x.view(16)
+print(y.size())  # 输出: torch.Size([16])
+
+# 使用 -1 自动计算维度大小，将 x 重塑为形状 (2, 8) 的二维张量
+z = x.view(2, -1)
+print(z.size())  # 输出: torch.Size([2, 8])
+
+# 也可以重塑为更高维度的张量，只要元素总数保持不变
+m = x.view(2, 2, 4)
+print(m.size())  # 输出: torch.Size([2, 2, 4])
+</code></pre>
+<p>在上面的例子中，我们展示了如何使用 <code>torch.view</code> 来改变张量的形状。注意，在使用 <code>torch.view</code> 时，需要确保新形状与原始形状的元素总数相匹配，否则 PyTorch 会抛出一个错误。</p>
+<p>最后，需要提醒的是，虽然 <code>torch.view</code> 可以改变张量的形状，但它并不会改变张量在内存中的布局。也就是说，它不会移动张量中的数据，只是改变了解释这些数据的方式。因此，<code>torch.view</code> 的操作是高效的，并且通常用于在神经网络的不同层之间调整数据的形状。</p>
+<h2 id="reshape-转换维度">reshape() 转换维度<a class="anchor-link" href="#reshape-转换维度" title="Permanent link">&para;</a></h2>
+<h2 id="permute-坐标系变换">permute() 坐标系变换<a class="anchor-link" href="#permute-坐标系变换" title="Permanent link">&para;</a></h2>
+<p><code>torch.permute</code> 是 PyTorch 中的一个函数，用于重新排列张量（tensor）的维度。</p>
+<h3 id="基本用法">基本用法<a class="anchor-link" href="#基本用法" title="Permanent link">&para;</a></h3>
+<p><code>torch.permute(input, dims) → Tensor</code></p>
+<ul>
+<li><code>input</code>：输入的张量。</li>
+<li><code>dims</code>：一个包含整数的元组，表示新的维度顺序。</li>
+</ul>
+<h3 id="示例">示例<a class="anchor-link" href="#示例" title="Permanent link">&para;</a></h3>
+<p>假设我们有一个形状为 <code>(3, 4, 5)</code> 的张量，我们可以使用 <code>torch.permute</code> 来改变其维度的顺序。</p>
+<pre><code class="language-python">import torch
+
+# 创建一个形状为 (3, 4, 5) 的张量
+x = torch.randn(3, 4, 5)
+
+# 使用 permute 交换第一和第二个维度
+y = torch.permute(x, (1, 0, 2))
+
+print(y.shape)  # 输出：torch.Size([4, 3, 5])
+</code></pre>
+<p>在上面的例子中，我们创建了一个形状为 <code>(3, 4, 5)</code> 的张量 <code>x</code>，然后使用 <code>torch.permute</code> 将第一和第二个维度交换，得到形状为 <code>(4, 3, 5)</code> 的张量 <code>y</code>。</p>
+<h3 id="注意点">注意点<a class="anchor-link" href="#注意点" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>维度数必须匹配</strong>：<code>dims</code> 中的整数数量必须与输入张量的维度数相同。</li>
+<li><strong>索引的唯一性</strong>：<code>dims</code> 中的每个整数都必须是唯一的，不能有重复。</li>
+<li><strong>原地操作</strong>：<code>torch.permute</code> 默认是返回一个新的张量，而不是在原地修改输入张量。如果你想在原地修改，你可以使用 <code>.permute_()</code> 方法（注意末尾的下划线）。</li>
+</ol>
+<h3 id="与其他函数的关系">与其他函数的关系<a class="anchor-link" href="#与其他函数的关系" title="Permanent link">&para;</a></h3>
+<p><code>torch.permute</code> 与 <code>torch.transpose</code> 类似，但 <code>torch.transpose</code> 只用于交换两个维度，而 <code>torch.permute</code> 可以用于任意维度的重新排列。</p>
+<p>例如，使用 <code>torch.transpose</code> 交换第一和第二个维度：</p>
+<pre><code class="language-python">y = x.transpose(0, 1)
+</code></pre>
+<p>这与使用 <code>torch.permute</code> 的效果相同：</p>
+<pre><code class="language-python">y = torch.permute(x, (1, 0, 2))
+</code></pre>
+<p>但是，如果你需要更复杂的维度重排，<code>torch.permute</code> 会更加灵活。</p>
+<h2 id="squeezeunsqueeze-降维升维">squeeze()/unsqueeze() 降维/升维<a class="anchor-link" href="#squeezeunsqueeze-降维升维" title="Permanent link">&para;</a></h2>
+<p><code>torch.squeeze()</code> 是 PyTorch 中的一个函数，用于从张量（tensor）中移除所有大小为 1 的维度。</p>
+<h3 id="参数">参数<a class="anchor-link" href="#参数" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>input</code> (Tensor): 输入张量。</li>
+<li><code>dim</code> (int, optional): 要移除的维度的索引。如果提供，则仅移除该特定维度。</li>
+</ul>
+<h3 id="返回值">返回值<a class="anchor-link" href="#返回值" title="Permanent link">&para;</a></h3>
+<p>返回一个与输入张量相同数据的新张量，但已移除了大小为 1 的维度。</p>
+<h3 id="示例_1">示例<a class="anchor-link" href="#示例_1" title="Permanent link">&para;</a></h3>
+<h4 id="示例-1移除所有大小为-1-的维度">示例 1：移除所有大小为 1 的维度<a class="anchor-link" href="#示例-1移除所有大小为-1-的维度" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import torch
+
+# 创建一个形状为 (1, 3, 1, 4) 的张量
+x = torch.randn(1, 3, 1, 4)
+print(x.shape)  # 输出: torch.Size([1, 3, 1, 4])
+
+# 使用 torch.squeeze() 移除所有大小为 1 的维度
+y = torch.squeeze(x)
+print(y.shape)  # 输出: torch.Size([3, 4])
+</code></pre>
+<h4 id="示例-2仅移除指定维度">示例 2：仅移除指定维度<a class="anchor-link" href="#示例-2仅移除指定维度" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import torch
+
+# 创建一个形状为 (1, 3, 1, 4) 的张量
+x = torch.randn(1, 3, 1, 4)
+print(x.shape)  # 输出: torch.Size([1, 3, 1, 4])
+
+# 使用 torch.squeeze() 仅移除第 0 个维度（即形状中的第一个维度）
+y = torch.squeeze(x, dim=0)
+print(y.shape)  # 输出: torch.Size([3, 1, 4])
+</code></pre>
+<h3 id="注意事项">注意事项<a class="anchor-link" href="#注意事项" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>torch.squeeze()</code> 不会改变原始张量，而是返回一个新的张量。</li>
+<li>如果指定的维度 <code>dim</code> 不是大小为 1 的维度，那么 <code>torch.squeeze()</code> 将不会移除该维度，并且返回的张量将与输入张量具有相同的形状。</li>
+<li><code>torch.squeeze()</code> 常用于处理从某些操作（如 <code>torch.unsqueeze()</code> 或某些神经网络层）中产生的额外大小为 1 的维度，这些维度可能会使张量的形状变得复杂。</li>
+</ul>
+<p><code>torch.unsqueeze()</code> 是 PyTorch 中的一个函数，用于在指定的维度上增加一个维度大小为 1 的维度。这通常用于改变张量（tensor）的形状（shape），以便进行某些操作或匹配其他张量的形状。</p>
+<h3 id="参数_1">参数<a class="anchor-link" href="#参数_1" title="Permanent link">&para;</a></h3>
+<p><code>torch.unsqueeze(input, dim)</code></p>
+<ul>
+<li><code>input</code> (Tensor): 输入张量。</li>
+<li><code>dim</code> (int): 在哪个维度上增加维度。</li>
+</ul>
+<h3 id="示例_2">示例<a class="anchor-link" href="#示例_2" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import torch
+
+# 创建一个形状为 [3, 4] 的张量
+x = torch.tensor([[1, 2, 3, 4],
+                  [5, 6, 7, 8],
+                  [9, 10, 11, 12]])
+print(x.shape)  # 输出: torch.Size([3, 4])
+
+# 在维度 0 上增加一个维度，形状变为 [1, 3, 4]
+x_unsqueeze0 = torch.unsqueeze(x, 0)
+print(x_unsqueeze0.shape)  # 输出: torch.Size([1, 3, 4])
+
+# 在维度 1 上增加一个维度，形状变为 [3, 1, 4]
+x_unsqueeze1 = torch.unsqueeze(x, 1)
+print(x_unsqueeze1.shape)  # 输出: torch.Size([3, 1, 4])
+
+# 在维度 2 上增加一个维度，形状变为 [3, 4, 1]
+x_unsqueeze2 = torch.unsqueeze(x, 2)
+print(x_unsqueeze2.shape)  # 输出: torch.Size([3, 4, 1])
+</code></pre>
+<h3 id="注意事项_1">注意事项<a class="anchor-link" href="#注意事项_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>如果指定的维度 <code>dim</code> 已经存在（即其大小不为 1），则该函数将引发错误。</li>
+<li><code>torch.unsqueeze()</code> 会返回一个新的张量，而不是修改原始张量。</li>
+<li>如果你想要删除一个维度大小为 1 的维度，可以使用 <code>torch.squeeze()</code> 函数。</li>
+</ul>
+<h2 id="expand-扩张张量">expand() 扩张张量<a class="anchor-link" href="#expand-扩张张量" title="Permanent link">&para;</a></h2>
+<p><code>torch.expand()</code> 是 PyTorch 中的一个函数，用于扩展张量（tensor）的维度。这个函数不会改变张量的数据，只是改变张量的形状（shape）。<code>expand()</code> 返回的新的张量与原始张量共享相同的内存空间，也就是说它们指向同一块内存区域。</p>
+<p>函数的基本语法如下：</p>
+<pre><code class="language-python">torch.expand(input, size)
+</code></pre>
+<ul>
+<li><code>input</code>：输入的张量。</li>
+<li><code>size</code>：一个整数元组，表示扩展后的张量的大小。</li>
+</ul>
+<pre><code class="language-python">import torch
+
+# 创建一个形状为 (3,1) 的张量
+x = torch.tensor([[1], [2], [3]])
+# print(x.shape) # torch.Size([3, 1])
+
+# 使用 expand 扩展 x 的维度到 (3, 4)
+y = x.expand( (3, 4))
+print(y.shape)  # 输出: torch.Size([3, 4])
+print(y)
+</code></pre>
+<p>输出：</p>
+<pre><code class="language-bash">torch.Size([3, 4])
+tensor([[1, 1, 1, 1],
+        [2, 2, 2, 2],
+        [3, 3, 3, 3]])
+</code></pre>
+<p>需要注意的是，<code>expand()</code> 只能在单维度上进行扩展，并且这个维度的大小必须为 1。</p>
+<p>尽管 <code>expand()</code> 提供了扩展张量维度的功能，但它并不总是最佳选择。在某些情况下，使用 <code>view()</code> 或 <code>reshape()</code> 函数可能更为合适，因为它们可以更改张量的形状而不受上述限制。但是，<code>view()</code> 和 <code>reshape()</code> 要求新的形状与原始张量的元素总数相匹配，而 <code>expand()</code> 则没有这个要求。</p>
+<h2 id="narraw-缩小张量">narraw() 缩小张量<a class="anchor-link" href="#narraw-缩小张量" title="Permanent link">&para;</a></h2>
+<h2 id="resize_-重设尺寸">resize_() 重设尺寸<a class="anchor-link" href="#resize_-重设尺寸" title="Permanent link">&para;</a></h2>
+<h2 id="repeat">repeat()<a class="anchor-link" href="#repeat" title="Permanent link">&para;</a></h2>
+<p><code>Tensor</code> 对象有一个 <code>repeat()</code> 方法，它用于沿着指定的维度重复张量。 <code>repeat()</code> 方法并不会增加张量的维度，而是沿着指定的维度复制张量的元素。这与 <code>torch.tensor.expand()</code> 有所不同，<code>expand()</code> 会增加一个或多个维度的大小，但不会复制数据（即“广播”）。</p>
+<p><code>Tensor.repeat()</code> 的基本语法如下：</p>
+<pre><code class="language-python">torch.Tensor.repeat(*sizes)
+</code></pre>
+<ul>
+<li><code>*sizes</code>：一个整数序列，指定在每个维度上重复的次数。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-python">import torch
+
+x = torch.tensor([1, 2, 3])
+y = x.repeat(2)  # 在每个元素上重复2次
+print(y)  # tensor([1, 1, 2, 2, 3, 3])
+
+x = torch.tensor([[1, 2], [3, 4]])
+y = x.repeat(2, 1)  # 在第一个维度上重复2次，第二个维度上重复1次（即不重复）
+print(y)
+# tensor([[1, 2],
+#         [1, 2],
+#         [3, 4],
+#         [3, 4]])
+
+z = x.repeat(1, 2)  # 在第一个维度上重复1次（即不重复），第二个维度上重复2次
+print(z)
+# tensor([[1, 2, 1, 2],
+#         [3, 4, 3, 4]])
+</code></pre>
+<p>请注意，<code>repeat()</code> 方法会实际复制数据，这可能会消耗大量内存。因此，在处理大型张量时，要特别小心。如果可能的话，考虑使用 <code>expand()</code> 或其他方法来避免不必要的内存消耗。</p>
+<h2 id="unfold-重复张量">unfold() 重复张量<a class="anchor-link" href="#unfold-重复张量" title="Permanent link">&para;</a></h2>
+<h2 id="cat">cat()<a class="anchor-link" href="#cat" title="Permanent link">&para;</a></h2>
+<p><code>torch.cat()</code> 是 PyTorch 中的一个函数，用于沿指定维度连接张量（tensors）。</p>
+<h3 id="参数_2">参数<a class="anchor-link" href="#参数_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>tensors</code> (sequence of Tensors): 要连接的张量序列。</li>
+<li><code>dim</code> (int, optional): 要连接的维度。默认值为 0。</li>
+<li><code>out</code> (Tensor, optional): 输出张量。</li>
+</ul>
+<h3 id="返回值_1">返回值<a class="anchor-link" href="#返回值_1" title="Permanent link">&para;</a></h3>
+<p>返回一个新的张量，它是输入张量在指定维度上的连接。</p>
+<h3 id="示例_3">示例<a class="anchor-link" href="#示例_3" title="Permanent link">&para;</a></h3>
+<h4 id="示例-1沿第一个维度连接张量">示例 1：沿第一个维度连接张量<a class="anchor-link" href="#示例-1沿第一个维度连接张量" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import torch
+
+# 创建两个形状为 (3, 4) 的张量
+tensor1 = torch.randn(3, 4)
+tensor2 = torch.randn(3, 4)
+
+# 沿第一个维度（即行）连接这两个张量
+result = torch.cat((tensor1, tensor2), dim=0)
+
+# result 的形状现在是 (6, 4)，因为它包含了两个原始张量的所有行
+print(result.shape)  # 输出: torch.Size([6, 4])
+</code></pre>
+<h4 id="示例-2沿第二个维度连接张量">示例 2：沿第二个维度连接张量<a class="anchor-link" href="#示例-2沿第二个维度连接张量" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import torch
+
+# 创建两个形状为 (2, 3) 的张量
+tensor1 = torch.randn(2, 3)
+tensor2 = torch.randn(2, 3)
+
+# 沿第二个维度（即列）连接这两个张量
+result = torch.cat((tensor1, tensor2), dim=1)
+
+# result 的形状现在是 (2, 6)，因为它包含了两个原始张量的所有列
+print(result.shape)  # 输出: torch.Size([2, 6])
+</code></pre>
+<h3 id="注意事项_2">注意事项<a class="anchor-link" href="#注意事项_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>所有要连接的张量必须在除了连接维度以外的所有维度上具有相同的大小。</li>
+<li><code>dim</code> 参数指定了连接应该发生的维度。例如，<code>dim=0</code> 表示按行连接（增加行数），而 <code>dim=1</code> 表示按列连接（增加列数）。</li>
+<li><code>torch.cat()</code> 不会改变原始张量，而是返回一个新的连接后的张量。</li>
+</ul>
+<h2 id="stack-拼接张量">stack() 拼接张量<a class="anchor-link" href="#stack-拼接张量" title="Permanent link">&para;</a></h2>
+<p>在 PyTorch 中，<code>stack()</code>函数用于沿着一个新维度连接张量（tensors）。</p>
+<h3 id="1-函数签名">1. 函数签名<a class="anchor-link" href="#1-函数签名" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">torch.stack(tensors, dim=0, out=None) → Tensor
+</code></pre>
+<ul>
+<li><code>tensors</code> (sequence of Tensors): 需要连接的张量序列。</li>
+<li><code>dim</code> (int, optional): 插入新维度的索引。默认为 0。</li>
+<li><code>out</code> (Tensor, optional): 输出张量。</li>
+</ul>
+<h3 id="2-用法示例">2. 用法示例<a class="anchor-link" href="#2-用法示例" title="Permanent link">&para;</a></h3>
+<p>假设我们有三个形状为<code>(2, 3)</code>的张量，我们希望将它们沿着新的维度（例如第 0 维）堆叠起来：</p>
+<pre><code class="language-python">import torch
+
+# 创建三个形状为(2, 3)的张量
+x1 = torch.tensor([[1, 2, 3], [4, 5, 6]])
+x2 = torch.tensor([[7, 8, 9], [10, 11, 12]])
+x3 = torch.tensor([[13, 14, 15], [16, 17, 18]])
+
+# 使用stack沿着第0维堆叠
+stacked = torch.stack((x1, x2, x3), dim=0)
+
+print(stacked.shape)  # 输出: torch.Size([3, 2, 3])
+</code></pre>
+<p>在这个例子中，<code>stacked</code>张量的形状是<code>(3, 2, 3)</code>，因为我们沿着第 0 维（新的维度）堆叠了三个形状为<code>(2, 3)</code>的张量。</p>
+<h3 id="3-与cat的区别">3. 与<code>cat()</code>的区别<a class="anchor-link" href="#3-与cat的区别" title="Permanent link">&para;</a></h3>
+<p><code>stack()</code>和<code>cat()</code>都可以用来连接张量，但它们的工作方式略有不同。<code>cat()</code>函数沿着现有维度连接张量，而<code>stack()</code>则创建一个新的维度来连接张量。</p>
+<p>例如，如果你有三个形状为<code>(2, 3)</code>的张量，并使用<code>cat()</code>沿着第 0 维连接它们，你将得到一个形状为<code>(6, 3)</code>的张量。但是，如果你使用<code>stack()</code>，你将得到一个形状为<code>(3, 2, 3)</code>的张量。</p>
+<h3 id="4-注意事项">4. 注意事项<a class="anchor-link" href="#4-注意事项" title="Permanent link">&para;</a></h3>
+<ul>
+<li>所有要堆叠的张量必须具有相同的形状（除了堆叠的维度）。</li>
+<li>堆叠操作会增加张量的维度数。</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

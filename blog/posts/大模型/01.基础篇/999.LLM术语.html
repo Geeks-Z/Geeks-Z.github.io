@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#token模型理解和处理的基本单位">Token：模型理解和处理的基本单位</a></li>
+<li><a href="#context-window-上下文窗口捕捉信息的范围">Context Window 上下文窗口：捕捉信息的范围</a></li>
+<li><a href="#context-length-上下文长度模型处理能力的上限">Context Length 上下文长度：模型处理能力的上限</a></li>
+<li><a href="#temperature-温度控制创造性和确定性之间的平衡">Temperature 温度：控制创造性和确定性之间的平衡</a></li>
+<li><a href="#prompt-engineering">Prompt Engineering</a></li>
+<li><a href="#agent">Agent</a></li>
+<li><a href="#function-calling">Function Calling</a></li>
+<li><a href="#function-calling-vs-agent">Function Calling VS Agent</a></li>
+<li><a href="#rag">RAG</a></li>
+<li><a href="#fine-tuning深入学习与长期记忆">Fine-Tuning：深入学习与长期记忆</a></li>
+<li><a href="#知识库">知识库</a><ul>
+<li><a href="#离线的知识数据向量化">离线的知识数据向量化</a></li>
+<li><a href="#在线知识的检索返回">在线知识的检索返回</a></li>
+</ul>
+</li>
+<li><a href="#向量数据库">向量数据库</a></li>
+<li><a href="#指令微调">指令微调</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/01.基础篇</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="token模型理解和处理的基本单位">Token：模型理解和处理的基本单位<a class="anchor-link" href="#token模型理解和处理的基本单位" title="Permanent link">&para;</a></h2>
+<p>在 AI 领域，Token 是指模型处理的基本数据单位。它可以是单词、字符、短语甚至图像片段、声音片段等。例如，一句话会被分割成多个 Token，每个标点符号也会被视为单独的 Token。</p>
+<p>Token 的划分方式会影响模型对数据的理解和处理。例如，中英文的 Token 划分方式就存在差异。对于中文，由于存在多音字和词组的情况，Token 的划分需要更加细致。</p>
+<p>为了更好地理解 Token 的概念，让我们来看一个简单的例子。假设我们要将句子<code>今天天气很好</code>进行 Token 化，那么，该句子的 Token 序列可能有以下几种情况，取决于大模型的分词规则、架构以及数据集：</p>
+<p><strong>基于空格的 Token 化</strong>：</p>
+<p><code>["今天", "天气", "很好"]</code></p>
+<p><strong>基于字的 Token 化</strong>：</p>
+<p><code>["今", "天", "天", "气", "候", "很", "好"]</code></p>
+<p><strong>基于 BERT 的 Token 化</strong>：</p>
+<blockquote>
+<p>在 BERT 的 Token 化结果中，<code>[CLS]</code> 和 <code>[SEP]</code> 是特殊的 Token，它们分别表示句子的开始和结束。</p>
+</blockquote>
+<p><code>["今", "天", "天", "气", "候", "[CLS]", "很", "好", "[SEP]"]</code></p>
+<blockquote>
+<p>具体的分词效果，可以通过 OpenAI 官方的 Tokenizer 工具查看。https://platform.openai.com/tokenizer</p>
+</blockquote>
+<h2 id="context-window-上下文窗口捕捉信息的范围">Context Window 上下文窗口：捕捉信息的范围<a class="anchor-link" href="#context-window-上下文窗口捕捉信息的范围" title="Permanent link">&para;</a></h2>
+<p>上下文窗口指的是 AI 模型在生成回答时考虑的 Token 数量。它决定了模型能够捕捉信息的范围。上下文窗口越大，模型能够考虑的信息就越多，生成的回答也就越相关和连贯。</p>
+<p>例如，GPT-4 Turbo 拥有 128k 个 Token 的上下文窗口，相当于超过 300 页的文本。这使得 GPT-4 能够生成更具上下文相关性和微妙差别的回复。</p>
+<p>如果上面这个例子不够直观的话，可以再看一个例子。</p>
+<p>假设一个 LLM 模型的 Context Window 为 5，那么在处理句子 “今天天气很好” 中的「天气」这个 Token 时，模型会同时考虑 “今天” 和 “很好” 这两个 Token 的信息，以此来更好地理解「天气」的含义。</p>
+<h2 id="context-length-上下文长度模型处理能力的上限">Context Length 上下文长度：模型处理能力的上限<a class="anchor-link" href="#context-length-上下文长度模型处理能力的上限" title="Permanent link">&para;</a></h2>
+<p>上下文长度是 AI 模型一次能够处理的最大 Token 数量。它决定了模型处理能力的上限。上下文长度越大，模型能够处理的数据量就越大。</p>
+<p>例如，ChatGPT 3.5 的上下文长度为 4096 个 Token。这意味着 ChatGPT 3.5 无法接受超过 4096 个 Token 的输入，也无法一次生成超过 4096 个 Token 的输出。</p>
+<h2 id="temperature-温度控制创造性和确定性之间的平衡">Temperature 温度：控制创造性和确定性之间的平衡<a class="anchor-link" href="#temperature-温度控制创造性和确定性之间的平衡" title="Permanent link">&para;</a></h2>
+<p>温度是控制 AI 模型生成输出随机性的参数。它决定了模型在生成输出时更倾向于创造性还是保守和确定性。</p>
+<p>温度值越高，模型越倾向于生成随机的、意想不到的输出，但也可能导致语法错误或无意义的文本。温度值越低，模型越倾向于生成符合逻辑和常识的输出，但也可能缺乏创造性和趣味性。</p>
+<p>例如，在设置较低温度时，语言模型可能会生成以下句子：“今天天气晴朗，适合户外活动。” 而设置较高温度时，模型可能会生成以下句子：“天空像一块巨大的蓝宝石，点缀着棉花糖般的白云。鸟儿在枝头歌唱，微风拂过脸庞，一切都是那么美好。”</p>
+<h2 id="prompt-engineering">Prompt Engineering<a class="anchor-link" href="#prompt-engineering" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241213224136.png" style="zoom: 80%;" /></div>
+
+<p>纯Prompt技术架构可以看作是最原始、最直观的与大语言模型的交互方式。他在任务效率上也是最高的，有效的Prompt也是可以最大程度的激发模型的好的表现，它是模型效果优化的两条路径-微调和RAG技术，共同的基础。</p>
+<p>延展点来讲，Prompt更像是一种激发模型自己内部更好表现的一个指引，因为模型在基于大量数据进行学习时会总结很多in-context-learning的内部规律，而好的Prompt就是可以激发正确的规则去引导模型更好的表现。</p>
+<p>在交互上，这也是大语言模型与人类最友好的方式。它就像与一个人对话，你说一句，AI回应一句，简单直接，不需要对模型有什么权重的更新和复杂处理。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241213224821.png" style="zoom: 80%;" /></div>
+
+<h2 id="agent">Agent<a class="anchor-link" href="#agent" title="Permanent link">&para;</a></h2>
+<p>一句话总结，Agent智能体 = 基于大模型的推理结果+结合工具触发下一步行为和交互</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214141827.png" style="zoom: 80%;" /></div>
+
+<p>在 AI 大模型时代，Agent可以被抽象的理解为具备基于思考结果并可以与环境进行交互的实产品或能力。我们有时候也叫它“代理”、“智能主体”。</p>
+<p>Agent构建在大语言模型的推理能力基础上，对大语言模型的 Planning 规划的方案使用工具执行(Action) ,并对执行的过程进行观测(Observation)，保证任务的落地执行。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214141904.png" style="zoom: 80%;" /></div>
+
+<p>举个例子来方便理解：</p>
+<p>想象一个机器人管家。这个机器人能够理解你的指令，比如“请打扫客厅”，并且能够执行这个任务。机器人管家就是一个agent，它能够自主地感知环境(比如识别哪些地方是客厅)，做出决策(比如决定打扫的顺序和方法)，并执行任务(比如使用吸尘器打扫)。在这个比喻中，机器人管家是一个能够自主行动和做出复杂决策的实体。</p>
+<h2 id="function-calling">Function Calling<a class="anchor-link" href="#function-calling" title="Permanent link">&para;</a></h2>
+<p><code>Function calling</code>通常指的是模型调用特定函数的能力，这些函数可以是内置的，也可以是用户自定义的。在执行任务时，模型可能会通过分析问题来决定何时以及如何调用这些函数。例如，一个语言模型在回答数学问题时，可能会使用内部的计算函数来得出答案。<code>Function calling</code>机制允许模型利用外部工具或内部功能来增强其处理特定任务的能力。</p>
+<p><code>Function Calling</code> 机制主要由以下几个关键组件构成：</p>
+<p>函数定义：预先定义可调用的函数，包括名称、参数类型和返回值类型等。</p>
+<p>函数调用请求：用户或系统发出的调用请求，包含函数名称及所需参数。</p>
+<p>函数执行器：实际执行函数的组件，可能是外部的 API 或本地逻辑处理器。</p>
+<p>结果返回：函数执行完毕后，返回结果给 ChatGPT，继续对话</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214142316.png" style="zoom: 80%;" /></div>
+
+<blockquote>
+<p>举个例子来理解：想象你正在使用一个智能手机。当你想要拍照时，你会打开相机应用。这个相机应用就是一个Function Calling ，它提供了拍照的功能。你通过点击相机图标来“调用”这个功能，然后你可以拍照、编辑照片等。在这个比喻中，智能手机就是大模型，你想要拍照的行为是大模型判断得到的结论，相机应用就是预定义的函数，而打开相机应用并使用其功能就是基于模型分析结果的Function Calling。</p>
+</blockquote>
+<p>LLM 的 Function Calling 机制极大地扩展了其功能，使其能够在对话中动态调用外部函数，提供实时、个性化和互动的服务。这一机制不仅提升了用户体验，也为开发者提供了强大的工具，帮助他们构建更智能、更强大的对话系统和应用。</p>
+<h2 id="function-calling-vs-agent">Function Calling VS Agent<a class="anchor-link" href="#function-calling-vs-agent" title="Permanent link">&para;</a></h2>
+<p>Function Calling就像是调用一个具体的功能或工具来帮助你完成特定的任务，而Agent则更像是一个能够独立思考和行动的个体，它可以在没有人类直接指导的情况下完成一系列复杂的任务。</p>
+<p>在某些高级应用中，Function Calling功能可以视为AI Agent的一种具体行动表现形式，即智能体在执行任务过程中调用外部资源或服务的一种策略。例如，一个具备Function Calling能力的AI Agent在进行对话或解决问题时，能动态地发起函数调用来获取额外的信息或执行特定的操作，从而更好地服务于用户需求。</p>
+<p>function_call 更侧重于表示模型直接产生调用函数的具体行为，是模型执行流程中的一个具体步骤或操作。</p>
+<p>agent 则是一个更为宽泛的概念，代表的是具有智能行为的整体系统，它包括了感知、推理、决策以及执行等多个环节，而不仅仅是发起函数调用这一动作。</p>
+<p>总结来说，function_call 是构建高效、智能Agent的重要组成部分，用于实现Agent对外部世界的操作接口和交互能力，而Agent则是包含了更多复杂逻辑和生命周期管理的完整实体。</p>
+<h2 id="rag">RAG<a class="anchor-link" href="#rag" title="Permanent link">&para;</a></h2>
+<p>(检索增强生成)</p>
+<p>一句话总结，RAG就是给大模型它原本数据集中没有的知识。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214142500.png" style="zoom: 80%;" /></div>
+
+<p>RAG(Retrieval-Augmented Generation)技术是一种集成检索与生成双重能力的知识增强方案，旨在应对复杂多变的信息查询和生成挑战。在如今的大模型时代背景下，RAG 巧妙地引入非模型训练所使用的外部数据源，比如截止模型训练时使用的数据之后的更为实时的数据，或者是一些没有公开的内部数据等，为大模型赋予了更准确和更实时的信息检索实力，从而显著提升了信息查询和生成的答案的质量。</p>
+<p>RAG架构结合了Embeddings和向量数据库技术。Embeddings是将文字转换为向量编码，这些向量存储在向量数据库中，以便于相似度计算和快速查找。当接收到用户输入时，AI会根据输入向量在数据库中找到最相似的向量，也就是相关的知识片段，随后，这些片段会与大模型的智慧相结合，为用户生成更精确和全面的回答。</p>
+<h2 id="fine-tuning深入学习与长期记忆">Fine-Tuning：深入学习与长期记忆<a class="anchor-link" href="#fine-tuning深入学习与长期记忆" title="Permanent link">&para;</a></h2>
+<p>Fine-tuning(微调)是一种通过特定领域数据对预训练模型进行针对性优化，以提升其在特定任务上的性能的技术。它利用特定领域的数据集对已预训练的大模型进行进一步训练，使模型能够更好地适应和完成特定领域的任务</p>
+<p><strong>Fine-tuning的核心原因</strong></p>
+<p>定制化功能：微调的核心原因是赋予大模型更加定制化的功能。通用大模型虽然强大，但在特定领域可能表现不佳。通过微调，可以使模型更好地适应特定领域的需求和特征。</p>
+<p>领域知识学习：通过引入特定领域的数据集进行微调，大模型可以学习该领域的知识和语言模式，有助于模型在特定任务上取得更好的性能</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214143942.png" style="zoom: 80%;" /></div>
+
+<p><strong>RAG VS Fine-tuning</strong></p>
+<ul>
+<li>
+<p>知识获取与融合能力：RAG技术为语言模型赋予了无与伦比的知识检索与融合能力，突破了传统Fine-tuning微调方式的局限，使模型的输出质量和知识覆盖面得到了极大的提升。</p>
+</li>
+<li>
+<p>幻觉减少：RAG系统的设计本质上可以降低其产生幻觉的可能性，因为它基于实际检索到的证据进行响应构建，而Fine-tuning微调虽然可以在一定程度上缓解模型产生幻觉的倾向，但并不能完全消除这一风险</p>
+</li>
+</ul>
+<h2 id="知识库">知识库<a class="anchor-link" href="#知识库" title="Permanent link">&para;</a></h2>
+<p>对于一些垂直领域，或者说企业内部，都不免会遇到需要构建一个符合自身业务特点的垂直或者内部知识库的场景。通过RAG、微调等技术手段，我们可以将通用的大模型转变为对特定行业或者企业内部有着深度理解的“行业专家”，从而更好地服务于特定的业务需求。</p>
+<h3 id="离线的知识数据向量化">离线的知识数据向量化<a class="anchor-link" href="#离线的知识数据向量化" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>加载：首先，系统通过文档加载器(Document Loaders)来读取和加载数据或知识库。这可能包括文本文件、PDF、Word文档等格式的文档。  </p>
+</li>
+<li>
+<p>拆分：文本拆分器将大型文档分割成更小的块或段落，这样做的目的是为了让这些小块数据(chunk)能够更容易地被处理和向量化。</p>
+</li>
+<li>
+<p>向量：对这些拆分后的数据块进行向量化处理，即通过某种算法(如Word2Vec、BERT等)将文本转换为数值向量，这些向量能够捕捉文本的语义信息。</p>
+</li>
+<li>
+<p>存储：将这些向量化的数据块存储到向量数据库(VectorDB)中。这种数据库专门用于存储和检索向量化的数据，可以高效地进行相似性搜索。</p>
+</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214144424.png" style="zoom: 80%;" /></div>
+
+<h3 id="在线知识的检索返回">在线知识的检索返回<a class="anchor-link" href="#在线知识的检索返回" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>检索：当用户提出问题时，系统使用检索器根据用户的输入从向量数据库中检索出相关的数据块(Chunk)。检索过程可能涉及到计算用户输入与数据库中向量的相似度，并找出最相关的几个数据块。</p>
+</li>
+<li>
+<p>生成：检索到的数据块，连同用户的问题一起，作为输入提供给大型语言模型。语言模型根据这些信息生成答案。这个过程会涉及到对检索到的知识进行理解和整合，然后以自然语言的形式回答问题。</p>
+</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214144505.png" style="zoom: 80%;" /></div>
+
+<h2 id="向量数据库">向量数据库<a class="anchor-link" href="#向量数据库" title="Permanent link">&para;</a></h2>
+<p>向量数据库是一种专门设计用来存储和查询向量数据的系统。这里的向量数据通常是指通过某种算法将原始数据(如文本、语音、图像等)转换成的数值向量形式。</p>
+<p>知识库的存储载体往往是向量数据库。在数据存储和检索上，向量数据库以向量空间模型高效存储和检索高维数据，为 AI 大模型和 Agent 智能体提供强有力的数据支持。</p>
+<p>向量数据库与传统数据库的区别：</p>
+<p>传统数据库主要处理结构化数据，例如关系数据库中存储的表格数据。而向量数据库则更擅长处理非结构化数据，这些数据没有固定的格式或结构，例如文本文档、图像文件和音频记录。</p>
+<p>向量数据库的应用场景：</p>
+<p>在机器学习和深度学习领域，原始数据经常需要被转换成向量形式以便进行进一步的处理和分析。向量数据库在这方面非常有用，因为它们可以高效地处理这些向量化的数据。</p>
+<p>向量数据库的优势：</p>
+<ul>
+<li>高效存储：向量数据库优化了存储机制，可以有效地存储大量的高维向量数据。</li>
+<li>高效索引：向量数据库使用特殊的索引结构（如KD树、球树等），可以快速定位和检索向量数据。</li>
+<li>高效搜索：向量数据库能够执行快速的相似性搜索，找到与查询向量最相似的数据点，这对于推荐系统、图像识别和自然语言处理等应用非常重要。</li>
+</ul>
+<p>处理复杂数据的能力：</p>
+<p>向量数据库在处理包含数值特征、文本嵌入或图像嵌入等复杂数据时表现出色。这些数据在经过向量化处理后，可以利用向量数据库的搜索能力来实现更准确的匹配和检索。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241214144707.png" style="zoom: 80%;" /></div>
+
+<h2 id="指令微调">指令微调<a class="anchor-link" href="#指令微调" title="Permanent link">&para;</a></h2>
+<p>指令微调是一种通过在由（指令，输出）对组成的数据集上进一步训练 LLMs 的过程。其中，指令代表模型的人类指令，输出代表遵循指令的期望输出。这个过程有助于弥合 LLMs 的下一个词预测目标与用户让 LLMs 遵循人类指令的目标之间的差距。<br />
+指令微调可以被视为有监督微调（Supervised Fine-Tuning，SFT）的一种特殊形式。但是，它们的目标依然有差别。SFT 是一种使用标记数据对预训练模型进行微调的过程，以便模型能够更好地执行特定任务。而指令微调是一种通过在包括（指令，输出）对的数据集上进一步训练大型语言模型（LLMs）的过程，以增强 LLMs 的能力和可控性。指令微调的特殊之处在于其数据集的结构，即由人类指令和期望的输出组成的配对。这种结构使得指令微调专注于让模型理解和遵循人类指令。<br />
+总的来说，指令微调是有监督微调的一种特殊形式，专注于通过理解和遵循人类指令来增强大型语言模型的能力和可控性。虽然它们的目标和方法相似，但指令微调的特殊数据结构和任务关注点使其成为 SFT 的一个独特子集。</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/gowC53nLPFgfqg5JNLiMgg">深入理解 AI 大模型：参数、Token、上下文窗口、上下文长度和温度</a></li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s/HjvPTPdkBvqJrpomDvZjRg">一文带你搞清楚AI领域的高频术语！RAG、Agent、知识库、向量数据库、知识图谱、Prompt...都是在讲啥？</a></p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/sinat_37574187/article/details/132518045">大语言模型的指令微调（Instruction Tuning）最全综述：从数据集到技术全解析</a></p>
+</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

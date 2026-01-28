@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-持续学习">2.1. 持续学习</a></li>
+<li><a href="#22-原型在持续学习中的应用">2.2. 原型在持续学习中的应用</a></li>
+<li><a href="#23-提示调优">2.3. 提示调优</a></li>
+</ul>
+</li>
+<li><a href="#3-方法论">3. 方法论</a><ul>
+<li><a href="#31-问题设置与符号">3.1. 问题设置与符号</a></li>
+<li><a href="#32-无需训练的基线模型">3.2. 无需训练的基线模型</a></li>
+<li><a href="#33-对比原型提示cpp">3.3. 对比原型提示（CPP）</a><ul>
+<li><a href="#331-使用任务特定提示引导原型">3.3.1 使用任务特定提示引导原型</a></li>
+<li><a href="#332-对比原型损失cpl">3.3.2 对比原型损失（CPL）</a></li>
+<li><a href="#333-通过重新组装模型快照进行推理">3.3.3 通过重新组装模型快照进行推理</a></li>
+</ul>
+</li>
+<li><a href="#34-多中心原型">3.4. 多中心原型</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-数据集">4.1. 数据集</a></li>
+<li><a href="#42-配置与评估指标">4.2. 配置与评估指标</a></li>
+<li><a href="#43-与最先进方法的比较">4.3. 与最先进方法的比较</a></li>
+<li><a href="#44-消融实验">4.4. 消融实验</a></li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a></li>
+<li><a href="#6附录">6.附录</a><ul>
+<li><a href="#a-对比原型损失的梯度分析">A. 对比原型损失的梯度分析</a></li>
+<li><a href="#b-cpp-作为基于能量的模型">B. CPP 作为基于能量的模型</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="http://arxiv.org/abs/2303.09447">Steering Prototypes with Prompt-tuning for Rehearsal-free Continual Learning</a></p>
+</blockquote>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>原型（prototype）作为类嵌入的表示，已被探索用于减少内存占用或缓解持续学习场景中的遗忘问题。然而，基于原型的方法仍然会因语义漂移和原型干扰而导致性能急剧下降。在本研究中，我们提出了对比原型提示（Contrastive Prototypical Prompt, CPP），并展示了任务特定的提示调优（prompt-tuning）在对比学习目标的优化下，能够有效解决这两个障碍，并显著提升原型的效力。我们的实验表明，CPP 在四个具有挑战性的类增量学习基准测试中表现出色，比最先进的方法提升了 4% 到 6% 的绝对性能。此外，CPP 不需要回放缓冲区（rehearsal buffer），并且在持续学习与离线联合学习之间大幅缩小了性能差距，展示了在 Transformer 架构下持续学习系统的有前景的设计方案。我们的代码将公开发布。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>持续学习（Continual Learning）[51] 是从连续的数据流中顺序学习的能力，对于现代智能系统至关重要，因为世界是动态变化的 [19]。然而，现有的深度神经网络容易受到<strong>灾难性遗忘</strong>（catastrophic forgetting）[36] 的影响，即模型在吸收新信息时，先前学习的任务性能会急剧下降。</p>
+<p>在众多应对持续学习挑战的策略中 [54]，原型（如类均值嵌入 [50]）展现出有前景的功能，因为它们能够以内存高效的方式保留先前知识 [70]，并在与最近类均值（Nearest Class Mean, NCM）[37] 分类器结合时，缓解对最新任务的偏见 [46, 66]。然而，原型本身也会因以下两个问题而导致性能急剧下降：</p>
+<ul>
+<li><strong>语义漂移</strong>：使用统一模型学习一系列任务可以被视为生成一系列模型快照，而只保留最新版本。因此，在推理时，数据样本与其对应的原型实际上是由不同的嵌入函数编码的（除了最新任务的数据样本）。这种不一致会导致潜在空间中的严重语义漂移，如图 1（上）所示。</li>
+<li><strong>原型干扰</strong>：当出现与先前数据语义相似的新数据样本时，它们的嵌入往往会靠近现有的原型，导致干扰，如图 1（底部）所示。</li>
+</ul>
+<p>在持续学习过程中，这两种现象会同时发生并导致遗忘。</p>
+<p>现有的原型增强方法通过保存和回放先前的示例 [46, 12] 或通过近似进行后补偿 [66, 18] 来缓解语义漂移。然而，这些方法要么需要大量内存，要么随着任务序列的累积容易出错。此外，干扰问题较少受到关注，通常通过额外的正则化项隐式处理 [1, 32, 33]。相比之下，我们试图以一种显式和独立的方式解决语义漂移和原型干扰问题。具体来说，我们提出显式对齐用于生成原型和推理的嵌入函数，以避免语义漂移，并直接在嵌入空间中限制原型之间的距离，以减少干扰。</p>
+<p>受到提示调优（prompt-tuning）[28, 22] 的启发，这是一种新的迁移学习范式，能够通过少量额外的可学习 token 来适应冻结的 Transformer [55] 以执行下游任务，我们提出利用任务特定的提示来避免语义漂移。具体来说，我们允许推理时的数据样本检索其对应的任务特定提示，并组装用于生成其对应原型的完整嵌入函数。在我们的设计中，冻结的嵌入函数（即预训练的 Transformer）被视为巩固的全局知识，并在任务之间共享以保持系统的稳定性。任务特定提示则学习任务级别的专门化，保持系统的可塑性。</p>
+<p>为了减少嵌入空间中的原型干扰，我们通过一种新颖的对比原型损失（Contrastive Prototypical Loss, CPL）来优化任务特定提示。该学习目标鼓励类内聚类，并增加类间距离，基于数据嵌入和迄今为止的原型的混合。由于我们仅将先前的知识保留为原型并将其作为锚点，任务特定提示能够有效引导当前原型，避免干扰，而无需保存和回放显式示例。此外，我们提出了多中心原型策略，该策略利用一组虚构的嵌入而不是单一的均值嵌入来表征类的分布。该策略无缝融入我们的框架，并提升了整体性能。</p>
+<p>我们称我们的方法为<strong>对比原型提示</strong>（Contrastive Prototypical Prompt, CPP），这是一个简单而新颖的持续学习框架，全面探索嵌入空间。实验表明，CPP 在四个具有挑战性的类增量基准测试中表现出色，包括分割 CIFAR-100、5-datasets、分割 ImageNet 子集和分割 ImageNet-R，比最先进的方法带来了约 4% 到 6% 的绝对提升。此外，CPP 是无回放的，并且比现有替代方法至少少消耗 5 倍的额外内存。本工作的主要贡献总结如下：</p>
+<ul>
+<li>我们提出了对比原型提示（CPP），这是一种简单而新颖的无回放持续学习框架。它利用对比学习的任务特定提示，有效解决了语义漂移和原型干扰问题。</li>
+<li>我们提出了多中心原型策略，以更好地表征类分布并提高原型的代表性。该策略无缝融入 CPP，并进一步提升了整体性能。</li>
+<li>我们通过实验证明，CPP 在轻量内存预算下显著优于最先进的方法。每个提出的组件都经过深入研究，并展示了明确且累积的益处。</li>
+</ul>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-持续学习">2.1. 持续学习<a class="anchor-link" href="#21-持续学习" title="Permanent link">&para;</a></h3>
+<p>现有的算法可以分为三类 [41, 54, 19]。基于正则化的方法旨在在稳定性和可塑性之间取得平衡。其中，参数正则化方法限制参数空间的变化范围 [33, 67] 或方向 [16, 48]，而功能正则化方法则约束“锚点”的功能变化 [2, 52, 40]。尽管这些方法具有通用性，但在处理长任务序列时，它们的性能往往表现不佳 [19]。基于模块化的方法通过重组现有资源 [35, 49] 或分配额外的学习能力 [47, 65, 30] 来减少知识干扰。然而，大多数基于模块化的方法需要在测试时提供任务标识，并且难以扩展。在实践中，基于回放的方法 [4,6] 通过保存和回放先前数据样本展现出最大的通用性和鲁棒性。然而，这种策略对缓冲区大小敏感 [43, 19]，并且在内存受限或隐私敏感的场景下不可行。本文提出的 CPP 是一种混合方法，结合了不同子类别的优势，同时避免了它们的局限性。</p>
+<h3 id="22-原型在持续学习中的应用">2.2. 原型在持续学习中的应用<a class="anchor-link" href="#22-原型在持续学习中的应用" title="Permanent link">&para;</a></h3>
+<p>研究表明，嵌入比参数化线性分类器更不容易丢失信息 [66, 11]，而后者由于对最新任务的偏见是导致灾难性遗忘的关键原因之一 [68]。因此，大多数与原型相关的方法 [46, 66, 70] 将原型与 NCM 分类器结合使用。另一方面，PASS [70] 利用原型作为潜在空间中的锚点，以减少语义重叠。为了缓解语义漂移问题，现有方法通过保存显式示例来更新原型 [46, 12] 或通过从当前数据中近似漂移来进行后补偿 [66]。相比之下，CPP 从一开始就防止语义漂移，并显式处理原型干扰问题。此外，CPP 利用多中心原型而非均值嵌入，以更好地表征类分布。</p>
+<h3 id="23-提示调优">2.3. 提示调优<a class="anchor-link" href="#23-提示调优" title="Permanent link">&para;</a></h3>
+<p>从预训练权重初始化深度神经网络是一种广泛采用的实践。然而，传统的微调技术并不总是对下游任务有益 [25]。提示调优（prompt-tuning）[31, 28] 在自然语言处理中作为一种重用预训练知识的替代方法出现。VPT [22] 将提示调优技术应用于视觉领域。最近，它也被引入持续学习领域。L2P [60] 和 DualPrompt [59] 都利用跨任务共享的提示池或全局提示来学习增量知识。S-prompts [57] 使用领域特定提示来解决领域增量学习问题。本文中，CPP 应用任务特定提示来抵消语义漂移和原型干扰。此外，CPP 将原型作为分类器，而不是训练单独的参数化分类器。</p>
+<h2 id="3-方法论">3. 方法论<a class="anchor-link" href="#3-方法论" title="Permanent link">&para;</a></h2>
+<p>我们首先在第 3.1 节中描述问题设置并引入相关符号。随后，我们在第 3.2 节中介绍了一个最小可行的基于原型的框架，作为我们的基线模型。在第 3.3 节中，我们提出了基于基线模型的 CPP。最后，我们在第 3.4 节中阐述了多中心原型策略。图 2 展示了我们提出的框架的概览。</p>
+<h3 id="31-问题设置与符号">3.1. 问题设置与符号<a class="anchor-link" href="#31-问题设置与符号" title="Permanent link">&para;</a></h3>
+<p>监督持续学习可以定义为一个模型在 <span class="math-inline">T</span> 个任务序列 <span class="math-inline">T_{1:T} = {T_1, T_2, \dots, T_T}</span> 上的学习过程。每个任务 <span class="math-inline">T_t</span> 与一个数据集 <span class="math-inline">D_t = {(x_t^i, y_t^i)}<em>{i=1}^{n_t}</span> 相关联，其中包含 <span class="math-inline">n_t</span> 个数据对，<span class="math-inline">x</span> 是输入，<span class="math-inline">y</span> 是其对应的标签。每个数据对 <span class="math-inline">(x_t^i, y_t^i) \in (X_t \times Y_t)</span> 属于一个未知分布 <span class="math-inline">(X_t \times Y_t)</span>，且 <span class="math-inline">Y_t \cap Y</em>{t'} = \emptyset</span>，其中 <span class="math-inline">t \neq t'</span>。通常，会话 <span class="math-inline">t</span> 中的神经网络可以解耦为一个嵌入函数 <span class="math-inline">f_{\theta_t}(\cdot): \mathbb{R}^{W \times H \times C} \rightarrow \mathbb{R}^D</span> 和一个分类器 <span class="math-inline">g_{\phi_t}(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^K</span>，分别由参数 <span class="math-inline">\theta_t</span> 和 <span class="math-inline">\phi_t</span> 参数化。总体学习目标是学习一对 <span class="math-inline">f_{\theta_t}(\cdot)</span> 和 <span class="math-inline">g_{\phi_t}(\cdot)</span>，使其在所有已学习的任务 <span class="math-inline">T_{1:t}</span> 中表现出色。需要注意的是，本文我们专注于具有挑战性的无回放类增量学习设置，其中在推理时任务标识 <span class="math-inline">t</span> 不可用，并且在训练阶段不会通过保存和回放先前示例来增强任务 <span class="math-inline">T_t</span> 的数据集 <span class="math-inline">D_t</span>。</p>
+<h3 id="32-无需训练的基线模型">3.2. 无需训练的基线模型<a class="anchor-link" href="#32-无需训练的基线模型" title="Permanent link">&para;</a></h3>
+<p>设 <span class="math-inline">D_t^k</span> 表示任务 <span class="math-inline">t</span> 中属于类 <span class="math-inline">k</span> 的数据集，类 <span class="math-inline">k</span> 的原型通过类均值嵌入生成，如下所示 [46]：<br />
+<div class="math-display"><br />
+    \mu_k = \frac{1}{|D_t^k|} \sum_{x \in D_t^k} f_\theta(x), \tag{1}<br />
+</div><br />
+其中，<span class="math-inline">\theta</span> 由预训练的 ViT [14] 初始化，并在整个学习过程中保持冻结。然后，我们使用最近类均值（NCM）[37] 分类器进行分类：<br />
+<div class="math-display"><br />
+    y^* = \arg\min_{y \in {1, \dots, K}} {d(u_y, f_\theta(x))}, \tag{2}<br />
+</div><br />
+其中，<span class="math-inline">d: \mathbb{R}^D \times \mathbb{R}^D \rightarrow \mathbb{R}</span> 是距离度量。在我们的设计中，<span class="math-inline">d</span> 始终定义为余弦距离（相似度）。这个简单且无需训练的基线模型在适当的嵌入函数下产生了不错的结果（见表 3），验证了嵌入函数的关键作用以及原型在持续学习中的有效性。</p>
+<h3 id="33-对比原型提示cpp">3.3. 对比原型提示（CPP）<a class="anchor-link" href="#33-对比原型提示cpp" title="Permanent link">&para;</a></h3>
+<h4 id="331-使用任务特定提示引导原型">3.3.1 使用任务特定提示引导原型<a class="anchor-link" href="#331-使用任务特定提示引导原型" title="Permanent link">&para;</a></h4>
+<p>理想情况下，一个完美的静态嵌入函数可以将数据样本投影到嵌入空间中与其对应原型最近的位置，从而防止遗忘。然而，在实践中，期望这样一个全能的嵌入函数是不现实的。因此，我们需要允许嵌入函数动态适应新的输入，同时最小化遗忘。为此，我们利用每个任务的少量额外可学习 token（即任务特定提示）来在冻结的嵌入函数上学习信息。</p>
+<p>具体来说，我们将提示 <span class="math-inline">p_i \in \mathbb{R}^{L_p \times D}</span> 添加到 Transformer 的第 <span class="math-inline">i</span> 层，其中 <span class="math-inline">L_p</span> 是提示的长度，<span class="math-inline">D</span> 表示嵌入维度。第 <span class="math-inline">i</span> 层的计算定义为：<br />
+<div class="math-display"><br />
+[c_i, e_i] = T_i([c_{i-1}, p_{i-1}, e_{i-1}]), \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">T_i</span> 表示多头自注意力块，后接一个前馈网络。这里，<span class="math-inline">c \in\mathbb{R}^{1 \times D}</span> 表示类 token，<span class="math-inline">e \in \mathbb{R}^{L_e \times D}</span> 是已有的数据 token。操作符 <span class="math-inline">[\cdot]</span> 表示沿序列长度维度的拼接。我们采用深度提示（deep prompt）[22]，在所有 <span class="math-inline">S</span> 层中添加提示。因此，任务 <span class="math-inline">t</span> 的任务特定提示为 <span class="math-inline">P_t = {p_t^1, p_t^2, \dots, p_t^S}</span>，任务 <span class="math-inline">t</span> 的嵌入函数可以重写为：<br />
+<div class="math-display"><br />
+    f_{\theta_t}(\cdot) \rightarrow f_{{\theta, P_t}}(\cdot). \tag{4}<br />
+</div><br />
+我们在内存空间中维护一组任务特定提示，每个任务特定提示与一个键原型和值原型相关联，后续将详细说明。得益于任务特定提示的设计，不同任务之间的知识干扰显著减少，因为它们不共享相同的参数空间。此外，通过组装冻结的嵌入函数与正确的任务特定提示，可以在推理时避免语义漂移（详见第 3.3.3 节）。</p>
+<h4 id="332-对比原型损失cpl">3.3.2 对比原型损失（CPL）<a class="anchor-link" href="#332-对比原型损失cpl" title="Permanent link">&para;</a></h4>
+<p>在本节中，我们提出了一种新颖的损失函数来优化任务特定提示，从而解决原型干扰问题。回想一下，我们的模型将不同类的信息保留为原型，并使用非参数化分类器（即 NCM）。因此，当添加到冻结的嵌入函数时，我们期望优化良好的任务特定提示能够将数据样本投影到一个空间中，使得类内数据样本紧凑，类间样本分离。 基于上述原理，我们提出了对比原型损失（CPL），它显式鼓励类内实体的紧凑性，同时推开类间实体，基于数据嵌入和原型的联合。在任务<span class="math-inline">t</span> 间，设<span class="math-inline">I = {(x_1, y_1), \dots, (x_N, y_N)}</span> 示一批<span class="math-inline">N</span> 图像对，<span class="math-inline">Z = {z_1, \dots, z_N}</span> 示它们对应的嵌入。这里，省略下标，<span class="math-inline">z</span> 过<span class="math-inline">z = m_{\sigma_t}(f_{{\theta; P_t}}(x))</span> 得，其中<span class="math-inline">m_{\sigma_t}(\cdot)</span> 由<span class="math-inline">\sigma_t</span> 数化的多层感知机（MLP）。值得注意的是，<span class="math-inline">m_{\sigma_t}(\cdot)</span> 每个新任务时重新初始化，并在推理时丢弃。学习目标定义为：<br />
+<div class="math-display"><br />
+    L = \frac{1}{N} \sum_{i \in {1, \dots, N}} L_i, \tag{5}<br />
+</div></p>
+<p><div class="math-display"><br />
+    L_i = \frac{-1}{|P(i)|} \sum_{z_p \in P(i)} \log \frac{\exp(z_i \cdot z_p / \tau)}{\sum_{z_n \in N(i) \cup \hat{U}} \exp(z_i \cdot z_n / \tau)}, \tag{6}<br />
+</div><br />
+其中<span class="math-inline">P(i) = {z_p \in Z: y_p = y_i}</span> 示相对于嵌入<span class="math-inline">z_i</span> 正样本集，而<span class="math-inline">N(i) = {z_n \in Z: y_n \neq y_i}</span> 示不共享相同标签的负样本集。此外，我们设置<span class="math-inline">\hat{U} = {\hat{u}_1, \dots, \hat{u}_k}</span>，其中包含前<span class="math-inline">k</span> 类的值原型作为负锚点。图 2（左）展示了我们学习目标的思想。为了更好地限制判别边界，我们采用原型增强 [70]。在每个迭代中，<span class="math-inline">U</span> 的原型通过缩放的高斯噪声进行随机采样和扰动，<span class="math-inline">\hat{\mu} = \mu + m * e</span>，其中<span class="math-inline">e \sim \mathcal{N}(0, 1)</span>，<span class="math-inline">m</span> 计算为相应类嵌入的平均方差的缩放因子。 CPL 与典型的对比损失 [10, 23] 在以下两个方面有所不同。首先，我们将前序类别的原型设置为潜在空间中的负锚点。通过这样做，负原型可以为先前看到的数据保留空间，从而防止原型干扰。其次，我们只关注正嵌入的对齐，而不限制类内均匀性，这被认为是成功对比表示学习的关键属性之一 [56]。具体来说，我们没有在分母中将来自同一类别的样本对作为负对。由于 NCM 分类器选择最近的原型进行分类，增加类内均匀性可能会扩大样本与其对应原型之间的距离。另一种理解这种设计的方式是从能量角度出发，详情参见附录。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212122045.png" style="zoom: 80%;" /></div>
+
+<h4 id="333-通过重新组装模型快照进行推理">3.3.3 通过重新组装模型快照进行推理<a class="anchor-link" href="#333-通过重新组装模型快照进行推理" title="Permanent link">&para;</a></h4>
+<p>在这里，我们展示了如何使用 CPP 进行推理。给定一个目标数据样本，我们设法检索其对应的任务特定提示以组装完整的嵌入函数（即模型快照）。请注意，此过程类似于预测任务标识，在任务增量学习下可以省略。 考虑任务<span class="math-inline">t</span> 类<span class="math-inline">k</span> 原型，我们将其解耦为一个键原型<span class="math-inline">u_k = \frac{1}{|D_t^k|} \sum_{x \in D_t^k} f_\theta(x)</span> 一个值原型<span class="math-inline">\hat{u} = \frac{1}{|D_t^k|} \sum_{x \in D_t^k} f_{{\theta, P_t}}(x)</span>，分别对应于在学习任务<span class="math-inline">t</span> 前和之后的类均值嵌入。键原型的集合<span class="math-inline">U = {u_1, \dots, u_K}</span> 值原型的集合<span class="math-inline">\hat{U} = {\hat{u}<em>1, \dots, \hat{u}_K}</span> 存在内存中。在推理时，首先生成目标样本<span class="math-inline">x</span> 粗略查询向量<span class="math-inline">q: \mathbb{R}^{1 \times D}</span>，然后我们使用查询函数<span class="math-inline">q(q, U, r)</span> 到<span class="math-inline">r</span> 最近的键原型，并检索它们对应的提示组<span class="math-inline">{P_1, \dots, P_J: J \leq r}</span>。请注意，我们<span class="math-inline">J \leq r</span>，因为不同类别的原型可能共享相同的任务特定提示。这里，<span class="math-inline">q</span> 单地是最后一层的类别 token：<span class="math-inline">q = f</em>\theta(x)</span>（省略了确切的索引操作以避免符号混乱），查询函数测量<span class="math-inline">q</span> <span class="math-inline">U</span> 间的成对余弦相似度。 通过将检索到的提示视为候选，我们生成一组细粒度的查询向量<span class="math-inline">\hat{Q} = {\hat{q}<em>j: j \in [1, J]}</span>，其中<span class="math-inline">\hat{q}_j = f</em>{{\theta, P_j}}(x)</span>。然后，最终的类别预测如下进行：<br />
+<div class="math-display"><br />
+y^* = \arg\min_y {d(\hat{u}_y, \hat{q}_j): y \in [1, K], j \in [1, J]}. \tag{7}<br />
+</div><br />
+图 2（右）描绘了推理过程的信息流。详细算法见补充材料。 确保上述推理过程成功的关键有两个步骤。首先，我们需要检索包含目标提示的一组候选提示。通过适当的嵌入函数确保这一点，数据样本倾向于位于其对应分布质量中心附近（在补充材料中进行了经验验证）。其次，我们要求检索到的提示（即目标提示和错误匹配的提示）对最终预测有贡献。由于我们提出的对比学习目标，目标提示将减少样本与其对应值原型之间的距离，而错误匹配的提示将以相反的方式起作用。因此，目标提示和错误匹配提示的行为都有利于 NCM 分类器。 </p>
+<h3 id="34-多中心原型">3.4. 多中心原型<a class="anchor-link" href="#34-多中心原型" title="Permanent link">&para;</a></h3>
+<p>持续学习中的现有文献通常采用类均值嵌入作为原型 [66, 70, 69]。在这种情况下，它隐式假设潜在空间中的分布是凸且各向同性的，并且距离函数属于 Bregman 散度 [50]。这一前提在实践中可能不成立，因为没有对嵌入分布施加严格的约束，并且余弦距离不属于 Bregman 散度（见图 3 中的示例）。为此，我们提出使用多中心原型，其中我们生成一组虚构的嵌入来表征目标类分布。具体来说，给定类<span class="math-inline">k</span> 一组嵌入，我们通过测量嵌入之间的成对余弦相似度来计算相似度矩阵<span class="math-inline">S_k: \mathbb{R}^{|D_k| \times |D_k|}</span>。<span class="math-inline">S_k</span> 作为谱聚类 [39] 的亲和矩阵，生成 <span class="math-inline">C</span> 个中心 <span class="math-inline">{u_{k,c}}_{c=1}^C</span>。在训练和推理过程中，我们可以直接将所有原型替换为对应的多中心原型。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212141751.png" style="zoom: 80%;" /></div>
+
+<p>值得注意的是，多中心策略也与我们的推理过程互补。它可以被视为测试时的硬案例挖掘。例如，对于那些远离其质量中心或位于多个类分布混合区域的数据样本，多中心策略将允许检索更多候选提示以保持准确性。相反，当数据样本接近其对应的质量中心且位于类分布分离的区域时，该策略将检索较少的候选提示以提高效率。检索提示数量的上下限分别为 <span class="math-inline">r</span> 和 <span class="math-inline">\max(1, r/C)</span>。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<h3 id="41-数据集">4.1. 数据集<a class="anchor-link" href="#41-数据集" title="Permanent link">&para;</a></h3>
+<p><strong>分割 CIFAR-100</strong> 是一个广泛使用的持续学习基准。按照标准设置，我们将 CIFAR-100 均匀分割为 10 个独立的任务。更多关于不同分割（如 5 和 20）的结果见补充材料。</p>
+<p><strong>5-datasets</strong> 是 CIFAR-10 [24]、MNIST [26]、Fashion-MNIST [63]、SVHN [38] 和 notMNIST [3] 的集合，每个数据集被视为一个新任务。它作为现实场景的公平类比，其中任务间的差异较大。</p>
+<p><strong>分割 ImageNet 子集</strong> 是另一个广泛采用的基准，它将 ImageNet [13] 的一个子集（100 个类别）分为 10 个任务，每个任务包含 10 个类别。</p>
+<p><strong>分割 ImageNet-R</strong> 首次由 DualPrompt [59] 用于持续学习，以模拟现实场景，其中存在不同的图像风格且类内多样性显著。它将原始 ImageNet-R [21] 数据集分为 24,000 张训练图像和 6,000 张测试图像，并将总共 200 个类别分为 10 个独立的任务。</p>
+<h3 id="42-配置与评估指标">4.2. 配置与评估指标<a class="anchor-link" href="#42-配置与评估指标" title="Permanent link">&para;</a></h3>
+<p><strong>配置</strong>：我们使用以下与数据集无关的配置进行所有实验，除非另有说明。所有实验均在四块 NVIDIA A100 GPU 上进行。我们使用 AdamW 优化器 [34] 训练 CPP 50 个 epoch，批量大小为 256。初始学习率设置为 <span class="math-inline">1 \times 10^{-3}</span>，并根据余弦调度器衰减至 <span class="math-inline">1 \times 10^{-6}</span>。提示长度 <span class="math-inline">L_p</span> 设置为 1，默认使用深度提示。多中心数量 <span class="math-inline">C</span> 和最近邻居数 <span class="math-inline">r</span> 分别设置为 5 和 3。每个新任务时随机初始化一个 3 层 MLP，隐藏单元数为 2048，输出维度为 768。其他详细配置见补充材料。</p>
+<p><strong>评估指标</strong>：我们采用广泛使用的平均准确率（Avg. Acc）和遗忘率（Forget）作为评估指标。报告五次运行的平均值和标准差。更多关于每个指标的详细说明和不同协议下的结果见补充材料。</p>
+<h3 id="43-与最先进方法的比较">4.3. 与最先进方法的比较<a class="anchor-link" href="#43-与最先进方法的比较" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们首先在分割 CIFAR-100、5-datasets 和分割 ImageNet-R 数据集上，将 CPP 与兼容 Transformer 架构的最先进方法进行比较，遵循 DualPrompt [59] 的设置。然后，我们复现了最先进的基于原型的方法以及基于 Transformer 的方法，并在分割 ImageNet 子集和分割 CIFAR-100 上进行比较。需要注意的是，本节中报告的所有方法均使用相同的预训练 ViT-B/16。</p>
+<p><strong>在分割 CIFAR-100、5-datasets 和分割 ImageNet-R 上的主要结果</strong>：我们将 CPP 与基于正则化的方法（EWC [33] 和 LwF [32]）、先进的基于回放的方法（ER [8]、GDumb [43]、BiC [62]、DER++ [4] 和 Co<span class="math-inline">^2</span>L [6]）以及基于 Transformer 的方法（L2P [60]、ESN [58] 和 DualPrompt [59]）进行比较。如表 1 所示，尽管基于正则化的方法无需回放，但它们的表现不够竞争力。另一方面，基于回放的方法在较大的内存预算下表现出色，但仍然被不需要回放的提示调优方法超越。在新兴的基于 Transformer 的方法中，CPP 显著优于其他方法，展示了我们框架的优越性，该框架利用通过对比原型损失优化的任务特定提示来引导原型。</p>
+<p><strong>与基于原型的方法的比较</strong>：我们进一步将 CPP 与最先进的基于原型的方法（如 iCaRL [46] 和 PASS [70]）在分割 ImageNet 子集和分割 CIFAR-100 上进行比较。为了校准，我们还在分割 ImageNet 子集上复现了 DualPrompt [59]。为了避免信息泄漏，我们在分割 ImageNet 子集上使用自监督的 MAE 进行模型预训练。复现细节见补充材料。如表 2 所示，预训练的 ViT 骨干网络显著提升了现有基于原型方法的性能，这与 [45] 中的观察一致。然而，CPP 在相同骨干网络下仍然表现出最先进的性能，表明 CPP 相对于其他基于原型方法的明显优势。</p>
+<h3 id="44-消融实验">4.4. 消融实验<a class="anchor-link" href="#44-消融实验" title="Permanent link">&para;</a></h3>
+<p><strong>提出的模块的有效性</strong>：由于嵌入函数是我们框架的关键组成部分之一，因此分析 CPP 在不同嵌入函数下的表现至关重要。为此，我们使用四种最新的预训练方法（ViT [14]、Deit [53]、Dino [5] 和 MAE [20]）实现 CPP，涵盖了监督和自/无监督学习以及判别和生成模型。如表 3 所示，任务特定提示和多中心原型在所有预训练方法下都具有鲁棒性，比基线模型带来了约 10% 到 20% 的绝对提升。此外，每个模块在独立应用时仍然有效，并且在组合时它们的益处是叠加的。一个有趣的观察是，不同的预训练方法与 NCM 分类器结合时会产生明显的差异，并且基线模型与其对应的 CPP 模型之间存在明显的正相关（例如，分割 CIFAR-100 的 <span class="math-inline">\rho = 1.0</span>）。</p>
+<p><strong>对比原型损失优于替代方案</strong>：为了验证 CPL 的益处，我们首先将其与两种广泛使用的损失函数进行比较：CE（交叉熵）和 SupCon（监督对比损失）[23]。如表 4 所示，CPL 在两者之间表现出明显的优势。在比较中，SupCon 与我们的方法最为兼容，进一步验证了将对比损失设计与 NCM 分类器结合的优势。然后，我们分别在均匀性（w/ uniform）或移除原型（w/o proto）的情况下，在不同温度下验证每个提出组件的有效性。如图 4（右）所示，鼓励均匀性会降低性能，而移除原型会加剧原型干扰，这与我们在第 3.3.2 节中的分析一致。</p>
+<p><strong>稳定性和可塑性之间的权衡通过温度系数调节</strong>：如图 4（右）所示，较低的温度（导致对负对的更多惩罚）会减少遗忘，但也会降低准确率。较高的温度则相反，提高整体性能的代价是更高的遗忘率。我们经验上发现 <span class="math-inline">\tau = 0.6</span> 在稳定性和可塑性之间取得了良好的平衡，因此在所有实验中使用该值。</p>
+<p><strong>MLP 不可忽视</strong>：我们在表 4 中展示了，无论损失设计如何，MLP 引入的非线性对于训练提示的成功至关重要。用单个线性层替换 MLP 头部会导致一致较差的结果。</p>
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>我们提出了一种简单而新颖的无回放持续学习框架。它利用任务特定提示，通过设计的对比原型损失进行优化，以避免语义漂移并减少原型干扰。此外，我们提出了多中心原型策略，以提高原型的代表性。通过实验，CPP 显著超越了最先进的方法，并且每个提出的组件都经过了深入分析。我们相信 CPP 可以为可扩展持续学习系统的设计原则提供启示，尤其是结合当前网络架构设计和表示学习的进展。未来的研究方向包括进一步提高推理效率，以及将 CPP 扩展到其他复合场景，例如模糊任务边界、少样本和开放词汇设置。</p>
+<h2 id="6附录">6.附录<a class="anchor-link" href="#6附录" title="Permanent link">&para;</a></h2>
+<h3 id="a-对比原型损失的梯度分析">A. 对比原型损失的梯度分析<a class="anchor-link" href="#a-对比原型损失的梯度分析" title="Permanent link">&para;</a></h3>
+<p>在这里，我们提供了对比原型损失（Contrastive Prototypical Loss）的梯度分析。为了简化符号，我们将向量 <span class="math-inline">z_i</span> 和 <span class="math-inline">z_j</span> 之间的相似度缩写为 <span class="math-inline">s_{i,j}</span>，并将负样本集 <span class="math-inline">N(i) \cup \hat{U}</span> 记为 <span class="math-inline">\hat{N}(i)</span>。因此，数据样本 <span class="math-inline">x_i</span> 的损失为：<br />
+<div class="math-display"><br />
+    L_i = \frac{-1}{|P(i)|} \sum_{z_p \in P(i)} \log \frac{\exp(s_{i,p}/\tau)}{\sum_{z_n \in \hat{N}(i)} \exp(s_{i,n}/\tau)} \quad (8)<br />
+</div><br />
+对于正样本对 <span class="math-inline">(z_i, z_j)</span> 其中 <span class="math-inline">z_j \in P(i)</span>，损失关于相似度 <span class="math-inline">s_{i,j}</span> 的梯度可以推导为：<br />
+<div class="math-display"><br />
+    \frac{\partial L_k^i}{\partial s_{i,j}} = \frac{-1}{|P(i)|} \sum_{z_p \in P(i)} \frac{\partial}{\partial s_{i,j}} \left( \frac{s_{i,p}}{\tau} - \log \sum_{z_n \in \hat{N}(i)} \exp(s_{i,n}/\tau) \right) \quad (9)<br />
+</div><br />
+经过推导，我们得到：<br />
+<div class="math-display"><br />
+    \frac{\partial L_k^i}{\partial s_{i,j}} = \frac{-1}{\tau |P(i)|}<br />
+</div><br />
+类似地，对于负样本对 <span class="math-inline">(z_i, z_m)</span> 其中 <span class="math-inline">z_m \in N(i)</span>，损失关于相似度 <span class="math-inline">s_{i,m}</span> 的梯度为：<br />
+<div class="math-display"><br />
+    \frac{\partial L_k^i}{\partial s_{i,m}} = \frac{1}{\tau} \frac{\exp(s_{i,m}/\tau)}{\sum_{z_n \in \hat{N}(i)} \exp(s_{i,n}/\tau)}<br />
+</div><br />
+可以看出，所提出损失的梯度与标准的监督对比损失遵循相同的模式。正样本对的处理方式相同，并且根据温度和正样本集的基数进行缩放。负样本项的梯度继承了典型对比损失的隐含难例挖掘特性，即与指数项 <span class="math-inline">\exp(s_{i,m}/\tau)</span> 成比例。</p>
+<h3 id="b-cpp-作为基于能量的模型">B. CPP 作为基于能量的模型<a class="anchor-link" href="#b-cpp-作为基于能量的模型" title="Permanent link">&para;</a></h3>
+<p>基于能量的模型（EBM）的整体目标是获得一个能量函数 <span class="math-inline">E_\theta(x) : \mathbb{R}^D \rightarrow \mathbb{R}</span>，该函数将高维输入 <span class="math-inline">x</span> 映射到一个标量值。给定一个能量函数 <span class="math-inline">E_\theta(\cdot)</span>，其概率密度 <span class="math-inline">p(x)</span> 可以通过吉布斯分布表示：<br />
+<div class="math-display"><br />
+    p_\theta(y|x) = \frac{\exp(-E_\theta(x,y)/\tau)}{\int_{y'} \exp(-E_\theta(x,y')/\tau)} = \frac{\exp(-E_\theta(x,y)/\tau)}{\exp(-E_\theta(x)/\tau)}<br />
+</div><br />
+其中 <span class="math-inline">E_\theta(x)</span> 是亥姆霍兹自由能，<span class="math-inline">\tau</span> 是温度因子。然后我们有：<br />
+<div class="math-display"><br />
+    E_\theta(x) = \tau \cdot -\log \int_{y'} \exp(-E_\theta(x,y')/\tau)<br />
+</div><br />
+在我们的框架中进行预测时，类别分布可以表示为：<br />
+<div class="math-display"><br />
+    p(y|x) = \frac{\exp(s_{x,y}/\tau)}{\sum_{y'=1}^K \exp(s_{x,y'}/\tau)}<br />
+</div><br />
+其中 <span class="math-inline">s_{x,y} = \langle f_{{\theta,P}}(x), \hat{\mu}<em>y \rangle</span>。将公式 (13) 与公式 (11) 联系起来，并设 <span class="math-inline">E</em>\theta(x,y) = -s_{x,y}</span>，我们可以看到 <span class="math-inline">x</span> 的能量可以表示为：<br />
+<div class="math-display"><br />
+    E_\theta(x) = \tau \cdot -\log \sum_{y=1}^K \exp(s_{x,y}/\tau)<br />
+</div><br />
+在适当的温度 <span class="math-inline">\tau</span> 下，该能量主要由最大的相似度 <span class="math-inline">s_{x,y^*}</span> 决定。上述分析得出了一个结论：将数据样本分配到其最近的原型将为系统生成最低的能量（即更稳定的系统）。因此，问题变为所提出的对比原型损失是否是一个合格的能量损失函数。</p>
+<p>为了验证这一点，我们首先将公式 (8) 简化为仅包含一个正样本 <span class="math-inline">z_p</span> 的公式：<br />
+<div class="math-display"><br />
+    L_i = -\log \frac{\exp(s_{i,p}/\tau)}{\sum_{z_n \in \hat{N}(i)} \exp(s_{i,n}/\tau)}<br />
+</div><br />
+通过将 <span class="math-inline">z_p</span> 替换为目标值原型 <span class="math-inline">\hat{\mu}</span>，我们得到：<br />
+<div class="math-display"><br />
+    L_i = -\langle z_i, \hat{\mu} \rangle + \log \sum_{z_n \in \hat{N}(i)} \exp(s_{i,n}/\tau)<br />
+</div><br />
+当上述损失最小化时，第一项将降低目标值原型 <span class="math-inline">\hat{\mu}</span> 的能量，而第二项将增加其他原型的能量。因此，上述简化损失是能量模型的有效损失函数。需要注意的是，训练阶段中的“真实”原型 <span class="math-inline">\hat{\mu}</span> 是不可用的，它通过训练数据中的一组动态演化的正样本嵌入来近似。与 [29] 中使用的对比散度近似不同，我们的公式还包括先前的分类器。然而，由于我们使用静态的非参数原型作为分类器，我们的公式不会像之前那样过度抑制先前的类别。</p>
+<p>最后，我们展示了鼓励均匀性与能量模型的原则相悖。通过鼓励均匀性，如典型的监督或自监督对比损失 [10, 23]，我们将公式 (15) 重写为：<br />
+<div class="math-display"><br />
+    L_i = -\log \frac{\exp(s_{i,p})}{\sum_{z_n \in \hat{N}(i)} \exp(s_{i,n}/\tau) + \sum_{z_n \in \hat{P}(i)} \exp(s_{i,n}/\tau)}<br />
+</div><br />
+其中 <span class="math-inline">\hat{P}(i) = { z_j : y_j = y_i, i \neq j }</span>。从公式 (17) 可以看出，<span class="math-inline">\log</span> 操作中的第二项与 <span class="math-inline">-s_{i,p}</span> 相反，后者最小化了样本与其对应原型之间的能量。因此，鼓励均匀性的样本对应该从负样本集中移除。通过基于能量模型的视角，我们确认 CPP 的训练过程等价于最小化数据样本的能量，而推理过程可以被解释为选择任务特定的提示，以最小化给定系统中数据样本的能量。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

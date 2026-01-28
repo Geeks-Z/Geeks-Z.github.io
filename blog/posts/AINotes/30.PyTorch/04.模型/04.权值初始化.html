@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查看随机初始化的conv参数</title>
+    <meta name="description" content="查看随机初始化的conv参数 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#梯度消失与梯度爆炸">梯度消失与梯度爆炸</a></li>
+<li><a href="#torchnninit">torch.nn.init</a><ul>
+<li><a href="#常量初始化">常量初始化</a></li>
+<li><a href="#基于分布的初始化">基于分布的初始化</a></li>
+<li><a href="#稀疏初始化">稀疏初始化</a></li>
+<li><a href="#其他初始化">其他初始化</a></li>
+<li><a href="#使用示例">使用示例</a></li>
+</ul>
+</li>
+<li><a href="#xavier-方法">Xavier 方法</a></li>
+<li><a href="#nninitcalculate_gain">nn.init.calculate_gain()</a></li>
+<li><a href="#kaiming-方法">Kaiming 方法</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>查看随机初始化的conv参数</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/04.模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="梯度消失与梯度爆炸">梯度消失与梯度爆炸<a class="anchor-link" href="#梯度消失与梯度爆炸" title="Permanent link">&para;</a></h2>
+<p>考虑一个 3 层的全连接网络。</p>
+<p><span class="math-inline">H{1}=X \times W{1}，H{2}=H{1} \times W{2}，Out=H{2} \times W_{3}</span></p>
+<p><img alt="Untitled" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202301261431191.png" /></p>
+<p><div class="math-display">\begin{aligned} \Delta \mathrm{W}{2} &amp;=\frac{\partial \mathrm{Loss}}{\partial \mathrm{W}{2}}=\frac{\partial \mathrm{Loss}}{\partial \mathrm{out}}  \frac{\partial \mathrm{out}}{\partial \mathrm{H}<em>{2}}  \frac{\partial \mathrm{H}{2}}{\partial \mathrm{w}{2}} =\frac{\partial \mathrm{Loss}}{\partial \mathrm{out}}  \frac{\partial \mathrm{out}}{\partial \mathrm{H}</em>{2}}  \mathrm{H}_{1} \end{aligned}</div></p>
+<p>所以 <span class="math-inline">\Delta \mathrm{W}{2}</span> 依赖于前一层的输出 <span class="math-inline">H{1}</span>。如果 <span class="math-inline">H{1}</span> 近于零，那么<span class="math-inline">\Delta \mathrm{W}{2}</span> 接近于 0，造成梯度消失。如果 <span class="math-inline">H{1}</span> 近于无穷大，那么<span class="math-inline">\Delta \mathrm{W}{2}</span> 接近于无穷大，造成梯度爆炸。要避免梯度爆炸或者梯度消失，就要严格控制网络层输出的数值范围。</p>
+<p>下面构建 100 层全连接网络，先不适用非线性激活函数，每层的权重初始化为服从 <span class="math-inline">N(0,1)</span> 的正态分布，输出数据使用随机初始化的数据。</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+from common_tools import set_seed
+
+set_seed(1)  # 设置随机种子
+
+class MLP(nn.Module):
+    def __init__(self, neural_num, layers):
+        super(MLP, self).__init__()
+        self.linears = nn.ModuleList([nn.Linear(neural_num, neural_num, bias=False) for i in range(layers)])
+        self.neural_num = neural_num
+
+    def forward(self, x):
+        for (i, linear) in enumerate(self.linears):
+            x = linear(x)
+        return x
+
+    def initialize(self):
+        for m in self.modules():
+            # 判断这一层是否为线性层，如果为线性层则初始化权值
+            if isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight.data)    # normal: mean=0, std=1
+
+layer_nums = 100
+neural_nums = 256
+batch_size = 16
+
+net = MLP(neural_nums, layer_nums)
+net.initialize()
+
+inputs = torch.randn((batch_size, neural_nums))  # normal: mean=0, std=1
+
+output = net(inputs)
+print(output)
+</code></pre>
+<p>输出为：</p>
+<pre><code class="language-python">tensor([[nan, nan, nan,  ..., nan, nan, nan],
+        [nan, nan, nan,  ..., nan, nan, nan],
+        [nan, nan, nan,  ..., nan, nan, nan],
+        ...,
+        [nan, nan, nan,  ..., nan, nan, nan],
+        [nan, nan, nan,  ..., nan, nan, nan],
+        [nan, nan, nan,  ..., nan, nan, nan]], grad_fn=&lt;MmBackward&gt;)
+</code></pre>
+<p>也就是数据太大(梯度爆炸)或者太小(梯度消失)了。接下来我们在<code>forward()</code>函数中判断每一次前向传播的输出的标准差是否为 nan，如果是 nan 则停止前向传播。</p>
+<pre><code class="language-python">def forward(self, x):
+        for (i, linear) in enumerate(self.linears):
+            x = linear(x)
+
+            print(&quot;layer:{}, std:{}&quot;.format(i, x.std()))
+            if torch.isnan(x.std()):
+                print(&quot;output is nan in {} layers&quot;.format(i))
+                break
+
+        return x
+</code></pre>
+<p>输出如下：</p>
+<pre><code class="language-python">layer:0, std:15.959932327270508
+layer:1, std:256.6237487792969
+layer:2, std:4107.24560546875
+.
+.
+.
+layer:29, std:1.322983152787379e+36
+layer:30, std:2.0786820453988485e+37
+layer:31, std:nan
+output is nan in 31 layers
+</code></pre>
+<p>可以看到每一层的标准差是越来越大的，并在在 31 层时超出了数据可以表示的范围。</p>
+<p>下面推导为什么网络层输出的标准差越来越大。</p>
+<p>首先给出 3 个公式：</p>
+<p><span class="math-inline">E(X \times Y)=E(X) \times E(Y)</span>：两个相互独立的随机变量的乘积的期望等于它们的期望的乘积。</p>
+<p><span class="math-inline">D(X)=E(X^{2}) - [E(X)]^{2}</span> ：一个随机变量的方差等于它的平方的期望减去期望的平方</p>
+<p><span class="math-inline">D(X+Y)=D(X)+D(Y)</span> ：两个相互独立的随机变量之和的方差等于它们的方差的和。</p>
+<p>可以推导出两个随机变量的乘积的方差如下：</p>
+<p><div class="math-display"><br />
+如果 E(X)=0 ， E(Y)=0 ，那么 D(X \times Y)=D(X) \times D(Y)<br />
+</div></p>
+<p>我们以输入层第一个神经元为例：</p>
+<p><div class="math-display"><br />
+\mathrm{H}<em>{11}=\sum</em>{i=0}^{n} X_{i} \times W_{1 i}<br />
+</div></p>
+<p>其中输入 <span class="math-inline">X</span> 和权值 <span class="math-inline">W</span> 都是服从  <span class="math-inline">N(0,1)</span>  的正态分布，所以这个神经元的方差为：</p>
+<p><div class="math-display"><br />
+\begin{aligned} \mathbf{D}\left(\mathrm{H}<em>{11}\right) &amp;=\sum</em>{i=0}^{n} \boldsymbol{D}\left(X_{i}\right) * \boldsymbol{D}\left(W_{1 i}\right) =n *(1 * 1)=n \end{aligned}<br />
+</div></p>
+<p>标准差为： <span class="math-inline">\operatorname{std}\left(\mathrm{H}<em>{11}\right)=\sqrt{\mathbf{D}\left(\mathrm{H}</em>{11}\right)}=\sqrt{n}</span> ，所以每经过一个网络层，方差就会扩大 n 倍，标准差就会扩大 <span class="math-inline">\sqrt{n}</span>  倍，<span class="math-inline">n</span> 为每层神经元个数，直到超出数值表示范围。对比上面的代码可以看到，每层神经元个数为 256，输出数据的标准差为 1，所以第一个网络层输出的标准差为 16 左右，第二个网络层输出的标准差为 256 左右，以此类推，直到 31 层超出数据表示范围。可以把每层神经元个数改为 400，那么每层标准差扩大 20 倍左右。从 <span class="math-inline">D(\mathrm{H}<em>{11})=\sum</em>{i=0}^{n} D(X_{i}) \times D(W_{1 i})</span> ，可以看出，每一层网络输出的方差与神经元个数、输入数据的方差、权值方差有关，其中比较好改变的是权值的方差 <span class="math-inline">D(W)</span> ，所以 <span class="math-inline">D(W)= \frac{1}{n}</span> ，标准差为 <span class="math-inline">std(W)=\sqrt\frac{1}{n}</span> 。因此修改权值初始化代码为<code>nn.init.normal_(m.weight.data, std=np.sqrt(1/self.neural_num))</code>,结果如下：</p>
+<pre><code class="language-python">layer:0, std:0.9974957704544067
+layer:1, std:1.0024365186691284
+layer:2, std:1.002745509147644
+.
+.
+.
+layer:94, std:1.031973123550415
+layer:95, std:1.0413124561309814
+layer:96, std:1.0817031860351562
+</code></pre>
+<p>修改之后，没有出现梯度消失或者梯度爆炸的情况，每层神经元输出的方差均在 1 左右。通过恰当的权值初始化，可以保持权值在更新过程中维持在一定范围之内，不会过大，也不会过小。</p>
+<p>上述是没有使用非线性变换的实验结果，如果在<code>forward()</code>中添加非线性变换<code>tanh</code>，每一层的输出方差还是会越来越小，会导致梯度消失。因此出现了 Xavier 初始化方法与 Kaiming 初始化方法。</p>
+<h2 id="torchnninit">torch.nn.init<a class="anchor-link" href="#torchnninit" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><code>torch.nn.init</code> 是 PyTorch 中的一个模块，它提供了多种权重初始化方法。权重初始化是神经网络训练过程中的一个重要步骤，合适的初始化方法可以帮助模型更好地收敛，提高训练速度和性能。</p>
+</blockquote>
+<p><code>torch.nn.init</code> 提供了以下一些常用的初始化方法：</p>
+<h3 id="常量初始化">常量初始化<a class="anchor-link" href="#常量初始化" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>nn.init.constant_</code>: 将张量填充为给定的常量值。</li>
+</ul>
+<h3 id="基于分布的初始化">基于分布的初始化<a class="anchor-link" href="#基于分布的初始化" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>nn.init.uniform_</code>: 从均匀分布中抽取样本并用它们填充张量。</li>
+<li><code>nn.init.normal_</code>: 从正态分布（高斯分布）中抽取样本并用它们填充张量。</li>
+<li><code>nn.init.xavier_uniform_</code>: 使用 Glorot 初始化（也称作 Xavier 初始化），从均匀分布中抽取样本，并根据输入和输出单元数的数量来调整这些样本的范围。</li>
+<li><code>nn.init.xavier_normal_</code>: 使用 Glorot 初始化从正态分布中抽取样本。</li>
+<li><code>nn.init.kaiming_uniform_</code>: 使用 He 初始化（也称作 Kaiming 初始化）从均匀分布中抽取样本，它特别适用于 ReLU 激活函数。</li>
+<li><code>nn.init.kaiming_normal_</code>: 使用 He 初始化从正态分布中抽取样本。</li>
+</ul>
+<h3 id="稀疏初始化">稀疏初始化<a class="anchor-link" href="#稀疏初始化" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>nn.init.orthogonal_</code>: 使用正交矩阵填充张量。</li>
+<li><code>nn.init.sparse_</code>: 用稀疏矩阵填充张量。</li>
+</ul>
+<h3 id="其他初始化">其他初始化<a class="anchor-link" href="#其他初始化" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>nn.init.eye_</code>: 用单位矩阵填充张量。</li>
+<li><code>nn.init.dirac_</code>: 在特定维度上创建一个 "Dirac" delta 分布。</li>
+<li><code>nn.init.calculate_gain</code>: 计算用于初始化方法的缩放因子。</li>
+</ul>
+<blockquote>
+<p>除了<code>calculate_gain</code>，所有函数的后缀都带有下划线，意味着这些函数将会直接原地更改输入张量的值</p>
+</blockquote>
+<h3 id="使用示例">使用示例<a class="anchor-link" href="#使用示例" title="Permanent link">&para;</a></h3>
+<p>我们通常会根据实际模型来使用<code>torch.nn.init</code>进行初始化，通常使用<code>isinstance()</code>来进行判断模块属于什么类型。</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+conv = nn.Conv2d(1,3,3)
+linear = nn.Linear(10,1)
+
+print(isinstance(conv,nn.Conv2d)) # 判断conv是否是nn.Conv2d类型
+print(isinstance(linear,nn.Conv2d)) # 判断linear是否是nn.Conv2d类型
+</code></pre>
+<pre><code class="language-python">True
+False
+</code></pre>
+<pre><code class="language-python"># 查看随机初始化的conv参数
+conv.weight.data
+# 查看linear的参数
+linear.weight.data
+</code></pre>
+<pre><code class="language-python">tensor([[[[ 0.1174,  0.1071,  0.2977],
+          [-0.2634, -0.0583, -0.2465],
+          [ 0.1726, -0.0452, -0.2354]]],
+        [[[ 0.1382,  0.1853, -0.1515],
+          [ 0.0561,  0.2798, -0.2488],
+          [-0.1288,  0.0031,  0.2826]]],
+        [[[ 0.2655,  0.2566, -0.1276],
+          [ 0.1905, -0.1308,  0.2933],
+          [ 0.0557, -0.1880,  0.0669]]]])
+
+tensor([[-0.0089,  0.1186,  0.1213, -0.2569,  0.1381,  0.3125,  0.1118, -0.0063, -0.2330,  0.1956]])
+</code></pre>
+<p>对于不同的类型层，我们就可以设置不同的权值初始化的方法。</p>
+<pre><code class="language-python"># 对conv进行kaiming初始化
+torch.nn.init.kaiming_normal_(conv.weight.data)
+conv.weight.data
+# 对linear进行常数初始化
+torch.nn.init.constant_(linear.weight.data,0.3)
+linear.weight.data
+</code></pre>
+<pre><code class="language-python">tensor([[[[ 0.3249, -0.0500,  0.6703],
+          [-0.3561,  0.0946,  0.4380],
+          [-0.9426,  0.9116,  0.4374]]],
+        [[[ 0.6727,  0.9885,  0.1635],
+          [ 0.7218, -1.2841, -0.2970],
+          [-0.9128, -0.1134, -0.3846]]],
+        [[[ 0.2018,  0.4668, -0.0937],
+          [-0.2701, -0.3073,  0.6686],
+          [-0.3269, -0.0094,  0.3246]]]])
+tensor([[0.3000, 0.3000, 0.3000, 0.3000, 0.3000, 0.3000, 0.3000, 0.3000, 0.3000,0.3000]])
+</code></pre>
+<h2 id="xavier-方法">Xavier 方法<a class="anchor-link" href="#xavier-方法" title="Permanent link">&para;</a></h2>
+<p>Xavier 是 2010 年提出的，针对有非线性激活函数时的权值初始化方法，目标是保持数据的方差维持在 1 左右，主要针对饱和激活函数如 sigmoid 和 tanh 等。同时考虑前向传播和反向传播，需要满足两个等式：<span class="math-inline">\boldsymbol{n}<em>{\boldsymbol{i}} * \boldsymbol{D}(\boldsymbol{W})=\mathbf{1}</span> 和<span class="math-inline">\boldsymbol{n}</em>{\boldsymbol{i+1}} * \boldsymbol{D}(\boldsymbol{W})=\mathbf{1}</span> 得：<span class="math-inline">D(W)=\frac{2}{n_{i}+n_{i+1}}</span>。为了使 Xavier 方法初始化的权值服从均匀分布，假设 <span class="math-inline">W</span> 从均匀分布<span class="math-inline">U[-a, a]</span>，那么方差 <span class="math-inline">D(W)=\frac{(-a-a)^{2}}{12}=\frac{(2 a)^{2}}{12}=\frac{a^{2}}{3}</span>，令<span class="math-inline">\frac{2}{n_{i}+n_{i+1}}=\frac{a^{2}}{3}</span>，解得：<span class="math-inline">\boldsymbol{a}=\frac{\sqrt{6}}{\sqrt{n_{i}+n_{i+1}}}</span>，所以<span class="math-inline">W</span> 从分布<span class="math-inline">U\left[-\frac{\sqrt{6}}{\sqrt{n_{i}+n_{i+1}}}, \frac{\sqrt{6}}{\sqrt{n_{i}+n_{i+1}}}\right]</span></p>
+<p>所以初始化方法改为：</p>
+<pre><code class="language-python">a = np.sqrt(6 / (self.neural_num + self.neural_num))
+# 把 a 变换到 tanh，计算增益
+tanh_gain = nn.init.calculate_gain('tanh')
+a *= tanh_gain
+
+nn.init.uniform_(m.weight.data, -a, a)
+</code></pre>
+<p>并且每一层的激活函数都使用 tanh，输出如下：</p>
+<pre><code class="language-python">layer:0, std:0.7571136355400085
+layer:1, std:0.6924336552619934
+layer:2, std:0.6677976846694946
+.
+.
+.
+layer:97, std:0.6426210403442383
+layer:98, std:0.6407480835914612
+layer:99, std:0.6442216038703918
+</code></pre>
+<p>可以看到每层输出的方差都维持在 0.6 左右。<br />
+PyTorch 也提供了 Xavier 初始化方法，可以直接调用：</p>
+<pre><code class="language-python">tanh_gain = nn.init.calculate_gain('tanh')
+nn.init.xavier_uniform_(m.weight.data, gain=tanh_gain)
+</code></pre>
+<h2 id="nninitcalculate_gain">nn.init.calculate_gain()<a class="anchor-link" href="#nninitcalculate_gain" title="Permanent link">&para;</a></h2>
+<p>上面的初始化方法都使用了<code>tanh_gain = nn.init.calculate_gain('tanh')</code>。</p>
+<pre><code class="language-python">- nonlinearity：激活函数名称
+- param：激活函数的参数，如 Leaky ReLU 的 negative_slop。
+</code></pre>
+<p>下面是计算标准差经过激活函数的变化尺度的代码。</p>
+<pre><code class="language-python">x = torch.randn(10000) out = torch.tanh(x)
+
+gain = x.std() / out.std() print('gain:{}'.format(gain))
+
+tanh_gain = nn.init.calculate_gain('tanh') print('tanh_gain in PyTorch:', tanh_gain)
+</code></pre>
+<p>输出如下：</p>
+<pre><code class="language-python">gain:1.5982500314712524 tanh_gain in PyTorch: 1.6666666666666667
+
+</code></pre>
+<p>结果表示，原有数据分布的方差经过 tanh 之后，标准差会变小 1.6倍左右。</p>
+<h2 id="kaiming-方法">Kaiming 方法<a class="anchor-link" href="#kaiming-方法" title="Permanent link">&para;</a></h2>
+<p>虽然 Xavier 方法提出了针对饱和激活函数的权值初始化方法，但是 AlexNet 出现后，大量网络开始使用非饱和的激活函数如 ReLU 等，这时 Xavier 方法不再适用。2015 年针对 ReLU 及其变种等激活函数提出了 Kaiming 初始化方法。</p>
+<p>针对 ReLU，方差应该满足：<span class="math-inline">\mathrm{D}(W)=\frac{2}{n_{i}}</span>；针对 ReLu 的变种，方差应该满足：<span class="math-inline">\mathrm{D}(W)=\frac{2}{n_{i}}</span>，<span class="math-inline">a</span> 表示负半轴的斜率，如 PReLU 方法，标准差满足<span class="math-inline">\operatorname{std}(W)=\sqrt{\frac{2}{\left(1+a^{2}\right) * n_{i}}}</span>。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

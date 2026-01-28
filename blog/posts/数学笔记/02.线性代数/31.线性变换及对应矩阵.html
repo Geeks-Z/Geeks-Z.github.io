@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul></ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/02.线性代数</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>如何判断一个操作是不是线性变换？线性变换需满足以下两个要求：</p>
+<p><div class="math-display"><br />
+T(v+w)=T(v)+T(w)\<br />
+T(cv)=cT(v)<br />
+</div></p>
+<p>即变换<span class="math-inline">T</span>需要同时满足加法和数乘不变的性质。将两个性质合成一个式子为：<span class="math-inline">T(cv+dw)=cT(v)+dT(w)</span></p>
+<p>例1，二维空间中的投影操作，<span class="math-inline">T: \mathbb{R}^2\to\mathbb{R}^2</span>，它可以将某向量投影在一条特定直线上。检查一下投影操作，如果我们将向量长度翻倍，则其投影也翻倍；两向量相加后做投影与两向量做投影再相加结果一致。所以投影操作是线性变换。</p>
+<p>“坏”例1，二维空间的平移操作，即平面平移：</p>
+<pre><code class="language-python">%matplotlib inline
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+
+fig = plt.figure()
+
+sp1 = plt.subplot(221)
+vectors_1 = np.array([[0,0,3,2],]) 
+X_1, Y_1, U_1, V_1 = zip(*vectors_1)
+plt.axhline(y=0, c='black')
+plt.axvline(x=0, c='black')
+sp1.quiver(X_1, Y_1, U_1, V_1, angles='xy', scale_units='xy', scale=1)
+sp1.set_xlim(0, 10)
+sp1.set_ylim(0, 5)
+sp1.set_xlabel(&quot;before shifted&quot;)
+
+sp2 = plt.subplot(222)
+vector_2 = np.array([[0,0,3,2],
+                     [3,2,2,0],
+                     [0,0,5,2],
+                     [0,0,10,4]]) 
+X_2,Y_2,U_2,V_2 = zip(*vector_2)
+plt.axhline(y=0, c='black')
+plt.axvline(x=0, c='black')
+sp2.quiver(X_2, Y_2, U_2, V_2, angles='xy', scale_units='xy', scale=1)
+sp2.set_xlim(0, 10)
+sp2.set_ylim(0, 5)
+sp2.set_xlabel(&quot;shifted by horizontal 2 then double&quot;)
+
+sp3 = plt.subplot(223)
+vectors_1 = np.array([[0,0,6,4],]) 
+X_1, Y_1, U_1, V_1 = zip(*vectors_1)
+plt.axhline(y=0, c='black')
+plt.axvline(x=0, c='black')
+sp3.quiver(X_1, Y_1, U_1, V_1, angles='xy', scale_units='xy', scale=1)
+sp3.set_xlim(0, 10)
+sp3.set_ylim(0, 5)
+sp3.set_xlabel(&quot;double the vector&quot;)
+
+sp4 = plt.subplot(224)
+vector_2 = np.array([[0,0,6,4],
+                     [6,4,2,0],
+                     [0,0,8,4]]) 
+X_2,Y_2,U_2,V_2 = zip(*vector_2)
+plt.axhline(y=0, c='black')
+plt.axvline(x=0, c='black')
+sp4.quiver(X_2, Y_2, U_2, V_2, angles='xy', scale_units='xy', scale=1)
+sp4.set_xlim(0, 10)
+sp4.set_ylim(0, 5)
+sp4.set_xlabel(&quot;doubled vector shifted by horizontal 2&quot;)
+
+plt.subplots_adjust(hspace=0.33)
+plt.draw()
+</code></pre>
+<p><img alt="png" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222014230.png" /></p>
+<pre><code class="language-python">plt.close(fig)
+</code></pre>
+<p>比如，上图中向量长度翻倍，再做平移，明显与向量平移后再翻倍的结果不一致。</p>
+<p>有时我们也可以用一个简单的特例判断线性变换，检查<span class="math-inline">T(0)\stackrel{?}{=}0</span>。零向量平移后结果并不为零。</p>
+<p>所以平面平移操作并不是线性变换。</p>
+<p>“坏”例2，求模运算，<span class="math-inline">T(v)=|v|,\ T:\mathbb{R}^3\to\mathbb{R}^1</span>，这显然不是线性变换，比如如果我们将向量翻倍则其模翻倍，但如果我将向量翻倍取负，则其模依然翻倍。所以<span class="math-inline">T(-v)\neq -T(v)</span></p>
+<p>例2，旋转<span class="math-inline">45^\circ</span>操作，<span class="math-inline">T:\mathbb{R}^2\to\mathbb{R}^2</span>，也就是将平面内一个向量映射为平面内另一个向量。检查可知，如果向量翻倍，则旋转后同样翻倍；两个向量先旋转后相加，与这两个向量先相加后旋转得到的结果一样。</p>
+<p>所以从上面的例子我们知道，投影与旋转都是线性变换。</p>
+<p>例3，矩阵乘以向量，<span class="math-inline">T(v)=Av</span>，这也是一个（一系列）线性变换，不同的矩阵代表不同的线性变换。根据矩阵的运算法则有<span class="math-inline">A(v+w)=A(v)+A(w),\ A(cv)=cAv</span>。比如取<span class="math-inline">A=\begin{bmatrix}1&amp;0\0&amp;-1\end{bmatrix}</span>，作用于平面上的向量<span class="math-inline">v</span>，会导致<span class="math-inline">v</span>的<span class="math-inline">x</span>分量不变，而<span class="math-inline">y</span>分量取反，也就是图像沿<span class="math-inline">x</span>轴翻转。</p>
+<p>线性变换的核心，就是该变换使用的相应的矩阵。</p>
+<p>比如我们需要做一个线性变换，将一个三维向量降至二维，<span class="math-inline">T:\mathbb{R}^3\to\mathbb{R}^2</span>，则在<span class="math-inline">T(v)=Av</span>中，<span class="math-inline">v\in\mathbb{R}^3,\ T(v)\in\mathbb{R}^2</span>，所以<span class="math-inline">A</span>应当是一个<span class="math-inline">2\times 3</span>矩阵。</p>
+<p>如果我们希望知道线性变换<span class="math-inline">T</span>对整个输入空间<span class="math-inline">\mathbb{R}^n</span>的影响，我们可以找到空间的一组基<span class="math-inline">v_1,\ v_2,\ \cdots,\ v_n</span>，检查<span class="math-inline">T</span>对每一个基的影响<span class="math-inline">T(v_1),\ T(v_2),\ \cdots,\ T(v_n)</span>，由于输入空间中的任意向量都满足：</p>
+<p><div class="math-display">v=c_1v_1+c_2v_2+\cdots+c_nv_n\tag{1}</div></p>
+<p>所以我们可以根据<span class="math-inline">T(v)</span>推出线性变换<span class="math-inline">T</span>对空间内任意向量的影响，得到：</p>
+<p><div class="math-display">T(v)=c_1T(v_1)+c_2T(v_2)+\cdots+c_nT(v_n)\tag{2}</div></p>
+<p>现在我们需要考虑，如何把一个与坐标无关的线性变换变成一个与坐标有关的矩阵呢？</p>
+<p>在<span class="math-inline">1</span>式中，<span class="math-inline">c_1,c_2,\cdots,c_n</span>就是向量<span class="math-inline">v</span>在基<span class="math-inline">v_1,v_2,\cdots,v_n</span>上的坐标，比如分解向量<span class="math-inline">v=\begin{bmatrix}3\2\4\end{bmatrix}=3\begin{bmatrix}1\0\0\end{bmatrix}+2\begin{bmatrix}0\1\0\end{bmatrix}+4\begin{bmatrix}0\0\1\end{bmatrix}</span>，式子将向量<span class="math-inline">v</span>分解在一组标准正交基<span class="math-inline">\begin{bmatrix}1\0\0\end{bmatrix},\begin{bmatrix}0\1\0\end{bmatrix},\begin{bmatrix}0\0\1\end{bmatrix}</span>上。当然，我们也可以选用矩阵的特征向量作为基向量，基的选择是多种多样的。</p>
+<p>我们打算构造一个矩阵<span class="math-inline">A</span>用以表示线性变换<span class="math-inline">T:\mathbb{R}^n\to\mathbb{R}^m</span>。我们需要两组基，一组用以表示输入向量，一组用以表示输出向量。令<span class="math-inline">v_1,v_2,\cdots,v_n</span>为输入向量的基，这些向量来自<span class="math-inline">\mathbb{R}^n</span>；<span class="math-inline">w_1,w_2,\cdots,w_m</span>作为输出向量的基，这些向量来自<span class="math-inline">\mathbb{R}^m</span>。</p>
+<p>我们用二维空间的投影矩阵作为例子：</p>
+<pre><code class="language-python">fig = plt.figure()
+
+vectors_1 = np.array([[0, 0, 3, 2],
+                      [0, 0, -2, 3]]) 
+X_1, Y_1, U_1, V_1 = zip(*vectors_1)
+plt.axis('equal')
+plt.axhline(y=0, c='black')
+plt.axvline(x=0, c='black')
+plt.quiver(X_1, Y_1, U_1, V_1, angles='xy', scale_units='xy', scale=1)
+plt.plot([-6, 12], [-4, 8])
+plt.annotate('<span class="math-inline">v_1=w_1</span>', xy=(1.5, 1), xytext=(10, -20), textcoords='offset points', size=14, arrowprops=dict(arrowstyle=&quot;-&gt;&quot;))
+plt.annotate('<span class="math-inline">v_2=w_2</span>', xy=(-1, 1.5), xytext=(-60, -20), textcoords='offset points', size=14, arrowprops=dict(arrowstyle=&quot;-&gt;&quot;))
+plt.annotate('project line', xy=(4.5, 3), xytext=(-90, 10), textcoords='offset points', size=14, arrowprops=dict(arrowstyle=&quot;-&gt;&quot;))
+
+ax = plt.gca()
+ax.set_xlim(-5, 5)
+ax.set_ylim(-4, 4)
+ax.set_xlabel(&quot;Project Example&quot;)
+
+plt.draw()
+</code></pre>
+<p><img alt="png" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222014549.png" /></p>
+<pre><code class="language-python">plt.close(fig)
+</code></pre>
+<p>从图中可以看到，设输入向量的基为<span class="math-inline">v_1,v_2</span>，<span class="math-inline">v_1</span>就在投影上，而<span class="math-inline">v_2</span>垂直于投影方向，输出向量的基为<span class="math-inline">w_1,w_2</span>，而<span class="math-inline">v_1=w_1,v_2=w_2</span>。那么如果输入向量为<span class="math-inline">v=c_1v_1+c_2v_2</span>，则输出向量为<span class="math-inline">T(v)=c_1v_1</span>，也就是线性变换去掉了法线方向的分量，输入坐标为<span class="math-inline">(c_1,c_2)</span>，输出坐标变为<span class="math-inline">(c_1,0)</span>。</p>
+<p>找出这个矩阵并不困难，<span class="math-inline">Av=w</span>，则有<span class="math-inline">\begin{bmatrix}1&amp;0\0&amp;0\end{bmatrix}\begin{bmatrix}c_1\c_2\end{bmatrix}=\begin{bmatrix}c_1\0\end{bmatrix}</span>。</p>
+<p>本例中我们选取的基极为特殊，一个沿投影方向，另一个沿投影法线方向，其实这两个向量都是投影矩阵的特征向量，所以我们得到的线性变换矩阵是一个对角矩阵，这是一组很好的基。</p>
+<p>所以，如果我们选取投影矩阵的特征向量作为基，则得到的线性变换矩阵将是一个包含投影矩阵特征值的对角矩阵。</p>
+<p>继续这个例子，我们不再选取特征向量作为基，而使用标准基<span class="math-inline">v_1=\begin{bmatrix}1\0\end{bmatrix},v_2=\begin{bmatrix}0\1\end{bmatrix}</span>，我们继续使用相同的基作为输出空间的基，即<span class="math-inline">v_1=w_1,v_2=w_2</span>。此时投影矩阵为<span class="math-inline">P=\frac{aa^T}{a^Ta}=\begin{bmatrix}\frac{1}{2}&amp;\frac{1}{2}\\frac{1}{2}&amp;\frac{1}{2}\end{bmatrix}</span>，这个矩阵明显没有上一个矩阵“好”，不过这个矩阵也是一个不错的对称矩阵。</p>
+<p>总结通用的计算线性变换矩阵<span class="math-inline">A</span>的方法：</p>
+<ul>
+<li>确定输入空间的基<span class="math-inline">v_1,v_2,\cdots,v_n</span>，确定输出空间的基<span class="math-inline">w_1,w_2,\cdots,w_m</span>；</li>
+<li>计算<span class="math-inline">T(v_1)=a_{11}w_1+a_{21}w_2+\cdots+a_{m1}w_m</span>，求出的系数<span class="math-inline">a_{i1}</span>就是矩阵<span class="math-inline">A</span>的第一列；</li>
+<li>继续计算<span class="math-inline">T(v_2)=a_{12}w_1+a_{22}w_2+\cdots+a_{m2}w_m</span>，求出的系数<span class="math-inline">a_{i2}</span>就是矩阵<span class="math-inline">A</span>的第二列；</li>
+<li>以此类推计算剩余向量直到<span class="math-inline">v_n</span>；</li>
+<li>最终得到矩阵<span class="math-inline">A=\left[\begin{array}{c|c|c|c}a_{11}&amp;a_{12}&amp;\cdots&amp;a_{1n}\a_{21}&amp;a_{22}&amp;\cdots&amp;a_{2n}\\vdots&amp;\vdots&amp;\ddots&amp;\vdots\a_{m1}&amp;a_{m2}&amp;\cdots&amp;a_{mn}\\end{array}\right]</span>。</li>
+</ul>
+<p>最后我们介绍一种不一样的线性变换，<span class="math-inline">T=\frac{\mathrm{d}}{\mathrm{d}x}</span>：</p>
+<ul>
+<li>
+<p>设输入为<span class="math-inline">c_1+c_2x+c_3x^3</span>，基为<span class="math-inline">1,x,x^2</span>；</p>
+</li>
+<li>
+<p>则输出为导数：<span class="math-inline">c_2+2c_3x</span>，基为<span class="math-inline">1,x</span>；</p>
+</li>
+</ul>
+<p>所以我们需要求一个从三维输入空间到二维输出空间的线性变换，目的是求导。求导运算其实是线性变换，因此我们只要知道少量函数的求导法则（如<span class="math-inline">\sin x, \cos x, e^x</span>），就能求出它们的线性组合的导数。</p>
+<p>有<span class="math-inline">A\begin{bmatrix}c_1\c_2\c_3\end{bmatrix}=\begin{bmatrix}c_2\2c_3\end{bmatrix}</span>，从输入输出的空间维数可知，<span class="math-inline">A</span>是一个<span class="math-inline">2\times 3</span>矩阵，<span class="math-inline">A=\begin{bmatrix}0&amp;1&amp;0\0&amp;0&amp;2\end{bmatrix}</span>。</p>
+<p>最后，矩阵的逆相当于对应线性变换的逆运算，矩阵的乘积相当于线性变换的乘积，实际上矩阵乘法也源于线性变换。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#其他rnn">其他RNN</a><ul>
+<li><a href="#elman-network-jordan-network">Elman network &amp;Jordan network</a></li>
+<li><a href="#bidirectional-neural-network">Bidirectional neural network</a></li>
+<li><a href="#lstm">LSTM</a></li>
+<li><a href="#lstm举例">LSTM举例</a></li>
+<li><a href="#lstm运算举例">LSTM运算举例</a></li>
+</ul>
+</li>
+<li><a href="#lstm原理">LSTM原理</a></li>
+<li><a href="#gru">GRU</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/03.循环神经网络</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="其他rnn">其他RNN<a class="anchor-link" href="#其他rnn" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112181.png" style="zoom: 50%;" /></div>
+
+<p>Recurrent Neural Networ的架构是可以任意设计的，比如说，它当然是deep(刚才我们看到的Recurrent Neural Networ它只有一个hidden layer)，当然它也可以是deep Recurrent Neural Networ。</p>
+<p>比如说，我们把<span class="math-inline">x^t</span> 进去之后，它可以通过一个hidden layer，再通过第二个hidden layer，以此类推(通过很多的hidden layer)才得到最后的output。每一个hidden layer的output都会被存在memory里面，在下一个时间点的时候，每一个hidden layer会把前一个时间点存的值再读出来，以此类推最后得到output，这个process会一直持续下去。</p>
+<h3 id="elman-network-jordan-network">Elman network &amp;Jordan network<a class="anchor-link" href="#elman-network-jordan-network" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112182.png" style="zoom: 50%;" /></div>
+
+<p>Recurrent Neural Networ会有不同的变形，我们刚才讲的是Elman network。(如果我们今天把hidden layer的值存起来，在下一个时间点在读出来)。还有另外一种叫做Jordan network，Jordan network存的是整个network output的值，它把output值在下一个时间点在读进来(把output存到memory里)。传说Jordan network会得到好的performance。</p>
+<p>Elman network是没有target，很难控制说它能学到什么hidden layer information(学到什么放到memory里)，但是Jordan network是有target，今天我们比较很清楚我们放在memory里是什么样的东西。</p>
+<h3 id="bidirectional-neural-network">Bidirectional neural network<a class="anchor-link" href="#bidirectional-neural-network" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112183.png" style="zoom: 50%;" /></div>
+
+<p>Recurrent Neural Networ还可以是双向，什么意思呢？我们刚才Recurrent Neural Networ你input一个句子的话，它就是从句首一直读到句尾。假设句子里的每一个词汇我们都有<span class="math-inline">x^t</span> 示它。他就是先读<span class="math-inline">x^t</span> 读<span class="math-inline">x^{t+1}</span> 读<span class="math-inline">x^{t+2}</span>。但是它的读取方向也可以是反过来的，它可以先读<span class="math-inline">x^{t+2}</span>，再读<span class="math-inline">x^{t+1}</span>，再读<span class="math-inline">x^{t}</span>。你可以同时train一个正向的Recurrent Neural Network，又可以train一个逆向的Recurrent Neural Network，然后把这两个Recurrent Neural Network的hidden layer拿出来，都接给一个output layer得到最后的<span class="math-inline">y^t</span>。所以你把正向的network在input<span class="math-inline">x^t</span> 时候跟逆向的network在input<span class="math-inline">x^t</span> ，都丢到output layer产生<span class="math-inline">y^t</span>，然后产生<span class="math-inline">y^{t+1}</span>,<span class="math-inline">y^{t+2}</span>,以此类推。用Bidirectional neural network的好处是，neural在产生output的时候，它看的范围是比较广的。如果你只有正向的network，再产生<span class="math-inline">y^t</span>，<span class="math-inline">y^{t+1}</span> 时候，你的neural只看过<span class="math-inline">x^1</span> <span class="math-inline">x^{t+1}</span> input。但是我们今天是Bidirectional neural network，在产生<span class="math-inline">y^{t+1}</span> 时候，你的network不只是看过<span class="math-inline">x^1</span>,到<span class="math-inline">x^{t+1}</span> 有的input，它也看了从句尾到<span class="math-inline">x^{t+1}</span> input。那network就等于整个input的sequence。假设你今天考虑的是slot filling的话，你的network就等于看了整个sentence后，才决定每一个词汇的slot应该是什么。这样会比看sentence的一半还要得到更好的performance。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112184.png" /><br />
+那我们刚才讲的Recurrent Neural Network其实是Recurrent Neural Network最单的版本</p>
+<h3 id="lstm">LSTM<a class="anchor-link" href="#lstm" title="Permanent link">&para;</a></h3>
+<p>那我们刚才讲的memory是最单纯的，我们可以随时把值存到memory去，也可以把值读出来。但现在最常用的memory称之为Long Short-term Memory(长时间的短期记忆)，简写LSTM.这个Long Short-term Memor是比较复杂的。</p>
+<p>这个Long Short-term Memor是有三个gate，当外界某个neural的output想要被写到memory cell里面的时候，必须通过一个input Gate，那这个input Gate要被打开的时候，你才能把值写到memory cell里面去，如果把这个关起来的话，就没有办法把值写进去。至于input Gate是打开还是关起来，这个是neural network自己学的(它可以自己学说，它什么时候要把input Gate打开，什么时候要把input Gate关起来)。那么输出的地方也有一个output Gate，这个output Gate会决定说，外界其他的neural可不可以从这个memory里面把值读出来(把output Gate关闭的时候是没有办法把值读出来，output Gate打开的时候，才可以把值读出来)。那跟input Gate一样，output Gate什么时候打开什么时候关闭，network是自己学到的。那第三个gate叫做forget Gate，forget Gate决定说：什么时候memory cell要把过去记得的东西忘掉。这个forget Gate什么时候会把存在memory的值忘掉，什么时候会把存在memory里面的值继续保留下来)，这也是network自己学到的。</p>
+<p>那整个LSTM你可以看成，它有四个input 1个output，这四个input中，一个是想要被存在memory cell的值(但它不一定存的进去)还有操控input Gate的讯号，操控output Gate的讯号，操控forget Gate的讯号，有着四个input但它只会得到一个output</p>
+<p>冷知识：这个“-”应该在short-term中间，是长时间的短期记忆。想想我们之前看的Recurrent Neural Network，它的memory在每一个时间点都会被洗掉，只要有新的input进来，每一个时间点都会把memory<br />
+洗掉，所以的short-term是非常short的，但如果是Long Short-term Memory，它记得会比较久一点(只要forget Gate不要决定要忘记，它的值就会被存起来)。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112185.png" /><br />
+这个memory cell更仔细来看它的formulation，它长的像这样。</p>
+<p>底下这个是外界传入cell的input，还有input gate,forget gate,output gate。现在我们假设要被存到cell的input叫做z，操控input gate的信号叫做<span class="math-inline">z_i</span>（一个数值）,所谓操控forget gate的信号叫做<span class="math-inline">z_f</span>，操控output gate叫做<span class="math-inline">z_o</span>，综合这些东西会得到一个output 记为a。假设cell里面有这四个输入之前，它里面已经存了值c。</p>
+<p>假设要输入的部分为z，那三个gate分别是由<span class="math-inline">z_i</span>,<span class="math-inline">z_f</span>,<span class="math-inline">z_0</span> 操控的。那output a会长什么样子的呢。我们把z通过activation function得到g(z)，那<span class="math-inline">z_i</span> 过另外一个activation function得到<span class="math-inline">f(z_i)</span>(<span class="math-inline">z_i</span>,<span class="math-inline">z_f</span>,<span class="math-inline">z_0</span> 过的activation function 通常我们会选择sigmoid function)，选择sigmoid function的意义是它的值是介在0到1之间的。这个0到1之间的值代表了这个gate被打开的程度(如果这个f的output是1，表示为被打开的状态，反之代表这个gate是关起来的)。</p>
+<p>那接下来，把<span class="math-inline">g(z)</span> 以<span class="math-inline">f(z_i)</span> 到<span class="math-inline">g(z)f(z_i)</span>，对于forget gate的<span class="math-inline">z_f</span>,也通过sigmoid的function得到<span class="math-inline">f(z_f)</span></p>
+<p>接下来把存到memory里面的值c乘以<span class="math-inline">f(z_f)</span> 到c<span class="math-inline">f(z_f)</span>，然后加起来<span class="math-inline">c^{'}=g(z)f(z_i)+cf(z_f)</span>，那么<span class="math-inline">c^{'}</span> 是重新存到memory里面的值。所以根据目前的运算说，这个<span class="math-inline">f(z_i)</span>cortrol这个<span class="math-inline">g(z)</span>，可不可以输入一个关卡(假设输入<span class="math-inline">f(z_i)</span>0，那<span class="math-inline">g(z)f(z_i)</span> 等于0，那就好像是没有输入一样，如果<span class="math-inline">f(z_i)</span> 于1就等于是把<span class="math-inline">g(z)</span> 做输入)<br />
+。那这个<span class="math-inline">f(z_f)</span> 定说：我们要不要把存在memory的值洗掉假设<span class="math-inline">f(z_f)</span> 1(forget gate 开启的时候),这时候c会直接通过(就是说把之前的值还会记得)。如果<span class="math-inline">f(z_f)</span> 于0(forget gate关闭的时候)<span class="math-inline">cf(z_f)</span> 于0。然后把这个两个值加起来(<span class="math-inline">c^{'}=g(z)f(z_i)+cf(z_f)</span>)写到memory里面得到<span class="math-inline">c^{'}</span>。这个forget gate的开关是跟我们的直觉是相反的，那这个forget gate打开的时候代表的是记得，关闭的时候代表的是遗忘。那这个<span class="math-inline">c^{'}</span> 过<span class="math-inline">h(c^{'})</span>，将<span class="math-inline">h(c^{'})</span> 以<span class="math-inline">f(z_o)</span> 到<span class="math-inline">a = f(c^{'}f(z_o)</span>(output gate受<span class="math-inline">f(z_o)</span> 操控，<span class="math-inline">f(z_o)</span> 于1的话，就说明<span class="math-inline">h(c^{'})</span> 通过，<span class="math-inline">f(z_o)</span> 于0的话，说明memory里面存在的值没有办法通过output gate被读取出来)</p>
+<h3 id="lstm举例">LSTM举例<a class="anchor-link" href="#lstm举例" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112186.png" /><br />
+LSTM例子:我们的network里面只有一个LSTM的cell，那我们的input都是三维的vector，output都是一维的output。那这三维的vector跟output还有memory的关系是这样的。假设第二个dimension<span class="math-inline">x_2</span> 值是1时，<span class="math-inline">x_1</span> 值就会被写到memory里，假设<span class="math-inline">x_2</span> 值是-1时，就会reset the memory，假设<span class="math-inline">x_3</span> 值为1时，你才会把output打开才能看到输出。</p>
+<p>假设我们原来存到memory里面的值是0，当第二个dimension<span class="math-inline">x_2</span> 值是1时，3会被存到memory里面去。第四个dimension的<span class="math-inline">x_2</span> 于，所以4会被存到memory里面去，所以会得到7。第六个dimension的<span class="math-inline">x_3</span> 于1，这时候7会被输出。第七个dimension的<span class="math-inline">x_2</span> 值为-1，memory里面的值会被洗掉变为0。第八个dimension的<span class="math-inline">x_2</span> 值为1，所以把6存进去，因为<span class="math-inline">x_3</span> 值为1，所以把6输出。</p>
+<h3 id="lstm运算举例">LSTM运算举例<a class="anchor-link" href="#lstm运算举例" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112187.png" /><br />
+那我们就做一下实际的运算，这个是一个memory cell。这四个input scalar是这样来的：input的三维vector乘以linear transform以后所得到的结果(<span class="math-inline">x_1</span>,<span class="math-inline">x_2</span>,<span class="math-inline">x_3</span> 以权重再加上bias)，这些权重和bias是哪些值是通过train data用GD学到的。 假设我已经知道这些值是多少了，那用这样的输入会得到什么样的输出。那我们就实际的运算一下。</p>
+<p>在实际运算之前，我们先根据它的input，参数分析下可能会得到的结果。底下这个外界传入的cell，<span class="math-inline">x_1</span> 以1，其他的vector乘以0，所以就直接把<span class="math-inline">x_1</span> 做输入。在input gate时，<span class="math-inline">x_2</span> 以100，bias乘以-10(假设<span class="math-inline">x_2</span> 没有值的话，通常input gate是关闭的(bias等于-10)因为-10通过sigmoid函数之后会接近0，所以就代表是关闭的，若<span class="math-inline">x_2</span> 值大于1的话，结果会是一个正值，代表input gate会被打开) 。forget gate通常会被打开的，因为他的bias等于10(它平常会一直记得东西)，只有当<span class="math-inline">x_2</span> 值为一个很大的负值时，才会把forget gate关起来。output gate平常是被关闭的，因为bias是一个很大的负值，若<span class="math-inline">x_3</span> 一个很大的正值的话，压过bias把output打开。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112188.png" /><br />
+接下来，我们实际的input一下看看。我们假设g和h都是linear(因为这样计算会比较方便)。假设存到memory里面的初始值是0，我们input第一个vector(3,1,0),input这边3<em>1=3，这边输入的是的值为3。input gate这边(<span class="math-inline">1 </em>100-10\approx 1</span>)是被打开(input gate约等于1)。(<span class="math-inline">g(z) <em>f(z_i)=3</span>)。forget gate(<span class="math-inline">1 </em>100+10\approx 1</span>)是被打开的(forget gate约等于1)。现在0 *1+3=3(<span class="math-inline">c^{'}=g(z)f(z_i)+cf(z_f)</span>)，所以存到memory里面的现在为3。output gate(-10)是被关起来的，所以3无关通过，所以输出值为0。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112189.png" /><br />
+接下来input(4,1,0),传入input的值为4，input gate会被打开，forget gate也会被打开，所以memory里面存的值等于7(3+4=7)，output gate仍然会被关闭的，所以7没有办法被输出，所以整个memory的输出为0。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112190.png" /></p>
+<p>接下来input(2,0,0),传入input的值为2，input gate关闭(<span class="math-inline">\approx</span> 0),input被input gate给挡住了(0 <em>2=0),forget gate打开(10)。原来memory里面的值还是7(1 </em>7+0=7).output gate仍然为0，所以没有办法输出，所以整个output还是0。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112191.png" /><br />
+接下来input(1,0,1),传入input的值为1,input gate是关闭的，forget gate是打开的，memory里面存的值不变，output gate被打开，整个output为7(memory里面存的7会被读取出来)</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112192.png" /><br />
+最后input(3,-1,0),传入input的值为3，input gate 关闭，forget gate关闭，memory里面的值会被洗掉变为0，output gate关闭，所以整个output为0。</p>
+<h2 id="lstm原理">LSTM原理<a class="anchor-link" href="#lstm原理" title="Permanent link">&para;</a></h2>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112193.png" /><br />
+你可能会想这个跟我们的neural network有什么样的关系呢。你可以这样想，在我们原来的neural network里面，我们会有很多的neural，我们会把input乘以不同的weight当做不同neural的输入，每一个neural都是一个function，输入一个值然后输出一个值。但是如果是LSTM的话，其实你只要把LSTM那么memory的cell想成是一个neuron就好了。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112194.png" /></p>
+<p>所以我们今天要用一个LSTM的neuron，你做的事情其实就是原来简单的neuron换成LSTM。现在的input(<span class="math-inline">x_1,x_2</span>)会乘以不同的weight当做LSTM不同的输入(假设我们这个hidden layer只有两个neuron，但实际上是有很多的neuron)。input(<span class="math-inline">x_1,x_2</span>)会乘以不同的weight会去操控output gate，乘以不同的weight操控input gate，乘以不同的weight当做底下的input，乘以不同的weight当做forget gate。第二个LSTM也是一样的。所以LSTM是有四个input跟一个output，对于LSTM来说，这四个input是不一样的。在原来的neural network里是一个input一个output。在LSTM里面它需要四个input，它才能产生一个output。</p>
+<p>LSTM因为需要四个input，而且四个input都是不一样，原来的一个neuron就只有一个input和output，所以LSTM需要的参数量(假设你现在用的neural的数目跟LSTM是一样的)是一般neural network的四倍。这个跟Recurrent Neural Network 的关系是什么，这个看起来好像不一样，所以我们要画另外一张图来表示。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112195.png" /></p>
+<p>假设我们现在有一整排的neuron(LSTM)，这些LSTM里面的memory都存了一个值，把所有的值接起来就变成了vector，写为<br />
+<span class="math-inline">c^{t-1}</span>(一个值就代表一个dimension)。现在在时间点t，input一个vector<span class="math-inline">x^t</span>，这个vector首先会乘上一matrix(一个linear transform变成一个vector z,z这个vector的dimension就代表了操控每一个LSTM的input(z这个dimension正好就是LSTM memory cell的数目)。z的第一维就丢给第一个cell(以此类推)</p>
+<p>这个<span class="math-inline">x^t</span> 乘上另外的一个transform得到<span class="math-inline">z^i</span>，然后这个<span class="math-inline">z^i</span> dimension也跟cell的数目一样，<span class="math-inline">z^i</span> 每一个dimension都会去操控input gate(forget gate 跟output gate也都是一样，这里就不在赘述)。所以我们把<span class="math-inline">x^t</span> 以四个不同的transform得到四个不同的vector，四个vector的dimension跟cell的数目一样，这四个vector合起来就会去操控这些memory cell运作。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112196.png" /><br />
+一个memory cell就长这样，现在input分别就是<span class="math-inline">z</span>,<span class="math-inline">z^i</span>,<span class="math-inline">z^o</span>,<span class="math-inline">z^f</span>(都是vector)，丢到cell里面的值其实是vector的一个dimension，因为每一个cell input的dimension都是不一样的，所以每一个cell input的值都会是不一样。所以cell是可以共同一起被运算的,怎么共同一起被运算呢？我们说，<span class="math-inline">z^i</span> 过activation function跟z相乘，<span class="math-inline">z^f</span> 过activation function跟之前存在cell里面的值相乘，然后将<span class="math-inline">z</span> <span class="math-inline">z^i</span> 乘的值加上<span class="math-inline">z^f</span> <span class="math-inline">c^{t-1}</span> 乘的值，<span class="math-inline">z^o</span> 过activation function的结果output，跟之前相加的结果再相乘，最后就得到了output<span class="math-inline">y^t</span></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112197.png" /><br />
+之前那个相加以后的结果就是memory里面存放的值<span class="math-inline">c^t</span>，这个process反复的进行，在下一个时间点input<span class="math-inline">x^{t+1}</span>，把z跟input gate相乘，把forget gate跟存在memory里面的值相乘，然后将前面两个值再相加起来，在乘上output gate的值，然后得到下一个时间点的输出<span class="math-inline">y^{t+1}</span></p>
+<p>你可能认为说这很复杂了，但是这不是LSTM的最终形态，真正的LSTM,会把上一个时间的输出接进来，当做下一个时间的input，也就说下一个时间点操控这些gate的值不是只看那个时间点的input<span class="math-inline">x^t</span>，还看前一个时间点的output<span class="math-inline">h^t</span>。其实还不止这样，还会加一个东西叫做“peephole”，这个peephole就是把存在memory cell里面的值也拉过来。那操控LSTM四个gate的时候，你是同时考虑了<span class="math-inline">x^{t+1},h^t,c^t</span>，你把这三个vector并在一起乘上不同的transform得到四个不同的vector再去操控LSTM。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202402251112198.png" /><br />
+LSTM通常不会只有一层，若有五六层的话。大概是这个样子。每一个第一次看这个的人，反映都会很难受。现在还是 quite standard now，当有一个人说我用RNN做了什么，你不要去问他为什么不用LSTM,因为他其实就是用了LSTM。现在当你说，你在做RNN的时候，其实你指的就用LSTM。Keras支持三种RNN：‘’LSTM‘’,“GRU”,"SimpleRNN"</p>
+<h2 id="gru">GRU<a class="anchor-link" href="#gru" title="Permanent link">&para;</a></h2>
+<p>GRU是LSTM稍微简化的版本，它只有两个gate，虽然少了一个gate，但是performance跟LSTM差不多(少了1/3的参数，也是比较不容易overfitting)。如果你要用这堂课最开始讲的那种RNN，你要说是simple RNN才行。</p>
+<p>GRU是LSTM稍微简化的版本，它只有两个gate，虽然少了一个gate，但是performance跟LSTM差不多(少了1/3的参数，也是比较不容易overfitting)。如果你要用这堂课最开始讲的那种RNN，你要说是simple RNN才行。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

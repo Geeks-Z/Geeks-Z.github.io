@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【LLM】从零开始训练大模型</title>
+    <meta name="description" content="【LLM】从零开始训练大模型 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-预训练阶段pretraining-stage">1. 预训练阶段（Pretraining Stage）</a><ul>
+<li><a href="#11-tokenizer-training">1.1 Tokenizer Training</a></li>
+<li><a href="#12-language-model-pretraining">1.2 Language Model PreTraining</a></li>
+<li><a href="#13-数据集清理">1.3 数据集清理</a></li>
+<li><a href="#14-模型效果评测">1.4 模型效果评测</a></li>
+</ul>
+</li>
+<li><a href="#2-指令微调阶段instruction-tuning-stage">2. 指令微调阶段（Instruction Tuning Stage）</a><ul>
+<li><a href="#21-self-instruction">2.1 Self Instruction</a></li>
+<li><a href="#22-开源数据集整理">2.2 开源数据集整理</a></li>
+<li><a href="#23-模型的评测方法">2.3 模型的评测方法</a></li>
+</ul>
+</li>
+<li><a href="#3-奖励模型reward-model">3. 奖励模型（Reward Model）</a><ul>
+<li><a href="#31-奖励模型reward-model的必要性">3.1 奖励模型（Reward Model）的必要性</a></li>
+<li><a href="#32-利用偏序对训练奖励模型">3.2 利用偏序对训练奖励模型</a></li>
+<li><a href="#33-使用多少数据能够训练好一个rm">3.3 使用多少数据能够训练好一个RM？</a></li>
+<li><a href="#34-rm-模型的大小限制">3.4 RM 模型的大小限制？</a></li>
+</ul>
+</li>
+<li><a href="#4-强化学习reinforcement-learningppo">4. 强化学习（Reinforcement Learning，PPO）</a><ul>
+<li><a href="#41-best-of-nbon">4.1 Best-of-N（BON）</a></li>
+<li><a href="#42-direct-preference-optimisatiodpo">4.2 Direct Preference Optimisatio（DPO）</a></li>
+<li><a href="#43-proximal-policy-optimizationppo">4.3 Proximal Policy Optimization（PPO）</a></li>
+<li><a href="#431-训练过程不稳定">4.3.1 训练过程不稳定</a></li>
+<li><a href="#432-训练结果不稳定">4.3.2 训练结果不稳定</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>【LLM】从零开始训练大模型</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/03.训练篇</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="llm从零开始训练大模型">【LLM】从零开始训练大模型<a class="anchor-link" href="#llm从零开始训练大模型" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> 何枝</p>
+<p><strong>Date:</strong> 2023-11-13</p>
+<p><strong>Link:</strong> https://zhuanlan.zhihu.com/p/636270877</p>
+<p>目录</p>
+<p>收起</p>
+<p>1. 预训练阶段（Pretraining Stage）</p>
+<p>1.1 Tokenizer Training</p>
+<p>1.2 Language Model PreTraining</p>
+<p>1.3 数据集清理</p>
+<p>1.4 模型效果评测</p>
+<p>2. 指令微调阶段（Instruction Tuning Stage）</p>
+<p>2.1 Self Instruction</p>
+<p>2.2 开源数据集整理</p>
+<p>2.3 模型的评测方法</p>
+<p>3. 奖励模型（Reward Model）</p>
+<p>3.1 奖励模型（Reward Model）的必要性</p>
+<p>3.2 利用偏序对训练奖励模型</p>
+<p>3.3 使用多少数据能够训练好一个RM？</p>
+<p>3.4 RM 模型的大小限制？</p>
+<p>4. 强化学习（Reinforcement Learning，PPO）</p>
+<p>4.1 Best-of-N（BON）</p>
+<p>4.2 Direct Preference Optimisatio（DPO）</p>
+<p>4.3 Proximal Policy Optimization（PPO）</p>
+<p>4.3.1 训练过程不稳定</p>
+<p>4.3.2 训练结果不稳定</p>
+<blockquote>
+<p>在这篇文章中，我们将尽可能详细地梳理一个完整的 LLM 训练流程。包括模型预训练（Pretrain）、<a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=Tokenizer&amp;zhida_source=entity">Tokenizer</a> 训练、指令微调（<a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=Instruction+Tuning&amp;zhida_source=entity">Instruction Tuning</a>）、奖励模型（Reward Model）和强化学习（RLHF）等环节。由于内容比较多，我们将逐步整理并完善这个文档。</p>
+</blockquote>
+<h2 id="1-预训练阶段pretraining-stage">1. 预训练阶段（Pretraining Stage）<a class="anchor-link" href="#1-预训练阶段pretraining-stage" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>工欲善其事，必先利其器。</p>
+</blockquote>
+<p>当前，不少工作选择在一个较强的基座模型上进行微调，且通常效果不错（如：[<a href="https://link.zhihu.com/?target=https%3A//github.com/tatsu-lab/stanford_alpaca">alpaca</a>]、[<a href="https://link.zhihu.com/?target=https%3A//lmsys.org/blog/2023-03-30-vicuna/">vicuna</a>] 等）。</p>
+<p>这种成功的前提在于：预训练模型和下游任务的差距不大，预训练模型中通常已经包含微调任务中所需要的知识。</p>
+<p>但在实际情况中，我们通常会遇到一些问题，使得我们无法直接使用一些开源 backbone：</p>
+<ol>
+<li><strong>语言不匹配：</strong>大多数开源基座对中文的支持都不太友好，例如：[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/decapoda-research/llama-7b-hf">Llama</a>]、[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/mosaicml/mpt-7b">mpt</a>]、[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/tiiuae/falcon-7b">falcon</a>] 等，这些模型在英文上效果都很优秀，但在中文上却差强人意。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>续写任务测试</th>
+<th>LLaMA</th>
+<th>MPT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>杭州西湖是</td>
+<td>杭州西湖是杭州的一个静静的一个游泳池，游泳池是杭州西湖的一个游泳池，游泳池是杭州西湖的一个游泳池，游泳池是杭州西湖的一个游泳池，�</td>
+<td>杭州西湖是中国最大的湖泊，是中国最大的湖泊，是中国最大的湖泊，是中国最大的湖泊，是中国最大的湖泊，是中国最大的湖泊，是中国最大的湖泊，</td>
+</tr>
+<tr>
+<td>琅琊榜的导演是</td>
+<td>琅琊榜的导演是很多的人都不知道，因为他的父亲是一位杰作家，他的父亲的杰作家是一位杰作家，</td>
+<td>琅琊榜的导演是谁？Who are the directors of the Rolling Stone?琅琊榜的导演是谁？Who are the</td>
+</tr>
+</tbody>
+</table>
+<ol start="2">
+<li><strong>专业知识不足：</strong>当我们需要一个专业领域的 LLM 时，预训练模型中的知识就尤为重要。由于大多数预训练模型都是在通用训练语料上进行学习，对于一些特殊领域（金融、法律等）中的概念和名词无法具备很好的理解。我们通常需要在训练语料中加入一些领域数据（如：[<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2305.12002.pdf">xuanyuan 2.0</a>]），以帮助模型在指定领域内获得更好的效果。</li>
+</ol>
+<p><img alt="" src="https://pica.zhimg.com/v2-3d5561661832b05a7f0fe52055ba7ea2_1440w.jpg" /></p>
+<p>轩辕 2.0（金融对话模型）论文中所提及的训练语料分布，其中 Financial Pretraining 为金融语料</p>
+<p>基于上述原因，我们在进行 SFT 步骤之前，先来看看预训练任务是如何做的。</p>
+<h3 id="11-tokenizer-training">1.1 Tokenizer Training<a class="anchor-link" href="#11-tokenizer-training" title="Permanent link">&para;</a></h3>
+<p>在进行预训练之前，我们需要先选择一个预训练的模型基座。</p>
+<p>一个较为普遍的问题是：大部分优秀的语言模型都没有进行充分的中文预训练，</p>
+<p>因此，许多工作都尝试将在英语上表现比较优秀的模型用中文语料进行二次预训练，期望其能够将英语上的优秀能力迁移到中文任务中来。</p>
+<blockquote>
+<p>已经有许多优秀的仓库做过这件事情，比如：[<a href="https://link.zhihu.com/?target=https%3A//github.com/ymcui/Chinese-LLaMA-Alpaca">Chinese-LLaMA-Alpaca</a>]。</p>
+</blockquote>
+<p>但在进行正式的训练之前，我们还有一步很重要的事情去做：词表扩充。</p>
+<p>通俗来讲，tokenizer 的目的就是将一句话进行切词，并将切好词的列表喂给模型进行训练。</p>
+<p>例如：</p>
+<pre><code class="language-python">输入句子 &gt;&gt;&gt; 你好世界
+切词结果 &gt;&gt;&gt; ['你', '好', '世', '界']
+</code></pre>
+<p>通常，tokenizer 有 2 种常用形式：<a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=WordPiece&amp;zhida_source=entity">WordPiece</a> 和 <a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=BPE&amp;zhida_source=entity">BPE</a>。</p>
+<ul>
+<li><strong>WordPiece</strong></li>
+</ul>
+<p>WordPiece 很好理解，就是将所有的「常用字」和「常用词」都存到词表中，</p>
+<p>当需要切词的时候就从词表里面查找即可。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-819c6c3e9b4c10c88e06eee58a11ebf8_1440w.jpg" /></p>
+<p>bert-base-chinese tokenizer 可视化</p>
+<blockquote>
+<p>上述图片来自可视化工具 [<a href="https://link.zhihu.com/?target=https%3A//github.com/HarderThenHarder/transformers_tasks/blob/main/tools/tokenizer_viewer/readme.md">tokenizer_viewer</a>]。</p>
+</blockquote>
+<p>如上图所示，大名鼎鼎的 BERT 就使用的这种切词法。</p>
+<p>当我们输入句子：你好世界，</p>
+<p>BERT 就会依次查找词表中对应的字，并将句子切成词的组合。</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-daa04afee73491b2465f0c29149dcffa_1440w.jpg" /></p>
+<p>BERT 切词测试图</p>
+<p>当遇到词表中不存在的字词时，tokenizer 会将其标记为特殊的字符 [UNK]：</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-4a79c57436e4c5ec4b5525b9fd547e7c_1440w.jpg" /></p>
+<p>Out of Vocabulary（OOV）情况</p>
+<ul>
+<li><strong>Byte-level BPE（BBPE）</strong></li>
+</ul>
+<blockquote>
+<p>感谢评论区指正，有关 BBPE 的原理可以参考 [<a href="https://zhuanlan.zhihu.com/p/146114164">这里</a>]。</p>
+</blockquote>
+<p>WordPiece 的方式很有效，但当字词数目过于庞大时这个方式就有点难以实现了。</p>
+<p>对于一些多语言模型来讲，要想穷举所有语言中的常用词（穷举不全会造成 OOV），</p>
+<p>既费人力又费词表大小，为此，人们引入另一种方法：BBPE。</p>
+<p>BPE 不是按照中文字词为最小单位，而是按照 unicode 编码 作为最小粒度。</p>
+<p>对于中文来讲，一个汉字是由 3 个 unicode 编码组成的，</p>
+<p>因为平时我们不会拆开来看（毕竟中文汉字是不可拆分的），所以我一开始对这个概念也不太熟悉。</p>
+<p>我们来看看 LLaMA 的 tokenizer 对中文是如何进行 encode 的：</p>
+<p><img alt="" src="https://picx.zhimg.com/v2-4cd433a354233d03bc2aad15745a7285_1440w.jpg" /></p>
+<p>LLaMa tokenizer 中文测试</p>
+<blockquote>
+<p>上述图片来自可视化工具 [<a href="https://link.zhihu.com/?target=https%3A//github.com/HarderThenHarder/transformers_tasks/blob/main/tools/tokenizer_viewer/readme.md">tokenizer_viewer</a>]。</p>
+</blockquote>
+<p>可以看到，「编码」两个字能够被正常切成 2 个字，</p>
+<p>但「待」却被切成了 3 个 token，这里的每个 token 就是 1 个 unicode 编码。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-66a59222fb083b240eac861eb026c73c_1440w.jpg" /></p>
+<p>LLaMA tokenizer 查找结果，「待」不在词表中，「编」「码」在词表中</p>
+<p>通过 token 查找功能，我们可以发现「编」「码」在词表中，但「待」不在词表中。</p>
+<p>但任何 1 个汉字都是可以由 unicode 表示（只是组合顺序不同），因此「待」就被切成了 3 个 token。</p>
+<table>
+<thead>
+<tr>
+<th>BBPE 的优势</th>
+<th>不会出现 OOV 的情况。不管是怎样的汉字，只要可以用 unicode 表示，就都会存在于词表中。</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BBPE 的劣势</td>
+<td>模型训练起来将会更吃力一些。毕竟像「待」这样的汉字特定 unicode 组合其实是不需要模型学习的，但模型却需要通过学习来知道合法的 unicode 序列。</td>
+</tr>
+</tbody>
+</table>
+<p>通常在模型训练不够充足的时候，模型会输出一些乱码（不合法的 unicode 序列）：</p>
+<pre><code class="language-python">游泳池是杭州西湖的一个游泳池，���
+</code></pre>
+<ul>
+<li><strong>词表扩充</strong></li>
+</ul>
+<p>为了降低模型的训练难度，人们通常会考虑在原来的词表上进行「词表扩充」，</p>
+<p>也就是将一些常见的汉字 token 手动添加到原来的 tokenizer 中，从而降低模型的训练难度。</p>
+<p>我们对比 [<a href="https://link.zhihu.com/?target=https%3A//github.com/ymcui/Chinese-LLaMA-Alpaca">Chinese-LLaMA</a>] 和 [<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/decapoda-research/llama-7b-hf">LLaMA</a>] 之间的 tokenizer 的区别：</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-c4937d17cf9aef19f1fc161b6d923cd6_1440w.jpg" /></p>
+<p>Chinese LLaMA 和 原始LLaMA 之间 tokenizer 的区别</p>
+<blockquote>
+<p>上述图片来自可视化工具 [<a href="https://link.zhihu.com/?target=https%3A//github.com/HarderThenHarder/transformers_tasks/blob/main/tools/tokenizer_viewer/readme.md">tokenizer_viewer</a>]。</p>
+</blockquote>
+<p>我们可以发现：Chinese LLaMA 在原始 tokenizer 上新增了17953 个 tokens，且加入 token 的大部分为汉字。</p>
+<p>而在 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2304.07854.pdf">BELLE</a>] 中也有同样的做法：</p>
+<p>在 120w 行中文文本上训练出一个 5w 规模的 token 集合，</p>
+<p>并将这部分 token 集合与原来的 LLaMA 词表做合并，</p>
+<p>最后再在 3.2B 的中文语料上对这部分新扩展的 token embedding 做二次预训练。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-cbae3dc2dc39804b3cb6d5ff547e7625_1440w.jpg" /></p>
+<p>《Towards Better Instruction Following Language Models for Chinese》 Page-4</p>
+<h3 id="12-language-model-pretraining">1.2 Language Model PreTraining<a class="anchor-link" href="#12-language-model-pretraining" title="Permanent link">&para;</a></h3>
+<p>在扩充完 tokenizer 后，我们就可以开始正式进行模型的预训练步骤了。</p>
+<p>Pretraining 的思路很简单，就是输入一堆文本，让模型做 Next Token Prediction 的任务，这个很好理解。</p>
+<p>我们主要来讨论几种预训练过程中所用到的方法：数据源采样、数据预处理、模型结构。</p>
+<ul>
+<li><strong>数据源采样</strong></li>
+</ul>
+<p>在 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2005.14165.pdf">gpt3</a>] 的训练过程中，存在多个训练数据源，论文中提到：对不同的数据源会选择不同采样比例：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-8280f19219e9a4ec73a7cec4c4175ced_1440w.jpg" /></p>
+<p>GPT3 Paper Page-9</p>
+<p>通过「数据源」采样的方式，能够缓解模型在训练的时候受到「数据集规模大小」的影响。</p>
+<p>从上图中可以看到，相对较大的数据集（Common Crawl）会使用相对较大的采样比例（60%），</p>
+<p>这个比例远远小于该数据集在整体数据集中所占的规模（410 / 499 = 82.1%），</p>
+<p>因此，CC 数据集最终实际上只被训练了 0.44（0.6 / 0.82 * (300 / 499））个 epoch。</p>
+<p>而对于规模比较小的数据集（<a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=Wikipedia&amp;zhida_source=entity">Wikipedia</a>），则将多被训练几次（3.4 个 epoch）。</p>
+<p>这样一来就能使得模型不会太偏向于规模较大的数据集，从而失去对规模小但作用大的数据集上的学习信息。</p>
+<ul>
+<li><strong>数据预处理</strong></li>
+</ul>
+<p>数据预处理主要指如何将「文档」进行向量化。</p>
+<p>通常来讲，在 Finetune 任务中，我们通常会直接使用 truncation 将超过阈值（2048）的文本给截断，</p>
+<p>但在 Pretrain 任务中，这种方式显得有些浪费。</p>
+<p>以书籍数据为例，一本书的内容肯定远远多余 2048 个 token，但如果采用头部截断的方式，</p>
+<p>则每本书永远只能够学习到开头的 2048 tokens 的内容（连序章都不一定能看完）。</p>
+<p>因此，最好的方式是将长文章按照 seq_len（2048）作分割，将切割后的向量喂给模型做训练。</p>
+<ul>
+<li><strong>模型结构</strong></li>
+</ul>
+<p>为了加快模型的训练速度，通常会在 decoder 模型中加入一些 tricks 来缩短模型训练周期。</p>
+<p>目前大部分加速 tricks 都集中在 Attention 计算上（如：MQA 和 Flash Attention [<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/tiiuae/falcon-40b">falcon</a>] 等）；</p>
+<p>此外，为了让模型能够在不同长度的样本上都具备较好的推理能力，</p>
+<p>通常也会在 Position Embedding 上进行些处理，选用 <a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=ALiBi&amp;zhida_source=entity">ALiBi</a>（[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/bigscience/bloom-7b1">Bloom</a>]）或 <a href="https://zhida.zhihu.com/search?content_id=229525142&amp;content_type=Article&amp;match_order=1&amp;q=RoPE&amp;zhida_source=entity">RoPE</a>（[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/spaces/THUDM/GLM-130B">GLM-130B</a>]）等。</p>
+<p>具体内容可以参考下面这篇文章：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/634236135"></a></p>
+<ul>
+<li><strong>Warmup &amp; Learning Ratio 设置</strong></li>
+</ul>
+<p>在继续预训练中，我们通常会使用 warmup 策略，此时我们按照 2 种不同情况划分：</p>
+<ol>
+<li>当训练资源充足时，应尽可能选择较大的学习率以更好的适配下游任务；</li>
+<li>当资源不充足时，更小的学习率和更长的预热步数或许是个更好的选择。</li>
+</ol>
+<p>具体内容可以参考下面这篇文章：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/654463331"></a></p>
+<h3 id="13-数据集清理">1.3 数据集清理<a class="anchor-link" href="#13-数据集清理" title="Permanent link">&para;</a></h3>
+<p>中文预训练数据集可以使用 [<a href="https://link.zhihu.com/?target=https%3A//data.baai.ac.cn/details/WuDaoCorporaText">悟道</a>]，数据集分布如下（主要以百科、博客为主）：</p>
+<p><img alt="" src="https://picx.zhimg.com/v2-3062044c5131dd4589ed3fdb10ec94eb_1440w.jpg" /></p>
+<p>悟道-数据分布图</p>
+<p>但开源数据集可以用于实验，如果想突破性能，则需要我们自己进行数据集构建。</p>
+<p>在 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2306.01116.pdf">falcon paper</a>] 中提到，</p>
+<p>仅使用「清洗后的互联网数据」就能够让模型比在「精心构建的数据集」上有更好的效果，</p>
+<p>一些已有的数据集和它们的处理方法如下：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-9758e1401e4e7a38ea4df9e83d2c4665_1440w.jpg" /></p>
+<p>各种数据源 &amp; 数据清理方法</p>
+<p>有关 Falcon 更多的细节可以看这里：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/637996787"></a></p>
+<h3 id="14-模型效果评测">1.4 模型效果评测<a class="anchor-link" href="#14-模型效果评测" title="Permanent link">&para;</a></h3>
+<p>关于 Language Modeling 的量化指标，较为普遍的有 [<a href="https://zhuanlan.zhihu.com/p/424162193">PPL</a>]，[<a href="https://zhuanlan.zhihu.com/p/424162193">BPC</a>] 等，</p>
+<p>可以简单理解为在生成结果和目标文本之间的 Cross Entropy Loss 上做了一些处理。</p>
+<p>这种方式可以用来评估模型对「语言模板」的拟合程度，</p>
+<p>即给定一段话，预测后面可能出现哪些合法的、通顺的字词。</p>
+<p>但仅仅是「生成通顺句子」的能力现在已经很难满足现在人们的需求，</p>
+<p>大部分 LLM 都具备生成流畅和通顺语句能力，很难比较哪个好，哪个更好。</p>
+<p><strong>为此，我们需要能够评估另外一个大模型的重要能力 —— 知识蕴含能力</strong>。</p>
+<ul>
+<li><strong>C-Eval</strong></li>
+</ul>
+<p>一个很好的中文知识能力测试数据集是 [<a href="https://link.zhihu.com/?target=https%3A//github.com/SJTU-LIT/ceval">C-Eval</a>]，涵盖1.4w 道选择题，共 52 个学科。</p>
+<p>覆盖学科如下：</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-9eaf3f515f7a0c45a8ebc312f0c86438_1440w.jpg" /></p>
+<p>c-eval 数据集覆盖学科图</p>
+<p>由于是选择题的形式，我们可以通过将题目写进 prompt 中，</p>
+<p>并让模型续写 1 个 token，判断这个续写 token 的答案是不是正确答案即可。</p>
+<p>但大部分没有精调过的预训练模型可能无法续写出「A B C D」这样的选项答案，</p>
+<p>因此，官方推荐使用 5-shot 的方式来让模型知道如何输出答案：</p>
+<pre><code class="language-python">以下是中国关于会计考试的单项选择题，请选出其中的正确答案。
+
+下列关于税法基本原则的表述中，不正确的是____。
+A. 税收法定原则包括税收要件法定原则和税务合法性原则
+B. 税收公平原则源于法律上的平等性原则
+C. 税收效率原则包含经济效率和行政效率两个方面
+D. 税务机关按法定程序依法征税，可以自由做出减征、停征或免征税款的决定
+答案：D
+
+甲公司是国内一家领先的新媒体、通信及移动增值服务公司，由于遭受世界金融危机，甲公司经济利润严重下滑，经营面临困境，但为了稳定职工队伍，公司并未进行裁员，而是实行高层管理人员减薪措施。甲公司此举采用的收缩战略方式是____。
+A. 转向战略
+B. 放弃战略
+C. 紧缩与集中战略
+D. 稳定战略
+答案：C
+
+...             # 第 3, 4, 5 道样例题
+
+下列各项中，不能增加企业核心竞争力的是____。
+A. 产品差异化
+B. 购买生产专利权
+C. 创新生产技术
+D. 聘用生产外包商
+答案：
+</code></pre>
+<p>通过前面的样例后，模型能够知道在「答案：」后面应该输出选项字母。</p>
+<p>于是，我们获得模型续写后的第一个 token 的概率分布（logits），</p>
+<p>并取出「A B C D」这 4 个字母的概率，通过 softmax 进行归一化：</p>
+<pre><code class="language-python">probs = (
+    torch.nn.functional.softmax(
+        torch.tensor(
+            [
+                logits[self.tokenizer.encode(
+                    &quot;A&quot;, bos=False, eos=False)[0]],
+                logits[self.tokenizer.encode(
+                    &quot;B&quot;, bos=False, eos=False)[0]],
+                logits[self.tokenizer.encode(
+                    &quot;C&quot;, bos=False, eos=False)[0]],
+                logits[self.tokenizer.encode(
+                    &quot;D&quot;, bos=False, eos=False)[0]],
+            ]
+        ),
+        dim=0,
+    ).detach().cpu().numpy()
+)
+pred = {0: &quot;A&quot;, 1: &quot;B&quot;, 2: &quot;C&quot;, 3: &quot;D&quot;}[np.argmax(probs)]           # 将概率最大的选项作为模型输出的答案
+</code></pre>
+<p>C-Eval 通过这种方式测出了许多模型在中文知识上的效果，</p>
+<p>由于是 4 选项问题，所以基线（随机选择）的正确率是 25%。</p>
+<p>C-Eval 也再一次证明了 GPT-4 是个多么强大的知识模型：</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-973fde52fa9667a4f2cea7794653b5da_1440w.jpg" /></p>
+<p>各模型在 5-shot 下的得分排名</p>
+<h2 id="2-指令微调阶段instruction-tuning-stage">2. 指令微调阶段（Instruction Tuning Stage）<a class="anchor-link" href="#2-指令微调阶段instruction-tuning-stage" title="Permanent link">&para;</a></h2>
+<p>在完成第一阶段的预训练后，就可以开始进到指令微调阶段了。</p>
+<p>由于预训练任务的本质在于「续写」，而「续写」的方式并一定能够很好的回答用户的问题。</p>
+<p>例如：</p>
+<table>
+<thead>
+<tr>
+<th>用户问题</th>
+<th>用户预期回答</th>
+<th>模型续写结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>《无间道》的主演有哪些？</td>
+<td>刘德华、梁朝伟</td>
+<td>《无间道》的主演有哪些？不少观众期待看到阵容公告，今天小编...</td>
+</tr>
+</tbody>
+</table>
+<p>因为训练大多来自互联网中的数据，我们无法保证数据中只存在存在规范的「一问一答」格式，</p>
+<p>这就会造成预训练模型通常无法直接给出人们想要的答案。</p>
+<p>但是，这并不代表预训练模型「无知」，只是需要我们用一些巧妙的「技巧」来引导出答案：</p>
+<table>
+<thead>
+<tr>
+<th>用户问题</th>
+<th>用户预期回答</th>
+<th>模型续写结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>《无间道》的主演有</td>
+<td>刘德华、梁朝伟</td>
+<td>《无间道》的主演有刘德华、梁朝伟和黄秋生,而这部电影也是香港警匪片的代表作之一。</td>
+</tr>
+</tbody>
+</table>
+<p>不过，这种需要用户精心设计从而去「套」答案的方式，显然没有那么优雅。</p>
+<p>既然模型知道这些知识，只是不符合我们人类的对话习惯，那么我们只要再去教会模型「如何对话」就好了。</p>
+<p><strong>这就是 Instruction Tuning 要做的事情，即指令对齐</strong>。</p>
+<p>OpenAI 在 [<a href="https://link.zhihu.com/?target=https%3A//openai.com/research/instruction-following">instruction-following</a>] 中展示了 GPT-3 和经过指令微调前后模型的区别：</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-a7a8e7aed0750d189f792b19e8272dfe_1440w.jpg" /></p>
+<p>GPT-3 只是在做续写任务，InstructGPT 则能够回答正确内容</p>
+<h3 id="21-self-instruction">2.1 Self Instruction<a class="anchor-link" href="#21-self-instruction" title="Permanent link">&para;</a></h3>
+<p>既然我们需要去「教会模型说人话」，</p>
+<p>那么我们就需要去精心编写各式各样人们在对话中可能询问的问题，以及问题的答案。</p>
+<p>在 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2203.02155.pdf">InstructGPT Paper</a>] 中，使用了 1.3w 的数据来对 GPT-3.5 进行监督学习（下图中左 SFT Data）：</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-23f809decd7d6f6c77a640cfbd8ad3c4_1440w.jpg" /></p>
+<p>InstructGPT Paper 训练数据集预览</p>
+<p>可以观察到，数据集中人工标注（labeler）占大头，</p>
+<p>这还仅仅只是 InstructGPT，和 ChatGPT 远远不是一个量级。</p>
+<p>可见，使用人工标注是一件成本巨大的事情，</p>
+<p>除了找到足够的人数，还需要保持团队中每个人的「专业」且「认知一致」。</p>
+<p>如果这件事从头开始做自然很难（OpenAI 确实厉害），但今天我们已经有了 ChatGPT 了，</p>
+<p><strong>我们让 ChatGPT 来教我们自己的模型不就好了吗？</strong></p>
+<p>这就是 Self Instruction 的思路，即通过 ChatGPT 的输入输出来蒸馏自己的模型。</p>
+<p>一个非常出名的项目是 [<a href="https://link.zhihu.com/?target=https%3A//github.com/tatsu-lab/stanford_alpaca">stanford_alpaca</a>]。</p>
+<p>如果从 ChatGPT 「套」数据，那么我们至少需要「套」哪些数据。</p>
+<p>Instruction Tuning 中的「输入」（问题）和「输出」（答案）是训练模型的关键，</p>
+<p>答案很好得到，喂给 ChatGPT 问题根据返回结果就能获得，</p>
+<p>但「问题」从哪里获得呢？</p>
+<p>（靠人想太累了，屏幕前的你不妨试试，看看短时间内能想出多少有价值的问题）</p>
+<p>Alpaca 则是使用「种子指令（seed）」，使得 ChatGPT 既生成「问题」又生成「答案」。</p>
+<p>由于 Alpaca 是英文项目，为了便于理解，我们使用相同思路的中文项目 [<a href="https://link.zhihu.com/?target=https%3A//github.com/LianjiaTech/BELLE">BELLE</a>] 作为例子。</p>
+<p>通俗来讲，就是人为的先给一些「训练数据样例」让 ChatGPT 看，</p>
+<p>紧接着利用 ChatGPT 的续写功能，让其不断地举一反三出新的训练数据集：</p>
+<pre><code class="language-python">你被要求提供10个多样化的任务指令。这些任务指令将被提供给GPT模型，我们将评估GPT模型完成指令的能力。
+以下是你提供指令需要满足的要求：
+1.尽量不要在每个指令中重复动词，要最大化指令的多样性。
+2.使用指令的语气也应该多样化。例如，将问题与祈使句结合起来。
+3.指令类型应该是多样化的，包括各种类型的任务，类别种类例如：brainstorming，open QA，closed QA，rewrite，extract，generation，classification，chat，summarization。
+4.GPT语言模型应该能够完成这些指令。例如，不要要求助手创建任何视觉或音频输出。例如，不要要求助手在下午5点叫醒你或设置提醒，因为它无法执行任何操作。例如，指令不应该和音频、视频、图片、链接相关，因为GPT模型无法执行这个操作。
+5.指令用中文书写，指令应该是1到2个句子，允许使用祈使句或问句。
+6.你应该给指令生成适当的输入，输入字段应包含为指令提供的具体示例，它应该涉及现实数据，不应包含简单的占位符。输入应提供充实的内容，使指令具有挑战性。
+7.并非所有指令都需要输入。例如，当指令询问一些常识信息，比如“世界上最高的山峰是什么”，不需要提供具体的上下文。在这种情况下，我们只需在输入字段中放置“&lt;无输入&gt;”。当输入需要提供一些文本素材（例如文章，文章链接）时，就在输入部分直接提供一些样例。当输入需要提供音频、图片、视频或者链接时，则不是满足要求的指令。
+8.输出应该是针对指令和输入的恰当回答。 
+下面是10个任务指令的列表：
+###
+1. 指令: 在面试中如何回答这个问题？
+1. 输入:当你在车里独处时，你会想些什么？
+1. 输出:如果是在晚上，我通常会考虑我今天所取得的进步，如果是在早上，我会思考如何做到最好。我也会尝试练习感恩和活在当下的状态，以避免分心驾驶。
+###
+2. 指令: 按人口对这些国家进行排名。
+2. 输入:巴西，中国，美国，日本，加拿大，澳大利亚
+2. 输出:中国，美国，巴西，日本，加拿大，澳大利亚
+###
+3. 指令:
+</code></pre>
+<p>如上述例子所示，我们先给出 2 个样例，并让 ChatGPT 进行续写：</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-9bc23dd4ff89c4a463a6f92eb4c54c90_1440w.jpg" /></p>
+<p>ChatGPT 续写结果</p>
+<p>关于 BELLE 的更多细节可以参考这篇文章：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/618334308"></a></p>
+<h3 id="22-开源数据集整理">2.2 开源数据集整理<a class="anchor-link" href="#22-开源数据集整理" title="Permanent link">&para;</a></h3>
+<p>在这一章中，我们将梳理一些开源的 Instruction Tuning 的数据集，</p>
+<p>除了直接拿来用以外，我们期望通过分析这些已有数据集，从而学习如何构建一个指令数据集。</p>
+<ul>
+<li><strong>Alpaca</strong></li>
+</ul>
+<p>[<a href="https://link.zhihu.com/?target=https%3A//github.com/tatsu-lab/stanford_alpaca/blob/main/alpaca_data.json">stanford_alpaca</a>] 采用上述的 self instruction 的方式采集了 5200 条指令训练数据集。</p>
+<p>数据样例如下：</p>
+<pre><code class="language-python">{
+    &quot;instruction&quot;: &quot;Arrange the words in the given sentence to form a grammatically correct sentence.&quot;,
+    &quot;input&quot;: &quot;quickly the brown fox jumped&quot;,
+    &quot;output&quot;: &quot;The quick brown fox jumped quickly.&quot;
+}
+</code></pre>
+<p>其中，instruction 代表要求模型做的任务，input 代表用户输入， output 代表喂给模型的 label。</p>
+<p>Alpaca 覆盖了多种类型的指令，其数据分布如下：</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-90866e67c5ae6f0e383db95db5bcc0a4_1440w.jpg" /></p>
+<p>Alpaca 数据分布图</p>
+<p>包含写作、描述、分类、摘要等多种类型的任务集合。</p>
+<ul>
+<li><strong>BELLE</strong></li>
+</ul>
+<p>BELLE 开放了好几种规模的数据集，[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/datasets/BelleGroup/train_1M_CN">100万</a>]、[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/datasets/BelleGroup/train_2M_CN">200万</a>]、[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/datasets/BelleGroup/train_3.5M_CN">350万</a>] 等。</p>
+<p>训练数据集样例如下：</p>
+<pre><code class="language-python">{
+    &quot;instruction&quot;: &quot;判断给定的文章是否符合语法规则。如果不符合，请提供修改建议。 下面是一篇文章的开头: ‘为了探讨这个主题，本文将提供一系列数据和实例，以证明这一观点。’&quot;,
+    &quot;input&quot;: &quot;&quot;,
+    &quot;output&quot;: &quot;这个开头符合语法规则。&quot;
+}
+</code></pre>
+<p>由于数据量很大，我们无法统计出训练数据集中各任务的真实占比，</p>
+<p>但从 [<a href="https://link.zhihu.com/?target=https%3A//github.com/LianjiaTech/BELLE/blob/main/eval/eval_set.json">1000条评测集</a>] 数据分布可以推测出，训练数据集中同样包含：摘要、问答、分类等任务。</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-6698ae5b6e3d6b7485ea66f82726f428_1440w.jpg" /></p>
+<p>BELLE - 评测集分布</p>
+<p>我们按照类别对评测数据进行采样，结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>任务名称</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文本生成</td>
+<td>为一种智能手表编写用户手册，包括详细的使用说明和操作步骤。</td>
+</tr>
+<tr>
+<td>头脑风暴</td>
+<td>针对给定的主题，进行头脑风暴并记录所有想法。如何提高公司的销售额？</td>
+</tr>
+<tr>
+<td>开放域问答</td>
+<td>用一两句话描述著名的尼罗河是如何形成的。</td>
+</tr>
+<tr>
+<td>封闭域问答</td>
+<td>从以下选项中选择正确的词汇填空以完整下面的句子。 他喜欢去<strong><em>_</em></strong>看电影。A) 邮局 B）超市 C）电影院 D）音乐会</td>
+</tr>
+<tr>
+<td>分类</td>
+<td>请将以下这篇文章分类为新闻报道、科学文章或社论。据媒体新闻援引美国福克斯新闻网报道，美国伯克希尔哈撒韦公司首席执行官、著名投资人巴菲特近日就美国银行业危机与总统拜登的团队进行对话。</td>
+</tr>
+<tr>
+<td>抽取</td>
+<td>基于以下表格，请问张三的考勤情况员工姓名,日期,上班时间,下班时间,是否迟到,是否早退,是否请假张三,1月1日,8:30,17:30,否,否,否李四,1月1日,9:00,18:00,是,否,否王五,1月1日,8:00,16:30,否,是,否赵六,1月1日,8:30,17:00,否,否,是张三,1月2日,8:00,17:00,否,否,否李四,1月2日,8:30,17:30,否,否,否王五,1月2日,9:00,18:00,是,否,否赵六,1月2日,8:30,17:00,否,否,是</td>
+</tr>
+<tr>
+<td>重写</td>
+<td>根据提供的文本重写其中的一段，使之更加简明扼要，同时不丢失原文本的主要信息。纽约市，简称“纽约”，通常被称为“大苹果”，是美国最大的城市，也是全世界最大的城市之一。位于美国东海岸，东北部边界是大西洋，在新泽西州的东南部。</td>
+</tr>
+<tr>
+<td>摘要</td>
+<td>基于下面的这个故事，总结其中最重要的三个事件。小明是一个好学生，每天早上都要起得很早去上学。有一天，他迟到了，因为他的家里来了一个客人。晚上，他参加了一次班级会议，会议主题是如何提高学习效率。回到家后，他又花了一些时间复习功课。</td>
+</tr>
+<tr>
+<td>Code &amp; Math</td>
+<td>按照以下要求，写一个SQL查询语句：从表中查找所有性别为女性的学生的姓名和学号。SELECT name, id FROM students WHERE gender = '女性'</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Vicuna</strong></li>
+<li><strong>BAIZE</strong></li>
+</ul>
+<h3 id="23-模型的评测方法">2.3 模型的评测方法<a class="anchor-link" href="#23-模型的评测方法" title="Permanent link">&para;</a></h3>
+<p>比起预训练（Pretrain）环节里相对明确的评价指标（如PPL、NLL等），</p>
+<p>Instruction 环节中的评价指标比较令人头疼。</p>
+<p>鉴于语言生成模型的发展速度，BLEU 和 ROUGH 这样的指标已经不再客观。</p>
+<p>一种比较流行的方式是像 [<a href="https://link.zhihu.com/?target=https%3A//github.com/lm-sys/FastChat/blob/main/fastchat/eval/table/prompt.jsonl">FastChat</a>] 中一样，利用 GPT-4 为模型的生成结果打分，</p>
+<p>我们也尝试使用同样的 Prompt 对 3 种开源模型：OpenLlama、ChatGLM、BELLE 进行测试。</p>
+<blockquote>
+<p>注意：下面的测试结果仅源自我们自己的实验，<strong>不具备任何权威性</strong>。</p>
+</blockquote>
+<p>对于每一个问题，我们先获得 ChatGPT 的回复，以及另外 3 种模型的回复，</p>
+<p>接着我们将 「ChatGPT 答案 - 候选模型答案」这样的 pair 喂给 GPT-4 打分（满分为 10 分）。</p>
+<p>得到的结果如下：</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-30369e5361b3097e6c9c3254c1f9b5e4_1440w.jpg" /></p>
+<p>测试结果 &amp; 测试 prompt</p>
+<p>我们对每个任务单独进行了统计，并在最后一列求得平均值。</p>
+<p>GPT-4 会对每一条测试样本的 2 个答案分别进行打分，并给出打分理由：</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-8adadb3bab29880e9fecacb673da87d2_1440w.jpg" /></p>
+<p>GPT-Review 的结果</p>
+<p>但是，我们发现，GPT-4 打出的分数和给出理由<strong>并不一定正确</strong>。</p>
+<p>如上图所示，GPT-4 为右边模型的答案打出了更高的分数，给出的理由是：</p>
+<p>将「最长时期」改为了「最长时期之一」会更准确。</p>
+<p>但事实上，Instruction 中明确设定就是「最长时期」，</p>
+<p>这种「给高分」的理由其实是不正确的。</p>
+<p>此外，我们还发现，仅仅调换句子顺序也会对最后打分结果产生影响，</p>
+<p>针对这个问题，我们考虑「调换句子顺序并求和平均」来缓解。</p>
+<p>但不管怎么样，GPT-4 给出的分数或许并没有我们想象中的那么靠谱，</p>
+<p>为此，我们通过人工的 Review 的方式对每个答案进行了一次回扫，得到的结果和标准如下：</p>
+<blockquote>
+<p>再次重申：我们只是期望指出 GPT-4 打分可能会和实际产生偏差的问题，<strong>这里排名不具备任何权威性</strong>。</p>
+</blockquote>
+<p><img alt="" src="https://pica.zhimg.com/v2-73395d9c1c2bb8b8376009716428f530_1440w.jpg" /></p>
+<p>人工 Review 结果 &amp; 打分原则</p>
+<p>我们可以看到，</p>
+<p>在 GPT-4 打分的结果中，已经有模型的效果甚至超过了 ChatGPT（分数为 1.02），</p>
+<p>但再经过人工 Review 后，ChatGPT 的答案是我们认为更合理一些的。</p>
+<p>当然，最近陆陆续续的推出了许多新的评测方法，如：[<a href="https://link.zhihu.com/?target=https%3A//github.com/WeOpenML/PandaLM">PandaLM</a>]，</p>
+<p>以及许多比较有影响力的评测集，如：[<a href="https://link.zhihu.com/?target=https%3A//github.com/SJTU-LIT/ceval">C-Eval</a>]、[<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard">open_llm_leaderboard</a>] 等，</p>
+<p>我们或许会在后续的整理中更新。</p>
+<h2 id="3-奖励模型reward-model">3. 奖励模型（Reward Model）<a class="anchor-link" href="#3-奖励模型reward-model" title="Permanent link">&para;</a></h2>
+<p>我们在很早以前写过一篇 reward model 相关的文章，</p>
+<p>解释了 reward model 的基本原理和一些实验代码（包括 rank_list 的标注平台）：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-d3b5dc0eb96c873428d6575e5c011a9f_1440w.jpg" /></p>
+<p>rank list 标注平台</p>
+<p>但开源代码中是使用 encoder 作为训练基座的，</p>
+<p>因此如果只是想了解 reward model 基本概念的话可以参考这篇文章：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/595579042"></a></p>
+<h3 id="31-奖励模型reward-model的必要性">3.1 奖励模型（Reward Model）的必要性<a class="anchor-link" href="#31-奖励模型reward-model的必要性" title="Permanent link">&para;</a></h3>
+<p>其实，当我们在做完 SFT 后，我们大概率已经能得到一个还不错的模型。</p>
+<p>但我们回想一下 SFT 的整个过程：</p>
+<p><strong>我们一直都在告诉模型什么是「好」的数据，却没有给出「不好」的数据</strong>。</p>
+<p>我们更倾向于 SFT 的目的只是将 Pretrained Model 中的知识给引导出来的一种手段，</p>
+<p>而在SFT 数据有限的情况下，我们对模型的「引导能力」就是有限的。</p>
+<p>这将导致预训练模型中原先「错误」或「有害」的知识没能在 SFT 数据中被纠正，</p>
+<p>从而出现「有害性」或「幻觉」的问题。</p>
+<p>为此，一些让模型脱离昂贵标注数据，自我进行迭代的方法被提出，比如：[<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2203.02155.pdf">RLHF</a>]，[<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2305.18290.pdf">DPO</a>]，</p>
+<p>但无论是 RL 还是 DPO，我们都需要让告知模型什么是「好的数据」，什么是「不好的数据」。</p>
+<blockquote>
+<p>RL 是直接告诉模型当前样本的（好坏）得分，DPO 是同时给模型一条好的样本和一条坏的样本。</p>
+</blockquote>
+<p>而判断样本数据的「好坏」除了昂贵的人工标注之外，</p>
+<p>那就是 Reward Model 大显身手的时候了。</p>
+<h3 id="32-利用偏序对训练奖励模型">3.2 利用偏序对训练奖励模型<a class="anchor-link" href="#32-利用偏序对训练奖励模型" title="Permanent link">&para;</a></h3>
+<p>在 OpenAI 的 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2009.01325.pdf">Summarization</a>] 和 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2203.02155.pdf">InstructGPT</a>] 的论文中，都使用了「偏序对」来训练模型。</p>
+<p>偏序对是指：不直接为每一个样本直接打分，而是标注这些样本的好坏顺序。</p>
+<blockquote>
+<p>直接打分：A句子（5分），B句子（3分）<br />
+偏序对标注：A &gt; B</p>
+</blockquote>
+<p>模型通过尝试最大化「好句子得分和坏句子得分之间的分差」，从而学会自动给每一个句子判分。</p>
+<blockquote>
+<p>为什么要使用偏序对而不是直接打分可以看上面给出的文章链接。</p>
+</blockquote>
+<p>我们可以来做一个简单实验，我们构造一批如下数据：</p>
+<pre><code class="language-python">{
+    &quot;prompt&quot;: &quot;下面是一条正面的评论：&quot;,
+    &quot;selected&quot;: &quot;屯了一大堆，今年过年的话蛮富足的!到货很快的!&quot;,
+    &quot;rejected&quot;: &quot;对商品谈不上满意，但是你们店的信誉极度不满意，买了件衣服取消了订单，要求退款，结果退款过程进行一半就不进行了，真是因小失大啊&quot;
+}
+</code></pre>
+<p>其中，prompt 是要求模型续写一条好评，selected 是一条好的回答（A），rejected 是一条不好的回答（B）。</p>
+<p>我们使用 [<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/meta-llama/Llama-2-7b">llama-2-7b</a>] 作为基座模型训练，期望模型对于 A 回答能够给尽可能高的分，B 回答则尽可能低。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-29f8de16d921303fc6ee5c338fc68800_1440w.jpg" /></p>
+<p>RM Loss Function</p>
+<p>我们将训练过程中的「分差变化」绘制出来，</p>
+<p>伴随着 loss 的降低，我们发现分差的均值和方差都呈上升的趋势：</p>
+<blockquote>
+<p>Note：这里的分差是指 r(好答案) - r(坏答案) 的分差。</p>
+</blockquote>
+<p><img alt="" src="https://pic1.zhimg.com/v2-b0397eab31c5ef275d8fff85144c36a2_1440w.jpg" /></p>
+<p>Reward Model 训练日志</p>
+<p>我们进一步的绘制出在 100 个评测样本的分差分布：</p>
+<p>在 step 0（未训练）时，模型打出来的分差是一个近似均值为 0，方差为 0.1 的正态分布，</p>
+<p>这说明初始模型无法区分数据的好坏（好数据 - 坏数据的得分有正有负）。</p>
+<p>随着模型训练，分布均值从 0 开始逐渐增长，这证明模型开始逐渐让「好数据」 - 「坏数据」的分差越来越大。</p>
+<p>到第 60 个 step 之后，分布的均值和方差开始趋于稳定。</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-f77a45bbebc5230c232169e57f5f507f_1440w.jpg" /></p>
+<p>分差进化图</p>
+<p>至此，我们已经让 RM 学会了给「正向评论」打分更高，给「负向评论」打分更低。</p>
+<p>但是由于偏序对本身「过于粗糙」，会导致 RM 的打分并不足够精准，</p>
+<p>后续一些工作在标注偏序的时候不仅标注了 A 好于 B，还同时标注了 A 比 B 好多少，具体细节可以看：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/660058778"></a></p>
+<p>还有一些工作会在 Reward Gap Loss 上添加 Prefered Samples 的 LM Loss：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/666455333"></a></p>
+<h3 id="33-使用多少数据能够训练好一个rm">3.3 使用多少数据能够训练好一个RM？<a class="anchor-link" href="#33-使用多少数据能够训练好一个rm" title="Permanent link">&para;</a></h3>
+<p>在 OpenAI Summarize 的任务中，使用了 [<a href="https://link.zhihu.com/?target=https%3A//github.com/openai/summarize-from-feedback">6.4w 条</a>] 偏序对进行训练。</p>
+<p>在 InstructGPT 任务中，使用了 3.2w 条 [4~9] 偏序对进行训练。</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-c1fcdbd0d76cc5ef045b64e28a840ec3_1440w.jpg" /></p>
+<p>InstructGPT page 33</p>
+<p>在 [<a href="https://link.zhihu.com/?target=https%3A//huggingface.co/blog/zh/stackllama">StackLlama</a>] 任务中，使用了 10w 条 [<a href="https://link.zhihu.com/?target=https%3A//stackexchange.com/">Stack Exchange</a>] 偏序对进行训练。</p>
+<p>从上述工作中，我们仍无法总结出一个稳定模型需要的最小量级，这取决于具体任务。</p>
+<p>但至少看起来，5w 以上的偏序对可能是一个相对保险的量级。</p>
+<p>关于 Reward Model 的 Scaling Law 讨论可以看看 OpenAI 的论文：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/664575712"></a></p>
+<h3 id="34-rm-模型的大小限制">3.4 RM 模型的大小限制？<a class="anchor-link" href="#34-rm-模型的大小限制" title="Permanent link">&para;</a></h3>
+<p>Reward Model 的作用本质是给生成模型的生成内容进行打分，所以 Reward Model 只要能理解生成内容即可。</p>
+<p>关于 RM 的规模选择上，目前没有一个明确的限制：</p>
+<p>Summarize 使用了 6B 的 RM，6B 的 LM。</p>
+<p>InstructGPT 使用了 6B 的 RM，175B 的 LM。</p>
+<p>DeepMind 使用了 70B 的 RM，70B LM。</p>
+<p>不过，一种直觉的理解是：判分任务要比生成认为简单一些，因此可以用稍小一点的模型来作为 RM。</p>
+<h2 id="4-强化学习reinforcement-learningppo">4. 强化学习（Reinforcement Learning，PPO）<a class="anchor-link" href="#4-强化学习reinforcement-learningppo" title="Permanent link">&para;</a></h2>
+<p>在获得了一个 Reward Model 后，我们便可以利用这个 RM 来进化我们的模型。</p>
+<p>目前比较主流的优化方式有 3 种：BON，DPO 和 PPO。</p>
+<h3 id="41-best-of-nbon">4.1 Best-of-N（BON）<a class="anchor-link" href="#41-best-of-nbon" title="Permanent link">&para;</a></h3>
+<p>BON 也叫 reject sampling，是指我们通过设置 temperature 值让同一个模型生成若干回复，</p>
+<p>接着，使用 Reward Model 挑出这些回复中得分较高的回复并再次训练原本的模型。</p>
+<p>在 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2307.09288.pdf">Llama2 Paper</a>] 中使用了这种方法，由于这是一个循环迭代的过程（Sample -&gt; SFT -&gt; Sample -&gt; ...），</p>
+<p>论文中指出：在进行 SFT 时，应当使用之前所有策略下的 Good Samples（而非仅是最近一次策略模型 Sample 出的样本），以提高模型的泛化性。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-88e6ff4a36e5dfbe8008a162dea08a0d_1440w.jpg" /></p>
+<p>“我们将之前每一个 stage 中优秀样本都汇聚到一起进行训练，这使得最后的效果显著提升”</p>
+<p>BON 和 RL 的区别主要有以下 2 点：</p>
+<ul>
+<li><strong>探索广度：</strong>对同一个 prompt，BON 一次会进行 N 次采样，但 PPO 每次只会采样 1 个答案。</li>
+<li><strong>进化深度：</strong>BON 的方法只会进行一次模型的「采样-迭代」，而 PPO 会重复进行「采样-进化-采样-进化」。但我们同样可以持续做多个轮回的 BON，这种情况下这 2 种方法的差别就不那么大。</li>
+</ul>
+<p>在这一篇 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2210.10760.pdf">OpenAI Paper</a>] 中对比了 BON &amp; RL 在训练效果上的区别，</p>
+<p>相比于 RL，BON 的训练曲线要更稳定（不那么容易崩），但从最终效果来看 RL 的上限会更高一些：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-696e5e19223e992ed0e5b085abec4ea5_1440w.jpg" /></p>
+<p>图左为 BON 训练 Reward 曲线，图右为 RL 训练 Reward 曲线</p>
+<h3 id="42-direct-preference-optimisatiodpo">4.2 Direct Preference Optimisatio（DPO）<a class="anchor-link" href="#42-direct-preference-optimisatiodpo" title="Permanent link">&para;</a></h3>
+<p>[<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2305.18290.pdf">DPO</a>] 是一种不需要 Reward Model 的训练方法，它可以用训练 RM 的偏序对来直接训练模型本身。</p>
+<p>具体来讲，DPO 借鉴了对比学习的思路，</p>
+<p>其目标是：<strong>对于同一个 prompt，尽可能大的拉开 selected 答案和 rejected 答案之间的生成概率。</strong></p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-08248d9a88f60a4067c725f509037423_1440w.jpg" /></p>
+<p>DPO Loss 的实现公式</p>
+<blockquote>
+<p>上述公式源自 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2310.12036.pdf">这篇 paper</a>]，代码中实现也普遍采样该公式。</p>
+</blockquote>
+<p>以下是 [<a href="https://link.zhihu.com/?target=https%3A//github.com/huggingface/trl/blob/main/trl/trainer/dpo_trainer.py">trl</a>] 中对 DPO 中的 loss 实现方式：</p>
+<pre><code class="language-python">def dpo_loss(
+    self,
+    policy_chosen_logps: torch.FloatTensor,
+    policy_rejected_logps: torch.FloatTensor,
+    reference_chosen_logps: torch.FloatTensor,
+    reference_rejected_logps: torch.FloatTensor,
+    reference_free: bool = False,
+) -&gt; Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]:
+    pi_logratios = policy_chosen_logps - policy_rejected_logps              # 当前模型的 good/bad sample 的概率差
+    ref_logratios = reference_chosen_logps - reference_rejected_logps       # Ref模型的 good/bad sample 的概率差
+
+    if reference_free:
+        ref_logratios = 0
+
+    logits = pi_logratios - ref_logratios                       # 如果 ref model 对这两个样本差异也很大，则不要拉的太猛（防止训飞了）
+
+    if self.loss_type == &quot;sigmoid&quot;:
+        losses = -F.logsigmoid(self.beta * logits)              # 最大化 good/bad sample 的概率差
+    elif self.loss_type == &quot;hinge&quot;:
+        losses = torch.relu(1 - self.beta * logits)
+    else:
+        raise ValueError(f&quot;Unknown loss type: {self.loss_type}. Should be one of ['sigmoid', 'hinge']&quot;)
+
+    chosen_rewards = self.beta * (policy_chosen_logps - reference_chosen_logps).detach()
+    rejected_rewards = self.beta * (policy_rejected_logps - reference_rejected_logps).detach()
+
+    return losses, chosen_rewards, rejected_rewards
+</code></pre>
+<h3 id="43-proximal-policy-optimizationppo">4.3 Proximal Policy Optimization（PPO）<a class="anchor-link" href="#43-proximal-policy-optimizationppo" title="Permanent link">&para;</a></h3>
+<p>[<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/1707.06347.pdf">PPO</a>] 是强化学习中一种基于AC架构（Actor-Critic）的优化方法，其前身是TRPO，</p>
+<p>PPO通过引入重要性采样（Importance Sampling）来缓解 on policy 模型一次采样数据只能更新一次模型的问题，提升了数据利用率和模型训练速度。</p>
+<p>在 LLM 的训练中，使用 PPO 需要同时载入 4 个模型：</p>
+<ul>
+<li><strong>Actor Model：</strong>用于进化训练的生成模型</li>
+<li><strong>Critic Model：</strong>用于进化训练的评判模型</li>
+<li><strong>Ref Model：</strong>参照模型，通过 KL 来限制 Actor 模型的训练方向</li>
+<li><strong>Reward Model：</strong>奖励模型，用于指导 Actor 进化</li>
+</ul>
+<p>为了节省显存，通常会将 actor / critic 共享一个 backbone，这样只用同时载入 3 个模型。</p>
+<blockquote>
+<p>注：这也是 RL 非常耗卡的一个重要原因。</p>
+</blockquote>
+<p>PPO 以其「训练过程不稳定」和「效果不稳定」著称，这里我们通过列出一些具体的 case 来说明。</p>
+<h3 id="431-训练过程不稳定">4.3.1 训练过程不稳定<a class="anchor-link" href="#431-训练过程不稳定" title="Permanent link">&para;</a></h3>
+<p>由于 PPO 对超参非常敏感，不合理的超参搭配很有可能使得模型训练过程中 Reward 剧烈抖动：</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-9cabe6732f82f70878bfabed101034ba_1440w.jpg" /></p>
+<p>图中蓝色折线为 actor 的 reward 曲线，粉红色折线为 ref_model（不参与训练）的 reward 曲线</p>
+<p>从上图中可以看出，模型在训练过程中奖励曲线抖动的非常剧烈，</p>
+<p>经过实验，我们发现存在几个因素与此有关：</p>
+<ul>
+<li><strong>KL Penalty：</strong>适当调大 KL可以帮助稳定训练（可使用动态调整 KL 系数策略）。</li>
+<li><strong>Reward Model：</strong>使用一个更稳定的 RM 能够有效缓解这种问题。</li>
+<li><strong>Reward Scaling：</strong>reward 的归一化对训练稳定有着很重要的作用。</li>
+<li><strong>Batch Size：</strong>适当增大 batch_size 有助于训练稳定。</li>
+</ul>
+<h3 id="432-训练结果不稳定">4.3.2 训练结果不稳定<a class="anchor-link" href="#432-训练结果不稳定" title="Permanent link">&para;</a></h3>
+<p>当你看到一条比较平稳且漂亮的 Reward 折线时 —— 也不要高兴的太早，</p>
+<p>因为 reward 的提升并不代表模型真的表现的更好。</p>
+<p>如下图所示：</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-a7200f02326cb021340627aef3d81044_1440w.jpg" /></p>
+<p>一条看起来很完美的训练曲线，图中右下角为 reward 分布，橙色为当前模型的 reward 分布（集中在高分区域）</p>
+<p>这次看起来非常完美的训练，当模型最终生成的结果却如下所示：</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-060fa579c9a819a6816681462f79791d_1440w.jpg" /></p>
+<p>以「情绪识别模型」作为 RM，目标为生成更优情绪的答案</p>
+<p>我们发现，模型的输出都是一些乱码，</p>
+<p>之所以生成这种结果，是因为 Reward Model 对于这类「乱码」打分很高（最后一列为 RM 打出的分数）。</p>
+<blockquote>
+<p>这种通过找到 shortcut 形成 reward 提升的现象又称为 <strong>reward hacking</strong>。</p>
+</blockquote>
+<p>对于这种情况，除了提升 RM 本身的能力以外，我们还可以通过 Combine 多个 RM 以防止这种情况出现。</p>
+<blockquote>
+<p>如 Llama 2 中同时使用了 2 个 RM（Safety + Helpful）来进行打分，不过论文中给出的理由是 Safety 和 Helpful 这两个任务目标之间可能存在冲突，但使用多个 RM 来综合打分同时也能较好的防止模型训到天上去。</p>
+</blockquote>
+<p>最终的训练结果如下：</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-dc7024ad19656f05c64c5699f7de3e7c_1440w.jpg" /></p>
+<p>使用多个混合RM策略进行训练的结果</p>
+<p>通过使用多种策略进行混合，最终模型能够获得较为稳定的分数增长，输出模型也不再崩溃。</p>
+<p>关于如何「稳定训练 PPO 的技巧」，在 [<a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2307.04964.pdf">PPO-max</a>] 文章中有更为详尽的介绍：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/666455333"></a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

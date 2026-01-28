@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#增量学习">增量学习</a></li>
+<li><a href="#基于能量的模型">基于能量的模型</a></li>
+</ul>
+</li>
+<li><a href="#3-提出的方法">3. 提出的方法</a><ul>
+<li><a href="#问题定义">问题定义</a></li>
+<li><a href="#总体框架">总体框架</a></li>
+<li><a href="#阶段分类器自归一化">阶段分类器自归一化</a></li>
+<li><a href="#使用阶段累积温度的投票">使用阶段累积温度的投票</a></li>
+<li><a href="#阶段累积温度优化与投票推理">阶段累积温度优化与投票推理</a></li>
+</ul>
+</li>
+<li><a href="#实验">实验</a><ul>
+<li><a href="#对比结果">对比结果</a></li>
+<li><a href="#消融研究">消融研究</a></li>
+<li><a href="#结论">结论</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/45.Energy</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>本文关注增量学习阶段中普遍存在的性能不平衡问题。为了避免明显的阶段学习瓶颈，我们提出了一种全新的基于阶段隔离的增量学习框架，该框架利用一系列阶段隔离的分类器来执行每个阶段的学习任务，而不受其他阶段的干扰。具体而言，为了公正地聚合多个阶段分类器为一个统一的分类器，我们首先引入了一种温度控制的能量度量来指示阶段分类器的置信度水平。接着，我们提出了一种基于锚点的能量自归一化策略，以确保阶段分类器在相同的能量水平上工作。最后，我们设计了一种基于投票的推理增强策略来实现鲁棒的推理。所提出的方法无需记忆缓冲区，并且可以适用于几乎所有的持续学习场景。我们在四个大型基准数据集上评估了该方法，大量实验结果表明，该方法在整体性能上具有显著优势，并达到了新的最先进水平。代码可在 <a href="https://github.com/iamwangyabin/ESN">https://github.com/iamwangyabin/ESN</a> 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>增量学习（也称为持续学习或终身学习）是一种在数据流上不断演化的机器学习范式。这是一个长期的研究课题，并可能为更类似于人类的 AI 提供一条路径。稳定性与可塑性之间的权衡是增量学习的核心问题（Mai et al. 2022; De Lange et al. 2021），它要求模型具有可塑性以获取新知识，同时具有稳定性以不断巩固现有知识。</p>
+<p>大多数先前的工作努力在稳定性和可塑性之间保持一种脆弱的平衡，并在平均准确率方面取得了不错的结果。然而，这导致了不同学习阶段（也称为会话或任务）之间的巨大性能差距。这是一个众所周知的现象，称为类别不平衡（Mai et al. 2022; De Lange et al. 2021）。这个问题的根源有两个方面：首先，新来数据与历史数据之间的样本数量不平衡；其次，更重要的是，使用统一模型来描述异构数据流可能导致零和博弈（Riemer et al. 2018; Knoblauch, Husain, and Diethe 2020），如图 1(a) 所示，一方的收益意味着另一方的损失。这种不平衡导致某些类别的识别崩溃，从而在最终性能中形成瓶颈，并限制了模型在现实场景中的应用。一些方法使用记忆缓冲区来缓解这种不平衡问题（Hou et al. 2019）。然而，保存先前的训练数据在内存上开销较大，并且存在隐私问题。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250213184619.png" style="zoom: 60%;" /></div>
+
+<p>为了解决这些问题，本文研究了如何为所有阶段的学习创造双赢的解决方案。我们挑战了传统的统一范式，并提出了一种阶段隔离的方案来学习阶段分类器（如图 1(b) 所示）。阶段隔离的目标是为每个阶段独立学习多个高置信度和低偏置的特定阶段分类器，从而使得每个阶段的分类器能够免受其他阶段的干扰，充分满足每个阶段的性能需求。</p>
+<p>然而，这一范式的主要难点在于如何以公正的方式聚合在不同阶段训练的多个隔离学习器，因为在不同阶段训练的学习器可能具有不同的类别置信度分布。例如，如图 3(b) 所示，两个阶段分类器的输出得分可能会有明显差异。简单的聚合方法（如选择置信度最高的类别）仍然倾向于阶段不平衡。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250213185137.png" style="zoom: 60%;" /></div>
+
+<p>我们认为解决这一问题的关键在于阶段分类器输出的正则化。具体而言，需要满足三个准则。准则 1：阶段分类器应对其所属阶段的数据（即阶段内数据）具有比其他数据（即阶段外数据）更高的输出置信度得分；准则 2：阶段内数据的置信度得分应在所有阶段中保持一致；准则 3：阶段内数据的正确阶段分类器应在所有分类器中具有最高的置信度得分。然而，在增量学习场景中，这些准则难以满足。原因有两个方面：首先，仅使用当前数据（唯一可访问的数据）优化阶段学习器会导致严重的偏差；其次，由于无法考虑未来要学习的分类器，因此无法进行完全的正则化。</p>
+<p>为了解决这种向后兼容的正则化难题，我们受到亥姆霍兹自由能理论（LeCun et al. 2006）的启发，引入了一种温度控制的能量度量来反映阶段分类器的置信度水平。在此基础上，我们提出了一种无需记忆缓冲区的增量学习范式，该范式通过正则化阶段分类器来公正地聚合它们为一个统一的分类器。具体而言，我们首先使用预训练的 ViT（Dosovitskiy et al. 2021）骨干作为阶段特定分类器之前的冻结强先验，以尽可能确保阶段内数据的置信度得分高于阶段外数据，这已在（Fort, Ren, and Lakshminarayanan 2021）中得到证明（满足准则 1）。其次，我们设计了一种基于锚点的能量自归一化损失，该损失将阶段分类器的能量度量严格限制在能量锚点附近，以确保所有阶段分类器在面对自己的阶段内数据时处于相同的能量水平（满足准则 2）。此外，尽管可以通过设计方法找到当前阶段的“迄今为止”最佳控制参数，但它仅以向后兼容的方式工作。为了避免对任何特定阶段的过拟合，我们为所有已遇到的阶段保留“迄今为止”最佳参数，并使用投票方案生成可靠的推理输出，从而更好地接近准则 3。</p>
+<p>总结而言，我们提出了一种全新的无需记忆缓冲区的通用增量学习范式，称为能量自归一化（ESN），以解决性能不平衡和零和博弈问题。该方法可以处理几乎所有场景，包括类别增量学习（CIL）（De Lange et al. 2021）、领域增量学习（DIL）（Wang, Huang, and Hong 2022）以及跨领域类别增量学习（Xie, Yan, and He 2022）。我们的贡献可以进一步详细如下：</p>
+<ul>
+<li>我们提出了基于锚点的能量自归一化（ESN），使得阶段分类器能够为阶段内数据生成高且一致的置信度得分。</li>
+<li>我们设计了一种控制参数（温度）的查找方法，以逐步确保具有最高得分的“正确”分类器。在此基础上，我们提出了一种基于投票的推理增强策略，以实现鲁棒的推理。</li>
+<li>所提出的 ESN 在四个大规模基准数据集上设置了新的最先进性能，并构建了一个具有挑战性的跨领域类别增量学习基准。</li>
+</ul>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="增量学习">增量学习<a class="anchor-link" href="#增量学习" title="Permanent link">&para;</a></h3>
+<p>增量学习方法主要有三种类型（De Lange et al. 2021）。</p>
+<p>基于记忆缓冲区的方法</p>
+<p>通过保存一小部分旧训练样本（Tao et al. 2020; Dong et al. 2021; Liu et al. 2022）或使用生成模型生成的合成数据（Shin et al. 2017）来缓解灾难性遗忘。通过使用记忆缓冲区进行知识蒸馏和正则化，基于记忆缓冲区的方法在各种基准上取得了最先进的结果（Douillard et al. 2022; Joseph et al. 2022; Zhang et al. 2022）。然而，基于记忆缓冲区的方法的性能通常随着缓冲区大小的减小而下降（Mai et al. 2022）。此外，由于数据安全和隐私原因，通常不希望对旧任务的样本进行存储（Wang, Huang, and Hong 2022）。</p>
+<p>基于正则化的方法</p>
+<p>设计知识蒸馏策略（Li and Hoiem 2017）或参数正则化项（Kirkpatrick et al. 2017）来缓解灾难性遗忘。</p>
+<p>基于网络结构的方法</p>
+<p>在增量学习过程中修改网络结构以缓解灾难性遗忘。一些工作通过扩展网络参数来学习新任务，并取得了最先进的性能（Yan, Xie, and He 2021; Wang et al. 2022b; Xu and Zhang 2020; Douillard et al. 2022）。还有一些方法使用参数隔离策略来保持每个任务的独立性（Serra et al. 2018; Li et al. 2019）。最近，L2P（Wang et al. 2022b）使用提示调优和预训练模型进行增量学习任务。参数高效微调（如提示调优）为增量学习问题提供了一种有前景的解决方案。然而，L2P 仍然是一个统一结构的模型，并且需要一个固定的查询函数来查找提示，这在复杂情况下耗时且效率低下。</p>
+<h3 id="基于能量的模型">基于能量的模型<a class="anchor-link" href="#基于能量的模型" title="Permanent link">&para;</a></h3>
+<p>基于能量的模型（EBMs）（LeCun et al. 2006）通过将标量能量与变量的每个配置相关联来捕捉变量之间的依赖关系。EBMs 已被用于生成建模（Du and Mordatch 2019）、分布外检测（Liu et al. 2020）和开放集分类（Al Rahhal et al. 2022）。尽管在各种任务中取得了成功，EBMs 在增量学习中的应用有限。ELI（Joseph et al. 2022）提出学习一个能量流形以对抗增量学习过程中发生的表示偏移。它使用 EBMs 来描述模型的变化，然后尝试将更新后的模型补偿回原始模型，这仍然是一场拉锯战。此外，它假设不同阶段之间的能量是可区分的，这在应用场景中是一个过于强烈的假设。EA（Zhao et al. 2022）也使用基于能量的模型将计算出的偏移标量添加到输出 logits 中，以缓解类别不平衡。补偿标量的计算基于所有类别的样本，这表明它依赖于记忆缓冲区。这两项工作仍然难以在统一模型中缓解不平衡问题。此外，它们都基于记忆缓冲区，并且只能处理 CIL 问题，远非增量学习的通用和鲁棒解决方案。</p>
+<h2 id="3-提出的方法">3. 提出的方法<a class="anchor-link" href="#3-提出的方法" title="Permanent link">&para;</a></h2>
+<h3 id="问题定义">问题定义<a class="anchor-link" href="#问题定义" title="Permanent link">&para;</a></h3>
+<p>增量学习是指在数据流中训练模型，而模型一次只能访问部分训练数据。设 <span class="math-inline">\zeta = {1, 2, 3, \dots, S}</span> 表示阶段 ID 集合，其中 <span class="math-inline">S</span> 是当前的最大阶段数。第 <span class="math-inline">s</span> 阶段的输入数据表示为 <span class="math-inline">D_s = {x_i, y_i}_{i=1}^{N_s}</span>，其中 <span class="math-inline">N_s</span> 是该阶段的总样本数。<span class="math-inline">(x, y) \sim p_s^{\text{data}}</span> 表示第 <span class="math-inline">s</span> 阶段的数据分布。对于类别增量学习，不同阶段有不同的类别需要学习，且没有类别重叠，即 <span class="math-inline">Y_i \cap Y_j = \emptyset</span>，其中 <span class="math-inline">Y_s</span> 是第 <span class="math-inline">s</span> 阶段的标签集。对于领域增量学习，所有阶段的类别相同，即 <span class="math-inline">Y_i = Y_j</span>，但每个阶段的数据分布不同，甚至高度异构。</p>
+<p>我们提出的 ESN 可以同时处理这两种具有挑战性的场景，甚至是更具挑战性的跨领域类别增量学习，其中不同阶段具有来自不同领域的不同类别。</p>
+<h3 id="总体框架">总体框架<a class="anchor-link" href="#总体框架" title="Permanent link">&para;</a></h3>
+<p>先前的增量学习方法需要在稳定性和可塑性之间找到一个脆弱的平衡。使用统一模型来描述异构数据流可能导致零和博弈，并且会严重偏向新类别（De Lange et al. 2021; Mai et al. 2022）。</p>
+<p>在本文中，我们提出了一种全新的无需记忆缓冲区的通用增量学习范式，以解决不平衡和零和博弈问题。具体而言，我们为每个阶段在冻结的预训练骨干上训练多个隔离的特定阶段分类器。在推理阶段，我们首先选择最自信的分类器（公式 1），然后使用它来预测最终结果（公式 2）。<br />
+<div class="math-display"><br />
+    s^* = \arg\max_{s \in \zeta} H_s(x), \tag{1}<br />
+</div></p>
+<p><div class="math-display"><br />
+y^<em> = \arg\max_{y \in Y_{s^</em>}} P_{s^*}(y|x), \tag{2}<br />
+</div><br />
+其中 <span class="math-inline">P_s(y|x)</span> 是第 <span class="math-inline">s</span> 阶段的分类器，其置信度得分函数表示为 <span class="math-inline">H_s(x)</span>。正如所示，不同阶段置信度得分之间的可比性是公正聚合的保证。</p>
+<p>如图 1 所示，给定一个预训练的骨干 <span class="math-inline">f_\theta</span>，我们在每个阶段初始化一个特定的分类器 <span class="math-inline">f_{\eta_s}</span>。在第 <span class="math-inline">s</span> 阶段的训练过程中，我们冻结预训练的骨干 <span class="math-inline">f_\theta</span>，仅更新分类器参数 <span class="math-inline">\eta_s</span>。<span class="math-inline">\theta</span> 和 <span class="math-inline">\eta</span> 分别是骨干和分类器的参数。为简化起见，我们使用在 ImageNet 上预训练的 ViT-B/16 作为冻结骨干，并使用带有线性投影的类注意力块（CAB）（Touvron et al. 2021）作为分类器。我们提出的策略也适用于其他参数隔离方法（Jia et al. 2022），我们将在实验中展示这一点。阶段隔离的分类器可以屏蔽彼此的干扰。</p>
+<p>在接下来的部分中，我们首先详细介绍了基于自归一化策略的训练方法，该方法确保所有阶段分类器的公正聚合。然后，我们介绍了阶段累积控制参数优化方法，并结合基于投票的推理增强策略以进一步提升性能。</p>
+<h3 id="阶段分类器自归一化">阶段分类器自归一化<a class="anchor-link" href="#阶段分类器自归一化" title="Permanent link">&para;</a></h3>
+<p>在训练深度神经网络时，最常用的训练标准是 softmax 交叉熵损失。然而，先前的工作（Tang et al. 2021; Liu et al. 2020）表明，直接使用该损失进行训练会导致过度自信问题，即无论数据是否来自训练数据分布，最大 softmax 激活值总是接近 1。先前的工作表明，其他标准（如亥姆霍兹自由能（Liu et al. 2020）或最大 logit 值（Hendrycks et al. 2019））是比最大 softmax 值更好的置信度得分。然而，上述工作均未讨论如何对齐从数据流中学习的不同分类器的置信度得分。</p>
+<p>接下来，我们首先简要回顾 softmax 交叉熵损失与基于能量的模型之间的关系（Grathwohl et al. 2019; Liu et al. 2020; LeCun et al. 2006），然后提出基于锚点的能量自归一化目标函数，使得阶段内数据的能量在所有阶段中保持一致。</p>
+<p>我们将输入标签对 <span class="math-inline">(x, y)</span> 的能量函数定义如下：<br />
+<div class="math-display"><br />
+E_s(x, y) = -h_s(x)[y], \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">h_s(x) = f_{\eta_s}(f_\theta(x))</span> 是第 <span class="math-inline">s</span> 个分类器的 logits，<span class="math-inline">h_s(x)[y]</span> 是 <span class="math-inline">y \in Y_s</span> 的 logit 值，则 softmax 激活可以被视为离散吉布斯分布的一个特例，当温度参数 <span class="math-inline">T</span> 等于 1 时：<br />
+<div class="math-display"><br />
+    P_s^T(y|x) = \frac{\exp(-E_s(x, y)/T)}{\exp(-F_s^T(x)/T)}, \tag{4}<br />
+</div><br />
+其中 <span class="math-inline">F_s^T(x)</span> 是亥姆霍兹自由能，可以表示为负对数配分函数：<br />
+<div class="math-display"><br />
+    F_s^T(x) = -T \log \sum_{y \in Y_s} \exp(-E_s(x, y)/T). \tag{5}<br />
+</div><br />
+因此，softmax 交叉熵损失可以重写为公式 6。<br />
+<div class="math-display"><br />
+    L_s^{\text{ce}} = \mathbb{E}<em>{(x, y) \sim p_s^{\text{data}}} (-\log P_s^T(y|x)) = \frac{1}{T} \mathbb{E}</em>{(x, y) \sim p_s^{\text{data}}} (E_s(y, x) - F_s^T(x)). \tag{6}<br />
+</div><br />
+可以看出，softmax 交叉熵损失会降低输入数据与真实标签之间的能量，同时增加整体亥姆霍兹自由能。然而，当 <span class="math-inline">E_s(y, x)</span> 和 <span class="math-inline">F_s^T(x)</span> 增加相同的标量时，损失值保持不变，这使得直接比较使用 softmax 交叉熵损失独立训练的不同分类器的自由能变得毫无意义。为了解决这个问题，我们提出了一种简单但有效的能量自归一化损失 <span class="math-inline">L_s^{\text{al}}</span>，它将每个分类器的自由能约束在一个固定的锚点 <span class="math-inline">\Delta</span> 附近，如公式 7 所示。<br />
+<div class="math-display"><br />
+    L_s^{\text{al}} = \mathbb{E}<em>{x \sim p_s^{\text{data}}} (F_s^T(x) - \Delta)^2, \tag{7}<br />
+</div><br />
+其中 <span class="math-inline">\Delta</span> 是一个预设的超参数，实验结果表明 ESN 对其值不敏感。每个单独分类器的总损失由公式 8 给出。<br />
+<div class="math-display"><br />
+    L_s^{\text{total}} = \mathbb{E}</em>{(x_s, y_s) \sim p_s^{\text{data}}} (L_s^{\text{ce}} + \lambda L_s^{\text{al}}), \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">\lambda</span> 是平衡 <span class="math-inline">L_s^{\text{al}}</span> 项的超参数。我们在训练期间选择了一个代表性的温度 <span class="math-inline">T = 1</span>。我们的完整训练算法在算法 1 中介绍。图 3 可视化了使用和不使用自归一化的自由能分布，说明了 ESN 的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304145244.png" style="zoom: 50%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304145311.png" style="zoom: 50%;" /></div>
+
+<h3 id="使用阶段累积温度的投票">使用阶段累积温度的投票<a class="anchor-link" href="#使用阶段累积温度的投票" title="Permanent link">&para;</a></h3>
+<p>由于我们已经使用固定锚点对亥姆霍兹自由能进行了归一化（公式 7），将负亥姆霍兹自由能作为置信度得分是一个自然的选择：<br />
+<div class="math-display"><br />
+    H_s(x) = -F_s^T(x) = T \log \sum_{y \in Y_s} \exp(h_s(x)[y]/T), \tag{9}<br />
+</div><br />
+这是 logits 的 logsumexp，带有控制温度参数 <span class="math-inline">T</span>。先前的基于能量的分布外检测方法（Wang et al. 2022a; Liu et al. 2020）表明，对于某个分类器，分布内数据通常具有较低的自由能（较高的置信度得分）。进一步借助能量自归一化目标函数，我们可以近似推导出阶段内数据的正确阶段分类器应在所有分类器中具有最高的置信度得分（公式 1）。推导可以简要表示为 <span class="math-inline">H_i(x_i) = H_j(x_j)</span>, <span class="math-inline">H_j(x_j) &gt; H_j(x_i) \rightarrow H_i(x_i) &gt; H_j(x_i)</span>，其中 <span class="math-inline">x_i</span> 是第 <span class="math-inline">i</span> 阶段的阶段内数据，但却是第 <span class="math-inline">j</span> 阶段的阶段外数据。然而，这一推导仅近似成立，我们进一步提出了一种阶段累积温度校准策略，并结合基于投票的推理增强，以进一步优化最大置信度准则（公式 1），而不会过拟合最新阶段的数据。</p>
+<p>如公式（5）所示，我们可以通过改变温度参数 <span class="math-inline">T</span> 来调整自由能。理论上，我们可以通过优化所有阶段数据的阶段 ID 预测准确率来找到每个分类器的最佳温度 <span class="math-inline">T</span>，但在无需记忆缓冲区的增量学习中这是不可能的。由于我们只能访问当前阶段的训练数据，因此我们提出了一种阶段累积策略来避免过拟合。</p>
+<h3 id="阶段累积温度优化与投票推理">阶段累积温度优化与投票推理<a class="anchor-link" href="#阶段累积温度优化与投票推理" title="Permanent link">&para;</a></h3>
+<p>首先，我们通过遍历候选温度 <span class="math-inline">\Psi</span> 并结合当前阶段的训练数据，找到在该阶段表现最佳的温度。然后，我们将该温度添加到最终的温度池 <span class="math-inline">\Omega</span> 中。最后，我们遍历温度池 <span class="math-inline">\Omega</span> 中的温度，并通过投票聚合不同温度下的阶段 ID 预测结果。为了确保不同分类器之间的公平性和可比性，我们同时对所有分类器改变温度，并按公式 10 进行投票：<br />
+<div class="math-display"><br />
+s^* = \text{MODE}({\arg\max_{s \in \zeta} -F_s^T(x) | \text{For } T \in \Omega}), \tag{10}<br />
+</div><br />
+其中 <span class="math-inline">\text{MODE}(\cdot)</span> 是模式运算符，用于找到集合中出现频率最高的元素。这种基于投票的推理增强策略仅增加了可忽略的计算开销。在模型预测 logits 后，我们只需要在不同 <span class="math-inline">T</span> 下重新计算公式（9）。</p>
+<p>我们的增强推理算法在算法 2 中介绍，阶段累积温度校准已在算法 1 中介绍。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304150830.png" style="zoom: 50%;" /></div>
+
+<h2 id="实验">实验<a class="anchor-link" href="#实验" title="Permanent link">&para;</a></h2>
+<p><strong>基准数据集与实现</strong></p>
+<p>我们进行了广泛的实验来评估所提出的 ESN 方法。我们考虑两种主要的增量学习场景：（1）类别增量学习，其中类别通常来自同一领域；（2）领域增量学习，其中类别相同但来自不同领域。此外，我们考虑了一个更通用的场景：跨领域类别增量学习，其中不同类别来自不同领域，并为此场景构建了一个基准，命名为 Split DomainNet。</p>
+<p>我们在 CIFAR-100（Krizhevsky, Hinton et al. 2009）、Split DomainNet、5-datasets（Ebrahimi et al. 2020）和 CORe50（Lomonaco and Maltoni 2017）上评估了 ESN。</p>
+<p><strong>Split DomainNet 基准</strong>：我们基于 DomainNet（Peng et al. 2019）构建了跨领域增量学习基准 Split DomainNet。Split DomainNet 的每个阶段的输入数据包含来自不同领域的新类别图像。我们构建了这个数据集作为跨领域类别增量学习的基准，我们认为这是一个更具挑战性和实用性的场景。DomainNet 收集了来自 6 个不同领域（包括 ClipArt、Real、Sketch、Infograph、Painting 和 Quickdraw）的 345 个常见对象的图像。由于 DomainNet 中的某些领域和类别包含的实例较少（甚至没有实例），我们选择了 200 个图像最多的类别。我们将这 200 个类别随机分为 10 个阶段，每个阶段包含 20 个类别。每个阶段的实例来自随机选择的领域。</p>
+<p><strong>Split-CIFAR100 基准</strong>：CIFAR-100（Krizhevsky, Hinton et al. 2009）是一个广泛用于类别增量学习的基准。Split CIFAR-100 将原始 CIFAR-100 分为 10 个会话，每个会话包含 10 个类别。</p>
+<p><strong>5-Datasets 基准</strong>：5-Datasets（Ebrahimi et al. 2020）是一个类别增量学习的基准。尽管 5-Datasets 中的每个数据集并不困难，但对于预训练模型来说仍然是一个具有挑战性的基准，因为它们之间的相似性较低。</p>
+<p><strong>CORe50 基准</strong>：CORe50（Lomonaco and Maltoni 2017）是一个用于持续对象识别的大型基准。该数据集收集了来自 11 个不同领域（8 个室内和 3 个室外）的 50 个不同对象的图像。选择三个领域（3、7 和 10）作为测试集，其余 8 个领域用于增量学习。CORe50 是一个领域增量学习的基准。</p>
+<p><strong>评估指标</strong></p>
+<p>我们使用最终平均准确率（FAA）和最终遗忘率（FF）作为类别增量学习和跨领域任务增量学习的评估指标，这些指标在先前的工作中广泛使用（Mai et al. 2022）。对于领域增量学习，由于没有明显的任务边界，我们使用最终平均准确率（FAA）。</p>
+<p><strong>对比方法</strong></p>
+<p>我们将 ESN 与最先进的 CIL 和 DIL 方法进行了比较。尽管我们是一种无需记忆缓冲区的增量学习方法，但为了更公平的比较，我们也考虑了需要缓冲区存储样本的基于记忆缓冲区的方法。对比方法包括 EWC（Kirkpatrick et al. 2017）、LwF（Li and Hoiem 2017）、ER（Chaudhry et al. 2019）、GDumb（Prabhu, Torr, and Dokania 2020）、BiC（Wu et al. 2019）、DER++（Buzzega et al. 2020）和 Co2L（Cha, Lee, and Shin 2021），以及最近发布的基于 Transformer 的方法 L2P（Wang et al. 2022b）和 DyTox（Douillard et al. 2022）。</p>
+<p>为了公平比较，我们为所有竞争对手以及 ESN 使用了相同的在 ImageNet 上预训练的 ViT 模型（即 ViT-B/16（Dosovitskiy et al. 2021））。我们在所有基准上使用联合训练结果作为 ESN 的上限。</p>
+<p><strong>实现细节</strong></p>
+<p>我们在 PyTorch 中实现了我们的方法，并使用了两块 NVIDIA RTX 3090 GPU。所提出的 ESN 对超参数不敏感。我们使用 SGD 优化器和余弦退火学习率调度器，初始学习率为 0.01，适用于所有基准。我们为 Split CIFAR-100 和 Split DomainNet 设置了 30 个 epoch，为 5-Datasets 和 Core50 设置了 10 个 epoch。所有实验的批量大小设置为 128。动量和权重衰减参数分别设置为 0.9 和 0.0005。我们使用在 ImageNet 上预训练的 ViT-B/16 作为骨干，分类器是一个带有线性投影的类注意力块（CAB）（Touvron et al. 2021）。CAB 的超参数与 ViT-B/16 相同，除了 MLP 比率为 0.5，其参数为 3M。由于从预训练 ViT 中提取的原始特征不适合所有下游任务，我们还向输入添加了参数（10×768），如（Jia et al. 2022）所示。候选温度集 <span class="math-inline">\Psi</span> 从 0.001 到 1.0，步长为 0.001。我们将能量锚点 <span class="math-inline">\Delta</span> 设置为 -10，平衡超参数 <span class="math-inline">\lambda</span> 设置为 0.1，适用于所有基准。代码将很快提供。</p>
+<h3 id="对比结果">对比结果<a class="anchor-link" href="#对比结果" title="Permanent link">&para;</a></h3>
+<p>我们在 Split CIFAR-100、Split DomainNet、5-Datasets 和 CORe50 上将所提出的 ESN 与最先进的方法进行了比较。我们使用不同的随机种子运行 ESN 5 次，并报告平均结果。为了公平比较，所有方法都从相同的 ImageNet 预训练 ViT-B/16 开始。</p>
+<p><strong>类别增量学习基准结果</strong></p>
+<p>表 1 和表 2 分别总结了在 Split CIFAR-100 和 5-Datasets 基准上的结果。ESN 在无需任何记忆缓冲区的情况下在平均准确率和遗忘率方面达到了最先进的性能。我们计算出，ESN 相对于最佳的无记忆缓冲区方法，取得了相当大的相对改进（平均约为 3.5%）。我们可以看到，大多数基于记忆缓冲区的方法通过存储更多数据显著提高了性能。这表明基于记忆缓冲区方法的性能高度依赖于缓冲区大小。ESN 的出色性能表明，所提出的基于锚点的能量自归一化能够成功公正地聚合所有阶段分类器，从而即使在没有记忆缓冲区的情况下也能取得出色的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304125907.png" style="zoom: 50%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304125922.png" style="zoom: 50%;" /></div>
+
+<p><strong>领域增量学习基准结果</strong></p>
+<p>表 3 总结了在 CORe50 基准上的结果。CORe50 是一个具有挑战性的 DIL 基准，它使用 8 个领域作为训练集，3 个领域作为测试集。这意味着测试图像不属于任何训练领域，该基准主要测试增量学习后的泛化能力。ESN 在使用相同的 ViT-B/16 预训练骨干的情况下，相比其他方法取得了最佳性能（相比 L2P 提高了约 17%）。由于测试图像没有正确的阶段 ID（没有领域重叠），ESN 的准确率来自于集成投票策略。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304125940.png" style="zoom: 50%;" /></div>
+
+<p><strong>跨领域类别增量学习基准结果</strong></p>
+<p>跨领域类别增量学习是一个比传统 CIL 设置更具挑战性的场景。如表 4 所示，ESN 显著优于所有其他无需记忆缓冲区的方法（提高了约 50%）。我们可以看到，大多数类别增量学习算法在跨领域设置中未能有效防止灾难性遗忘，如表 4 所示的高最终遗忘率（FF）所示。特别地，一些基于正则化的方法（如 LwF 和 EWC）甚至表现不如简单的微调。这可能是由于某些正则化方法对大的领域偏移不够鲁棒。我们的阶段隔离学习策略能够成功保留旧知识，并且所提出的基于锚点的能量自归一化策略能够鲁棒地处理这一具有挑战性的场景。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304125953.png" style="zoom: 50%;" /></div>
+
+<h3 id="消融研究">消融研究<a class="anchor-link" href="#消融研究" title="Permanent link">&para;</a></h3>
+<p><strong>相关组件的影响</strong></p>
+<p>为了进一步研究 ESN 的有效性，我们研究了主要组件的影响。表 5（第 1 行）移除了所提出的基于锚点的能量自归一化策略 <span class="math-inline">L_s^{\text{al}}</span>，并保持其他部分不变。性能显著下降，这表明将所有隔离分类器对齐到相同的能量平面是公正聚合它们以进行最终预测的关键。表 5（第 2 行）移除了我们提出的温度选择策略，仅使用默认温度 1 进行预测，而不进行投票。结果略低于 ESN。这种下降表明，使用所提出的温度校准可以进一步提升性能。表 5（第 3 行）在任务之间共享相同的类注意力块（CAB）。结果显示，参数隔离在处理灾难性遗忘和保持性能方面非常重要。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304130019.png" style="zoom: 50%;" /></div>
+
+<p>不同 <span class="math-inline">\Delta</span> 的影响</p>
+<p><span class="math-inline">\Delta</span> 是我们提出的能量自归一化损失的主要超参数，我们进行了消融研究以调查其影响。表 6 显示了最终结果（FAA 和 FF）对 <span class="math-inline">\Delta</span> 的值不敏感。这可能是因为最重要的是将所有分类器归一化到相同的能量平面。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304130030.png" style="zoom: 50%;" /></div>
+
+<p><strong>不同网络架构的影响</strong></p>
+<p>在主要实验中，我们主要将类注意力块作为解码器附加到预训练的骨干上。我们指出，其他网络架构也可以使用我们提出的能量自归一化方法。表 7 总结了使用不同架构的结果。在这里，我们添加了两个参数隔离方法以展示我们的想法：VPT（Jia et al. 2022）和 DER（Yan, Xie, and He 2021）。VPT 在输入中添加少量任务特定的可学习参数，同时冻结模型的其他部分，以将预训练模型微调到下游任务。DER 为每个新任务扩展一个新的网络。网络可以是任何类型，我们使用 ResNet50 和 ViT-B/16 进行实验。我们在表 7 中报告了单个增量阶段的扩展参数量。尽管 VPT 的扩展参数量显著少于 CAB，但 VPT 的推理时间几乎是 CAB 的十倍。这是因为 CAB 作为特定阶段的解码器，并使用共享的骨干提取图像特征，从而减少了计算开销。类似 DER 的方法存在相同的推理速度问题，并且表现不如 VPT 和 CAB。类似 DER 的方法表现较差的原因可能是在数据集的较小子集上训练大型模型会导致严重的过拟合。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250304130041.png" style="zoom: 50%;" /></div>
+
+<h3 id="结论">结论<a class="anchor-link" href="#结论" title="Permanent link">&para;</a></h3>
+<p>本文提出了一种全新的无需记忆缓冲区的基于阶段隔离的通用增量学习框架。所提出的 ESN 为每个阶段学习阶段隔离分类器，并使用基于锚点的能量自归一化策略以公正的方式聚合多个隔离分类器。此外，我们提出了一种控制参数（温度）的查找方法，并提出了一种基于投票的推理增强策略，以实现鲁棒的推理。我们的实验表明，我们的方法在四个大型基准上显著优于当前的最先进方法，并且能够处理通用的增量学习场景。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

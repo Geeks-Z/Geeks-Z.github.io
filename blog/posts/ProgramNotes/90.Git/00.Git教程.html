@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>git commit 将暂存区的文件修改提交到本地仓库</title>
+    <meta name="description" content="git commit 将暂存区的文件修改提交到本地仓库 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#版本管理工具介绍">版本管理工具介绍</a><ul>
+<li><a href="#版本管理发展简史维基百科">版本管理发展简史(维基百科)</a><ul>
+<li><a href="#svnsubversion">SVN(SubVersion)</a></li>
+<li><a href="#git">Git</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#git-发展简史">Git 发展简史</a></li>
+<li><a href="#git-工作流程">Git 工作流程</a><ul>
+<li><a href="#git-初始化">Git 初始化</a><ul>
+<li><a href="#命令行方式">命令行方式</a></li>
+<li><a href="#客户端方式">客户端方式</a></li>
+</ul>
+</li>
+<li><a href="#git-流程">git 流程</a><ul>
+<li><a href="#流程图">流程图</a></li>
+<li><a href="#概念即详解">概念即详解</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#8tag-标签">8.tag 标签</a><ul>
+<li><a href="#81-标签的概念">8.1 标签的概念</a></li>
+<li><a href="#82-标签的创建tag">8.2 标签的创建(tag)</a></li>
+<li><a href="#83-标签的切换与删除">8.3 标签的切换与删除</a></li>
+</ul>
+</li>
+<li><a href="#9-远程仓库">9. 远程仓库</a><ul>
+<li><a href="#90-局域网仓库">9.0 局域网仓库</a><ul>
+<li><a href="#901本地相对路径多个文件夹之间共享代码">9.0.1本地相对路径,多个文件夹之间共享代码</a></li>
+<li><a href="#902开启局域网共享代码">9.0.2开启局域网共享代码</a></li>
+</ul>
+</li>
+<li><a href="#91-常用远程仓库托管服务">9.1 常用远程仓库托管服务</a></li>
+<li><a href="#92-码云账号注册">9.2 码云账号注册</a></li>
+<li><a href="#93-创建远程仓库">9.3 创建远程仓库</a></li>
+<li><a href="#94-把本地代码推送到远端">9.4 把本地代码推送到远端</a></li>
+<li><a href="#95-从远程仓库克隆代码">9.5 从远程仓库克隆代码</a></li>
+<li><a href="#96-代码的修改与提交查看历史">9.6 代码的修改与提交,查看历史</a></li>
+<li><a href="#97-ssh-连接概述">9.7 ssh 连接概述</a></li>
+<li><a href="#98-ssh-密钥的生成">9.8 ssh 密钥的生成</a></li>
+<li><a href="#99-ssh-密钥配置">9.9 ssh 密钥配置</a></li>
+<li><a href="#910-ssh-方式克隆提交代码">9.10 ssh 方式克隆/提交代码:</a></li>
+<li><a href="#911-远程仓库的其他操作">9.11. 远程仓库的其他操作</a></li>
+<li><a href="#912-利用-gitee-搭建个人主页">9.12 利用 gitee 搭建个人主页</a></li>
+</ul>
+</li>
+<li><a href="#10命令行---git基本操作">10.命令行-- git基本操作</a><ul>
+<li><a href="#101-介绍">10.1 介绍</a></li>
+</ul>
+</li>
+<li><a href="#102-环境配置">10.2 环境配置</a></li>
+<li><a href="#103-初始化本地仓库-init">10.3 初始化本地仓库 init</a></li>
+<li><a href="#104-克隆-clone">10.4 克隆 clone</a></li>
+<li><a href="#105-查看状态-status">10.5 查看状态 status</a></li>
+<li><a href="#106-add">10.6 add</a></li>
+<li><a href="#107-commit">10.7 commit</a></li>
+<li><a href="#108-删除-rm">10.8 删除 rm</a></li>
+<li><a href="#11-命令行--git-远程仓库操作">11. 命令行--git 远程仓库操作</a><ul>
+<li><a href="#111-查看远程">11.1 查看远程</a></li>
+<li><a href="#112-添加移除远测仓库">11.2 添加/移除远测仓库</a></li>
+<li><a href="#113-从远程仓库获取代码">11.3 从远程仓库获取代码</a></li>
+</ul>
+</li>
+<li><a href="#12-命令行---分支">12. 命令行-- 分支</a></li>
+<li><a href="#13--命令行---tag">13 . 命令行 --tag</a></li>
+<li><a href="#14-案例">14. 案例</a><ul>
+<li><a href="#概述">概述</a></li>
+</ul>
+</li>
+<li><a href="#git介绍">Git介绍</a></li>
+<li><a href="#git命令">Git命令</a><ul>
+<li><a href="#git配置">Git配置</a><ul>
+<li><a href="#创建版本库">创建版本库</a></li>
+<li><a href="#查看工作区状态">查看工作区状态</a></li>
+<li><a href="#查看修改内容">查看修改内容</a></li>
+<li><a href="#查看提交日志">查看提交日志</a></li>
+<li><a href="#查看命令历史">查看命令历史</a></li>
+<li><a href="#版本回退">版本回退</a></li>
+<li><a href="#回退指定版本号">回退指定版本号</a></li>
+<li><a href="#工作区暂存区和版本库">工作区、暂存区和版本库</a></li>
+<li><a href="#撤销修改">撤销修改</a></li>
+<li><a href="#删除文件">删除文件</a></li>
+<li><a href="#远程仓库">远程仓库</a></li>
+<li><a href="#标签">标签</a></li>
+<li><a href="#pgp签名标签">PGP签名标签</a></li>
+</ul>
+</li>
+<li><a href="#版本管理">版本管理</a></li>
+<li><a href="#仓库管理">仓库管理</a></li>
+<li><a href="#分支管理">分支管理</a></li>
+</ul>
+</li>
+<li><a href="#gitignore">gitignore</a></li>
+<li><a href="#技巧1优化配置">技巧1:优化配置</a><ul>
+<li><a href="#查找顺序">查找顺序</a></li>
+<li><a href="#修改配置">修改配置</a></li>
+<li><a href="#显示当前设置">显示当前设置</a></li>
+<li><a href="#一些有用的配置">一些有用的配置</a></li>
+</ul>
+</li>
+<li><a href="#技巧2别名alias">技巧2:别名(alias)</a><ul>
+<li><a href="#一些有用的别名">一些有用的别名</a></li>
+</ul>
+</li>
+<li><a href="#技巧-3查找-commits-和更改">技巧 3：查找 Commits 和更改</a><ul>
+<li><a href="#通过commits信息查找">通过commits信息查找</a></li>
+<li><a href="#通过更改查找">通过更改查找</a></li>
+<li><a href="#通过日期查找">通过日期查找</a></li>
+</ul>
+</li>
+<li><a href="#技巧4添加hunk">技巧4:添加hunk</a></li>
+<li><a href="#技巧-5-储藏stash更改而不提交">技巧 5： 储藏（stash）更改而不提交</a><ul>
+<li><a href="#创建">创建</a></li>
+<li><a href="#罗列">罗列</a></li>
+<li><a href="#浏览">浏览</a></li>
+<li><a href="#应用">应用</a></li>
+<li><a href="#清理">清理</a></li>
+</ul>
+</li>
+<li><a href="#技巧-6空运行dry-run">技巧 6：空运行（Dry Run）</a></li>
+<li><a href="#技巧-7安全强制推送">技巧 7：安全强制推送</a></li>
+<li><a href="#技巧-8修改-commit-信息">技巧 8：修改 commit 信息</a></li>
+<li><a href="#技巧-9修改历史">技巧 9：修改历史</a></li>
+<li><a href="#技巧-10存档跟踪文件">技巧 10：存档跟踪文件</a></li>
+<li><a href="#额外提醒单破折号">额外提醒：单破折号</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>git commit 将暂存区的文件修改提交到本地仓库</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> ProgramNotes/90.Git</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053980.png"/></p>
+<hr/>
+<blockquote>
+<p>参考 <a href="https://www.bilibili.com/video/BV1MU4y1Y7h5/?spm_id_from=333.999.0.0&amp;vd_source=27c473f67063aa6a855a81b25ef650c9">黑马程序员Git全套教程</a></p>
+</blockquote>
+<h2 id="版本管理工具介绍">版本管理工具介绍<a class="anchor-link" href="#版本管理工具介绍" title="Permanent link">&para;</a></h2>
+<p>现在比较流行的版本管理工具是git ,但是实际上git 是近几年才发展起来的,可能有一些老的项目,还在用一些老的软件,比如svn</p>
+<h3 id="版本管理发展简史维基百科">版本管理发展简史(维基百科)<a class="anchor-link" href="#版本管理发展简史维基百科" title="Permanent link">&para;</a></h3>
+<p><img alt="1571983065236" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053981.png" /> </p>
+<h4 id="svnsubversion">SVN(SubVersion)<a class="anchor-link" href="#svnsubversion" title="Permanent link">&para;</a></h4>
+<p>工作流程</p>
+<pre><code>SVN是集中式版本控制系统，版本库是集中放在中央服务器的.
+工作流程如下:
+    1.从中央服务器远程仓库下载代码
+    2.修改后将代码提交到中央服务器远程仓库
+</code></pre>
+<p>优缺点:</p>
+<pre><code> 优点: 简单,易操作
+ 缺点:所有代码必须放在中央服务器  
+       1.服务器一旦宕机无法提交代码,即容错性较差
+       2.离线无法提交代码,无法及时记录我们的提交行为
+</code></pre>
+<p>svn流程图</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053982.jpg" /></p>
+<h4 id="git">Git<a class="anchor-link" href="#git" title="Permanent link">&para;</a></h4>
+<p>工作流程</p>
+<pre><code>Git是分布式版本控制系统（Distributed Version Control System，简称 DVCS），分为两种类型的仓库：
+本地仓库和远程仓库
+工作流程如下
+    1．从远程仓库中克隆或拉取代码到本地仓库(clone/pull)
+    2．从本地进行代码修改
+    3．在提交前先将代码提交到暂存区
+    4．提交到本地仓库。本地仓库中保存修改的各个历史版本
+    5．修改完成后，需要和团队成员共享代码时，将代码push到远程仓库
+</code></pre>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053983.png" /></p>
+<p>总结:git和svn的区别</p>
+<pre><code>1. svn 是集中式版本控制工具,git 是分布式版本控制工具
+2. svn 不支持离线提交,git 支持离线提交代码
+</code></pre>
+<h2 id="git-发展简史">Git 发展简史<a class="anchor-link" href="#git-发展简史" title="Permanent link">&para;</a></h2>
+<p>林纳斯·本纳第克特·托瓦兹（Linus Benedict Torvalds, 1969年~ ） </p>
+<p><img alt="1571987252740" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053984.png" /></p>
+<p>很多人都知道，Linus在1991年创建了开源的Linux，从此，Linux系统不断发展，已经成为最大的服务器系统软件了。</p>
+<p>Linus虽然创建了Linux，但Linux的壮大是靠全世界热心的志愿者参与的，这么多人在世界各地为Linux编写代码，那Linux的代码是如何管理的呢？</p>
+<p>事实是，在2002年以前，世界各地的志愿者把源代码文件通过diff的方式发给Linus，然后由Linus本人通过<strong>手工方式合并代码！</strong></p>
+<p>你也许会想，为什么Linus不把Linux代码放到版本控制系统里呢？那个年代不是有CVS、SVN这些免费的版本控制系统吗？因为Linus坚定地反对CVS和SVN，这些集中式的版本控制系统不但速度慢，<strong>而且必须联网才能使用</strong>。有一些商用的版本控制系统，虽然比CVS、SVN好用，但那是<strong>付费</strong>的，和Linux的开源精神不符。</p>
+<p>不过，到了2002年，Linux系统已经发展了十年了，代码库之大让Linus很难继续通过手工方式管理了，社区的弟兄们也对这种方式表达了强烈不满，于是Linus选择了一个商业的版本控制系统BitKeeper，BitKeeper的东家BitMover公司出于人道主义精神，授权Linux社区免费使用这个版本控制系统。而授权的前提是:Linux 社区的人不能开发具有相同功能的竞争产品! </p>
+<p>另一方面,BitKeeper不是开源的. 显然与Linux 的开源精神不相符,所以linux 社区的很多人抱怨,不愿意使用.</p>
+<p>典型的就是  Andrew Tridgell  (Samba 开发服务的创造者) 非常不满.偷偷违反了和 BitKeeper 的协议,反编译 BitKeeper 的源代码,开发了个爬虫,然后爬取信息被人发现了. BitKeeper 公司的领导非常不满意,然后开始发布消息说,(下个版本)不再为Linux 提供免费的服务. </p>
+<p>Linus  本人就出面协调(几周或者几个月),但是不管用, 没办法. 估计谈判的过程感觉到了憋屈--"吃人嘴短,拿人手软"</p>
+<p>Linus  本人 花了10天的时间Git 出来了,一个月之内，Linux系统的源码已经由Git管理了！</p>
+<p><img alt="Linus 采访记录" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053985.png" /></p>
+<p>Git 出来以后毕竟是一个人做的,开始并不好用(刚开始只能用勉强可以用来形容), 还是很多人抱怨,发展了很多年都没有干过其他软件.</p>
+<p>直到 2008年，GitHub网站上线了，它为开源项目免费提供Git存储，无数开源项目开始迁移至GitHub,从此git 迎来了飞速发展,当下git 已经成为了最流行的版本控制工具</p>
+<h2 id="git-工作流程">Git 工作流程<a class="anchor-link" href="#git-工作流程" title="Permanent link">&para;</a></h2>
+<h3 id="git-初始化">Git 初始化<a class="anchor-link" href="#git-初始化" title="Permanent link">&para;</a></h3>
+<h4 id="命令行方式">命令行方式<a class="anchor-link" href="#命令行方式" title="Permanent link">&para;</a></h4>
+<p>cmd/iTerm 进入需要初始化的文件夹 执行 <code>git init</code></p>
+<h4 id="客户端方式">客户端方式<a class="anchor-link" href="#客户端方式" title="Permanent link">&para;</a></h4>
+<p>我们先初始化一个本地仓</p>
+<pre><code>1) 新建测试文件夹
+2) 进入文件夹,然后右键创建版本库
+</code></pre>
+<p><img alt="1571993852280" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053991.png" /></p>
+<p>此时 我们看到 </p>
+<pre><code>1) 文件夹上多了一个绿色图标
+2) 文件夹内部生成了一个.git 隐藏文件夹(需要设置隐藏文件夹可见)
+</code></pre>
+<h3 id="git-流程">git 流程<a class="anchor-link" href="#git-流程" title="Permanent link">&para;</a></h3>
+<h4 id="流程图">流程图<a class="anchor-link" href="#流程图" title="Permanent link">&para;</a></h4>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053992.png" /></p>
+<h4 id="概念即详解">概念即详解<a class="anchor-link" href="#概念即详解" title="Permanent link">&para;</a></h4>
+<pre><code>本地仓库：是在开发人员自己电脑上的Git仓库,存放我们的代码(.git 隐藏文件夹就是我们的本地仓库)     
+远程仓库：是在远程服务器上的Git仓库,存放代码(可以是github.com或者gitee.com 上的仓库,或者自己该公司的服务器)
+工作区: 我们自己写代码(文档)的地方
+暂存区: 在 本地仓库中的一个特殊的文件(index) 叫做暂存区,临时存储我们即将要提交的文件
+------------
+Clone：克隆，就是将远程仓库复制到本地仓库
+Push：推送，就是将本地仓库代码上传到远程仓库
+Pull：拉取，就是将远程仓库代码下载到本地仓库,并将代码 克隆到本地工作区
+</code></pre>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053993.png" /></p>
+<h2 id="8tag-标签">8.tag  标签<a class="anchor-link" href="#8tag-标签" title="Permanent link">&para;</a></h2>
+<h3 id="81-标签的概念">8.1 标签的概念<a class="anchor-link" href="#81-标签的概念" title="Permanent link">&para;</a></h3>
+<pre><code>如果你的项目达到一个重要的阶段，并希望永远记住那个特别的提交快照，你可以给它打上标签(tag)
+比如说，我们想为我们的项目发布一个&quot;1.0&quot;版本。 我们给最新一次提交打上（HEAD）&quot;v1.0&quot;的标签。
+标签可以理解为项目里程碑的一个标记,一旦打上了这个标记则,表示当前的代码将不允许提交
+</code></pre>
+<h3 id="82-标签的创建tag">8.2  标签的创建(tag)<a class="anchor-link" href="#82-标签的创建tag" title="Permanent link">&para;</a></h3>
+<pre><code>标签的创建和分支的创建操作几乎一样
+</code></pre>
+<p><img alt="1572183849972" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053020.png" /></p>
+<h3 id="83-标签的切换与删除">8.3 标签的切换与删除<a class="anchor-link" href="#83-标签的切换与删除" title="Permanent link">&para;</a></h3>
+<p><img alt="1572184030612" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053021.png" /></p>
+<p><img alt="1572184109746" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053022.png" /></p>
+<h2 id="9-远程仓库">9. 远程仓库<a class="anchor-link" href="#9-远程仓库" title="Permanent link">&para;</a></h2>
+<p>我们的代码不能总是放在本地,因为总是放在本地,一旦电脑出现故障,数据将丢失,怎么共享呢,这里我们需要一个服务器, 我们可以把代码放到服务器上,然后让别人下载,这样我峨嵋你既可以备份代码,也可以进行团队协作开发</p>
+<h3 id="90-局域网仓库">9.0 局域网仓库<a class="anchor-link" href="#90-局域网仓库" title="Permanent link">&para;</a></h3>
+<pre><code>实际上我们可以搭建一个单间的局域网服务器共享我们的代码
+</code></pre>
+<h4 id="901本地相对路径多个文件夹之间共享代码">9.0.1本地相对路径,多个文件夹之间共享代码<a class="anchor-link" href="#901本地相对路径多个文件夹之间共享代码" title="Permanent link">&para;</a></h4>
+<p><img alt="1572535798760" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053023.png" /></p>
+<h4 id="902开启局域网共享代码">9.0.2开启局域网共享代码<a class="anchor-link" href="#902开启局域网共享代码" title="Permanent link">&para;</a></h4>
+<p><img alt="1572535921581" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053024.png" /></p>
+<p><img alt="1572536029899" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053025.png" /></p>
+<p>局域网这种共享是没有安全控制的,都可以访问,如果想要搭建一个可以控制权限的服务器需要借助第三方软件</p>
+<p>gitblit,可以自行搜索搭建</p>
+<h3 id="91-常用远程仓库托管服务">9.1 常用远程仓库托管服务<a class="anchor-link" href="#91-常用远程仓库托管服务" title="Permanent link">&para;</a></h3>
+<p>除了自己搭建服务器,其实我们可以使用一些免费的远程仓库,远程仓库有很多,常见的免费互联网远程仓库托管服务如下:</p>
+<pre><code>www.github.com
+www.gitee.com
+www.gitlab.com
+
+github  是一个基于git实现在线代码托管的仓库，向互联网开放，企业版要收钱。
+gitee    即码云，是 oschina 免费给企业用的，不用自己搭建环境。
+gitlab   类似 github，一般用于在企业内搭建git私服，要自己搭环境。
+
+GitHub(gitee)、GitLab 不同点：
+1、GitHub如果使用私有仓库是需要付费的，(2019年开始私有仓库也是免费的但是只能3个人协同开发,想要更多需要收费)，GitLab可以在上面搭建私人的免费仓库。
+2、GitLab让开发团队对他们的代码仓库拥有更多的控制，相对于GitHub，它有不少的特色：
+    (1)允许免费设置仓库权限
+    (2)允许用户选择分享一个project的部分代码
+    (3)允许用户设置project的获取权限，进一步提升安全性
+    (4)可以设置获取到团队整体的改进进度
+    (5)通过innersourcing让不在权限范围内的人访问不到该资源
+
+</code></pre>
+<p>鉴于国内用户可能网络不好,这里我们使用gitee(码云) 来讲解我们的课程,其他可自行找资料学习非常类似</p>
+<h3 id="92-码云账号注册">9.2  码云账号注册<a class="anchor-link" href="#92-码云账号注册" title="Permanent link">&para;</a></h3>
+<p><img alt="1572267659865" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053026.png" /></p>
+<p>填写邮箱发送验证码,然后可以注册账号,主页如下</p>
+<p><img alt="1572268091948" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053027.png" /></p>
+<h3 id="93-创建远程仓库">9.3 创建远程仓库<a class="anchor-link" href="#93-创建远程仓库" title="Permanent link">&para;</a></h3>
+<p><img alt="1572274044100" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053028.png" /></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053029.png" /></p>
+<p>各个类型仓库之间的区别</p>
+<p><img alt="1572274100802" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053030.png" /></p>
+<p><img alt="1572274406371" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053031.png" /></p>
+<h3 id="94-把本地代码推送到远端">9.4  把本地代码推送到远端<a class="anchor-link" href="#94-把本地代码推送到远端" title="Permanent link">&para;</a></h3>
+<p><img alt="1572275202869" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053032.png" /></p>
+<p><img alt="1572275492670" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053033.png" /></p>
+<p><img alt="1572275546739" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053034.png" /></p>
+<p>此时我们刷新仓库发现代码已经存在了</p>
+<p>我们填写的用户信息,会被保存在本地,下次提交无需填写用户名和密码</p>
+<p><img alt="1572277483698" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053035.png" /></p>
+<h3 id="95-从远程仓库克隆代码">9.5  从远程仓库克隆代码<a class="anchor-link" href="#95-从远程仓库克隆代码" title="Permanent link">&para;</a></h3>
+<p>我们同样可以从库下载代码,</p>
+<p>新建一个文件夹 repo2 ,进入然后进行如下操作</p>
+<p><img alt="1572275958701" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053036.png" /></p>
+<p>此时我们发现我们的代码已经被下载下来了</p>
+<h3 id="96-代码的修改与提交查看历史">9.6  代码的修改与提交,查看历史<a class="anchor-link" href="#96-代码的修改与提交查看历史" title="Permanent link">&para;</a></h3>
+<pre><code>1)此时我们修改代码就不能仅仅是提交到本地了,提交完毕应该推送到远端服务器
+2)此时如果别人从远端仓库下载最新的代码其实是可以看到我们的代码修改记录的
+   git --&gt;显示日志
+</code></pre>
+<p><img alt="1572277139243" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053037.png" /></p>
+<h3 id="97-ssh-连接概述">9.7 ssh 连接概述<a class="anchor-link" href="#97-ssh-连接概述" title="Permanent link">&para;</a></h3>
+<pre><code>实际上git 不仅仅支持用户名密码方式的配置,可以有另外一种相对更加安全的配置即ssh 方式配置
+</code></pre>
+<p>ssh 方式的底层原理</p>
+<pre><code>ssh连接地城是RAS加密算法,又称非对称加密,是一种现在公认的最安全的加密方式
+数学基础好的同学可以研究一下
+https://www.cnblogs.com/cjm123/p/8243424.html
+
+公钥私钥加密可以看作古代 的&quot;虎符&quot; , 我们本地电脑有一份,远程服务器有一份, 只要 &quot;虎符&quot; 核对通过 表示身份无误,可以执行提交等操作,无需输入用户名密码
+</code></pre>
+<h3 id="98-ssh-密钥的生成">9.8 ssh 密钥的生成<a class="anchor-link" href="#98-ssh-密钥的生成" title="Permanent link">&para;</a></h3>
+<pre><code>#生成公钥私钥
+ ssh-keygen -t rsa
+ 一直回车即可
+ 会默认用户目录 .ssh 目录生成一个默认的id_rsa文件 和id_rsa.pub
+</code></pre>
+<p><img alt="1572520139221" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053038.png" /></p>
+<p><img alt="1572520293700" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053039.png" /></p>
+<h3 id="99-ssh-密钥配置">9.9 ssh 密钥配置<a class="anchor-link" href="#99-ssh-密钥配置" title="Permanent link">&para;</a></h3>
+<p><img alt="1572520396806" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053040.png" /></p>
+<h3 id="910-ssh-方式克隆提交代码">9.10 ssh 方式克隆/提交代码:<a class="anchor-link" href="#910-ssh-方式克隆提交代码" title="Permanent link">&para;</a></h3>
+<p>配置完成之后我们克隆我们之前的项目</p>
+<p><img alt="1572522118610" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053041.png" /></p>
+<p>修改后直接提交推送即可成功,,git 会自动去.ssh 目录找我们的私钥进行匹配</p>
+<h3 id="911-远程仓库的其他操作">9.11. 远程仓库的其他操作<a class="anchor-link" href="#911-远程仓库的其他操作" title="Permanent link">&para;</a></h3>
+<p>概念</p>
+<p><img alt="1572522822946" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053042.png" /></p>
+<p>当我们从 gitee 上查看别人的项目的时候我们可能会看到上图中的按钮</p>
+<pre><code>指数:
+    是gitee 网站根据当前项目的各项指标计算出来的一个值
+</code></pre>
+<p><img alt="1572523045267" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053043.png" /></p>
+<pre><code>Star:
+    点赞, 注意这里的并不像朋友圈那样容易获得点赞,圈内人还是很克制的
+Watch:
+   如果你watch 了某个开源项目,那么这个项目后续所有的改动你将收到通知
+Fork :
+    将别人的代码克隆到你自己的仓库
+    作用一: 如果担心某个优秀的项目别人突然有一天不开源了,你可以fork到自己的仓库
+    作用二: 修改别人的代码
+      以linux 为例,你其实不是linux 社区的开发人员,但是你 又想为linux 开发做贡献(维护代码)
+       你并没有权限,怎们办?
+       你可以先把linux 开源的代码 fork 到你自己的仓库,此时你就可以操作自己的仓库进行修改代码了
+       如何让别人合并你修改好的代码呢? 
+        我们注意项目的上方有一个 &quot; Pull Request&quot; 这个按钮的意思是 &quot;请求求别人合并你修改的代码&quot;
+        当我们发起一个 Pull Request 时 , 项目的拥有者将收到 Pull Request请求,然后将根据你提交代码的质量决定是否合并
+</code></pre>
+<p>项目操作</p>
+<p>1)我们可以删除修改我们自己仓库的基本信息</p>
+<p>2) 我们可以邀请其他人成为项目的开发人员或者管理人员</p>
+<p><img alt="1572523819666" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053044.png" /></p>
+<p>我们可以删除修改我们自己仓库的基本信息</p>
+<p><img alt="1572523928774" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053045.png" /></p>
+<p><img alt="1572523968992" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053046.png" /></p>
+<h3 id="912-利用-gitee-搭建个人主页">9.12 利用 gitee 搭建个人主页<a class="anchor-link" href="#912-利用-gitee-搭建个人主页" title="Permanent link">&para;</a></h3>
+<pre><code>1)将静态资源上传至仓库
+2) 选择服务 pages 即可部署
+注意 1)必须有个index.html 文件
+注意 2) 只能搭建静态网站,动态网站请租赁服务器搭建提供服务
+注意 3) gitee 要求必须绑定手机号
+
+</code></pre>
+<p><img alt="1572525575923" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053047.png" /></p>
+<p>点击开启后gitee 会自动生成一个域名</p>
+<p><img alt="1572526097257" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053048.png" /></p>
+<p>直接访问即可</p>
+<p>此时我们已经在git 上部署了一个静态的网站</p>
+<p><img alt="1572526136074" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053049.png" /></p>
+<h2 id="10命令行---git基本操作">10.命令行-- git基本操作<a class="anchor-link" href="#10命令行---git基本操作" title="Permanent link">&para;</a></h2>
+<h3 id="101-介绍">10.1  介绍<a class="anchor-link" href="#101-介绍" title="Permanent link">&para;</a></h3>
+<p>​   上述我们的操作 使用的 是客户端TortoiseGit 操作的git ,实际上底层依旧是使用的命令行帮我们执行, 在早期 git 并没有窗口化工具,开发人员只能使用命令行模式</p>
+<p>实际上,如果你掌握并熟练使用了命令行模式操作git 的话,你会发现某些操作命令行比窗口化操作要简单</p>
+<p>所有你在工作中会发现高深的技术人员可能会喜欢命令行模式提交git</p>
+<h2 id="102-环境配置">10.2 环境配置<a class="anchor-link" href="#102-环境配置" title="Permanent link">&para;</a></h2>
+<p>当安装Git后首先要做的事情是设置用户名称和email地址。这是非常重要的，因为每次Git提交都会使用该用户信息</p>
+<pre><code class="language-shell">#设置用户信息 
+   git config --global user.name “itcast”
+   git config --global user.email “itcast@itcast.cn”
+#查看配置信息
+   git config --list
+   git config user.name
+#通过上面的命令设置的信息会保存在~/.gitconfig文件中
+
+</code></pre>
+<h2 id="103-初始化本地仓库-init">10.3  初始化本地仓库 init<a class="anchor-link" href="#103-初始化本地仓库-init" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 初始化仓库带工作区
+git init
+## 初始化仓库不带工作区
+git init --bare  
+</code></pre>
+<h2 id="104-克隆-clone">10.4 克隆 clone<a class="anchor-link" href="#104-克隆-clone" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 从远程仓库克隆
+git clone 远程Git仓库地址 
+例如: git clone https://gitee.com/itcast/gittest.git
+</code></pre>
+<h2 id="105-查看状态-status">10.5  查看状态 status<a class="anchor-link" href="#105-查看状态-status" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 查看状态
+git status 
+#查看状态 使输出信息更加简洁
+git status –s 
+</code></pre>
+<h2 id="106-add">10.6 add<a class="anchor-link" href="#106-add" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 将未跟踪的文件加入暂存区
+git add  &lt;文件名&gt;  
+## 将暂存区的文件取消暂存 (取消 add )
+git reset  &lt;文件名&gt;  
+
+</code></pre>
+<h2 id="107-commit">10.7 commit<a class="anchor-link" href="#107-commit" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell"># git commit 将暂存区的文件修改提交到本地仓库
+git commit -m &quot;日志信息&quot;  &lt;文件名&gt;  
+
+</code></pre>
+<h2 id="108-删除-rm">10.8 删除 rm<a class="anchor-link" href="#108-删除-rm" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 从本地工作区 删除文件
+git rm &lt;文件名&gt;  
+## 如果本工作区库误删, 想要回退
+git checkout head &lt;文件名&gt;  
+</code></pre>
+<h2 id="11-命令行--git-远程仓库操作">11. 命令行--git 远程仓库操作<a class="anchor-link" href="#11-命令行--git-远程仓库操作" title="Permanent link">&para;</a></h2>
+<h3 id="111-查看远程">11.1    查看远程<a class="anchor-link" href="#111-查看远程" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">## 查看远程  列出指定的每一个远程服务器的简写
+git remote 
+## 查看远程 , 列出 简称和地址
+git remote  -v  
+## 查看远程仓库详细地址
+git remote show  &lt;仓库简称&gt;
+
+</code></pre>
+<h3 id="112-添加移除远测仓库">11.2 添加/移除远测仓库<a class="anchor-link" href="#112-添加移除远测仓库" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">## 添加远程仓库
+git remote add &lt;shortname&gt; &lt;url&gt;
+## 移除远程仓库和本地仓库的关系(只是从本地移除远程仓库的关联关系，并不会真正影响到远程仓库)
+git remote rm &lt;shortname&gt; 
+</code></pre>
+<h3 id="113-从远程仓库获取代码">11.3 从远程仓库获取代码<a class="anchor-link" href="#113-从远程仓库获取代码" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">## 从远程仓库克隆
+git clone &lt;url&gt; 
+## 从远程仓库拉取 (拉取到.git 目录,不会合并到工作区,工作区发生变化)
+git fetch  &lt;shortname&gt;  &lt;分支名称&gt;
+## 手动合并  把某个版本的某个分支合并到当前工作区
+git merge &lt;shortname&gt;/&lt;分支名称&gt;
+## 从远程仓库拉取 (拉取到.git 目录,合并到工作区,工作区不发生变化) = fetch+merge
+git pull  &lt;shortname&gt;  &lt;分支名称&gt;
+git pull  &lt;shortname&gt;  &lt;分支名称&gt;  --allow-unrelated-histories  ##  强制拉取合并
+</code></pre>
+<p>注意：如果当前本地仓库不是从远程仓库克隆，而是本地创建的仓库，并且仓库中存在文件，此时再从远程仓库拉取文件的时候会报错（fatal: refusing to merge unrelated histories ），解决此问题可以在git pull命令后加入参数--allow-unrelated-histories (如上 命令)</p>
+<pre><code class="language-shell">## 将本地仓库推送至远程仓库的某个分支
+git push [remote-name] [branch-name]
+</code></pre>
+<h2 id="12-命令行---分支">12.  命令行-- 分支<a class="anchor-link" href="#12-命令行---分支" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 默认 分支名称为 master
+## 列出所有本地分支
+git branch
+## 列出所有远程分支
+git branch -r
+## 列出所有本地分支和远程分支
+git branch -a
+## 创建分支
+git branch &lt;分支名&gt;
+## 切换分支 
+git checkout &lt;分支名&gt;
+## 删除分支(如果分支已经修改过,则不允许删除)
+git branch -d  &lt;分支名&gt;
+## 强制删除分支
+git branch -D  &lt;分支名&gt;
+</code></pre>
+<pre><code class="language-shell">## 提交分支至远程仓库
+git push &lt;仓库简称&gt; &lt;分支名称&gt;  
+## 合并分支 将其他分支合并至当前工作区
+git merge &lt;分支名称&gt;
+## 删除远程仓库分支
+git push origin –d branchName
+</code></pre>
+<h2 id="13--命令行---tag">13 . 命令行 --tag<a class="anchor-link" href="#13--命令行---tag" title="Permanent link">&para;</a></h2>
+<pre><code class="language-shell">## 列出所有tag
+git tag
+## 查看tag详细信息 
+git show [tagName]
+## 新建一个tag
+git tag [tagName]
+## 提交指定tag
+$ git push [仓库简称] [tagName]
+## 新建一个分支，指向某个tag
+$ git checkout -b [branch] [tag]
+## 删除本地tag
+$ git tag -d [tag]
+## 删除远程tag (注意 空格)
+$ git push origin :refs/tags/[tag]
+</code></pre>
+<h2 id="14-案例">14. 案例<a class="anchor-link" href="#14-案例" title="Permanent link">&para;</a></h2>
+<pre><code>企业中我们是如何开发的
+1) 入职第一天,管理人员分配/git账号密码 
+2) 开发人员下载代码即文档/ 根据文档将环境搭建成功
+3) 团队一般会给你讲讲项目相关的支持
+----
+4) 你接到第一个需求(或者某个功能,一般要经过沟通,分析,设计...等过程)
+5) 创建feature分支(一般一个需求对应一个feature,命名格式上标注该需求的id)
+6) 开发需求,本地测试,提交代码到当前需求对应的feature分支,
+    一般来讲为了避免将测试代码提交,需要提交前,检查如下步骤
+    6.1) 是否多提交了某个文件,比如测试文件
+    6.2) 是否漏提交文件
+    6.3) 打开每一个应该提交的文件,判断是否多提交了一行代码,是否少提交了一行代码,是否删除了本应该存在的代码 
+    检查完毕提交代码
+7) 合并分支至test分支-- 测试人员会在test分支中测试
+8) 测试人员测试bug ,开发者在feature分支上继续修改,提交
+9) 测试人员测试通过 ,test分支会被测试人员合并到develop开发分支,再次测试
+10)develop分支最终会被合并到master主分支
+
+</code></pre>
+<h3 id="概述">概述<a class="anchor-link" href="#概述" title="Permanent link">&para;</a></h3>
+<p><img alt="image-20211121163048507" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152010869.png" /></p>
+<h2 id="git介绍">Git介绍<a class="anchor-link" href="#git介绍" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Git是分布式版本控制系统</li>
+<li>集中式VS分布式，SVN VS Git<br />
+  1. SVN和Git主要的区别在于历史版本维护的位置<br />
+  2. Git本地仓库包含代码库还有历史库，在本地的环境开发就可以记录历史而SVN的历史库存在于中央仓库，每次对比与提交代码都必须连接到中央仓库才能进行。<br />
+  3. 这样的好处在于：<ul>
+<li>自己可以在脱机环境查看开发的版本历史。</li>
+<li>多人开发时如果充当中央仓库的Git仓库挂了，可以随时创建一个新的中央仓库然后同步就立刻恢复了中央库。</li>
+</ul>
+</li>
+</ul>
+<h2 id="git命令">Git命令<a class="anchor-link" href="#git命令" title="Permanent link">&para;</a></h2>
+<h3 id="git配置">Git配置<a class="anchor-link" href="#git配置" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">$ git config --global user.name &quot;Your Name&quot;
+$ git config --global user.email &quot;email@example.com&quot;
+</code></pre>
+<p><code>git config</code>命令的<code>--global</code>参数，表明这台机器上的所有Git仓库都会使用这个配置，也可以对某个仓库指定不同的用户名和邮箱地址。</p>
+<h4 id="创建版本库">创建版本库<a class="anchor-link" href="#创建版本库" title="Permanent link">&para;</a></h4>
+<h5 id="初始化一个git仓库">初始化一个Git仓库<a class="anchor-link" href="#初始化一个git仓库" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git init
+</code></pre>
+<h5 id="添加文件到git仓库">添加文件到Git仓库<a class="anchor-link" href="#添加文件到git仓库" title="Permanent link">&para;</a></h5>
+<p>包括两步：</p>
+<pre><code class="language-bash">$ git add &lt;file&gt;
+$ git commit -m &quot;description&quot;
+</code></pre>
+<p><code>git add</code>可以反复多次使用，添加多个文件，<code>git commit</code>可以一次提交很多文件，<code>-m</code>后面输入的是本次提交的说明，可以输入任意内容。</p>
+<h4 id="查看工作区状态">查看工作区状态<a class="anchor-link" href="#查看工作区状态" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git status
+</code></pre>
+<h4 id="查看修改内容">查看修改内容<a class="anchor-link" href="#查看修改内容" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git diff
+</code></pre>
+<pre><code class="language-bash">$ git diff --cached
+</code></pre>
+<pre><code class="language-bash">$ git diff HEAD -- &lt;file&gt;
+</code></pre>
+<ul>
+<li><code>git diff</code> 可以查看工作区(work dict)和暂存区(stage)的区别</li>
+<li><code>git diff --cached</code> 可以查看暂存区(stage)和分支(master)的区别</li>
+<li><code>git diff HEAD -- &lt;file&gt;</code> 可以查看工作区和版本库里面最新版本的区别</li>
+</ul>
+<h4 id="查看提交日志">查看提交日志<a class="anchor-link" href="#查看提交日志" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git log
+</code></pre>
+<p>简化日志输出信息</p>
+<pre><code class="language-bash">$ git log --pretty=oneline
+</code></pre>
+<h4 id="查看命令历史">查看命令历史<a class="anchor-link" href="#查看命令历史" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git reflog
+</code></pre>
+<h4 id="版本回退">版本回退<a class="anchor-link" href="#版本回退" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git reset --hard HEAD^
+</code></pre>
+<p>以上命令是返回上一个版本，在Git中，用<code>HEAD</code>表示当前版本，上一个版本就是<code>HEAD^</code>，上上一个版本是<code>HEAD^^</code>，往上100个版本写成<code>HEAD~100</code>。</p>
+<h4 id="回退指定版本号">回退指定版本号<a class="anchor-link" href="#回退指定版本号" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git reset --hard commit_id
+</code></pre>
+<p>commit_id是版本号，是一个用SHA1计算出的序列</p>
+<h4 id="工作区暂存区和版本库">工作区、暂存区和版本库<a class="anchor-link" href="#工作区暂存区和版本库" title="Permanent link">&para;</a></h4>
+<p>工作区：在电脑里能看到的目录；<br />
+版本库：在工作区有一个隐藏目录<code>.git</code>，是Git的版本库。<br />
+Git的版本库中存了很多东西，其中最重要的就是称为stage（或者称为index）的暂存区，还有Git自动创建的<code>master</code>，以及指向<code>master</code>的指针<code>HEAD</code>。</p>
+<p><img alt="理解" src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001384907720458e56751df1c474485b697575073c40ae9000/0" /></p>
+<p>进一步解释一些命令：</p>
+<ul>
+<li><code>git add</code>实际上是把文件添加到暂存区</li>
+<li><code>git commit</code>实际上是把暂存区的所有内容提交到当前分支</li>
+</ul>
+<h4 id="撤销修改">撤销修改<a class="anchor-link" href="#撤销修改" title="Permanent link">&para;</a></h4>
+<h5 id="丢弃工作区的修改">丢弃工作区的修改<a class="anchor-link" href="#丢弃工作区的修改" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git checkout -- &lt;file&gt;
+</code></pre>
+<p>该命令是指将文件在工作区的修改全部撤销，这里有两种情况：</p>
+<ol>
+<li>一种是file自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；</li>
+<li>一种是file已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。</li>
+</ol>
+<p>总之，就是让这个文件回到最近一次git commit或git add时的状态。</p>
+<h5 id="丢弃暂存区的修改">丢弃暂存区的修改<a class="anchor-link" href="#丢弃暂存区的修改" title="Permanent link">&para;</a></h5>
+<p>分两步：<br />
+第一步，把暂存区的修改撤销掉(unstage)，重新放回工作区：</p>
+<pre><code class="language-bash">$ git reset HEAD &lt;file&gt;
+</code></pre>
+<p>第二步，撤销工作区的修改</p>
+<pre><code class="language-bash">$ git checkout -- &lt;file&gt;
+</code></pre>
+<p>小结：</p>
+<ol>
+<li>当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令<code>git checkout -- &lt;file&gt;</code>。</li>
+<li>
+<p>当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令<code>git reset HEAD &lt;file&gt;</code>，就回到了第一步，第二步按第一步操作。</p>
+</li>
+<li>
+<p>已经提交了不合适的修改到版本库时，想要撤销本次提交，进行版本回退，前提是没有推送到远程库。</p>
+</li>
+</ol>
+<h4 id="删除文件">删除文件<a class="anchor-link" href="#删除文件" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git rm &lt;file&gt;
+</code></pre>
+<p><code>git rm &lt;file&gt;</code>相当于执行</p>
+<pre><code class="language-bash">$ rm &lt;file&gt;
+$ git add &lt;file&gt;
+</code></pre>
+<h5 id="进一步的解释">进一步的解释<a class="anchor-link" href="#进一步的解释" title="Permanent link">&para;</a></h5>
+<p>Q：比如执行了<code>rm text.txt</code> 误删了怎么恢复？<br />
+A：执行<code>git checkout -- text.txt</code> 把版本库的东西重新写回工作区就行了<br />
+Q：如果执行了<code>git rm text.txt</code>我们会发现工作区的text.txt也删除了，怎么恢复？<br />
+A：先撤销暂存区修改，重新放回工作区，然后再从版本库写回到工作区</p>
+<pre><code class="language-bash">$ git reset head text.txt
+$ git checkout -- text.txt
+</code></pre>
+<p>Q：如果真的想从版本库里面删除文件怎么做？<br />
+A：执行<code>git commit -m "delete text.txt"</code>，提交后最新的版本库将不包含这个文件</p>
+<h4 id="远程仓库">远程仓库<a class="anchor-link" href="#远程仓库" title="Permanent link">&para;</a></h4>
+<h5 id="创建ssh-key">创建SSH Key<a class="anchor-link" href="#创建ssh-key" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ ssh-keygen -t rsa -C &quot;youremail@example.com&quot;
+</code></pre>
+<h5 id="关联远程仓库">关联远程仓库<a class="anchor-link" href="#关联远程仓库" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git remote add origin https://github.com/username/repositoryname.git
+</code></pre>
+<h5 id="推送到远程仓库">推送到远程仓库<a class="anchor-link" href="#推送到远程仓库" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git push -u origin master
+</code></pre>
+<p><code>-u</code> 表示第一次推送master分支的所有内容，此后，每次本地提交后，只要有必要，就可以使用命令<code>git push origin master</code>推送最新修改。</p>
+<h5 id="从远程克隆">从远程克隆<a class="anchor-link" href="#从远程克隆" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git clone https://github.com/usern/repositoryname.git
+</code></pre>
+<h4 id="标签">标签<a class="anchor-link" href="#标签" title="Permanent link">&para;</a></h4>
+<p>tag就是一个让人容易记住的有意义的名字，它跟某个commit绑在一起。</p>
+<h5 id="新建一个标签">新建一个标签<a class="anchor-link" href="#新建一个标签" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git tag &lt;tagname&gt;
+</code></pre>
+<p>命令<code>git tag &lt;tagname&gt;</code>用于新建一个标签，默认为HEAD，也可以指定一个commit id。</p>
+<h5 id="指定标签信息">指定标签信息<a class="anchor-link" href="#指定标签信息" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git tag -a &lt;tagname&gt; -m &lt;description&gt; &lt;branchname&gt; or commit_id
+</code></pre>
+<p><code>git tag -a &lt;tagname&gt; -m "blablabla..."</code>可以指定标签信息。</p>
+<h4 id="pgp签名标签">PGP签名标签<a class="anchor-link" href="#pgp签名标签" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">$ git tag -s &lt;tagname&gt; -m &lt;description&gt; &lt;branchname&gt; or commit_id
+</code></pre>
+<p><code>git tag -s &lt;tagname&gt; -m "blablabla..."</code>可以用PGP签名标签。</p>
+<h5 id="查看所有标签">查看所有标签<a class="anchor-link" href="#查看所有标签" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git tag
+</code></pre>
+<h5 id="推送一个本地标签">推送一个本地标签<a class="anchor-link" href="#推送一个本地标签" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git push origin &lt;tagname&gt;
+</code></pre>
+<h5 id="推送全部未推送过的本地标签">推送全部未推送过的本地标签<a class="anchor-link" href="#推送全部未推送过的本地标签" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git push origin --tags
+</code></pre>
+<h5 id="删除一个本地标签">删除一个本地标签<a class="anchor-link" href="#删除一个本地标签" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git tag -d &lt;tagname&gt;
+</code></pre>
+<h5 id="删除一个远程标签">删除一个远程标签<a class="anchor-link" href="#删除一个远程标签" title="Permanent link">&para;</a></h5>
+<pre><code class="language-bash">$ git push origin :refs/tags/&lt;tagname&gt;
+</code></pre>
+<h3 id="版本管理">版本管理<a class="anchor-link" href="#版本管理" title="Permanent link">&para;</a></h3>
+<h3 id="仓库管理">仓库管理<a class="anchor-link" href="#仓库管理" title="Permanent link">&para;</a></h3>
+<ul>
+<li>创建<strong>repository</strong>，mkdir/pws</li>
+<li>初始化：git init</li>
+<li>添加：git add</li>
+<li>提交：git commit (<code>git commit</code>命令，<code>-m</code>后面输入的是本次提交的说明，可以输入任意内容，当然最好是有意义的，这样你就能从历史记录里方便地找到改动记录)</li>
+<li>要随时掌握工作区的状态，使用<code>git status</code>命令。如果<code>git status</code>告诉你有文件被修改过，用<code>git diff</code>可以查看修改内容</li>
+<li><code>git log</code>命令显示从最近到最远的提交日志; +"--pretty=oneline"简化输出</li>
+<li>git reset --hard 🆔</li>
+<li><code>git reflog</code>用来记录你的每一次命令，用于版本回退</li>
+</ul>
+<h3 id="分支管理">分支管理<a class="anchor-link" href="#分支管理" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<h5 id="创建分支">创建分支<a class="anchor-link" href="#创建分支" title="Permanent link">&para;</a></h5>
+</li>
+</ul>
+<p><code>bash
+  $ git branch &lt;branchname&gt;</code></p>
+<p>##### 查看分支</p>
+<p><code>bash
+  $ git branch</code></p>
+<p><code>git branch</code>命令会列出所有分支，当前分支前面会标一个*号。</p>
+<p>##### 切换分支</p>
+<p><code>bash
+  $ git checkout &lt;branchname&gt;</code></p>
+<p>##### 创建+切换分支</p>
+<p><code>bash
+  $ git checkout -b &lt;branchname&gt;</code></p>
+<p>##### 合并某分支到当前分支</p>
+<p><code>bash
+  $ git merge &lt;branchname&gt;</code></p>
+<p>##### 删除分支</p>
+<p><code>bash
+  $ git branch -d &lt;branchname&gt;</code></p>
+<p>##### 查看分支合并图</p>
+<p><code>bash
+  $ git log --graph</code></p>
+<p>当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。用<code>git log --graph</code>命令可以看到分支合并图。</p>
+<p>##### 普通模式合并分支</p>
+<p><code>bash
+  $ git merge --no-ff -m "description" &lt;branchname&gt;</code></p>
+<p>因为本次合并要创建一个新的commit，所以加上<code>-m</code>参数，把commit描述写进去。合并分支时，加上<code>--no-ff</code>参数就可以用普通模式合并，能看出来曾经做过合并，包含作者和时间戳等信息，而fast forward合并就看不出来曾经做过合并。</p>
+<p>##### 保存工作现场</p>
+<p><code>bash
+  $ git stash</code></p>
+<p>##### 查看工作现场</p>
+<p><code>bash
+  $ git stash list</code></p>
+<p>##### 恢复工作现场</p>
+<p><code>bash
+  $ git stash pop</code></p>
+<p>##### 丢弃一个没有合并过的分支</p>
+<p><code>bash
+  $ git branch -D &lt;branchname&gt;</code></p>
+<p>##### 查看远程库信息</p>
+<p><code>bash
+  $ git remote -v</code></p>
+<p>##### 在本地创建和远程分支对应的分支</p>
+<p><code>bash
+  $ git checkout -b branch-name origin/branch-name，</code></p>
+<p>本地和远程分支的名称最好一致；</p>
+<p>##### 建立本地分支和远程分支的关联</p>
+<p><code>bash
+  $ git branch --set-upstream branch-name origin/branch-name；</code></p>
+<p>##### 从本地推送分支</p>
+<p><code>bash
+  $ git push origin branch-name</code></p>
+<p>如果推送失败，先用git pull抓取远程的新提交；</p>
+<p>##### 从远程抓取分支</p>
+<p><code>bash
+  $ git pull</code></p>
+<p>如果有冲突，要先处理冲突。</p>
+<h2 id="gitignore">gitignore<a class="anchor-link" href="#gitignore" title="Permanent link">&para;</a></h2>
+<h2 id="技巧1优化配置">技巧1:优化配置<a class="anchor-link" href="#技巧1优化配置" title="Permanent link">&para;</a></h2>
+<p>Git 在全局、用户和本地级别上都是高度可配置的。</p>
+<p><a href="https://git-scm.com/docs/git-config">git配置文档</a></p>
+<h3 id="查找顺序">查找顺序<a class="anchor-link" href="#查找顺序" title="Permanent link">&para;</a></h3>
+<p>每个设置都可以被覆盖：</p>
+<pre><code class="language-bash">本地级别:
+项目文件夹/.git/config
+用户级别:
+用户目录/.config/git　
+用户目录/.gitconfig
+全局级别：
+git目录/etc/gitconfig
+</code></pre>
+<h3 id="修改配置">修改配置<a class="anchor-link" href="#修改配置" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 全局设置
+git config --global &lt;keypath&gt; &lt;value&gt;
+## 本地设置
+git config &lt;keypath&gt; &lt;value&gt;
+</code></pre>
+<h3 id="显示当前设置">显示当前设置<a class="anchor-link" href="#显示当前设置" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 显示当前设置及其来源
+git config --list --show-origin
+</code></pre>
+<h3 id="一些有用的配置">一些有用的配置<a class="anchor-link" href="#一些有用的配置" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 设定身份
+git config --global user.name&quot;&lt;your name&gt;&quot;
+git config --global user.email &lt;your email&gt;
+</code></pre>
+<h2 id="技巧2别名alias">技巧2:别名(alias)<a class="anchor-link" href="#技巧2别名alias" title="Permanent link">&para;</a></h2>
+<p><a href="[https://git-scm.com/book/zh/v2/Git-%E5%9F%BA%E7%A1%80-Git-%E5%88%AB%E5%90%8D](https://git-scm.com/book/zh/v2/Git-基础-Git-别名)">Git 别名</a></p>
+<p>创建别名来保存常用的git命令：</p>
+<pre><code class="language-bash">## 创建别名
+git config --global alias.&lt;alias-name&gt; &quot;&lt;git command&gt;&quot;
+## 使用别名
+git &lt;alias-name&gt; &lt;more optional arguments&gt;
+</code></pre>
+<h3 id="一些有用的别名">一些有用的别名<a class="anchor-link" href="#一些有用的别名" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 撤销上次提交
+git config --global alias.undo &quot;reset --soft HEAD^&quot;
+## 将暂存区更新修订到上次提交 (不改变提交信息)
+git config --global alias.amend &quot;commit --amend --no-edit&quot;
+## 压缩的状态输出
+git config --global alias.st &quot;status -sb&quot;
+## 用 GRAPH 为日志着色
+git config --global alias.lg &quot;log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset'&quot;
+## 删除所有已合并的分支
+git config --global alias.rmb &quot;!git branch --merged | grep -v '*' | xargs -n 1 git branch -d&quot;
+## 贡献排行
+git config --global alias.rank &quot;shortlog -n -s --no-merges&quot;
+</code></pre>
+<h2 id="技巧-3查找-commits-和更改">技巧 3：查找 Commits 和更改<a class="anchor-link" href="#技巧-3查找-commits-和更改" title="Permanent link">&para;</a></h2>
+<h3 id="通过commits信息查找">通过commits信息查找<a class="anchor-link" href="#通过commits信息查找" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 通过 commit 信息查找 (所有分支)
+git log --all --grep='&lt;search term&gt;'
+## 通过 commit 信息查找 (包含 reflog)
+git log-g --grep='&lt;search term&gt;'
+</code></pre>
+<h3 id="通过更改查找">通过更改查找<a class="anchor-link" href="#通过更改查找" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 通过更新的内容查找
+git log -S '&lt;search term&gt;'
+</code></pre>
+<h3 id="通过日期查找">通过日期查找<a class="anchor-link" href="#通过日期查找" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 通过日期范围查找
+git log --after='DEC 152019' --until='JAN 102020'
+</code></pre>
+<h2 id="技巧4添加hunk">技巧4:添加hunk<a class="anchor-link" href="#技巧4添加hunk" title="Permanent link">&para;</a></h2>
+<p>git add <filepath> 不仅能添加文件的所有变更， --path / -p 参数还可以交互式暂存区块。</p>
+<pre><code class="language-bash">## 补丁命令
+y = 暂存区块
+n = 不暂存这个区块
+q = 退出
+a = 暂存当前文件的此区块以及所有剩余区块
+d = 不暂存当前文件的此区块以及所有剩余区块
+/ = 查找区块 (正则表达式)
+s = 划分成更小的区块
+e = 手动编辑区块
+? = 打印帮助说明
+g = 选择要前往的区块
+j = 将区块设为未定，查看下一个未定区块
+J = 将区块设为未定，查看下一个区块
+k = 将区块设为未定，查看上一个未定区块
+J = 将区块设为未定，查看下一个区块
+</code></pre>
+<h2 id="技巧-5-储藏stash更改而不提交">技巧 5： 储藏（stash）更改而不提交<a class="anchor-link" href="#技巧-5-储藏stash更改而不提交" title="Permanent link">&para;</a></h2>
+<p>stash 将当前的更改临时搁置起来。在它的帮助下，可以返回当前状态的索引，并能在稍后应用已储藏的更改。</p>
+<p>默认情况下，仅储藏当前跟踪文件中的更改，新文件将被忽略。</p>
+<p>我们可以独立地创建和应用多个 stash。</p>
+<p><a href="[https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%82%A8%E8%97%8F%E4%B8%8E%E6%B8%85%E7%90%86](https://git-scm.com/book/zh/v2/Git-工具-储藏与清理)">Git 工具 - 储藏与清理</a></p>
+<h3 id="创建">创建<a class="anchor-link" href="#创建" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 创建新的 STASH
+git stash
+## 创建新的 STASH (包含未追踪的更改)
+git stash -u/--include-untracked
+## 创建新的 STASH 并命名
+git stash save&quot;&lt;stash name&gt;&quot;
+## 交互式储藏
+git stash -p
+</code></pre>
+<h3 id="罗列">罗列<a class="anchor-link" href="#罗列" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 列出所有的 STASH (为其他命令提供 &quot;n&quot;)
+git stash list
+</code></pre>
+<h3 id="浏览">浏览<a class="anchor-link" href="#浏览" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 浏览 STASH 内容
+git stash show
+## 浏览 STASH 差异
+git stash show -p
+</code></pre>
+<h3 id="应用">应用<a class="anchor-link" href="#应用" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 应用上一个 STASH (删除 stash)
+git stash pop
+## 应用上一个 STASH (保留 stash)
+git stash apply
+## 应用特定的 STASH (n = stash 列表序号)
+git stash pop/apply stash@{n}
+## 从 STASH 创建新的分支 (n = stash 列表序号)
+git stash branch &lt;newbranch name&gt; stash@{n}
+## 从 STASH 应用单个文件 (n = stash 列表序号)
+git checkout stash@{n} -- &lt;filepath&gt;
+</code></pre>
+<h3 id="清理">清理<a class="anchor-link" href="#清理" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">## 删除特定的 STASH (n = stash 列表序号)
+git stash drop stash@{n}
+## 删除所有的 STASH
+git stash clear
+</code></pre>
+<h2 id="技巧-6空运行dry-run">技巧 6：空运行（Dry Run）<a class="anchor-link" href="#技巧-6空运行dry-run" title="Permanent link">&para;</a></h2>
+<p>许多 git 操作可能具有破坏性，例如， git clean -f 将删除所有未跟踪的文件，而且无法恢复。</p>
+<p>要避免出现这种灾难性的结果，许多命令都支持 <em>dry-run</em> ，可以在实际产生结果前对其进行检查。不过遗憾的是，使用的选项不完全一致：</p>
+<pre><code class="language-bash">git clean -n/--dry-run
+git add -n/--dry-run
+git rm -n/--dry-run
+# GIT MERGE 模拟 DRY-RUN
+git merge --no-commit --no-ff &lt;branch&gt;
+git diff --cached
+git merge --abort
+</code></pre>
+<h2 id="技巧-7安全强制推送">技巧 7：安全强制推送<a class="anchor-link" href="#技巧-7安全强制推送" title="Permanent link">&para;</a></h2>
+<p>在处理旧的 commit、创建新的 head 等情况时时很容易弄乱分支。 git push --force 可以覆盖远程变更，但不应该这样做！</p>
+<p>git push --force 是一种具有破坏性且危险的操作，因为它无条件生效，并且会破坏其他提交者已经推送的所有 commit。这对于其他人的代码仓库来说不一定是致命的，但是改变历史记录并影响其他人并不是一个好主意。</p>
+<p>更好的选择是使用 git push --force-with-lease 。</p>
+<p>git 不会无条件地覆盖上游的远程仓库，而是检查是否有本地不可用的远程更改。如果有，它会失败并显示一条“stale info”消息，并告诉我们需要先运行 git fetch 。</p>
+<p><a href="https://git-scm.com/docs/git-push#Documentation/git-push.txt---force-with-leaseltrefnamegt">git push</a></p>
+<h2 id="技巧-8修改-commit-信息">技巧 8：修改 commit 信息<a class="anchor-link" href="#技巧-8修改-commit-信息" title="Permanent link">&para;</a></h2>
+<p>Commit 是不可变的，且不能更改。不过可以用一条新的 commit 信息修订现有的 commit，这会覆盖原始 commit，因此请勿在已推送的 commit 中使用它。</p>
+<pre><code class="language-bash">git commit --amend -m &quot;&lt;new commit message&gt;&quot;
+</code></pre>
+<h2 id="技巧-9修改历史">技巧 9：修改历史<a class="anchor-link" href="#技巧-9修改历史" title="Permanent link">&para;</a></h2>
+<p>修改代码仓库的历史不仅限于修改上次提交信息，使用 git rebase 可以修改多个提交：</p>
+<pre><code class="language-bash">## 提交的范围
+git rebase -i/--interactive HEAD~&lt;number of commits&gt;
+## 该 hash 之后的所有提交
+git rebase -i/--interactive &lt;commit hash&gt;
+</code></pre>
+<p>在配置的编辑器中倒序列出所有的 commit，像这样：</p>
+<pre><code class="language-bash">#&lt;command&gt;&lt;commit hash&gt;&lt;commit message&gt;
+pick5df8fbc revamped logic
+pick ca5154e README typos fixed
+pick a104aff added awesome new feature
+</code></pre>
+<p>通过更改编辑器中的实际内容，可以为 git 提供一个方案，来说明如何进行 rebase：</p>
+<pre><code class="language-bash"># p, pick = 使用提交而不更改
+# r, reword = 修改提交信息
+# e, edit = 编辑提交
+# s, squash = 汇合提交
+# f, fixup = 类似 &quot;squash&quot;，但是会丢弃提交信息
+# x, exec = 运行命令 (其余行)
+# d, drop = 移除提交
+</code></pre>
+<p>保存编辑器后，git 将运行该方案以重写历史记录。</p>
+<p>e, edit 会暂停 rebase，就可以编辑代码仓库的当前状态。完成编辑后，运行 git rebase --continue 。</p>
+<p>如果过程中出现问题（例如合并冲突），我们需要重新开始，可以使用 git rebase --abort 。</p>
+<p><a href="https://git-scm.com/docs/git-rebase">git-rebase</a></p>
+<h2 id="技巧-10存档跟踪文件">技巧 10：存档跟踪文件<a class="anchor-link" href="#技巧-10存档跟踪文件" title="Permanent link">&para;</a></h2>
+<p>可以使用不同格式（ zip 或 tar ）来压缩特定引用的跟踪文件：</p>
+<pre><code class="language-bash">git archive --format&lt;format&gt; --output&lt;filename&gt; &lt;ref&gt;
+</code></pre>
+<p><ref> 可以是一个分支、commit hash 或者一个标签。</p>
+<p><a href="https://git-scm.com/docs/git-archive">git-archive</a></p>
+<h2 id="额外提醒单破折号">额外提醒：单破折号<a class="anchor-link" href="#额外提醒单破折号" title="Permanent link">&para;</a></h2>
+<p>有一个快捷方式可以表示刚用过的分支：一个单破折号 -</p>
+<pre><code class="language-bash">git checkout my-branch
+## 当前分支：my-branch
+&lt;dosome git operations, e.g. adding/commiting&gt;
+git checkout develop
+## 当前分支：develop
+git merge -
+## 将 my-branch 合并到 develop
+</code></pre>
+<p>单破折号等同于 @{-1} 。</p>
+<p>[git-checkout](</p>
+<h1 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h1>
+<p>[Git Pro](</p>
+<p>`</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#few-shot-class-incremental-learning-a-survey">Few-shot Class-incremental Learning: A Survey</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-背景">2. 背景</a><ul>
+<li><a href="#21-问题定义">2.1 问题定义</a></li>
+<li><a href="#22-核心挑战">2.2 核心挑战</a><ul>
+<li><a href="#221-不可靠经验风险最小化">2.2.1 不可靠经验风险最小化</a></li>
+<li><a href="#222-稳定性---可塑性困境">2.2.2 稳定性 - 可塑性困境</a></li>
+</ul>
+</li>
+<li><a href="#23-通用方案">2.3 通用方案</a></li>
+<li><a href="#24-相关问题">2.4 相关问题</a><ul>
+<li><a href="#241-增量学习">2.4.1 增量学习</a></li>
+<li><a href="#242-小样本学习">2.4.2 小样本学习</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-数据集和评估指标">3. 数据集和评估指标</a><ul>
+<li><a href="#31-数据集">3.1 数据集</a><ul>
+<li><a href="#311-分类数据集">3.1.1 分类数据集</a></li>
+<li><a href="#312-目标检测数据集">3.1.2 目标检测数据集</a></li>
+</ul>
+</li>
+<li><a href="#32-评估指标">3.2 评估指标</a><ul>
+<li><a href="#321-分类评估指标">3.2.1 分类评估指标</a></li>
+<li><a href="#322-目标检测评估指标">3.2.2 目标检测评估指标</a></li>
+</ul>
+</li>
+<li><a href="#33-总结">3.3 总结</a></li>
+</ul>
+</li>
+<li><a href="#4-小样本类增量分类">4. 小样本类增量分类</a><ul>
+<li><a href="#41-基于数据的方法">4.1 基于数据的方法</a><ul>
+<li><a href="#411-数据回放方法">4.1.1 数据回放方法</a></li>
+<li><a href="#412-伪场景方法">4.1.2 伪场景方法</a></li>
+</ul>
+</li>
+<li><a href="#42-基于结构的方法">4.2 基于结构的方法</a><ul>
+<li><a href="#421-动态结构方法">4.2.1 动态结构方法</a></li>
+<li><a href="#422-基于注意力的方法">4.2.2 基于注意力的方法</a></li>
+</ul>
+</li>
+<li><a href="#43-基于优化的方法">4.3 基于优化的方法</a><ul>
+<li><a href="#431-基于表示学习的方法">4.3.1 基于表示学习的方法</a></li>
+<li><a href="#432-基于知识蒸馏的方法">4.3.2 基于知识蒸馏的方法</a></li>
+<li><a href="#433-基于元学习的方法">4.3.3 基于元学习的方法</a></li>
+<li><a href="#434-其他方法">4.3.4 其他方法</a></li>
+</ul>
+</li>
+<li><a href="#44-总结">4.4 总结</a><ul>
+<li><a href="#441-性能比较">4.4.1 性能比较</a></li>
+<li><a href="#442-主要问题和事实">4.4.2 主要问题和事实</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-小样本类增量目标检测">5. 小样本类增量目标检测</a><ul>
+<li><a href="#51-与分类的区别">5.1 与分类的区别</a></li>
+<li><a href="#52-方法">5.2 方法</a><ul>
+<li><a href="#521-无锚点框架">5.2.1 无锚点框架</a></li>
+<li><a href="#522-基于锚点的框架">5.2.2 基于锚点的框架</a></li>
+</ul>
+</li>
+<li><a href="#53-总结">5.3 总结</a><ul>
+<li><a href="#531-性能比较">5.3.1 性能比较</a></li>
+<li><a href="#532-主要问题和事实">5.3.2 主要问题和事实</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#6-结论与展望">6. 结论与展望</a><ul>
+<li><a href="#61-fscil-中的人机差距">6.1 FSCIL 中的人机差距</a></li>
+<li><a href="#62-fscil-中的实际设置">6.2 FSCIL 中的实际设置</a></li>
+<li><a href="#63-fscil-中的知识获取与更新">6.3 FSCIL 中的知识获取与更新</a></li>
+<li><a href="#64-fscil-的应用与安全">6.4 FSCIL 的应用与安全</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/41.小样本类增量学习FSCIL/00.综述Survey</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="few-shot-class-incremental-learning-a-survey"><a href="https://arxiv.org/abs/2308.06764">Few-shot Class-incremental Learning: A Survey</a><a class="anchor-link" href="#few-shot-class-incremental-learning-a-survey" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>Few-shot Class-Incremental Learning (FSCIL) 在机器学习 (ML) 中提出了一个独特的挑战，因为它需要从稀疏标记的训练样本中增量学习 (IL) 新类，同时不忘记先前知识。尽管该领域近期取得进展，但仍是一个活跃的研究方向。本文旨在对 FSCIL 进行全面系统的综述。我们深入探讨了 FSCIL 的多个方面，包括问题定义、不可靠经验风险最小化和稳定性 - 可塑性困境等主要挑战的讨论、通用方案，以及与增量学习 (IL) 和小样本学习 (FSL) 的相关问题。此外，我们还概述了基准数据集和评估指标。进一步地，我们从基于数据、结构和优化的方法介绍了 Few-shot Class-Incremental Classification (FSCIC) 方法，以及从无锚点和基于锚点的方法介绍了 Few-shot Class-Incremental Object Detection (FSCIOD) 方法。除此之外，我们还提出了 FSCIL 中几个值得进一步研究的有前景方向。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>过去十年中，深度神经网络 (DNNs) 经历了几个不同的发展阶段：从基于监督学习的架构工程（如 AlexNet[1] 和 ResNet[2] 所示），到结合监督预训练和微调的策略（以基于 Transformer 的 BERT[3] 为典型代表），进一步发展到融合自监督或半监督预训练与提示工程的方法（如 GPT 系列 [4] 所示）。这些进展不断扩展了算法性能的边界，并开辟了新的应用可能性。然而，必须认识到这些 DNN 的成就严重依赖于大量高质量数据、昂贵的计算硬件和难以获取的优秀 DNN 架构。</p>
+<p>DNN 学习范式主要设计用于封闭世界中的静态任务，具有固有的局限性。首先，这些模型无法保留先前获得的知识并随时间学习新知识。具体而言，一旦在特定数据集上训练完成，面对新任务或数据分布时通常需要从头开始重新训练。此外，重新训练过程涉及存储大量旧数据并更新模型，导致额外的计算和存储成本。这种学习范式至少存在以下主要问题：</p>
+<ul>
+<li><em>能力和应用限制</em>：这些系统针对其训练过的特定任务进行了优化，使其难以适应动态情况。</li>
+<li><em>纯数据驱动差距</em>：与人类能够高效地从少量示例中学习并展现终身适应能力不同，这些系统严重依赖大量数据，缺乏人类学习固有的多功能性和保持能力。</li>
+<li><em>效率和可持续性问题</em>：这些数据和能源密集型系统需要频繁重新训练以适应新数据或任务，增加了计算资源压力和碳足迹。</li>
+<li><em>隐私和安全问题</em>：动态世界使这些系统在新场景下面临更高的安全风险。此外，保留旧数据增加了数据泄露的风险，引发了隐私警报。</li>
+</ul>
+<p>增量学习 (IL)，也称为持续学习或终身学习，使系统能够随时间学习新任务同时保持先前知识 [5,6,7]，旨在复制人类学习能力 [5]。该领域最近引起了越来越多的兴趣，催生了大量研究和综述 [5,7,8,9,10,11]。IL 的发展趋势由主要会议和期刊的学术论文数量总结，如图 1 所示。类增量学习 (CIL) 尤为突出，解决了现实场景中的关键挑战，即模型应适应新类而不忘记现有类。</p>
+<p>作为 CIL 的重要子集，FSCIL 在过去四年中经历了显著增长，如图 1 所示。它专门设计用于应对有限数据下学习新类的挑战。这种学习范式要求模型在持续纳入新类的同时保留先前获得的知识，且每个类只有有限的标注样本可用 [12,13,14]。与传统 CIL 不同，FSCIL 面临更复杂的挑战，如防止灾难性遗忘和缓解样本稀缺导致的过拟合。FSCIL 试图以最少的数据模拟人类学习效率并随时间保持知识，使其对具有有限、演化数据的真实场景高度相关。为突出其实用重要性，我们简要总结了 FSCIL 的实际意义：</p>
+<ul>
+<li><em>适应动态世界</em>：FSCIL 使模型能够获取新类同时保留先前知识，这是有效适应动态变化世界的关键能力。</li>
+<li><em>高数据效率</em>：FSCIL 可以减少大量样本标注的需求，在数据有限且标注成本高的情况下提供优势。</li>
+<li><em>环境可持续性</em>：与传统方法相比，FSCIL 需要更少的计算和存储资源，在资源有限的环境中至关重要。</li>
+<li><em>数据安全和隐私</em>：FSCIL 减少了对大量历史数据的保留需求，从而符合数据安全和隐私要求。</li>
+<li><em>多样化应用</em>：FSCIL 适用于多个领域，尤其是数据有限、标注昂贵且需要频繁类更新的场景。</li>
+</ul>
+<p>尽管 FSCIL 领域已有一些进展并出现了一些代表性工作 [5,13,14,15,16]，但仍处于发展阶段。当前方法与实际应用需求之间仍有差距。因此，系统回顾该领域的最新发展、识别阻碍其发展的核心挑战和开放问题，并确定有前景的未来方向势在必行。然而，大多数关于 FSCIL 的研究仍相当分散，该领域需要一个系统全面的综述。这激发了我们的综述，旨在填补这一空白。由于它是近年来计算机视觉领域提出的 ML 问题，且大部分研究工作基于深度学习算法，本文讨论的范围主要是计算机视觉领域的深度 FSCIL 算法，主要包括分类和目标检测任务。</p>
+<p>尽管已有关于 FSL[17,18,19,20] 和 IL[5,6,7,11,21,22,23,24,25] 的综述，但明显缺乏专门针对 FSCIL 的系统全面综述。为此，我们总结了现有综述，在表 1 中列出了它们的特点，系统地描述了本文的独特性以突出其独特贡献。为弥补 FSCIL 研究的不足，我们从多个方面系统总结了该领域，包括定义、挑战、通用方案、相关问题、数据集、指标、方法、性能比较和未来方向。我们的贡献包括：</p>
+<ul>
+<li><em>我们的综述对 FSCIL 中的分类和目标检测方法提供了系统全面的回顾。</em></li>
+<li><em>我们详细涵盖了问题定义、核心挑战、通用方案、相关 ML 问题、基准数据集和评估指标。</em></li>
+<li><em>为 FSCIL 提供了结构化分类法，从数据、结构和优化角度讨论分类方法，从基于锚点和无锚点角度讨论检测方法。</em></li>
+<li><em>讨论了 FSCIL 中的有价值见解和展望。</em></li>
+</ul>
+<p>论文结构如下：第 2 节详细概述 FSCIL，包括其定义、挑战、通用框架及其与相关问题的关系。第 3 节讨论流行的 FSCIL 数据集和评估指标。第 4 节从数据、结构和优化角度考察 FSCIC 方法，第 5 节从基于锚点和无锚点视角介绍 FSCIOD 方法。论文在第 6 节以总结和未来方向结束。</p>
+<h2 id="2-背景">2. 背景<a class="anchor-link" href="#2-背景" title="Permanent link">&para;</a></h2>
+<h3 id="21-问题定义">2.1 问题定义<a class="anchor-link" href="#21-问题定义" title="Permanent link">&para;</a></h3>
+<p>FSCIL 旨在学习一个 ML 模型，该模型可以从一系列新类中持续学习知识，每个新类只有少量标记训练样本，同时保留从先前类中获得的知识 [13,14,37,38]。以分类任务为例，图 3(a) 展示了 FSCIL 的一般设置概览，包括训练数据设置、模型学习过程和评估设置。</p>
+<p><strong>设置</strong>：如图 3(a) 所示，FSCIL 中使用的数据流包含一个基础会话和一系列新会话。这些会话中的训练数据集可以表示为 <span class="math-inline">{D^{0}<em>{train},D^{1}</em>{train},\cdots,D^{B}<em>{train}}</span>，其中 <span class="math-inline">B</span> 是新会话的数量。基础训练数据集通常包含来自分布 <span class="math-inline">D^{0}</em>{t}</span> 的足够标记样本，可以表示为 <span class="math-inline">D^{0}<em>{train}={(x</em>{i},y_{i})}^{n_{0}}<em>{i=1}</span>，其中 <span class="math-inline">n</em>{0}</span> 是基础会话中的训练样本数量，<span class="math-inline">x_{i}</span> 是来自类 <span class="math-inline">y_{i}\in Y_{0}</span> 的训练样本，<span class="math-inline">Y_{0}</span> 是 <span class="math-inline">D^{0}<em>{train}</span> 对应的标签空间。不同的是，每个新会话中的训练数据集采用 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 形式，其中 <span class="math-inline">N-</span>way 表示训练集包含 <span class="math-inline">N</span> 个类，<span class="math-inline">K-</span>shot 表示每个类包含 <span class="math-inline">K</span> 个标记样本。可以表示为 <span class="math-inline">\forall</span> 整数 <span class="math-inline">b\in[1,B],D^{b}</em>{train}={(x_{i},y_{i})}^{N\times K}<em>{i=1}</span>。注意不同会话中的类不相交，即 <span class="math-inline">\forall</span> 整数 <span class="math-inline">p,q\in[0,B]</span> 且 <span class="math-inline">p\neq q,Y</em>{p}\cap Y_{q}=\emptyset</span>。</p>
+<p><strong>模型</strong>：在训练会话 <span class="math-inline">b</span> 期间，只有数据集 <span class="math-inline">D^{b}<em>{train}</span> 可访问，因为先前会话的原始完整训练数据集不可用。FSCIL 模型必须从 <span class="math-inline">D^{b}</em>{train}</span> 学习新类，同时保持对旧类的性能，即最小化所有已见类上的期望风险 <span class="math-inline">\mathcal{R}\left(f,b\right)</span>[5,16]。这一过程表述如下：<br />
+<div class="math-display"><br />
+    \mathbb{E}<em>{\left(x</em>{i},y_{i}\right)\sim D^{0}<em>{t}\cup\cdots D^{b}</em>{t}}\left[L\left(f\left(x_{i};D^{b}<em>{train},\boldsymbol{\theta}^{b-1}\right),y</em>{i}\right)\right], \tag{1}<br />
+</div><br />
+其中当前 FSCIL 算法 <span class="math-inline">f</span> 旨在基于数据集 <span class="math-inline">\mathcal{D}^{b}<em>{train}</span> 和先前模型参数 <span class="math-inline">\boldsymbol{\theta}^{b-1}</span> 构建新模型，并最小化所有已见类上的损失 <span class="math-inline">L</span>[16]。由于 FSCIL 中的数据集持续更新，每个新会话上的期望风险都应优化，即应优化 <span class="math-inline">\sum^{B}</em>{b=1}\mathcal{R}\left(f,b\right)</span>。</p>
+<p><strong>评估</strong>：FSCIL 会话中的测试数据集可以表示为 <span class="math-inline">{D^{0}<em>{test},\cdots,D^{B}</em>{test}}</span>，它们与对应训练数据集共享相同的标签空间。对于会话 <span class="math-inline">b</span> 的评估，FSCIL 模型需要通过联合测试数据集进行评估，该数据集包含当前和所有先前会话的测试数据集，表示为 <span class="math-inline">D^{0}<em>{test}\cup\cdots\cup D^{b}</em>{test}</span>。这一措施有助于量化模型到该点为止遇到的所有类上的性能。</p>
+<h3 id="22-核心挑战">2.2 核心挑战<a class="anchor-link" href="#22-核心挑战" title="Permanent link">&para;</a></h3>
+<p>FSCIL 面临重大挑战，特别是不可靠经验风险最小化和稳定性 - 可塑性困境。在 FSCIL 会话中，有限的监督数据意味着经验风险无法准确表示期望风险，降低了模型泛化能力并增加了过拟合风险。此外，随着新类不断添加，旧知识容易被新知识覆盖和遗忘。这导致灾难性遗忘。否则，可能出现顽固性。因此，平衡模型稳定性和可塑性是另一个核心挑战。本节详细说明这些挑战。</p>
+<h4 id="221-不可靠经验风险最小化">2.2.1 不可靠经验风险最小化<a class="anchor-link" href="#221-不可靠经验风险最小化" title="Permanent link">&para;</a></h4>
+<p>在 FSCIL 中，不可靠经验风险最小化（模型被训练以最小化训练数据上的预测误差）构成主要挑战。这种方法不能确保在测试数据上的强泛化能力，尤其是在训练样本有限的情况下。在 FSCIL 中，每个会话的训练数据集遵循 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 格式，由于新类样本不足，常常导致经验风险与期望风险之间存在显著差异。这种差异可能导致过拟合，即模型在训练数据上表现优异但在测试数据上表现不佳，损害其泛化能力 [39,17]。</p>
+<p>与传统 FSL 相比，FSCIL 不仅面临样本稀缺问题，还需应对类持续增加带来的挑战。连续会话中持续的不可靠经验风险最小化可能阻碍模型收敛到理想状态，不仅质疑当前增量会话中形成的模型可靠性，还对在后续增量会话中保持模型稳定性提出了挑战。当处理具有有限训练样本的多个增量类时，这一问题尤为突出 [30]。</p>
+<p>为详细阐述这一挑战，我们引入经验风险最小化的基本概念 [40,41,17]。对于具有数据集 <span class="math-inline">D={D_{train}, D_{test}}</span> 的学习任务，其中 <span class="math-inline">p(x,y)</span> 表示数据 <span class="math-inline">x</span> 和标签 <span class="math-inline">y</span> 的联合概率分布，<span class="math-inline">f_{o}</span> 是从 <span class="math-inline">x</span> 到 <span class="math-inline">y</span> 的最优假设，即最小化期望风险的函数。具体而言，给定假设 <span class="math-inline">f</span>，关于 <span class="math-inline">p(x,y)</span> 的期望风险 <span class="math-inline">\mathcal{R}(f)</span> 可表示为：<br />
+<div class="math-display"><br />
+    \mathcal{R}(f)=\int L(f(x), y)dp(x,y)=\mathbb{E}[L(f(x), y)], \tag{2}<br />
+</div><br />
+且 <span class="math-inline">f_{o}</span> 可解释为：<br />
+<div class="math-display"><br />
+    f_{o}=\operatorname<em>{arg\,min}<em>{f}\mathcal{R}(f). \tag{3}<br />
+</div><br />
+由于 <span class="math-inline">p(x,y)</span> 未知，经验风险（即在 <span class="math-inline">I</span> 个样本的训练数据集 <span class="math-inline">D</em>{train}</span> 上获得的平均损失值）通常作为 <span class="math-inline">\mathcal{R}(f)</span> 的代理用于最小化。具体而言，经验风险可表示为：<br />
+<div class="math-display"><br />
+    \mathcal{R}<em>{I}(f)=\frac{1}{I}\sum</em>{i=1}^{I}L(f(x), y). \tag{4}<br />
+</div><br />
+由于 <span class="math-inline">D_{train}</span> 是确定的，选择假设空间 <span class="math-inline">\mathcal{F}</span> 中的假设 <span class="math-inline">f(\theta)</span> 来优化模型。<span class="math-inline">\mathcal{R}<em>{I}(f)</span> 的最小化可表示为：<br />
+<div class="math-display"><br />
+    f</em>{e}=\operatorname</em>{arg\,min}<em>{f\in\mathcal{F}}\mathcal{R}</em>{I}(f). \tag{5}<br />
+</div><br />
+理想情况下，<span class="math-inline">f_{e}</span> 尽可能接近 <span class="math-inline">f_{o}</span>。然而，由于 <span class="math-inline">f_{o}</span> 未知，需要 <span class="math-inline">\mathcal{F}</span> 中的某些 <span class="math-inline">f</span> 来近似它。假设 <span class="math-inline">f_{b}</span> 是 <span class="math-inline">\mathcal{F}</span> 中对 <span class="math-inline">f_{o}</span> 的最佳近似，可表示为：<br />
+<div class="math-display"><br />
+    f_{b}=\operatorname*{arg\,min}<em>{f\in\mathcal{F}}\mathcal{R}(f). \tag{6}<br />
+</div><br />
+简而言之，我们希望 <span class="math-inline">f</em>{e}</span> 能尽可能接近 <span class="math-inline">f_{b}</span>。为简单起见，我们假设 <span class="math-inline">f_{o}</span>、<span class="math-inline">f_{e}</span> 和 <span class="math-inline">f_{b}</span> 定义良好且唯一。总误差可分解为：<br />
+<div class="math-display"><br />
+    E [\mathcal{R}(f_{e}) -\mathcal{R}(f_{o})] = E [\mathcal{R}(f_{b}) -\mathcal{R}(f_{o})] + E [\mathcal{R}(f_{e}) -\mathcal{R}(f_{b})], \tag{7}<br />
+</div><br />
+其中期望涉及 <span class="math-inline">D_{train}</span> 的随机选择。近似误差 <span class="math-inline">E_{app}</span> 衡量 <span class="math-inline">\mathcal{F}</span> 中的函数与最优假设 <span class="math-inline">f_{o}</span> 的接近程度，估计误差 <span class="math-inline">E_{est}</span> 衡量在 <span class="math-inline">\mathcal{F}</span> 中最小化经验风险 <span class="math-inline">\mathcal{R}<em>{I}(f)</span> 而非期望风险 <span class="math-inline">\mathcal{R}(f)</span> 的影响。总体而言，假设空间 <span class="math-inline">\mathcal{F}</span> 和 <span class="math-inline">D</em>{train}</span> 中的样本数量影响总误差 [17]。</p>
+<p>如图 4(a) 所示，当 <span class="math-inline">D_{train}</span> 中的监督信息充足（即 <span class="math-inline">D_{train}</span> 中的 <span class="math-inline">I</span> 足够大）时，<span class="math-inline">\mathcal{F}</span> 中的经验风险最小化函数可以很好地近似 <span class="math-inline">\mathcal{F}</span> 中的最佳期望风险最小化函数，即 <span class="math-inline">f_{e}</span> 可以提供对 <span class="math-inline">f_{b}</span> 的良好近似。然而，由于 FSCIL 增量会话中训练样本数量有限，<span class="math-inline">\mathcal{F}</span> 中的最佳经验风险最小化函数通常是对最佳期望风险最小化函数的较差近似，即 <span class="math-inline">\mathcal{F}</span> 中 <span class="math-inline">f_{e}</span> 远离 <span class="math-inline">f_{b}</span>，如图 4(b) 所示。这种差异导致模型学习过程中不可靠的经验风险最小化。</p>
+<h4 id="222-稳定性---可塑性困境">2.2.2 稳定性 - 可塑性困境<a class="anchor-link" href="#222-稳定性---可塑性困境" title="Permanent link">&para;</a></h4>
+<p>在 FSCIL 中，一个核心挑战是稳定性 - 可塑性困境，涉及平衡模型在已学习类上的稳定性能（稳定性）和其对有限样本新类的适应能力（可塑性）。传统深度学习模型通常是静态的，只能处理先前学习过的类。FSCIL 要求从少量可用标记训练样本中持续学习新类，且无法访问旧类的原始完整训练数据。它要求模型在保持先前知识稳定性的同时，具备学习新知识的可塑性。然而，由于新旧类的优化目标不同，且传统深度学习算法在学习新类时不加区分地优化现有模型参数，决策边界通常向新类偏移。因此，决策边界在先前类上可能表现不佳甚至完全失效。这种现象称为灾难性遗忘。类似地，过度关注模型旧知识的稳定性可能限制其学习新任务的能力，称为顽固性。因此，在 FSCIL 中实现稳定性和可塑性之间的平衡至关重要。</p>
+<p>稳定性 - 可塑性困境可以通过连续会话 <span class="math-inline">p</span> 和 <span class="math-inline">q</span> 来说明。图 5(a) 和图 5(b) 描绘了这些会话的误差曲面，较暗区域表示理想损失值，考虑中的模型只有两个参数 <span class="math-inline">\theta_{1}</span> 和 <span class="math-inline">\theta_{2}</span>。可以观察到，会话 <span class="math-inline">p</span> 的优化目标是向下移动，而会话 <span class="math-inline">q</span> 的优化目标是接近带状中心。假设会话 <span class="math-inline">p</span> 上的初始模型为 <span class="math-inline">\bm{\theta}^{0}</span>，优化后为 <span class="math-inline">\bm{\theta}^{p}</span>，在会话 <span class="math-inline">p</span> 上表现出良好性能。然而，当模型开始学习下一个会话 <span class="math-inline">q</span> 时，从会话 <span class="math-inline">p</span> 获得的 <span class="math-inline">\bm{\theta}^{p}</span> 不足以满足会话 <span class="math-inline">q</span> 的要求。为解决这一问题，模型通常调整参数以最小化朝向损失曲面中心的损失。假设会话 <span class="math-inline">q</span> 的优化模型为 <span class="math-inline">\bm{\theta}^{q}</span>，可以观察到 <span class="math-inline">\bm{\theta}^{q}</span> 能很好适应会话 <span class="math-inline">q</span> 的分析任务。然而，当我们使用 <span class="math-inline">\bm{\theta}^{q}</span> 在会话 <span class="math-inline">p</span> 上进行预测时，决策边界无法达到满意性能，表明遗忘发生。然而，如果我们在学习会话 <span class="math-inline">q</span> 时约束 <span class="math-inline">\bm{\theta}^{p}</span> 向 <span class="math-inline">\bm{\theta}^{*}</span> 移动，可以观察到模型能有效适应会话 <span class="math-inline">p</span> 和会话 <span class="math-inline">q</span>。</p>
+<p>为在新会话中平衡模型稳定性和可塑性，关键方法是区分先前会话中的关键和非关键参数，仅优化非关键参数。新会话的损失函数包含分类任务和防止灾难性遗忘两部分。其表述如下：<br />
+<div class="math-display"><br />
+    L^{\prime}\left(\bm{\theta}\right)=L\left(\bm{\theta}\right)+\lambda\sum_{i}b_{i}\left(\theta_{i}-\theta_{i}^{b}\right)^{2}, \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">L</span> 是当前分类任务的部分损失函数，<span class="math-inline">\theta_{i}</span> 表示当前模型 <span class="math-inline">\bm{\theta}</span> 中的参数，<span class="math-inline">\theta_{i}^{b}</span> 表示先前模型 <span class="math-inline">\bm{\theta}^{b}</span> 中的对应参数，<span class="math-inline">b_{i}</span> 表征 <span class="math-inline">\theta_{i}^{b}</span> 对先前任务的重要性，超参数 <span class="math-inline">\lambda</span> 平衡整体损失的两部分。设置 <span class="math-inline">b_{i}=0</span> 对 <span class="math-inline">\theta_{i}</span> 无约束，导致灾难性遗忘。相反，设置 <span class="math-inline">b_{i}=\infty</span> 导致顽固性，其中 <span class="math-inline">\theta_{i}</span> 始终等于 <span class="math-inline">\theta_{i}^{b}</span>。</p>
+<h3 id="23-通用方案">2.3 通用方案<a class="anchor-link" href="#23-通用方案" title="Permanent link">&para;</a></h3>
+<p>FSCIL 有两个主要框架，如图 6 所示。第一个包含特征提取器和 softmax 分类器，第二个涉及特征嵌入网络和最近类均值分类器 [32,42,43]。在第一个框架中，整个网络在 IL 过程中可训练。为抵抗灾难性遗忘，一些研究 [44,45,46] 采用知识蒸馏 (KD) 技术训练模型，使其在适应新类同时保持对先前类的分类能力。第二个框架专注于训练特征嵌入网络，将样本映射到特征空间，其中样本间距离表示语义差异。随后使用最近类均值分类器进行分类。例如，一些研究 [47] 采用度量损失训练嵌入网络，使其学习更具判别性的特征并更好适应增量类。</p>
+<h3 id="24-相关问题">2.4 相关问题<a class="anchor-link" href="#24-相关问题" title="Permanent link">&para;</a></h3>
+<h4 id="241-增量学习">2.4.1 增量学习<a class="anchor-link" href="#241-增量学习" title="Permanent link">&para;</a></h4>
+<p>本节回顾 FSCIL 与其他 IL 场景（特别是 CIL、TIL 和 DIL）之间的关系和区别，如 Van de Ven 等人 [11] 所述。值得注意的是，FSCIL 中使用的术语 " 会话 " 在此采用，而非其他 IL 文献中的 " 任务 " 术语。</p>
+<p><strong>类增量学习</strong>：CIL 旨在学习一种能持续识别新类而不遗忘旧类的算法 [5,11,24]。由于 FSCIL 可视为 CIL 的子领域，从图 3(a) 和图 3(b) 可见，它们的一般设置非常相似。两者都要求在新类数据到达时学习并保持对先前类的分类能力。然而，FSCIL 的基础会话通常包含许多训练样本，而 CIL 没有严格限制。此外，FSCIL 增量会话中的训练样本有限且以 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 形式存在，而 CIL 增量会话中的训练样本通常充足。CIL 的核心挑战在于解决稳定性 - 可塑性困境，而 FSCIL 需要解决这一挑战并应对由于训练样本缺乏及其在连续场景中的持续影响导致的不可靠经验风险最小化问题。</p>
+<p><strong>任务增量学习</strong>：TIL 旨在学习一种能逐步学习新任务而不遗忘旧任务的算法。如图 3(c) 所示，TIL 在分类场景中的训练数据被分割为多个会话，每个会话代表一个独特任务。在训练和测试期间，TIL 模型始终知晓特定任务身份。为防止灾难性遗忘，各种算法 [11,48,49] 采用任务特定组件或为每个任务设计单独网络。TIL 的主要挑战在于识别跨任务的共享特征以平衡性能和计算复杂性，利用一个任务的知识提升其他任务性能 [11]。</p>
+<p><strong>域增量学习</strong>：DIL 是一种 ML 问题，旨在持续适应来自不同域的数据分布，同时问题结构始终保持不变 [11]。DIL 解决跨增量域的数据分布变化，使模型能在新域中有效学习和预测而不遗忘先前获得的知识。如图 3(d) 所示，DIL 涉及来自多个会话的训练数据，每个会话包含相同类但具有指示不同域的独特数据分布。DIL 模型必须持续适应这些新域而不丢失先前知识。其主要挑战是识别和利用跨域的共享特征，允许快速适应新域并在学习新知识同时保留旧域的现有知识。</p>
+<h4 id="242-小样本学习">2.4.2 小样本学习<a class="anchor-link" href="#242-小样本学习" title="Permanent link">&para;</a></h4>
+<p>FSL 指使用极少训练样本进行模型学习 [50]。为更好理解 FSCIL 与 FSL 之间的关联和区别，本节介绍相关概念，包括 FSL 和通用小样本学习 (gFSL)。为清晰起见，</p>
+<h2 id="3-数据集和评估指标">3. 数据集和评估指标<a class="anchor-link" href="#3-数据集和评估指标" title="Permanent link">&para;</a></h2>
+<h3 id="31-数据集">3.1 数据集<a class="anchor-link" href="#31-数据集" title="Permanent link">&para;</a></h3>
+<h4 id="311-分类数据集">3.1.1 分类数据集<a class="anchor-link" href="#311-分类数据集" title="Permanent link">&para;</a></h4>
+<p><strong>miniImageNet</strong>：miniImageNet 是广泛用于 FSL 和 FSCIL 的基准数据集。它源自 ImageNet[58]，包含 100 个类，每个类有 600 张 <span class="math-inline">84\times84</span>RGB 图像，其中 500 张用于训练，100 张用于测试。对于 FSCIL，Tao 等人 [13] 提出的常见数据划分方法将这 100 个类分为 60 个基础类和 40 个增量类。这些增量类进一步分为 8 个会话，每个会话 5 个类。每个会话中每个类有 5 个训练样本，形成 5-way 5-shot 设置。</p>
+<p><strong>CIFAR-100</strong>：CIFAR-100 由 Krizhevsky 等人 [59] 于 2009 年提出，广泛用于 CIL。它涵盖植物、人类和车辆等多种图像数据。数据集包含 100 个类，每个类有 600 张 <span class="math-inline">32\times32</span>RGB 图像，分配为 500 张训练和 100 张测试。对于 FSCIL，Tao 等人 [13] 的常见数据划分方法将这 100 个类分为 60 个基础类和 40 个增量类。这些增量类进一步分为 8 个会话，每个会话 5 个类。每个会话中每个类有 5 个训练样本，形成 5-way 5-shot 设置。</p>
+<p><strong>CUB-200</strong>：Caltech-UCSD Birds-200-2011 (CUB-200) 数据集由 Wah 等人 [60] 于 2011 年创建，是计算机视觉中细粒度分类的基准数据集。它包含 200 种鸟类的 11,788 张图像。对于 FSCIL 算法评估，通常采用 Tao 等人 [13] 的数据划分方法。该方法将 200 个类分为 100 个基础类和 100 个增量类，这些增量类进一步分为 10 个会话。每个会话包含 10 个类，每个类 10 个训练样本，使每个会话成为 10-way 10-shot 任务。在此上下文中的标准图像大小为 <span class="math-inline">224\times224</span> 像素。</p>
+<h4 id="312-目标检测数据集">3.1.2 目标检测数据集<a class="anchor-link" href="#312-目标检测数据集" title="Permanent link">&para;</a></h4>
+<p><strong>COCO</strong>：Microsoft Common Objects in Context (COCO) 数据集广泛用于目标检测任务，包含 80 个对象类，包括人物、动物、车辆、家具和食物 [61]。它具有反映真实场景的多样复杂图像，带有边界框、类标签和语义分割掩码等详细标注。对于 FSCIOD 任务，通常采用 Perez-Rua 等人 [62] 的数据划分策略。该方法利用与 PASCAL VOC 数据集 [63] 重叠的 20 个类作为新增量类，其余 60 个作为基础数据。在此设置下，使用每个新类 <span class="math-inline">K\in{1,5,10}</span> 个边界框评估 FSCIOD 模型。</p>
+<p><strong>PASCAL VOC</strong>：PASCAL Visual Object Classes (VOC) 数据集广泛用于目标检测任务，包含 20 个常见对象类，如人物、动物、车辆和家居物品 [63]。它常用于 FSCIOD 算法的跨数据集评估。值得注意的是，VOC 与 COCO 数据集共享 20 个类。因此，COCO 中 60 个非重叠类通常作为跨数据集评估的基础训练数据，VOC 的 20 个类作为新增量类以评估小样本 IL 能力。Perez-Rua 等人 [62] 提出的评估策略与 COCO 数据集类似，其中 FSCIOD 模型使用每个新类标注的 <span class="math-inline">K\in{1,5,10}</span> 个边界框进行评估。</p>
+<h3 id="32-评估指标">3.2 评估指标<a class="anchor-link" href="#32-评估指标" title="Permanent link">&para;</a></h3>
+<h4 id="321-分类评估指标">3.2.1 分类评估指标<a class="anchor-link" href="#321-分类评估指标" title="Permanent link">&para;</a></h4>
+<p>在 FSCIL 中，模型必须学习新类同时保留先前类的知识。每个增量会话后，它会在包含迄今遇到的所有类的联合数据集上进行测试，分类准确率是标准评估指标。模型需要平衡保持旧类识别和学习新类的能力。此外，完成所有增量会话后，使用各种指标评估模型的整体性能。常见指标包括性能下降 (PD) 率和平均准确率 (AA)。PD 率测量最终增量会话和基础会话之间的准确率差异，较低值表示更好的 FSCIL 性能。AA 计算基础会话和所有增量会话的平均准确率，较高值表示更好的 FSCIL 性能。</p>
+<h4 id="322-目标检测评估指标">3.2.2 目标检测评估指标<a class="anchor-link" href="#322-目标检测评估指标" title="Permanent link">&para;</a></h4>
+<p>在 FSCIOD 任务中，两种方法纳入新增量数据：批量和连续 IL。批量 IL 一次性学习所有新类，而连续 IL 逐步添加新类。更常见的设置是批量 IL，类似于单会话 FSCIL。主要性能指标是平均精度 (AP)，评估检测模型的有效性。AP 分别为基础类、新类和所有类计算，所有类上较高的 AP 值表示更好的 FSCIOD 性能。此外，一些研究使用平均召回率 (AR) 和 AP50 作为补充指标以进行更全面评估。</p>
+<h3 id="33-总结">3.3 总结<a class="anchor-link" href="#33-总结" title="Permanent link">&para;</a></h3>
+<p>数据集和评估方法的概述揭示了 FSCIL 任务公开可用数据集的稀缺性，限制了其实际应用。一些研究如 [64] 引入了各种 FSCIL 场景的数据集，但数据集增强仍有很大空间。关于模型评估，虽然当前指标在一定程度上评估了模型的学习能力，但未能完全捕捉 FSCIL 在连续学习过程中的详细性能 [47]。因此，FSCIL 中的数据集和评估指标都有进一步发展的重大机会。</p>
+<h2 id="4-小样本类增量分类">4. 小样本类增量分类<a class="anchor-link" href="#4-小样本类增量分类" title="Permanent link">&para;</a></h2>
+<p>本节聚焦 FSCIL 分类任务，总结现有方法分为基于数据、基于结构和基于优化的类别，注意这些领域间的一些重叠。方法根据其属性和核心创新分类，最后进行性能比较和关键问题讨论。</p>
+<h3 id="41-基于数据的方法">4.1 基于数据的方法<a class="anchor-link" href="#41-基于数据的方法" title="Permanent link">&para;</a></h3>
+<p>基于数据的方法指通过关注数据视角来解决 FSCIL 中因数据有限或不可重用而产生的挑战。相关方法包括数据回放和伪数据构建。</p>
+<h4 id="411-数据回放方法">4.1.1 数据回放方法<a class="anchor-link" href="#411-数据回放方法" title="Permanent link">&para;</a></h4>
+<p>由于 FSCIL 中无法访问先前会话的原始完整训练数据，常发生灾难性遗忘。数据回放是通过在适应新会话时回放有价值数据来缓解这一问题的直接策略。现有方法包括原始回放和生成回放，涉及样本或特征表示的回放。</p>
+<p><strong>原始回放方法</strong>：原始回放方法通过将先前会话的部分原始样本存储在辅助内存中并在新会话学习过程中回放以复习先前知识来解决灾难性遗忘。如图 8(a) 所示，Kukleva 等人 [28] 提出了一种多阶段 FSCIL 方法 LCwof：首先使用交叉熵 (CE) 损失训练骨干网络。第二阶段，采用 KD 损失和基础归一化 CE 损失联合监督学习新类和保留旧知识。最后阶段，随机采样的新旧类数据组合用于数据回放以进一步校准性能。不同地，Zhu 等人 [44] 提出了一种基于特征分布蒸馏的方法，存储与每个新类相同数量的旧样本以形成联合集。新旧模型为该集合生成特征表示。基于 CE 损失和 KD 损失的联合函数用于约束新模型生成与旧模型相似的表示以保留旧知识。然而，原始回放方法的性能受辅助存储空间、样本选择和数量等因素影响，这些问题尚未完全解决。</p>
+<p><strong>生成回放方法</strong>：生成回放方法训练并存储一个在新会话学习过程中生成旧类数据（包括样本或特征表示）的模型以复习旧知识。如图 8(b) 所示，Liu 等人 [29] 提出了一种无数据回放方法，使用类似 GAN 的思想基于熵正则化训练带有不确定性约束的生成器，使生成的数据接近决策边界。在增量会话中，生成的数据和新数据微调模型，使其在新旧类上表现良好。与生成样本不同，一些方法选择生成特征。具体而言，Shankarampeta 和 Yamauchi[65] 提出了一种基于 Wasserstein GAN[66] 与 MAML[67] 的框架，主要包括特征提取器和特征生成器。训练过程中，特征提取器在基础数据上初始化，然后通过元学习与 MAML 训练特征生成器。在 IL 中，带有特征蒸馏的特征提取器与分类器级别的特征回放结合以应对灾难性遗忘。类似地，Agarwal 等人 [68] 提出的 FSIL-GAN 使用类似框架进行特征回放。FSIL-GAN 的主要贡献是引入语义投影模块，约束合成特征与潜在语义向量匹配以确保其多样性和可区分性。在 IL 中，KD 确保新旧生成器之间的知识转移。生成回放在样本生成上提供灵活性和安全性，但增加了模型复杂性。</p>
+<p><strong>讨论</strong>：数据回放是解决 FSCIL 中灾难性遗忘的直接策略。原始回放方法提供简单便捷，但其效果受辅助存储空间、样本选择和数量以及新旧类不平衡分布等因素影响。相比之下，生成回放方法展现更好的灵活性并缓解原始回放方法潜在的隐私问题。然而，生成回放方法在不平衡和动态数据流中持续生成旧样本、生成质量和效率以及额外计算成本方面面临挑战。这些问题需要进一步探索和研究。</p>
+<h4 id="412-伪场景方法">4.1.2 伪场景方法<a class="anchor-link" href="#412-伪场景方法" title="Permanent link">&para;</a></h4>
+<p>与数据回放等后向兼容方法解决灾难性遗忘不同，另一种流行的 FSCIL 策略是构建伪增量场景。这些场景作为动态和不断扩展的 FSCIL 数据流中的排练机制，为实际增量会话准备模型，确保有效性能。这些方法主要分为两类：伪类和伪会话构建。</p>
+<p><strong>伪类方法</strong>：伪类构建方法旨在生成合成类及其对应样本以促进 FSCIL 模型为真实增量类做准备。当前大多数研究利用基础会话开发这些伪类，使用伪数据和原始数据训练模型。这一策略促进 FSCIL 模型的前向兼容性。如图 8(c) 所示，这一方法是 Zhou 等人 [33] 提出的前向兼容 FSCIL 框架。该框架的核心在于约束训练中的真实样本，使其在嵌入空间中使各自类别更紧凑并为构建的虚拟类别保留空间。特别是，该方法促进真实数据的类内紧凑性，并迫使基于真实数据的掩码特征接近伪类。同时，框架采用类似技术约束从多类特征混合构建的虚拟特征。它确保真实类别的紧凑性同时为增量类保留部分特征空间。类似地，Peng 等人 [47] 通过合并基础会话中两个不同类生成伪类，并使用随机裁剪、水平翻转和颜色抖动等技术增强数据。在 ALICE 框架中，它使用常用于人脸识别的角度惩罚损失基于伪数据和真实数据的联合集训练特征提取器。核心思想也涉及促进类内紧凑性并为增量类保留特征空间。</p>
+<p><strong>伪会话方法</strong>：与创建合成类的伪类方法不同，伪会话构建方法更侧重于模拟增量会话。大多数现有方法使用基础会话创建伪增量会话和元学习技术使 FSCIL 模型理解如何处理增量会话。构建伪增量会话的方式多样。如图 8(d) 所示，Zhang 等人 [14] 提出的 CEC 框架在基础类上应用大角度旋转变换构建伪增量会话。这些伪会话随后与基础会话结合通过元学习策略训练图注意力网络，使其能传递原型间的上下文信息，从而更好处理 FSCIL 任务。Zhu 等人 [69] 的 FSCIL 模型包含两项创新：随机片段选择 (RES) 和动态关系投影 (DRP)。RES 随机采样五个类创建 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 伪增量会话，掩码原始类原型并使用伪增量数据通过平均生成类原型。这些原型通过 DRP 优化，它将标准和伪 IL 的类原型映射到共享潜在空间。计算新旧类间的余弦相似度获得关系矩阵。该矩阵作为原型优化的过渡系数，实现动态优化以保留现有知识并提升新类的判别能力。</p>
+<p><strong>讨论</strong>：伪场景构建是一种前向兼容策略，合成类或会话来训练模型以适应未来真实增量类。伪类构建是一种与基础类结合构建伪类以训练模型的方法，使特征空间为即将到来的增量类保留某些空间。然而，保留空间通常需要预先知道增量类的总数，这与现实世界相矛盾。由于合成数据与真实数据常存在差异，保留空间的适用性仍有待发现。相比之下，伪会话构建更合理，因为它常结合伪增量会话与元学习训练模型，使其学会适应增量会话。然而，伪增量会话能否有效模拟真实增量会话的问题需进一步探索。</p>
+<h3 id="42-基于结构的方法">4.2 基于结构的方法<a class="anchor-link" href="#42-基于结构的方法" title="Permanent link">&para;</a></h3>
+<p>基于结构的方法指利用模型设计或其特性来解决 FSCIL 中的挑战。这些方法主要涉及动态结构方法和基于注意力的方法。</p>
+<h4 id="421-动态结构方法">4.2.1 动态结构方法<a class="anchor-link" href="#421-动态结构方法" title="Permanent link">&para;</a></h4>
+<p>动态结构方法旨在通过动态调整模型结构或原型间的相互关系来实现 FSCIL。当前方法大致可分为基于图的方法和其他方法。</p>
+<p><strong>基于图的方法</strong>：基于图结构的方法利用图拓扑特性实现 FSCIL。这些方法通常使用图中的节点和边描述来自不同会话的类之间的相似性或相关性，并根据类间的相互影响调整图结构。一些研究采用图结构实现 FSCIL[13,14]。例如，Tao 等人 [13] 提出 TOPIC 框架，利用神经气体网络进行知识提取和表示。TOPIC 旨在通过动态调整特征表示间的相互关系解决 FSCIL。具体而言，神经气体网络定义了一个将特征空间映射到有限特征向量集的无向图，并通过竞争 Hebbian 学习 [70] 保持特征空间的拓扑特性。为实现 FSCIL，他们逐步改进神经气体网络，使监督神经气体模型通过竞争学习增长节点和边。此外，他们设计了稳定性损失以抑制灾难性遗忘和适应性损失以减少过拟合。此外，第 4.1.2 节提到的 CEC 框架 [14] 也利用图结构进行 FSCIL。它首先使用伪增量会话训练图注意力网络调整模型。在增量会话中，模型结合注意力机制调节以旧类和新类原型表示的节点间相互关系。这允许更好地在会话间传递上下文信息，使类原型更鲁棒。</p>
+<p><strong>其他方法</strong>：除基于图的方法外，一些研究采用其他动态结构实现 FSCIL[35,71,72]。例如，Yang 等人提出了一系列工作 [35,71]。如图 8(e) 所示，他们提出了一种新颖的动态支持网络 (DSN)[35] 解决 FSCIL 的挑战。DSN 是一种具有压缩节点扩展的自适应更新网络，旨在 " 支持 " 特征空间。每个会话中，DSN 临时扩展网络节点以增强对增量类的特征表示能力。然后，通过节点自激活动态压缩扩展网络，追求紧凑特征表示以缓解过拟合。此外，DSN 在 IL 过程中有选择地调用旧类的分布以支持特征分布并避免类间混淆。此外，Ahmad 等人 [72] 提出的框架中，模型的输出节点随当前会话涉及的类数量增加。与旧类相关的模型参数保持固定。新增节点的权重随机初始化，并使用当前会话的训练数据更新参数。</p>
+<p><strong>讨论</strong>：动态结构方法是解决 FSCIL 挑战的重要途径。这些方法通过动态调整模型结构或原型间关系实现学习新知识同时保留旧知识。例如，基于图的方法利用图的拓扑特性通过调整节点和边描述不同类间的相似性和相关性实现非遗忘 IL。动态结构网络通过临时扩展和动态压缩网络节点增强特征表示并缓解过拟合。动态结构方法在 FSCIL 中发挥重要作用，但仍需进一步研究和探索以开发更多动态结构设计方法。</p>
+<h4 id="422-基于注意力的方法">4.2.2 基于注意力的方法<a class="anchor-link" href="#422-基于注意力的方法" title="Permanent link">&para;</a></h4>
+<p>FSCIL 中的基于注意力的方法通过将注意力模块引入模型结构来调整特征的注意力分配。这使得模型能关注与当前任务相关的信息，提高其性能和泛化能力。许多 FSCIL 方法 [14,16,27,73,74] 中使用的注意力模块作用多样。例如，在 Zhao 等人 [73] 提出的双分支 KD 框架中（包含基础分支和新分支），他们指出通过新类微调不可避免地导致遗忘旧知识。为进一步提升基础类性能，他们提出基于注意力的聚合模块，选择性合并基础分支和新分支的预测。此外，Chenghian 等人 [27] 采用元学习训练骨干网络，使其能用有限样本增量学习新类而不遗忘旧类。然而，许多现有 FSCIL 范式通过将基础分类器与新类原型（通过每个训练样本特征平均获得）串联来更新分类器。这种方法常导致偏差。因此，本文提出基于 Transformer[75] 的校正模型。借助其注意力机制，校正模型能有效在不同类间传递上下文信息，使分类器更高效鲁棒。类似方法包括 CEC 框架 [14] 中使用的图注意力网络。</p>
+<h3 id="43-基于优化的方法">4.3 基于优化的方法<a class="anchor-link" href="#43-基于优化的方法" title="Permanent link">&para;</a></h3>
+<p>基于优化的方法通过解决优化问题的复杂性来应对 FSCIL 中的挑战。根据现有工作，相关策略主要涉及表示学习、元学习和 KD。</p>
+<h4 id="431-基于表示学习的方法">4.3.1 基于表示学习的方法<a class="anchor-link" href="#431-基于表示学习的方法" title="Permanent link">&para;</a></h4>
+<p>在 FSCIL 中，表示学习旨在从有限的样本流中提取有意义的特征以形成数据的 " 表示 "[76]。通过有效的表示学习，模型能识别并利用这些少量样本中的潜在模式并将其泛化到新的未见类。即使在少样本增量场景中，模型也能凭借高效表示学习表现优异。在 FSCIL 中，执行表示学习的方法多样，根据各自方法的核心原理可分为基于度量学习、基于特征空间、基于特征融合等方法。</p>
+<p><strong>基于度量学习的方法</strong>：度量学习旨在使用最优距离度量确定对象间的相似性以进行学习任务 [77]。它已在 FSL 中广泛应用 [78]。最近，度量学习也被 FSCIL 采用以学习有效表示。常用方法中，三元组损失尤为突出。如图 9(a) 所示，Mazumder 等人 [31] 提出了一种 FSCIL 新方法。它结合自监督学习增强骨干网络的泛化能力。然后，该方法分析模型参数的重要性并仅更新对新类不重要的参数。更新通过结合三种损失函数实现：三元组损失、正则化损失和余弦相似度损失。三元组损失旨在生成判别性特征，而正则化损失防止灾难性遗忘。余弦相似度损失专注于控制新旧原型间的相似性。从而为 FSCIL 实现有效性能。此外，其他度量学习方法也应用于 FSCIL。具体而言，Peng 等人 [47] 提出的 ALICE 框架结合了最初用于人脸识别的角度惩罚损失以获得良好聚类特征。该损失用于基于基础类数据和合成数据联合训练骨干网络，从而为增量类创建额外空间，并应用余弦相似度实现分类。</p>
+<p>尽管这些基于间隔的度量损失取得了良好性能，Zou 等人 [36] 指出了 FSCIL 中的问题：大间隔值能导致基础类间良好可区分性但阻碍新类的泛化能力。相反，小甚至负间隔值导致基础类表现差但在新类上展现更好泛化。这种现象称为类级过拟合问题。为解决这一问题，Zou 等人 [36] 提出 CLOM 框架，将间隔理论与神经网络结构特性结合。具体而言，由于神经网络浅层更适合学习类间共同特征，而深层更适合获取高级特征，他们设计了分别约束浅层和深层特征学习的损失函数。此外，该框架通过整合类关系缓解类级过拟合问题。</p>
+<p><strong>基于特征空间的方法</strong>：基于特征空间的方法是一类旨在通过优化特征空间实现 FSCIL 的方法。这些方法的核心思想是通过优化特征空间执行 FSCIL。这些方法的核心思想是优化特征空间以实现 FSCIL。例如，一些方法通过分析特征空间的不同频率成分解决 FSCIL 中的挑战。如图 9(b) 所示，Zhao 等人 [32] 提出了一种基于多粒度慢速与快速 (MgSvF) 的 FSCIL 框架。他们发现低频信息可能更有助于保留旧知识。因此，他们设计了具有不同学习率的子空间以学习不同频域的特征，其中快速子空间学习新知识，慢速子空间保留旧知识。通过这种子空间组合策略，该方法取得了良好性能。</p>
+<p>此外，一些方法通过设计特殊结构的特征空间解决 FSCIL。例如，Hersche 等人 [34] 提出的 C-FSCIL 框架包含通过元学习训练的特征提取器、可训练全连接层和可重写显式记忆。核心思想是引入超维嵌入，具有三个优势：(1) 随机向量间准正交性的高概率，(2) 丰富的表达空间，(3) 良好的语义表示能力。C-FSCIL 有三种训练策略。第一种基于简单元学习，如第 4.3.3 节所述。第二种策略将初始原型存储在全局平均激活记忆中，并应用逐元素符号操作将相似特征原型转换为双极向量。这些转换后的向量随后监督训练全连接层，学习最终原型的权重。第三种策略与第二种类似，但结合两种损失约束类间差异并保持与原原型的关系。此外，如图 9(b) 所示，Yang 等人 [82] 提出了一种基于神经崩溃 [83] 的 FSCIL 框架，神经崩溃指训练结束时（达到 0 训练错误率后），同一类的最后一层特征在特征空间中坍缩为单个顶点，所有类顶点与其分类器原型对齐并形成单纯形等角紧框架。基于这一特性，提出的框架预定义了一个类似于神经崩溃的结构并指导模型优化它。具体而言，预分配一组基础和增量会话的原型作为等角紧框架的简化形式。训练期间，原型固定。他们引入了一种新颖的损失函数和额外的投影层，分别将每个类分配到其相应原型。无需繁琐操作，该方法实现了优越性能。此外，在第 4.1.2 节中，Zhou 等人 [33] 提出的方法也通过在基础类学习中保留增量类空间的方式学习特征空间来解决 FSCIL。</p>
+<p><strong>基于特征融合的方法</strong>：特征融合指整合或组合来自不同信息源或特征提取方法获得的特征，以创建更全面高效的表示，展现鲁棒性和泛化能力 [84]。在 FSCIL 背景下，各种方法采用特征融合策略学习能适应特定任务需求的有效特征表示。值得注意的是，一个重要焦点是将自监督特征融入融合过程 [85,72,31,86]。例如，如图 9(c) 所示，Ahmad 等人 [72] 提出了一种结合自监督和监督特征的框架。该框架的核心结构包括以下组件：首先，通过在基础类数据上监督训练和在 ImageNet[58] 或 OpenImages-v6[87] 上使用借口任务、对比损失或聚类等方法自监督任务获得的特征提取器。其次，高斯生成器合成特征以在增量会话中回放。最后，用于增量特征融合和分类的轻量级模型。此外，Kalla 和 Biswas[86] 提出的 S3C 基于随机分类器 [88] 和自监督。他们引入了一种新颖的自监督训练方法 [89]，使用图像增强生成人工标签来训练分类层。随机分类器权重帮助缓解有限新样本和旧样本不可用的影响。自监督组件使得能够从基础类中学习泛化到未来未见类的特征，有效减少灾难性遗忘。</p>
+<p>除基于自监督特征的特征融合外，也有工作整合其他特征以在 FSCIL 中实现良好性能。例如，Yao 等人 [90] 提出了一种增强新原型的简单策略。具体而言，它首先在基础类上训练 CNN 网络并保持固定。它用于为基础类和新类生成类原型。然后，测量新类初始类原型与基础类原型的相似性。基于相似性，通过将初始权重与其他基础原型混合更新新类的原型。这种融合增强策略模仿人类认知，基于现有知识指导新类学习。</p>
+<p><strong>讨论</strong>：特征融合在 FSCIL 中通过整合多个信息源和特征提取方法提供全面、高效和鲁棒的表示发挥关键作用。在 FSCIL 中，各种特征融合策略用于学习适应特定任务的有效特征表示。例如，结合自监督和监督特征使模型获得具有良好泛化能力的表示。此外，另一种方法融合现有特征以指导新类学习。这些方法突出了特征融合在解决 FSCIL 挑战中的重要性，同时需要进一步探索更高效的特征融合策略以提升模型性能和泛化能力。</p>
+<h4 id="432-基于知识蒸馏的方法">4.3.2 基于知识蒸馏的方法<a class="anchor-link" href="#432-基于知识蒸馏的方法" title="Permanent link">&para;</a></h4>
+<p>在持续学习中，知识蒸馏 (KD) 广泛用于将知识从旧模型（称为 " 教师模型 "）转移到新模型（称为 " 学生模型 "）[91]。它有效解决了持续学习中的灾难性遗忘。然而，在 FSCIL 中，基础会话和增量会话间的数据分布不平衡，基础会话样本充足而增量会话样本有限。传统持续学习的 KD 方法易在增量会话中过拟合并在未来增量会话中进一步产生偏差 [73]。尽管如此，许多研究探索了 KD 在 FSCIL 中的应用，专注于使用 KD 在会话间传递知识。基于解决 FSCIL 中数据不平衡和过拟合挑战的方法，这些研究可分为两类：平衡数据的 KD 和优化的 KD。</p>
+<p><strong>平衡数据的知识蒸馏方法</strong>：为解决因数据不平衡导致 KD 方法在 FSCIL 中的不足，一些方法 [28,44,92] 通过从基础会话和增量会话中选择相同数量样本进行蒸馏来解决问题，避免偏差。例如，Dong 等人 [92] 提出了一种关系 KD 框架。他们构建样本关系图表示学习到的知识，通过从每个基础类选择相同数量样本确保平衡。样本基于特征向量间角度选择，去除冗余直到剩余所需 <span class="math-inline">K</span> 个样本。引入了样本关系损失函数以发现不同类间的关系知识，促进样本关系蒸馏和图中结构信息传播。此外，如第 4.1.1 节介绍，Zhu 等人 [44] 通过微调骨干网络和采样基础类样本解决 FSCIL 中的过拟合和知识转移。</p>
+<p>缓解 FSCIL 中数据不平衡和有限样本的另一解决方案是引入额外数据防止过拟合。在 FSCIL 背景下，Cui 等人提出了一系列利用 KD 和未标记数据的半监督方法 [45,46,93]。如图 9(d) 所示，Cui 等人 [45] 引入 Us-KD 框架，使用不确定性引导模块选择未标记数据以缓解知识转移期间的过拟合。框架首先在基础类上训练模型并存储部分样本。增量会话中，模型用先前模型权重初始化，并通过分类和蒸馏损失使用存储的旧样本和当前会话的标记样本更新。随后，不确定性引导模块选择并标记未标记样本，结合标记样本迭代更新模型。最后，用这些样本更新存储数据。在他们进一步研究 [46] 中，他们指出学习良好或易分类的类通常具有更高预测概率。因此，他们设计了一种称为 " 类均衡 " 的数据选择方法，其中学习良好的类别分配较少样本，学习差的类别分配更多样本。值得注意的是，他们强调了 KD 与未标记数据的潜在不可靠性。因此，他们引入了一种适合半监督 FSCIL 的不确定性感知蒸馏方法，包含不确定性引导细化和自适应蒸馏损失。细化涉及利用不确定性评估从增强数据集中筛选可靠样本，而自适应蒸馏根据样本数量调整蒸馏损失权重。</p>
+<p><strong>优化的知识蒸馏方法</strong>：一些方法创新性地优化 KD 方法以应对 FSCIL 数据流特性引发的问题。例如，Chenghian 等人 [27] 提出了一种语义感知 KD 框架。在基础会话训练中，该框架首先使用自然语言处理模型将标签映射到词嵌入。然后，骨干网络将图像转换为原始特征。随后，采用超类聚合方法训练多头注意力模型以防止增量过程中的过拟合。最后，训练映射模型对齐图像特征与词嵌入。对于增量会话，新类的标签首先映射到词嵌入。通过微调和 KD 训练映射模型以进一步优化图像特征。分类通过评估图像特征与词嵌入间的相似性实现。此外，Zhao 等人 [73] 提出了一种类感知双边蒸馏框架，包含两个分支：基础分支和新分支。两个教师模型指导新分支学习。一个教师模型在基础类数据上训练，拥有丰富的通用知识以缓解新类的过拟合。另一个教师模型从先前增量会话更新，包含先前新类的自适应知识以缓解其遗忘。微调导致遗忘，不可避免地引入基于注意力的聚合模块，通过选择性合并基础分支和新分支的预测进一步提升基础类性能。</p>
+<p><strong>讨论</strong>：KD 在 FSCIL 中的适用性取决于解决数据分布不平衡和少样本过拟合及其在增量场景中加剧影响的挑战。数据驱动方法可以应对这些挑战，包括引入未标记数据、建立平衡分布和采用样本关系蒸馏。此外，优化 KD 框架是另一种策略。例如，引入语义词嵌入作为辅助信息可用于优化。这些方法旨在缓解上述挑战并促进 KD 在 FSCIL 中的有效应用。</p>
+<h4 id="433-基于元学习的方法">4.3.3 基于元学习的方法<a class="anchor-link" href="#433-基于元学习的方法" title="Permanent link">&para;</a></h4>
+<p>FSCIL 因连续学习中有限样本导致的过拟合和灾难性遗忘面临挑战。元学习或 " 学会学习 " 是解决这些问题的突出方法。元学习利用从多个学习情节中提炼的经验（涵盖相关任务的分布）以提升未来学习性能 [94]。在 FSCIL 中，元学习对提高模型适应能力至关重要。基于第 4.1.2 节的描述，FSCIL 中大多数元学习方法通过从基础会话采样的伪增量任务训练。它对骨干训练、特殊结构训练、特征分布学习和 FSCIL 中其他多种应用证明有效。</p>
+<p>元学习的一个常见应用是通过构建一系列伪增量场景直接训练骨干模型，使其适应真实增量场景。例如，在 Hersche 等人 [34] 提出的 C-FSCIL 框架中，实证证据表明使用元学习策略训练骨干能有效提取鲁棒特征。利用这些特征的平均创建类原型超越了当时的先进方法。此外，元学习可用于学习 FSCIL 中的特征分布。Zheng 和 Zhang[95] 引入元学习的类结构以调节特征空间中学习类的分布。类结构描述了学习类在特定方向上的分布。他们通过提出由与类结构相关的方向向量和对齐采样嵌入与类结构的对齐核组成的类结构正则化器，确保判别性类原型不受干扰。还引入了一种新颖的损失函数以防止新旧原型间的干扰。模型在一系列构建的元学习任务上训练。此外，元学习可用于训练 FSCIL 中特殊设计的结构。在 Zhou 等人 [16] 提出的 LIMIT 框架中，从基础会话采样一系列伪增量任务进行基于元学习的训练。为缓解直接分类导致的偏差问题，引入了以 transformer 为核心的校正模型。校正模型使用元学习训练并结合自注意力机制，调整旧类分类器与新类原型间的偏差关系，确保特征嵌入包含上下文信息。类似地，第 4.1.2 节提到的 CEC 框架结合伪增量会话与元学习训练图注意力网络以调节原型间关系。</p>
+<h4 id="434-其他方法">4.3.4 其他方法<a class="anchor-link" href="#434-其他方法" title="Permanent link">&para;</a></h4>
+<p>除上述方法外，一些研究通过其他途径专注于学习高效特征表示以适应 FSCIL。例如，与现有方法尝试在学习新任务时克服灾难性遗忘不同，Shi 等人 [30] 提出了一种在学习基础类时解决这一问题的新策略。核心思想是在基础训练期间找到损失函数的平坦局部最小值，并在学习新类时在该区域内进行微调。这种方法在针对新类进行微调时最大程度保留知识。具体而言，由于直接找到平坦局部最小值具有挑战性，他们提出在基础训练期间向模型参数添加随机噪声以近似它。在增量会话中，通过在平坦局部范围内微调实现 FSCIL。实验显示有效性。</p>
+<h3 id="44-总结">4.4 总结<a class="anchor-link" href="#44-总结" title="Permanent link">&para;</a></h3>
+<h4 id="441-性能比较">4.4.1 性能比较<a class="anchor-link" href="#441-性能比较" title="Permanent link">&para;</a></h4>
+<p>本节我们总结主流 FSCIC 方法的性能。由于并非所有相关方法都是开源的，且它们的实现条件和配置存在一定差异（如不同骨干网络、与其他特征的融合及不同学习范式），以统一公平的方式比较所有 FSCIC 方法不切实际。因此，我们在表 III 中总结了 FSCIC 方法在三个常用基准数据集上的性能，包括 miniImageNet、CIFAR-100 和 CUB-200。为充分展示每种方法的特点，表 III 提供了它们的类型和具体分类类别。此外，我们在表中提供了每种方法使用的骨干网络。由于一些方法引入了额外的辅助因素，我们特别在表中设置了 " 额外 " 列以总结每种方法引入的额外辅助因素。FSCIC 方法的性能主要通过测量在不同增量会话上获得的准确率、所有会话的 AA 和 PD 值进行评估。鉴于篇幅限制，我们仅提供起始和结束会话的准确率、AA 和 PD。此外，我们在表中总结了每种方法的亮点。</p>
+<p>对于 FSCIC 方法，骨干网络在基础会话上取得的性能对后续 IL 至关重要。通过分析表 III 中三个数据集的 SA，可以发现 miniImageNet 上性能前五的方法分别是：NC-FSCIL[82]84.02%、FeSSSS[72] 和 CFSCIL[85]81.50%、ALICE[47]80.60%、S3C[86]76.89%。在 CIFAR-100 上，前五方法是：NC-FSCIL82.52%、WARP[80]80.31%、CaBD[73]79.45%、ALICE79.00%、S3C78.66%。CUB-200 数据集上前五方法是 F2M[30] 和 FSIL-GAN[68]81.07%、DSN[35]80.86%、S3C80.62%、NC-FSCIL80.45%。值得注意的是，基于神经崩溃理论的 NC-FSCIL 和整合自监督学习特征的 S3C 在所有三个基准数据集上都取得了优异性能。利用度量学习和伪数据合成的 ALICE 框架在 miniImageNet 和 CIFAR-100 上表现良好。此外，结合其他方法在三个数据集上的性能，可以发现引入自监督学习特征有助于 FSCIC 模型在基础会话上取得良好性能。合适的度量学习方法和神经崩溃理论也能提升模型在基础会话上的性能。除此之外，几乎所有在基础会话上取得前五性能的方法在 AA 指标上也取得了前五性能。这反映了基础会话上取得性能的影响。</p>
+<p>在最终会话上获得的性能反映了 FSCIC 模型对增量类的学习能力和保持旧知识的稳定性。然而，由于模型在每个增量会话中的学习将在所有已见类上进行测试，且基础会话涉及的类数量大，每个会话上获得的性能不能完全代表模型的 IL 能力。相比之下，PD 值能更好反映模型的抗遗忘能力。在表 3 中，miniImageNet 上 PD 值最低的前五方法分别是：MgSvF[32]17.33%、SPbFSCIL[79]19.14%、SPPR[69]19.53%、ERL++[92]20.94%、DSN[35]21.06%。CIFAR-100 上前五方法是：SSFSCIL[93]19.40%、F2M[30]20.04%、SPbFSCIL20.31%、SPPR20.65%、UaD-CE[46]21.05%。CUB-200 上前五方法是：UaD-CE14.45%、CaBD[73]15.31%、ALICE[47]17.30%、DSN17.65%、MgSvF17.96%。可见，构建伪增量会话的 SPPR 和基于特征空间融合与 VAE 特征合成的 SPbFSCIL 在前两个数据集上都取得了良好 PD 值。基于 KD 和半监督学习的 UaD-CE 也在后两个数据集上取得了良好 PD 值。基于动态网络结构的 DSN 和基于频域分析的 MgSvF 在第一个和最后一个数据集上展现了良好性能。此外，结合其他方法在三个数据集上的性能，可以发现 KD、伪增量场景构建、动态结构和特征优化等技术能有效缓解灾难性遗忘问题。</p>
+<h4 id="442-主要问题和事实">4.4.2 主要问题和事实<a class="anchor-link" href="#442-主要问题和事实" title="Permanent link">&para;</a></h4>
+<p>在 FSCIC 中，当前问题主要包括缺乏全面评估指标、实验条件不公平和与现实场景不一致。大多数研究使用 AA 或 PD 值衡量模型性能，但它们无法反映连续学习过程中的性能细节 [47]。此外，骨干网络选择的差异和额外数据的引入在比较不同方法时带来固有偏差。最重要的是，当前 FSCIC 设置在现实世界实施中面临挑战。</p>
+<h2 id="5-小样本类增量目标检测">5. 小样本类增量目标检测<a class="anchor-link" href="#5-小样本类增量目标检测" title="Permanent link">&para;</a></h2>
+<p>由于 FSCIL 中的实例分割框架通常具有目标检测能力，本节一并讨论。首先展示与 FSCIC 的区别。然后从无锚点和基于锚点框架的角度系统总结现有方法。最后，论文总结了整个工作，包括性能比较和关键问题讨论。</p>
+<h3 id="51-与分类的区别">5.1 与分类的区别<a class="anchor-link" href="#51-与分类的区别" title="Permanent link">&para;</a></h3>
+<p>与 FSCIL 中的分类任务不同，FSCIOD 旨在使模型能够从有限样本中持续学习新类，同时实现图像中每个对应个体对象的准确定位（使用边界框回归或分割）和分类 [98,96,97]。模型还需保留对旧类对象的定位和分类能力。</p>
+<p>类似于第 2.1 节提供的 FSCIL 分类设置，FSCIOD 的训练数据可分为基础和新训练集。然而，存在差异。在分类任务中，新类通常进一步以 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 形式分为多个增量会话，而在当前目标检测设置中，新类通常形成一个增量会话。具体而言，FSCIOD 的训练集可表示为 <span class="math-inline">{D^{h}<em>{train},D^{n}</em>{train}}</span>，其中基础训练集 <span class="math-inline">D^{h}<em>{train}</span> 包含大量标记训练样本，可表示为 <span class="math-inline">D^{h}</em>{train}=(x_{i},y_{i})^{n_{0}}i=1</span>，其中 <span class="math-inline">x_{i}</span>、<span class="math-inline">y_{i}</span> 和 <span class="math-inline">n_{0}</span> 分别表示训练样本、其对应真实值集和基础样本数量。类似于分类设置，新训练集 <span class="math-inline">D^{n}<em>{train}={(x</em>{i},y_{i})}^{N\times K}_{i=1}</span> 以 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 形式存在。注意基础和新训练集中的类不相交。FSCIL 中目标检测任务的评估过程与分类任务类似。学习新训练集后，模型在所有已见类的性能上进行评估，即所有已见类测试数据的联合。</p>
+<p>值得注意的是，在增量图像中，即使单个图像包含不同类的多个对象，也仅提供当前类的真实值集以符合小样本类增量设置。</p>
+<h3 id="52-方法">5.2 方法<a class="anchor-link" href="#52-方法" title="Permanent link">&para;</a></h3>
+<p>FSCIOD 要求在 IL 期间同时定位和分类新类对象，同时不遗忘旧知识。与 FSCIL 中的分类相比，这提出了更大挑战。当前方法包括基于锚点和无锚点框架。通常，基于锚点的检测器具有更优检测性能，但由于锚点设计导致效率和灵活性较低。另一方面，无锚点检测器更高效灵活。</p>
+<h4 id="521-无锚点框架">5.2.1 无锚点框架<a class="anchor-link" href="#521-无锚点框架" title="Permanent link">&para;</a></h4>
+<p>最近，一些研究 [68,99,100,67,66] 采用无锚点框架执行此任务。原因是无锚点框架无需定义锚框即可有效处理增量类。根据其检测框架，这些研究可分为三类：基于 CentreNet、基于 FCOS 和基于 DETR 的方法。</p>
+<p><strong>基于 CentreNet 的方法</strong>：CentreNet[101] 将目标检测重新定义为点 + 属性回归问题。检测期间，它将输入图像划分为不同区域，每个区域有一个中心点。CentreNet 预测确定中心点是否对应对象。然后，预测该对象的类和置信度。CentreNet 还调整中心点以获得准确位置并回归对象的宽度和高度。通过为每个类维护独立的预测热图并使用激活阈值进行独立对象检测，CentreNet 支持新类的增量注册。基于 CentreNet，Perez-Rua 等人 [68] 提出了 ONCE 框架，结合元学习进行 FSCIL 中的目标检测。它将 CentreNet 分解为在基础类上训练的固定通用特征提取器和具有类特定参数的元学习对象定位器。在小样本增量检测场景中，模型仅需前向传播进行注册，无需模型更新或访问基础数据。此外，Cheng 等人 [99] 也使用 CentreNet 作为骨干，并引入基于 MAML[67] 的元学习。首先，元学习基于基础数据为对象定位器提供良好初始化，使其易于用新类的少量样本微调。此外，保留基础类的滤波器参数。元学习器确定对象定位器的其余参数。研究还得出结论，限制新类性能的主要因素是特征提取器对基础类的过拟合，导致泛化不足。</p>
+<p><strong>基于 FCOS 的方法</strong>：类似地，由于 FCOS[102] 的强大性能和类无关定位能力，近期工作采用它作为骨干。例如，Yin 等人 [97] 提出的 Sylph 将检测框架解耦为类无关检测器和新型分类器以实现新类的持续学习。具体而言，Sylph 中采用 FCOS 进行类无关对象定位。由于优化 softmax 可能导致灾难性遗忘 [103,97]，Sylph 用多个基于 sigmoid 的二元分类器替换它，每个分类器独立处理自己的参数集。添加新类时，可生成新的分类器参数集，不同类预测间零干扰。此外，Feng 等人 [100] 提出了两个受大脑中新记忆出现时建立记忆细胞间新连接现象启发的模块。第一个称为 MCH 模块，每次新类出现时添加一个分类分支预测新类。第二个称为 BPMCH 模块，添加一个用基础类骨干权重初始化的新骨干，以从基础类向新类传递更多知识。本工作中，FCOS 和 ATSS[104] 作为基线检测器。训练从基础类开始，然后在新类上微调，确保保留从基础类学到的知识并将该知识转移到新类。</p>
+<p><strong>基于 DETR 的方法</strong>：在无锚点框架中，除基于 CentreNet 和 FCOS 的方法外，另一项工作采用 DETR 框架 [105] 作为骨干。具体而言，Dong 等人 [98] 提出了 incremental-DETR，首次将 DETR 引入 FSCIOD。该方法包含两个阶段：首先，使用大量基础类数据预训练整个网络，并使用选择性搜索算法 [106] 生成的额外对象提议作为伪标签的自监督微调 DETR 的类特定组件（包括特定类的投影层和分类头）。然后，固定 CNN 骨干、transformer 和回归头，引入增量小样本微调策略微调并蒸馏 DETR 类特定组件的知识。该策略鼓励框架检测新类而不发生灾难性遗忘。</p>
+<h4 id="522-基于锚点的框架">5.2.2 基于锚点的框架<a class="anchor-link" href="#522-基于锚点的框架" title="Permanent link">&para;</a></h4>
+<p>除无锚点框架外，也有一些研究 [107,96] 采用基于锚点的框架 Mask R-CNN[108] 解决 FSCIL 中的目标检测和实例分割。Mask R-CNN 是实例分割的流行框架，通过合并掩码预测分支扩展了 Faster R-CNN[109] 架构。它是将目标检测和像素级分割结合到一个框架中的两阶段方法。目前，关于 FSCIL 中实例分割的研究有限，且都使用 Mask R-CNN 作为骨干。例如，Ganea 等人 [96] 提出了 iMTFA 框架，同时首次引入小样本增量实例分割的设置。具体而言，他们在小样本目标检测框架 TFA[110] 中添加了一个实例分割分支（类似于 Mask R-CNN 对 Faster R-CNN 的扩展），得到 MTAF。MTAF 的一个缺点是添加新类时需要持续微调。因此，他们将 MTFA 扩展为称为 iMTFA 的增量方法。该框架中，回归和掩码预测头是类无关的。此外，框架学习生成判别性特征的特征提取器。该特征提取器用于新类计算每个类的平均原型向量，然后与现有分类器连接。这使得无需进一步训练即可实现小样本增量实例分割。此外，Nguyen 和 Todorovic[107] 在第二阶段扩展了 Mask R-CNN 框架：基于概率函数 [111] 的新对象类分类器和新的不确定性引导边界框预测器。前者利用贝叶斯学习解决新类训练样本稀缺问题。后者不仅预测对象边界框，还估计预测的不确定性，指导边界框细化。还基于估计的对象类分布和边界框不确定性指定了两个新损失函数。</p>
+<h3 id="53-总结">5.3 总结<a class="anchor-link" href="#53-总结" title="Permanent link">&para;</a></h3>
+<h4 id="531-性能比较">5.3.1 性能比较<a class="anchor-link" href="#531-性能比较" title="Permanent link">&para;</a></h4>
+<p>本节我们总结 FSCIOD 方法的性能。我们在表 IV 中总结了相关方法在 COCO 和 VOC 上的性能。为充分阐明每种方法的属性，表 IV 包括它们的类型和具体分类类别。此外，表中提供了每种方法采用的骨干网络。由于一些方法能同时实现目标检测和实例分割，我们在表 IV 中添加了 "task" 列表示相关任务上的性能。FSCIOD 方法有两种评估策略：COCO 上的正常评估和 COCO 与 VOC 上的跨数据集评估。鉴于相关工作采用 AP 和 AR、AP 和 AP50 两种评估指标组合，我们在表 IV 中提供 AP、AP50 和 AR 值。此外，我们在表 IV 中提炼了每种方法的亮点。</p>
+<p>鉴于 FSCIOD 评估通常在不同样本 shot 下进行，我们基于相关方法的整体性能分析和总结。从表 IV 可见，目标检测在基础类上取得性能前三的方法是 Sylph[97]、iFS-RCNN[107] 和 MCH[100]。在 COCO 新类上性能前三的方法是 iFS-RCNN、Incremental-DETR[98] 和 iMTFA[96]。在 COCO 上整体性能前三的方法是 iFS-RCNN、Sylph 和 MCH。所有方法在 VOC 上跨数据集评估中，性能前三的是：Incremental-DETR、BPMCH[100] 和 MCH。因此可见，基于复杂 Mask RCNN 的 iFS-RCNN 效果最好，基于简单 FCOS 的 Sylph 和 MCH 也表现良好。在实例分割中，只有基于锚点的方法进行了相关评估，其中 iMTFA 在新类上的增量分割能力整体最佳，但 iFS-RCNN 在基础类上表现最好。总之，基于锚点的方法适合目标检测和实例分割场景，性能优异但结构更复杂；无锚点方法适合框架复杂度要求较低的应用场景，能实现略逊于基于锚点方法的性能。</p>
+<h4 id="532-主要问题和事实">5.3.2 主要问题和事实<a class="anchor-link" href="#532-主要问题和事实" title="Permanent link">&para;</a></h4>
+<p>当前 FSCIOD 主要面临研究不足的问题。此外，当前研究的性能相对监督学习方法较差，尤其是检测新类，远未达到实际应用水平。此外，与 FSCIC 类似，FSCIOD 也面临缺乏合适评估指标的问题。不同工作使用的评估指标略有不同，尚未统一。</p>
+<h2 id="6-结论与展望">6. 结论与展望<a class="anchor-link" href="#6-结论与展望" title="Permanent link">&para;</a></h2>
+<p>本文全面系统地综述了 FSCIL，涵盖其背景和意义、问题定义、核心挑战、通用方案、与相关问题的关系、数据集、评估协议和指标。我们聚焦 FSCIL 中的分类和目标检测任务，总结了相关工作，分析了它们的性能，并总结了 FSCIL 面临的主要问题和事实。考虑到 FSCIL 仍处于起步阶段，我们尝试提供有价值的见解并讨论潜在方向。</p>
+<h3 id="61-fscil-中的人机差距">6.1 FSCIL 中的人机差距<a class="anchor-link" href="#61-fscil-中的人机差距" title="Permanent link">&para;</a></h3>
+<p>人脑的记忆学习可分为三个主要过程：编码、存储和检索 [112]。在编码阶段，大脑通过关联学习和抽象思维高效处理信息，即使样本有限也能有效编码新类别的特征。存储阶段，海马体将短期记忆转化为长期记忆，形成跨大脑皮层不同区域的稳定神经网络。检索阶段，现有记忆可能结合新信息被巩固、更新或主动遗忘，形成适应当前环境的记忆。这一系列过程突显了大脑高效处理知识的能力。</p>
+<p>当前一些 IL 研究，如 ZKudithipudi 等人 [113] 模拟果蝇蘑菇体机制的方法，尝试通过仿生智能增强模型记忆能力。然而，FSCIL 中尚未建立系统的仿生方法。当前 FSCIL 模型在有限样本学习中的关联学习和抽象思维不足，先验知识获取也有改进空间。这些模型通常使用单一模型存储持续学习中的所有知识，建议探索多模块知识存储和长短时记忆机制。此外，FSCIL 需要知识巩固、更新和个性化管理的主动策略，如主动遗忘不频繁知识、强化困难知识及整合一致知识。</p>
+<h3 id="62-fscil-中的实际设置">6.2 FSCIL 中的实际设置<a class="anchor-link" href="#62-fscil-中的实际设置" title="Permanent link">&para;</a></h3>
+<p>当前基于 Tao 等人 [13] 的 FSCIL 设置是理想化的。现实世界需要实际设置。一些研究改进了 FSCIL 设置以更好适应现实，例如：(a) 有限基础样本的 FSCIL：确保基础会话有充足样本在某些情况下具有挑战性。因此，Kalla 和 Biswas[86] 提出需要较少基础训练样本的 FSCIL-lb 设置；(b) 不平衡会话的 FSCIL：考虑到确保 <span class="math-inline">N-</span>way <span class="math-inline">K-</span>shot 格式的实际困难，Kalla 和 Biswas[86] 提出增量会话以不平衡数据分布出现的 FSCIL-im 设置；(c) 半监督 FSCIL：某些场景有一些可用未标记数据。Cui 等人 [93] 利用它们提出半监督 FSCIL。</p>
+<p>尽管已有一些努力提出更匹配现实情况的设置，一些方向仍值得探索：(a) 跨域 FSCIL：考虑现实世界中的域变化（如成像条件和环境变化），FSCIL 应在跨域条件下保持鲁棒；(b) 重复的 FSCIL：当前 FSCIL 的无重复约束未反映类重复常见的实际场景。研究如何利用这些重复（考虑到当前样本可能稀缺，但未来可能增加）可提升实用性；(c) 不完整 FSCIL：现实场景中多数类有充足训练样本但部分稀缺，均匀少样本数据的假设不现实。因此，研究包含不同样本可用性增量会话的不完整 FSCIL 也有意义；(d) 联邦 FSCIL：结合联邦学习的隐私和分布式特性与 FSCIL 从有限动态数据学习的能力，旨在创建具有隐私意识且适应多客户端的模型。</p>
+<h3 id="63-fscil-中的知识获取与更新">6.3 FSCIL 中的知识获取与更新<a class="anchor-link" href="#63-fscil-中的知识获取与更新" title="Permanent link">&para;</a></h3>
+<p>FSCIL 涉及包含基础和增量会话的持续学习过程，因此知识获取和更新分两部分分析：</p>
+<p><strong>基础阶段</strong>：骨干网络的有效初始化对确保基础类性能和未来增量类的泛化至关重要。当前方法常依赖大量基础类样本初始化骨干网络，这可能与现实不符且其泛化能力难以准确评估。为增强泛化，研究者尝试引入自监督学习和前向兼容等策略，但这些通常依赖充足基础类数据。缺乏对基础数据无特定要求的初始知识获取研究。因此，探索丰富初始阶段知识获取的方法很重要。从数据角度，增加数据多样性和改进知识学习策略，如探索数据增强、数据生成、引入无监督数据和优化骨干学习方法至关重要。此外，可考虑引入预训练模型和其他先验知识。例如，结合自监督或半监督预训练与提示工程的基础模型如 CLIP、SAM 和 GPT 已展现优秀泛化和迁移能力，为提升 FSCIL 模型性能提供新可能。</p>
+<p><strong>增量阶段</strong>：在增量会话中，模型通常用先前阶段权重初始化，专注于学习新类和保留现有知识。挑战来自有限的新样本和完整旧数据的访问限制，使有效学习新类别和旧知识保留成为关键。当前解决方案包括冻结骨干网络和使用类原型平均，要求网络具有强大泛化和判别能力，但随着新类增加可能导致性能下降。替代方案是维护新类学习的关键参数，但这可能削弱旧类性能且因深度学习模型不透明性使参数评估复杂化。KD 也常用，但如何有效学习新类别和选择高效旧样本进行蒸馏仍是待进一步探索的方向。</p>
+<h3 id="64-fscil-的应用与安全">6.4 FSCIL 的应用与安全<a class="anchor-link" href="#64-fscil-的应用与安全" title="Permanent link">&para;</a></h3>
+<p>本节主要讨论 FSCIL 的潜在应用场景及其应用中的隐私问题。</p>
+<p><strong>应用场景</strong>：当前 FSCIL 研究主要针对图像分类，在视觉目标检测、自然语言处理、唇语阅读、遥感和机器人等领域有新兴但非系统性研究。大多数工作评估基准数据集上的性能，实际应用仍在发展中。许多应用场景对小样本持续学习能力需求显著。例如视频分析、酒店服务机器人和自动驾驶等应用中，FSCIL 技术需求明显。这些领域常需从有限数据学习新类、在稀缺样本下保持高准确率并适应动态环境中的新类别，突显 FSCIL 的重要性和潜力。</p>
+<p><strong>隐私与安全</strong>：隐私保护是 FSCIL 应用中的关键问题。为解决灾难性遗忘，一些 FSCIL 研究存储旧类样本用于回放，处理涉及私有数据的任务时可能导致隐私泄露。目前，FSCIL 中隐私保护研究相对有限，尤其在深度学习技术日益普及的背景下。尽管 FSCIL 准确性提升，基于深度学习的 AI 系统易受对抗攻击和数据投毒等安全威胁。因此，深入研究 FSCIL 的安全和隐私保护方面对其在各种场景中的广泛应用至关重要。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#sigmoid-函数">Sigmoid 函数</a></li>
+<li><a href="#tanh-函数">Tanh 函数</a></li>
+<li><a href="#relu-函数">ReLu 函数</a></li>
+<li><a href="#leakyrelu-函数">LeakyReLU 函数</a></li>
+<li><a href="#elu-函数">ELU 函数</a></li>
+<li><a href="#preluparametric-relu">PReLU(Parametric ReLU)</a></li>
+<li><a href="#softmax-函数">Softmax 函数</a></li>
+<li><a href="#swish-函数">Swish 函数</a></li>
+<li><a href="#maxout-函数">Maxout 函数</a></li>
+<li><a href="#激活函数的导数derivatives-of-activation-functions">激活函数的导数（Derivatives of activation functions）</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>激活函数（Activation Function）是一种添加到人工神经网络中的函数，旨在帮助网络学习数据中的复杂模式。类似于人类大脑中基于神经元的模型，激活函数最终决定了要发射给下一个神经元的内容。</p>
+<h2 id="sigmoid-函数">Sigmoid 函数<a class="anchor-link" href="#sigmoid-函数" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938519.png" alt="image-20210824150817856" style="zoom: 50%;" /></p>
+<p><div class="math-display"><br />
+a = \sigma(z) = \frac{1}{{1 + e}^{- z}}<br />
+</div></p>
+<p>应用场景：</p>
+<ul>
+<li>Sigmoid 函数的输出范围是 0 到 1。由于输出值限定在 0 到 1，因此它对每个神经元的输出进行了归一化；</li>
+<li>用于将预测概率作为输出的模型。由于概率的取值范围是 0 到 1，因此 Sigmoid 函数非常合适；</li>
+<li>梯度平滑，避免「跳跃」的输出值；</li>
+<li>函数是可微的。这意味着可以找到任意两个点的 sigmoid 曲线的斜率；</li>
+<li>明确的预测，即非常接近 1 或 0。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>倾向于梯度消失；</li>
+<li>函数输出不是以 0 为中心的，这会降低权重更新的效率；</li>
+<li>Sigmoid 函数执行指数运算，计算机运行得较慢。</li>
+</ul>
+<p><strong>tanh</strong>函数或者双曲正切函数是总体上都优于<strong>sigmoid</strong>函数的激活函数。</p>
+<h2 id="tanh-函数">Tanh 函数<a class="anchor-link" href="#tanh-函数" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938905.png" alt="image-20210824151119556" style="zoom: 67%;" /></p>
+<p>如图，<span class="math-inline">a = tanh(z)</span>​​​​ 的值域是位于+1 和-1 之间。</p>
+<p><div class="math-display"><br />
+f(x)= tanh(x) = \frac{e^{x} - e^{- x}}{e^{x} + e^{- x}}=\frac{2}{1+e^{-2x}}-1\<br />
+f'(x) = 1-tanh^2(x)<br />
+</div></p>
+<p>事实上，<strong>tanh</strong>函数是<strong>sigmoid</strong>的向下平移和伸缩后的结果。对它进行了变形后，穿过了<span class="math-inline">(0,0)</span> ，并且值域介于+1 和-1 之间。效果优于<strong>sigmoid</strong>函数。因为函数值域在-1 和+1 的激活函数，其均值是更接近零均值的。在训练一个算法模型时，如果使用<strong>tanh</strong>函数代替<strong>sigmoid</strong>函数中心化数据，使得数据的平均值更接近 0 而不是 0.5.</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938378.png" alt="image-20210824151342823" style="zoom: 67%;" /></p>
+<ul>
+<li>首先，当输入较大或较小时，输出几乎是平滑的并且梯度较小，这不利于权重更新。二者的区别在于输出间隔，tanh 的输出间隔为 1，并且整个函数以 0 为中心，比 sigmoid 函数更好；</li>
+<li>在 tanh 图中，负输入将被强映射为负，而零输入被映射为接近零。</li>
+</ul>
+<p>注意：在一般的二元分类问题中，tanh 函数用于隐藏层，而 sigmoid 函数用于输出层，但这并不是固定的，需要根据特定问题进行调整。</p>
+<p><strong>sigmoid</strong>函数和<strong>tanh</strong>函数两者共同的缺点是，在<span class="math-inline">z</span>​ 特别大或者特别小的情况下，导数的梯度或者函数的斜率会变得特别小，最后就会接近于 0，导致降低梯度下降的速度。</p>
+<h2 id="relu-函数">ReLu 函数<a class="anchor-link" href="#relu-函数" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938804.png" alt="image-20210824152028387" style="zoom:50%;" /><br />
+<div class="math-display"><br />
+\sigma(x)=\begin{cases}max(0,x),&amp;x\geq0\0,&amp;x&lt;0 \end{cases}<br />
+</div><br />
+ReLU 函数是深度学习中较为流行的一种激活函数，相比于 sigmoid 函数和 tanh 函数，它具有如下优点：</p>
+<ul>
+<li>当输入为正时，不存在梯度饱和问题。</li>
+<li>计算速度快得多。ReLU 函数中只存在线性关系，因此它的计算速度比 sigmoid 和 tanh 更快。</li>
+</ul>
+<p>当然，它也有缺点：</p>
+<ol>
+<li>Dead ReLU 问题。当输入为负时，ReLU 完全失效，在正向传播过程中，这不是问题。有些区域很敏感，有些则不敏感。但是在反向传播过程中，如果输入负数，则梯度将完全为零，sigmoid 函数和 tanh 函数也具有相同的问题；</li>
+<li>我们发现 ReLU 函数的输出为 0 或正数，这意味着 ReLU 函数不是以 0 为中心的函数。</li>
+</ol>
+<h2 id="leakyrelu-函数">LeakyReLU 函数<a class="anchor-link" href="#leakyrelu-函数" title="Permanent link">&para;</a></h2>
+<p>它是一种专门设计用于解决 Dead ReLU 问题的激活函数</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938314.png" alt="image-20210824152603392" style="zoom: 80%;" /><br />
+<div class="math-display"><br />
+f(y_i)=\begin{cases}y_i,&amp;y_i&gt;0\\alpha_iy_i,&amp;y_i\le0 \end{cases}<br />
+</div></p>
+<ol>
+<li>Leaky ReLU 通过把 x 的非常小的线性分量给予负输入（0.01x）来调整负值的零梯度（zero gradients）问题；</li>
+<li>leak 有助于扩大 ReLU 函数的范围，通常 a 的值为 0.01 左右；</li>
+<li>Leaky ReLU 的函数范围是（负无穷到正无穷）。</li>
+</ol>
+<p><strong>注意</strong>：从理论上讲，Leaky ReLU 具有 ReLU 的所有优点，而且 Dead ReLU 不会有任何问题，但在实际操作中，尚未完全证明 Leaky ReLU 总是比 ReLU 更好。</p>
+<h2 id="elu-函数">ELU 函数<a class="anchor-link" href="#elu-函数" title="Permanent link">&para;</a></h2>
+<p>ELU 的提出也解决了 ReLU 的问题。与 ReLU 相比，ELU 有负值，这会使激活的平均值接近零。均值激活接近于零可以使学习更快，因为它们使梯度更接近自然梯度。</p>
+<p><div class="math-display"><br />
+g(x)=ELU(x)=\begin{cases}x,&amp;x&gt;0\\alpha(e^x-1),&amp;x\le0 \end{cases}<br />
+</div></p>
+<p>显然，ELU 具有 ReLU 的所有优点，并且：</p>
+<ul>
+<li>没有 Dead ReLU 问题，输出的平均值接近 0，以 0 为中心；</li>
+<li>ELU 通过减少偏置偏移的影响，使正常梯度更接近于单位自然梯度，从而使均值向零加速学习；</li>
+<li>ELU 在较小的输入下会饱和至负值，从而减少前向传播的变异和信息。</li>
+</ul>
+<p>一个小问题是它的计算强度更高。与 Leaky ReLU 类似，尽管理论上比 ReLU 要好，但目前在实践中没有充分的证据表明 ELU 总是比 ReLU 好。</p>
+<h2 id="preluparametric-relu">PReLU(Parametric ReLU)<a class="anchor-link" href="#preluparametric-relu" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938014.png" alt="image-20210824153416122" style="zoom:67%;" /><br />
+<div class="math-display"><br />
+f(y_i)=\begin{cases}y_i,&amp;y_i&gt;0\\alpha_iy_i,&amp;y_i\le0 \end{cases}<br />
+</div><br />
+看一下 PReLU 的公式：参数α通常为 0 到 1 之间的数字，并且通常相对较小。</p>
+<ul>
+<li>如果<span class="math-inline">\alpha_i=0</span> ，则 f 变为 ReLU</li>
+<li>如果 <span class="math-inline">\alpha_i&gt;0</span>，则 f 变为 leaky ReLU</li>
+<li>如果 <span class="math-inline">\alpha_i</span> 可学习的参数，则 f 变为 PReLU</li>
+</ul>
+<p>PReLU 的优点如下：</p>
+<ol>
+<li>在负值域，PReLU 的斜率较小，这也可以避免 Dead ReLU 问题。</li>
+<li>与 ELU 相比，PReLU 在负值域是线性运算。尽管斜率很小，但不会趋于 0。</li>
+</ol>
+<p>这有一些选择激活函数的经验法则：</p>
+<p>如果输出是 0、1 值（二分类问题），则输出层选择<strong>sigmoid</strong>函数，然后其它的所有单元都选择<strong>Relu</strong>函数。</p>
+<p>这是很多激活函数的默认选择，如果在隐藏层上不确定使用哪个激活函数，那么通常会使用<strong>Relu</strong>激活函数。有时，也会使用<strong>tanh</strong>激活函数，但<strong>Relu</strong>的一个优点是：当<span class="math-inline">z</span> 负值的时候，导数等于 0。</p>
+<p>这里也有另一个版本的<strong>Relu</strong>被称为<strong>Leaky Relu</strong>。</p>
+<p>当<span class="math-inline">z</span> 负值时，这个函数的值不是等于 0，而是轻微的倾斜，如图。</p>
+<p>这个函数通常比<strong>Relu</strong>激活函数效果要好，尽管在实际中<strong>Leaky ReLu</strong>使用的并不多。</p>
+<p>两者的优点是：</p>
+<p>第一，在<span class="math-inline">z</span> 区间变动很大的情况下，激活函数的导数或者激活函数的斜率都会远大于 0，在程序实现就是一个<strong>if-else</strong>语句，而<strong>sigmoid</strong>函数需要进行浮点四则运算，在实践中，使用<strong>ReLu</strong>激活函数神经网络通常会比使用<strong>sigmoid</strong>或者<strong>tanh</strong>激活函数学习的更快。</p>
+<p>第二，<strong>sigmoid</strong>和<strong>tanh</strong>函数的导数在正负饱和区的梯度都会接近于 0，这会造成梯度弥散，而<strong>Relu</strong>和<strong>Leaky ReLu</strong>函数大于 0 部分都为常数，不会产生梯度弥散现象。(同时应该注意到的是，<strong>Relu</strong>进入负半区的时候，梯度为 0，神经元此时不会训练，产生所谓的稀疏性，而<strong>Leaky ReLu</strong>不会有这问题)</p>
+<p><span class="math-inline">z</span>​ 在<strong>ReLu</strong>的梯度一半都是 0，但是，有足够的隐藏层使得 z 值大于 0，所以对大多数的训练数据来说学习过程仍然可以很快。</p>
+<h2 id="softmax-函数">Softmax 函数<a class="anchor-link" href="#softmax-函数" title="Permanent link">&para;</a></h2>
+<p><div class="math-display"><br />
+Softmax(z_i)=\frac{e^{z_i}}{\sum_{c=1}^{C}e^{z_c}}<br />
+</div></p>
+<p>Softmax 是用于多分类问题的激活函数，在多分类问题中，超过两个类标签则需要类成员关系。对于长度为 <span class="math-inline">K </span> 任意实向量，Softmax 可以将其压缩为长度为 <span class="math-inline">K</span>，值在<span class="math-inline">(0,1)</span> 围内，并且向量中元素的总和为 1 的实向量。</p>
+<p><img alt="v2-11758fbc2fc5bbbc60106926625b3a4f_1440w" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938746.jpg" /></p>
+<p>指数函数曲线呈现递增趋势，斜率逐渐增大，即<span class="math-inline">x</span> 上一个很小的变化，可以导致<span class="math-inline">y</span> 上很大的变化。但是当 <span class="math-inline">z_i</span> 非常大时，可能导致结果溢出。</p>
+<blockquote>
+<p>针对数值溢出有其对应的优化方法，将每一个输出值减去输出值中最大的值<br />
+<span class="math-inline">D = max(z)</span> &gt;<span class="math-inline">Softmax(z_i)=\frac{e^{z_i-D}}{\sum_{c=1}^{C}e^{z_c-D}}</span></p>
+</blockquote>
+<p>Softmax 与正常的 max 函数不同：max 函数仅输出最大值，但 Softmax 确保较小的值具有较小的概率，并且不会直接丢弃。我们可以认为它是 argmax 函数的概率版本或「soft」版本。</p>
+<p>Softmax 激活函数的主要<strong>缺点</strong>是：</p>
+<ol>
+<li>在零点不可微；</li>
+<li>负输入的梯度为零，这意味着对于该区域的激活，权重不会在反向传播期间更新，因此会产生永不激活的死亡神经元。</li>
+</ol>
+<p><strong>Reference</strong></p>
+<ol>
+<li>https://zhuanlan.zhihu.com/p/105722023</li>
+<li><a href="https://kexue.fm/archives/10145">通向概率分布之路：盘点 Softmax 及其替代品</a></li>
+</ol>
+<h2 id="swish-函数">Swish 函数<a class="anchor-link" href="#swish-函数" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938628.png" alt="image-20210824154635896" style="zoom:80%;" /></p>
+<p>函数表达式：y = x * sigmoid (x)</p>
+<p>Swish 的设计受到了 LSTM 和高速网络中 gating 的 sigmoid 函数使用的启发。我们使用相同的 gating 值来简化 gating 机制，这称为 self-gating。</p>
+<p>self-gating 的优点在于它只需要简单的标量输入，而普通的 gating 则需要多个标量输入。这使得诸如 Swish 之类的 self-gated 激活函数能够轻松替换以单个标量为输入的激活函数（例如 ReLU），而无需更改隐藏容量或参数数量。</p>
+<p>Swish 激活函数的主要优点如下：</p>
+<ul>
+<li>「无界性」有助于防止慢速训练期间，梯度逐渐接近 0 并导致饱和；（同时，有界性也是有优势的，因为有界激活函数可以具有很强的正则化，并且较大的负输入问题也能解决）；</li>
+<li>导数恒 &gt; 0；</li>
+<li>平滑度在优化和泛化中起了重要作用。</li>
+</ul>
+<h2 id="maxout-函数">Maxout 函数<a class="anchor-link" href="#maxout-函数" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938177.png" alt="image-20210824154724175" style="zoom:80%;" /></p>
+<p>在 Maxout 层，激活函数是输入的最大值，因此只有 2 个 maxout 节点的多层感知机就可以拟合任意的凸函数。</p>
+<p>单个 Maxout 节点可以解释为对一个实值函数进行分段线性近似 (PWL) ，其中函数图上任意两点之间的线段位于图（凸函数）的上方。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938414.jpg" /></p>
+<p>Maxout 也可以对 d 维向量（V）实现：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938906.jpeg" /></p>
+<p>假设两个凸函数 h_1(x) 和 h_2(x)，由两个 Maxout 节点近似化，函数 g(x) 是连续的 PWL 函数。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938016.jpg" /></p>
+<p>因此，由两个 Maxout 节点组成的 Maxout 层可以很好地近似任何连续函数。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938529.jpeg" /></p>
+<p><strong>10. Softplus</strong></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938709.jpg" /></p>
+<p>Softplus 函数：f（x）= ln（1 + exp x）</p>
+<p>Softplus 的导数为</p>
+<p>f ′(x)=exp(x) / ( 1+exp⁡ x )</p>
+<p>= 1/ (1 +exp(−x ))</p>
+<p>，也称为 logistic / sigmoid 函数。</p>
+<p>Softplus 函数类似于 ReLU 函数，但是相对较平滑，像 ReLU 一样是单侧抑制。它的接受范围很广：(0, + inf)。</p>
+<p>快速概括一下不同激活函数的过程和结论。</p>
+<p><strong>sigmoid</strong>激活函数：除了输出层是一个二分类问题基本不会用它。</p>
+<p><strong>tanh</strong>激活函数<strong>：tanh</strong>是非常优秀的，几乎适合所有场合。</p>
+<p><strong>ReLu</strong>激活函数：最常用的默认函数，，如果不确定用哪个激活函数，就使用<strong>ReLu</strong>或者<strong>Leaky ReLu</strong>。公式 3.23：<br />
+<span class="math-inline">a = max( 0.01z,z)</span><br />
+为什么常数是 0.01？当然，可以为学习算法选择不同的参数。</p>
+<p>在选择自己神经网络的激活函数时，有一定的直观感受，在深度学习中的经常遇到一个问题：在编写神经网络的时候，会有很多选择：隐藏层单元的个数、激活函数的选择、初始化权值……这些选择想得到一个对比较好的指导原则是挺困难的。</p>
+<p>鉴于以上三个原因，以及在工业界的见闻，提供一种直观的感受，哪一种工业界用的多，哪一种用的少。但是，自己的神经网络的应用，以及其特殊性，是很难提前知道选择哪些效果更好。所以通常的建议是：如果不确定哪一个激活函数效果更好，可以把它们都试试，然后在验证集或者发展集上进行评价。然后看哪一种表现的更好，就去使用它。</p>
+<p>为自己的神经网络的应用测试这些不同的选择，会在以后检验自己的神经网络或者评估算法的时候，看到不同的效果。如果仅仅遵守使用默认的<strong>ReLu</strong>激活函数，而不要用其他的激励函数，那就可能在近期或者往后，每次解决问题的时候都使用相同的办法。</p>
+<h2 id="激活函数的导数derivatives-of-activation-functions">激活函数的导数（Derivatives of activation functions）<a class="anchor-link" href="#激活函数的导数derivatives-of-activation-functions" title="Permanent link">&para;</a></h2>
+<p>在神经网络中使用反向传播的时候，你真的需要计算激活函数的斜率或者导数。针对以下四种激活，求其导数如下：</p>
+<p>1）<strong>sigmoid activation function</strong></p>
+<p><img alt="image-20210807165150424" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938132.png" /><br />
+图 3.8.1</p>
+<p>其具体的求导如下：<br />
+公式 3.25：<br />
+<span class="math-inline">\frac{d}{dz}g(z) = {\frac{1}{1 + e^{-z}} (1-\frac{1}{1 + e^{-z}})}=g(z)(1-g(z))</span></p>
+<p>注：</p>
+<p>当<span class="math-inline">z</span> = 10 或<span class="math-inline">z= -10</span> ; <span class="math-inline">\frac{d}{dz}g(z)\approx0</span></p>
+<p>当<span class="math-inline">z </span>= 0 , <span class="math-inline">\frac{d}{dz}g(z)\text{=g(z)(1-g(z))=}{1}/{4}</span></p>
+<p>在神经网络中<span class="math-inline">a= g(z)</span>; <span class="math-inline">g{{(z)}^{'}}=\frac{d}{dz}g(z)=a(1-a)</span></p>
+<ol start="2">
+<li><strong>Tanh activation function</strong></li>
+</ol>
+<p><img alt="image-20210807165215800" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938557.png" /><br />
+图 3.8.2</p>
+<p>其具体的求导如下：<br />
+公式 3.26：<br />
+<span class="math-inline">g(z) = tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}} </span></p>
+<p>公式 3.27：<br />
+<span class="math-inline">\frac{d}{{d}z}g(z) = 1 - (tanh(z))^{2}</span><br />
+注：</p>
+<p>当<span class="math-inline">z</span> = 10 或<span class="math-inline">z= -10</span> <span class="math-inline">\frac{d}{dz}g(z)\approx0</span></p>
+<p>当<span class="math-inline">z</span> = 0, <span class="math-inline">\frac{d}{dz}g(z)\text{=1-(0)=}1</span></p>
+<p>在神经网络中;</p>
+<p>3）<strong>Rectified Linear Unit (ReLU)</strong></p>
+<p><img alt="image-20210807165231452" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160938928.png" /><br />
+<span class="math-inline">g(z) =max (0,z)</span></p>
+<p><div class="math-display"><br />
+g(z)^{'}=<br />
+  \begin{cases}<br />
+  0&amp;    \text{if z &lt; 0}\<br />
+  1&amp;    \text{if z &gt; 0}\<br />
+undefined&amp;  \text{if z = 0}<br />
+\end{cases}<br />
+</div></p>
+<p>注：通常在<span class="math-inline">z</span>= 0 的时候给定其导数 1,0；当然<span class="math-inline">z</span>=0 的情况很少</p>
+<p>4）<strong>Leaky linear unit (Leaky ReLU)</strong></p>
+<p>与<strong>ReLU</strong>类似</p>
+<p><div class="math-display"><br />
+g(z)=\max(0.01z,z) \<br />
+    \<br />
+    \<br />
+g(z)^{'}=<br />
+\begin{cases}<br />
+0.01&amp;   \text{if z &lt; 0}\<br />
+1&amp;  \text{if z &gt; 0}\<br />
+undefined&amp;  \text{if z = 0}<br />
+\end{cases}<br />
+</div></p>
+<p>注：通常在<span class="math-inline">z = 0</span> 时候给定其导数 1,0.01；当然<span class="math-inline">z=0</span> 情况很少。</p>
+<p>参考：</p>
+<p>[深度学习领域最常用的 10 个激活函数，一文详解数学原理及优缺点 - 知乎 (zhihu.com)](</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

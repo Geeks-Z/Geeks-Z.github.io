@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-基于能量的潜在对齐器">3. 基于能量的潜在对齐器</a><ul>
+<li><a href="#31-问题设置">3.1 问题设置</a></li>
+<li><a href="#32-潜在对齐器">3.2 潜在对齐器</a><ul>
+<li><a href="#321-学习潜在对齐器">3.2.1 学习潜在对齐器</a></li>
+<li><a href="#322-使用-eli-进行对齐">3.2.2 使用 ELI 进行对齐</a></li>
+</ul>
+</li>
+<li><a href="#33-玩具示例">3.3 玩具示例</a></li>
+</ul>
+</li>
+<li><a href="#4-实验与结果">4. 实验与结果</a><ul>
+<li><a href="#41-增量分类结果">4.1 增量分类结果</a></li>
+<li><a href="#42-增量目标检测结果">4.2 增量目标检测结果</a></li>
+</ul>
+</li>
+<li><a href="#5-讨论与分析">5. 讨论与分析</a><ul>
+<li><a href="#51-eli-作为隐式正则化器">5.1 ELI 作为隐式正则化器</a></li>
+<li><a href="#52-对齐最终层-logits">5.2 对齐最终层 logits</a></li>
+<li><a href="#53-在不同大小的潜在空间中对齐">5.3 在不同大小的潜在空间中对齐</a></li>
+<li><a href="#54-对超参数的敏感性">5.4 对超参数的敏感性</a></li>
+<li><a href="#55-计算和内存">5.5 计算和内存</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+<li><a href="#致谢">致谢</a></li>
+<li><a href="#附录">附录</a><ul>
+<li><a href="#a-隐式识别重要潜在表示">A. 隐式识别重要潜在表示</a></li>
+<li><a href="#b-使用-mixup-进行数据增强">B. 使用 mixup 进行数据增强</a></li>
+<li><a href="#c-更广泛的社会影响">C. 更广泛的社会影响</a></li>
+<li><a href="#d-定性结果">D. 定性结果</a></li>
+<li><a href="#e-符号摘要">E. 符号摘要</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/45.Energy</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>深度学习模型在增量学习新任务时往往会遗忘先前学到的知识。这种行为的发生是因为为新任务优化的参数更新可能与适合旧任务的更新不一致。由此导致的潜在表示不匹配会导致遗忘。在本工作中，我们提出了 <strong>ELI</strong>（基于能量的潜在对齐器用于增量学习），它首先学习潜在表示的能量流形，使得先前任务的潜在表示具有低能量值，而当前任务的潜在表示具有高能量值。这种学习到的流形用于抵消增量学习过程中发生的表示偏移。我们提出的方法提供的隐式正则化可以作为现有增量学习方法的即插即用模块。我们通过在 CIFAR-100、ImageNet 子集、ImageNet 1k 和 Pascal VOC 数据集上的广泛评估验证了这一点。我们观察到，当 <strong>ELI</strong> 被添加到三种主要的类增量学习方法中时，在多种增量设置中性能一致提升。此外，当添加到最先进的增量目标检测器中时，<strong>ELI</strong> 提供了超过 5% 的检测精度提升，证明了其有效性和对现有技术的补充优势。代码可在以下地址获取：https://github.com/JosephKJ/ELI。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>现实世界中的学习体验是动态的，要求模型随着时间的推移逐步学习新的能力。增量学习（也称为持续学习）是一种学习范式，它在时间步 <span class="math-inline">t</span> 处学习一个模型 <span class="math-inline">M_{T_t}</span>，使其能够解决在其生命周期内引入的一系列任务 <span class="math-inline">T_t = {\tau_1, \tau_2, \cdots, \tau_t}</span>。每个任务 <span class="math-inline">\tau_i</span> 包含来自不相交类别的实例。重要的是，在学习 <span class="math-inline">\tau_t</span> 时，无法访问先前任务 <span class="math-inline">{\tau_1, \cdots, \tau_{t-1}}</span> 的训练数据，这是由于隐私、内存和/或计算限制。</p>
+<p>我们可以将增量模型 <span class="math-inline">M_{T_t}</span> 表示为一个潜在特征提取器 <span class="math-inline">F_{T_t}^\theta</span> 和一个尾部网络 <span class="math-inline">F_{T_t}^\phi</span> 的组合，后者使用提取的特征来完成任务：<span class="math-inline">M_{T_t}(x) = (F_{T_t}^\phi \circ F_{T_t}^\theta)(x)</span>，其中 <span class="math-inline">x \in T_t</span>。一种简单的增量学习方法是使用当前任务 <span class="math-inline">\tau_t</span> 的数据样本来微调先前任务 <span class="math-inline">M_{T_{t-1}}</span> 训练好的模型。这样做会使网络的内部表示偏向于在 <span class="math-inline">\tau_t</span> 上表现良好，从而显著降低在旧任务上的性能。这种现象被称为<strong>灾难性遗忘</strong> [13, 35]。</p>
+<p>增量学习问题要求在长时间的学习任务中积累知识，而不发生灾难性遗忘。主要挑战是如何在不同训练阶段之间整合冲突的隐式表示，以学习适用于所有学习经验的通用模型。为此，现有方法研究了基于正则化的方法 [2, 23, 24, 29, 40, 55]，这些方法约束 <span class="math-inline">\theta</span> 和 <span class="math-inline">\phi</span>，使得模型在所有任务上表现良好。基于样本回放的方法 [7, 8, 21, 33, 41] 保留每个任务的一部分数据点，并通过回放它们来学习持续模型。动态扩展模型 [34, 44, 45] 在增量学习过程中扩展 <span class="math-inline">\theta</span> 和 <span class="math-inline">\phi</span>。</p>
+<p>作为对现有方法的补充，我们提出了一种新颖的方法，它通过学习到的能量流形来最小化增量模型潜在空间中的表示偏移。能量建模提供了一种自然机制来处理灾难性遗忘，我们在此基础上构建。图 1 展示了我们提出的方法 <strong>ELI</strong>（基于能量的潜在对齐器用于增量学习）如何帮助减轻遗忘。在学习当前任务 <span class="math-inline">\tau_t</span> 后，先前任务数据的特征提取器（此后称为<strong>潜在表示</strong>）<span class="math-inline">z_{T_t} = F_{T_t}^\theta(x), x \in \tau_{t-1}</span> 会发生偏移，如红色箭头所示。我们方法的第一步是学习一个能量流形，其中直到当前任务 <span class="math-inline">M_{T_t}</span> 训练好的模型的潜在表示具有较高的能量，而直到先前任务 <span class="math-inline">M_{T_t}^{-1}</span> 训练好的模型的潜在表示具有较低的能量。接下来，学习到的基于能量的模型（EBM）用于转换先前任务的潜在表示 <span class="math-inline">z_{T_t}</span>（通过将先前任务数据传递给当前模型获得），这些表示已经偏移，使其在潜在空间中移动到新的位置，从而撤销表示偏移（如绿色箭头所示）。这有助于减轻增量学习中的遗忘。我们将在第 3 节中解释如何实现这种转换。我们还通过 MNIST（图 3）展示了一个概念验证，该实验模拟了上述设置。潜在空间的可视化和学习新任务后的准确性恢复与图 1 中的图示一致，这强化了我们的直觉。</p>
+<p>我们基于能量的潜在对齐器的一个独特特性是它能够扩展和增强现有的持续学习方法，而无需对其方法进行任何更改。我们通过将 <strong>ELI</strong> 添加到三种主要的类增量方法中验证了这一点：iCaRL [41]、LUCIR [20] 和 AANet [31]，以及最先进的增量目标检测器 iOD [22]。我们在 CIFAR-100 [25]、ImageNet 子集 [41]、ImageNet 1k [9] 和 Pascal VOC [12] 目标检测数据集上进行了全面的实验评估。对于增量分类实验，我们考虑了两种主要的设置：将类别添加到已训练一半类别作为第一个任务的模型中，以及考虑所有任务具有相同类别数量的一般增量学习设置。<strong>ELI</strong> 在所有数据集和所有方法中一致地提升了增量分类设置中的性能，并在增量目标检测中获得了令人印象深刻的性能提升，与当前最先进的技术 [22] 相比，分别在学习 10、5 和单个类别时提升了 5.4%、7% 和 3%。</p>
+<p>总结一下，我们工作的主要亮点是：</p>
+<ul>
+<li>我们引入了一种新颖的方法 <strong>ELI</strong>，它有助于对抗增量学习模型潜在空间中的表示偏移。</li>
+<li>我们的基于能量的潜在对齐器可以作为现有增量分类器和目标检测器的附加模块，而无需对其方法进行任何更改。</li>
+<li><strong>ELI</strong> 在三个大规模增量分类数据集上的超过 45 个实验中表现出一致的改进，并将当前最先进的增量目标检测器的平均 mAP 提升了超过 5%。</li>
+</ul>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p><strong>增量学习</strong>：在这种设置下，模型在不断改进新任务的同时，不会影响其在旧任务上的性能。实现这种行为的一种流行方法是通过约束参数使其不会偏离先前调整的值 [7, 10, 28, 32, 41, 52]。在这方面，知识蒸馏 [19] 已被广泛用于在增量分类 [7, 28, 41] 和目标检测 [15, 21, 46] 设置中强制执行显式正则化。在基于回放的方法中，通常存储一小部分样本以回忆和保留对早期任务有用的表示 [6, 20, 24, 32, 41]。另一组分离参数学习方法将不同的参数子集分配给不同的任务，从而避免干扰，例如通过新的网络块或门控机制 [1, 31, 38, 39, 44]。此外，元学习方法已被探索用于学习在多个增量任务之间共享的更新方向 [22, 40, 43]。与这些方法相比，我们提出学习一个 EBM 来对齐增量任务之间的隐式特征分布。<strong>ELI</strong> 可以通过使用学习到的能量流形强制执行隐式潜在空间正则化来增强这些现有方法，而无需进行方法上的修改。</p>
+<p><strong>基于能量的模型</strong>：EBMs [26] 是一种最大似然估计模型，可以为观察到的数据标签对分配低能量，否则分配高能量 [11]。EBMs 已被用于检测分布外样本 [30, 47]、结构化预测 [4, 5, 48] 和提高对抗鲁棒性 [11, 17]。联合能量模型（JEM）[14] 表明，任何分类器都可以重新解释为生成模型，可以建模标签和数据的联合似然。虽然 JEM 需要在判别和生成目标之间交替，但 Wang 等人 [49] 提出了一种基于能量的开放世界 softmax 目标，可以同时执行判别学习和生成建模。EBMs 也被用于合成图像 [3, 53, 57, 58]。Xie 等人 [54] 使用 CNN 表示 EBM，并利用 Langevin 动力学进行 MCMC 采样以生成逼真的图像。与这些方法相比，我们探索了 EBM 在持续学习范式中减轻遗忘的效用。大多数这些方法在数据空间中操作，从 EBM 采样将是昂贵的 [57]。不同的是，我们使用潜在表示学习能量流形，这在控制影响增量模型的表示偏移方面更快且更有效。最近的一项未发表的工作 [27] 提出用基于能量的分类器头替换增量模型的标准 softmax 层。我们的方法引入了使用学习到的能量流形在潜在空间中进行隐式正则化，这与其方法有根本不同，并且在更困难的数据集和多样化设置（分类和检测）中具有良好的扩展性。</p>
+<h2 id="3-基于能量的潜在对齐器">3. 基于能量的潜在对齐器<a class="anchor-link" href="#3-基于能量的潜在对齐器" title="Permanent link">&para;</a></h2>
+<p>我们提出的方法 <strong>ELI</strong> 利用基于能量的模型（EBM）[26] 来优化调整增量模型的潜在表示，从而减轻灾难性遗忘。在我们的讨论中，我们将从模型骨干网络中提取的中间特征向量称为<strong>潜在表示</strong>。在第 3.1 节简要介绍问题设置后，我们将在第 3.2 节解释如何学习和使用 EBM 进行对齐。我们将在第 3.3 节讨论一个玩具实验。</p>
+<h3 id="31-问题设置">3.1 问题设置<a class="anchor-link" href="#31-问题设置" title="Permanent link">&para;</a></h3>
+<p>在增量学习范式中，随着时间的推移，模型会引入一系列任务 <span class="math-inline">T_t = {\tau_1, \tau_2, \cdots, \tau_t}</span>。<span class="math-inline">\tau_t</span> 表示在时间步 <span class="math-inline">t</span> 引入的任务，它由从其对应的任务数据分布中采样的图像 <span class="math-inline">X_{\tau_t}</span> 和标签 <span class="math-inline">y_{\tau_t}</span> 组成：<span class="math-inline">(x_{\tau_t}^i, y_{\tau_t}^i) \sim p_{\tau_t}^{\text{data}}</span>。每个任务 <span class="math-inline">\tau_t</span> 包含来自不相交类别的实例。我们寻求构建一个模型 <span class="math-inline">M_{T_t}</span>，它能够解决所有任务 <span class="math-inline">T_t</span>。不失一般性，<span class="math-inline">M_{T_t}</span> 可以表示为两个函数的组合：<span class="math-inline">M_{T_t}(x) = (F_{T_t}^\phi \circ F_{T_t}^\theta)(x)</span>，其中 <span class="math-inline">F_{T_t}^\theta</span> 是特征提取器，<span class="math-inline">F_{T_t}^\phi</span> 是分类任务的分类器或目标检测任务的分类和定位分支，解决迄今为止引入的所有任务 <span class="math-inline">T_t</span>。</p>
+<p>在训练 <span class="math-inline">M_{T_t}</span> 以学习当前任务 <span class="math-inline">\tau_t</span> 时，模型无法访问所有先前任务的数据。这种当前任务数据与先前任务数据之间的不平衡会使模型偏向于最新任务，从而在早期任务上灾难性地降低其性能。使增量学习器对此类遗忘具有鲁棒性是一个具有挑战性的研究问题。正则化方法 [2, 23]、样本回放方法 [8, 33, 41] 和渐进模型扩展方法 [34, 44, 45] 已成为解决遗忘的标准方法。我们提出的方法是对该领域所有这些发展的补充，并且足够通用，可以作为任何持续学习方法的附加模块，且开销最小。</p>
+<h3 id="32-潜在对齐器">3.2 潜在对齐器<a class="anchor-link" href="#32-潜在对齐器" title="Permanent link">&para;</a></h3>
+<p>我们在持续学习模型的潜在空间中进行基于能量的建模。我们的潜在对齐器方法避免了显式识别哪些潜在表示应进行调整或保留以在学习新技能时保留知识。它隐式地识别哪些表示在任务之间共享是理想的，保留它们，并同时调整对增量学习产生负面影响的表示。</p>
+<p>让我们考虑一个具体的增量学习设置，其中我们将一个新任务 <span class="math-inline">\tau_t</span> 引入到一个已经训练好以执行先前任务 <span class="math-inline">M_{T_{t-1}}</span> 的模型中。用于学习新任务的训练数据是从相应的数据分布中采样的：<span class="math-inline">(x_{\tau_t}^i, y_{\tau_t}^i) \sim p_{\tau_t}^{\text{data}}</span>。我们可以使用任何现有的持续学习算法 <span class="math-inline">A</span> 来学习增量模型 <span class="math-inline">M_{T_t}</span>。<span class="math-inline">M_{T_{t-1}}</span> 的潜在表示将针对学习 <span class="math-inline">\tau_t</span> 进行优化，这会导致 <span class="math-inline">M_{T_t}</span> 在先前任务上的性能下降。根据 <span class="math-inline">A</span> 的有效性，<span class="math-inline">M_{T_t}</span> 在减轻固有遗忘方面可能具有不同程度的有效性。我们提出的方法有助于撤销当通过 <span class="math-inline">M_{T_t}</span> 传递先前任务实例时发生的表示偏移。</p>
+<p>如图 2 所示，在第一步中，我们使用三种成分学习能量流形：(i) 来自当前任务的图像：<span class="math-inline">x \sim p_{\tau_t}^{\text{data}}</span>，(ii) 通过先前任务训练好的模型获得的 <span class="math-inline">x</span> 的潜在表示：<span class="math-inline">z_{T_{t-1}} = F_{T_{t-1}}^\theta(x)</span>，以及 (iii) 通过当前任务训练好的模型获得的 <span class="math-inline">x</span> 的潜在表示：<span class="math-inline">z_{T_t} = F_{T_t}^\theta(x)</span>。学习一个基于能量的模型 <span class="math-inline">E_\psi</span>，为 <span class="math-inline">z_{T_{t-1}}</span> 分配低能量值，为 <span class="math-inline">z_{T_t}</span> 分配高能量值。接下来，在推理过程中，使用学习到的能量流形 <span class="math-inline">E_\psi</span> 来抵消当通过当前模型传递先前任务实例时发生的潜在表示偏移：<span class="math-inline">z_{T_t} = F_{T_t}^\theta(x)</span>，其中 <span class="math-inline">x \in T_{t-1}</span>。由于潜在空间中的表示偏移，<span class="math-inline">z_{T_t}</span> 在能量流形中将具有较高的能量值。我们将 <span class="math-inline">z_{T_t}</span> 对齐到潜在空间中的替代位置，使它们在流形上的能量最小化，如图 2 右侧所示。这些偏移的潜在表示表现出较少的遗忘，我们通过大规模增量分类和目标检测实验（第 4 节）对此进行了实证验证。</p>
+<p>有趣的是：1) 我们的方法在不对增量学习算法 <span class="math-inline">A</span> 进行任何更改的情况下，在潜在空间中添加了隐式正则化，该算法用于学习 <span class="math-inline">M_{T_t}</span>，2) <strong>ELI</strong> 不需要访问先前任务数据来学习能量流形。通过模型 <span class="math-inline">F_{T_{t-1}}^\theta</span> 传递的当前任务数据确实在学习 EBM 时充当了先前任务数据的代理。</p>
+<h4 id="321-学习潜在对齐器">3.2.1 学习潜在对齐器<a class="anchor-link" href="#321-学习潜在对齐器" title="Permanent link">&para;</a></h4>
+<p>EBMs 提供了一种简单灵活的方式来建模数据似然 [11]。我们使用基于神经网络的连续能量模型，可以通用地建模各种函数映射。具体来说，对于 <strong>ELI</strong> 中的给定潜在特征向量 <span class="math-inline">z \in \mathbb{R}^D</span>，我们学习一个能量函数 <span class="math-inline">E_\psi(z): \mathbb{R}^D \rightarrow \mathbb{R}</span>，将其映射到一个标量能量值。EBM 被定义为 <span class="math-inline">E_\psi(z)</span> 上的 Gibbs 分布 <span class="math-inline">p_\psi(z)</span>：<br />
+<div class="math-display"><br />
+    p_\psi(z) = \frac{\exp(-E_\psi(z))}{\int_z \exp(-E_\psi(z))dz}, \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">\int_z \exp(-E_\psi(z))dz</span> 是一个难以处理的配分函数。EBM 通过最大化从真实分布 <span class="math-inline">p_{\text{true}}(z)</span> 中抽取的样本集上的数据对数似然进行训练：<br />
+<div class="math-display"><br />
+    L(\psi) = \mathbb{E}<em>{z \sim p</em>{\text{true}}}[\log p_\psi(z)]. \tag{2}<br />
+</div><br />
+上述目标的导数如下 [51]：<br />
+<div class="math-display"><br />
+    \partial_\psi L(\psi) = \mathbb{E}<em>{z \sim p</em>{\text{true}}}[-\partial_\psi E_\psi(z)] + \mathbb{E}<em>{z \sim p</em>\psi}[\partial_\psi E_\psi(z)]. \tag{3}<br />
+</div><br />
+方程 (3) 中的第一项确保从真实数据分布 <span class="math-inline">p_{\text{true}}</span> 中抽取的样本 <span class="math-inline">z</span> 的能量将被最小化，而第二项确保从模型本身抽取的样本将具有较高的能量值。在 <strong>ELI</strong> 中，<span class="math-inline">p_{\text{true}}</span> 对应于在任何时间点通过先前任务训练好的模型的潜在表示分布。由于方程 (1) 中的归一化常数，从 <span class="math-inline">p_\psi(x)</span> 中采样是难以处理的。使用 Langevin 动力学 [36, 50] 递归地绘制近似样本，这是一种流行的 MCMC 算法：<br />
+<div class="math-display"><br />
+    z_{i+1} = z_i - \frac{\lambda}{2} \partial_z E_\psi(z) + \sqrt{\lambda} \omega_i, \omega_i \sim \mathcal{N}(0, I) \tag{4}<br />
+</div><br />
+其中 <span class="math-inline">\lambda</span> 是步长，<span class="math-inline">\omega</span> 捕捉数据不确定性。方程 (4) 产生一个马尔可夫链，在从初始 <span class="math-inline">z_i</span> 开始的几次迭代中稳定到平稳分布。</p>
+<p>算法 1 说明了如何在 <strong>ELI</strong> 中学习能量流形。能量函数 <span class="math-inline">E_\psi</span> 由一个多层感知器实现，输出层具有单个神经元，用于量化输入样本的能量。它在第 1 行进行 Kaiming 初始化。在几次迭代中，我们从当前任务数据分布 <span class="math-inline">p_{\tau_t}^{\text{data}}</span> 中采样小批量。接下来，从小批量中的数据的潜在表示在第 4 行和第 5 行分别从先前任务训练好的模型 <span class="math-inline">F_{T_{t-1}}^\theta</span> 和当前任务训练好的模型 <span class="math-inline">F_{T_t}^\theta</span> 中检索。从这一点开始，我们准备根据方程 (3) 计算梯度，这是训练能量函数所必需的。方程 (3) 中的第一项最小化了分布内能量的期望，这在第 7 行计算，而第二项最大化了分布外能量的期望（第 8 行）。计算分布外能量所需的 Langevin 采样将当前模型中的潜在表示作为马尔可夫链的初始起点，如第 6 行所示。最后，损失在第 9 行计算，能量函数 <span class="math-inline">E_\psi</span> 在第 10 行使用 RMSprop [18] 优化器进行优化。</p>
+<h4 id="322-使用-eli-进行对齐">3.2.2 使用 <strong>ELI</strong> 进行对齐<a class="anchor-link" href="#322-使用-eli-进行对齐" title="Permanent link">&para;</a></h4>
+<p>在增量设置中学习任务 <span class="math-inline">\tau_t</span> 后，我们使用算法 1 学习能量流形。该流形用于使用算法 2 对齐来自当前模型 <span class="math-inline">M_{T_t}</span> 的先前任务实例的潜在表示。计算能量函数 <span class="math-inline">E_\psi</span> 相对于潜在表示 <span class="math-inline">z</span> 的梯度（第 2 行）。然后，这些潜在表示被连续更新以减少其能量（第 3 行）。我们对 <span class="math-inline">L_{\text{steps}}</span> 次 Langevin 迭代重复此过程。对齐器假设在推理期间可获得高级任务信息，即潜在表示是否属于当前任务。</p>
+<h3 id="33-玩具示例">3.3 玩具示例<a class="anchor-link" href="#33-玩具示例" title="Permanent link">&para;</a></h3>
+<p>我们的方法基于一个关键前提，即增量学习模型的潜在表示在训练新任务后会受到干扰，并且基于能量的流形可以成功地以事后方式减轻这种不必要的表示偏移。在图 3 中，我们展示了一个概念验证，证明我们的假设确实成立。我们考虑了一个两任务的增量 MNIST 实验，其中第一个任务是学习前 5 个类别，而第二个任务是学习剩下的类别：<span class="math-inline">T_1 = {\tau_0, \tau_1, \tau_2, \tau_3, \tau_4}</span> 和 <span class="math-inline">T_2 = {\tau_5, \tau_6, \tau_7, \tau_8, \tau_9}</span>。我们首先学习 <span class="math-inline">M_{T_1}(x) = (F_{T_1}^\phi \circ F_{T_1}^\theta)(x)</span>，其中 <span class="math-inline">x \in T_1</span>，然后逐步更新为 <span class="math-inline">M_{T_2}(x) = (F_{T_2}^\phi \circ F_{T_2}^\theta)(x)</span>，其中 <span class="math-inline">x \in T_2</span>。当使用 <span class="math-inline">(F_{T_1}^\phi \circ F_{T_2}^\theta)(x)</span> 评估任务 1 的分类准确率时，其中 <span class="math-inline">x \in T_{\text{test}}^1</span>，我们看到了灾难性遗忘的实际表现。当使用 32 维潜在空间时，性能从 99.2% 显著下降到 20.9%。让我们用 <span class="math-inline">F_{\text{ELI}}^\psi</span> 表示我们提出的潜在对齐器。当我们使用 <span class="math-inline">(F_{T_1}^\phi \circ F_{\text{ELI}}^\psi \circ F_{T_2}^\theta)(x)</span> 重新评估分类准确率时，其中 <span class="math-inline">x \in T_{\text{test}}^1</span>，我们看到准确率提高了 62.6% 到 83.4%。我们还尝试将潜在空间维度增加到 512。与我们之前的观察一致，我们观察到准确率从 99.54% 下降到 89.14%。<strong>ELI</strong> 帮助将其提高到 99.04%。由于模型的较大容量，遗忘导致的绝对性能下降低于 32 维潜在空间。子图 (c) 中的潜在空间可视化也表明更多的混乱。子图 (d) 明确地强化了 <strong>ELI</strong> 重新对齐潜在表示的效用。具体来说，请注意 <strong>Class 3</strong> 的潜在表示如何与 <strong>Class 2</strong> 的潜在表示混合在一起，现在通过 <strong>ELI</strong> 在潜在空间中很好地移动。这些结果强烈地证明了我们方法的实用性。通过使用主流的增量学习方法使 <span class="math-inline">F_{T_2}^\theta</span> 更强大，我们将进一步提高性能。我们在第 4.1 节和第 4.2 节中分别在类增量学习和增量目标检测设置中更困难的数据集上展示了这一点。</p>
+<h2 id="4-实验与结果">4. 实验与结果<a class="anchor-link" href="#4-实验与结果" title="Permanent link">&para;</a></h2>
+<p>我们进行了广泛的实验，使用增量分类器和目标检测器来评估 <strong>ELI</strong>。据我们所知，我们的方法是第一个在这两种设置中都能工作而无需任何修改的方法。</p>
+<p><strong>协议</strong>：在这两个问题领域中，我们研究了类增量设置，其中一组类别构成一个增量任务。对于分类器的类增量学习，我们实验了文献中存在的两种主要协议：a) 首先使用总类别数的一半作为第一个任务 [20, 31]，然后每个任务具有相同数量的类别，b) 确保每个任务（包括第一个任务）具有相同数量的类别 [7, 24, 38, 41]。前者测试了极端的类增量学习设置，其中在 25 个任务设置中，我们逐步为具有 100 个类别的数据集每个阶段仅添加两个类别。它的优势在于在任务 1 中可以访问一半的数据集，从而学习到一个强大的初始分类器。后者在任务之间具有统一的类别分布。这两种设置测试了增量分类器的不同可能动态。对于增量目标检测，类似于现有工作 [22, 37, 46]，我们遵循一个两任务设置，其中第二个任务包含 10、5 或 1 个增量类别。</p>
+<p><strong>数据集和评估指标</strong>：根据现有工作 [7, 20, 22, 31, 41, 46]，我们使用了 CIFAR-100 [25]、ImageNet 子集 [41]、ImageNet 1k [9] 和 Pascal VOC [12] 数据集的增量版本。CIFAR-100 [25] 包含 50k 训练图像，对应 100 个类别，每张图像的空间尺寸为 <span class="math-inline">32 \times 32</span>。ImageNet 子集 [41] 包含从 ImageNet 数据集中随机选择的 100 个类别。我们还实验了完整的 ImageNet 2012 数据集 [9]，其中包含 1000 个类别。与 CIFAR-100 相比，ImageNet 子集和 ImageNet 1k 中每个类别有超过 1300 张图像，尺寸为 <span class="math-inline">224 \times 224</span>。Pascal VOC 2007 [12] 包含 9963 张图像，其中每个对象实例都用其类别标签和图像中的位置进行注释。Pascal VOC 中注释了 20 个类别的实例。跨任务的平均准确率 [31, 41] 和平均精度（mAP）[12] 分别用于增量分类和检测的评估指标。</p>
+<p><strong>实现细节</strong>：根据标准实践 [31, 41]，我们使用 ResNet-18 [16] 进行 CIFAR-100 实验，使用 ResNet-32 [16] 进行 ImageNet 实验。我们使用 128 的批量大小并训练 160 个 epoch。我们以 0.1 的初始学习率开始，在第 80 和第 120 个 epoch 后衰减 0.1。EBM 是一个三层神经网络，前两层有 64 个神经元，最后一层有单个神经元。传递给基础网络的最终 softmax 分类器的特征用于学习 EBM。它使用 128 的小批量训练 1500 次迭代。学习率设置为 0.0001。我们使用 30 次 Langevin 迭代从 EBM 中采样。我们发现保持 EBM 模型的指数移动平均是有效的。三种主要类增量方法（iCaRL [41]、LUCIR [20] 和 AANet [31]）的实现遵循 AANet [31] 作者的官方代码，该代码在 MIT 许可证下发布。它们使用每个类别 20 张图像的样本存储。请注意，我们的潜在对齐器不使用样本。iCaRL 推理修改为使用全连接层，遵循 Castro 等人 [7]。所有结果都是三次运行的平均值。我们使用 Faster R-CNN [42] 的增量版本进行目标检测实验，遵循 iOD [22]。RoI Head 的 2048 维倒数第二层特征向量用于学习 EBM。</p>
+<h3 id="41-增量分类结果">4.1 增量分类结果<a class="anchor-link" href="#41-增量分类结果" title="Permanent link">&para;</a></h3>
+<p>我们增强了三种流行的类增量学习方法：iCaRL [41]、LUCIR [20] 和 AANet [31]，使用我们提出的潜在对齐器。表 1 展示了在 CIFAR-100 [25] 和 ImageNet 子集 [41] 数据集上的结果。如前所述，我们在使用一半类别作为第一个任务的设置以及所有任务具有相同类别数量的设置下进行了实验。在前者中，我们将 10、5 和 2 个类别分别分组，以创建 5、10 和 25 个学习任务，之后在 50 个初始类别上训练模型。在第二种设置中，我们将 20、10 和 5 个类别分别分组，以创建 5、10 和 20 个增量任务。我们看到，当我们将 <strong>ELI</strong> 添加到相应的基础方法时，所有这些设置中的性能都一致提升。在这两种设置中，改进在更困难的数据集上更为显著。LUCIR [20] 和 AANet [31] 在其方法中使用了显式的潜在空间正则化器。<strong>ELI</strong> 能够进一步改进它们。像 iCaRL [41] 这样简单的方法从 <strong>ELI</strong> 提供的隐式正则化中受益更多（这一方面在第 5.1 节中进一步探讨）。在图 4 中，我们绘制了在 5 任务、10 任务和 25 任务设置中学习每个任务后的平均准确率在 ImageNet 1k 上的表现。我们看到了类似的趋势，但在这个更困难的数据集上改进更大。当添加到 iCaRL [41]、LUCIR [20] 和 AANet [31] 时，<strong>ELI</strong> 在 ImageNet 1k 实验中平均分别提供了 8.17%、3.05% 和 2.53% 的改进。</p>
+<h3 id="42-增量目标检测结果">4.2 增量目标检测结果<a class="anchor-link" href="#42-增量目标检测结果" title="Permanent link">&para;</a></h3>
+<p>遵循增量目标检测的标准评估协议 [22, 46]，我们将 Pascal VOC 2007 [12] 中的类别分为两个任务。这里考虑了三种不同的任务组合。我们最初学习 10、15 或 19 个类别，然后分别引入 10、5 或 1 个类别作为第二个任务。表 2 展示了该实验的结果。每个部分的前两行给出了上界和在学习第一个任务后的准确率。“标准训练”行显示了在简单地对新类别实例上的模型进行微调时，先前类别的性能如何下降。接下来的三行标题为 Shmelkov 等人 [46]、Faster ILOD [37] 和 ORE [21]，展示了现有方法如何帮助解决灾难性遗忘。我们将 <strong>ELI</strong> 添加到当前最先进的方法 iOD [22] 中，以在分别添加 10、5 和 1 个类别时，将 mAP 提高了 5.4%、7% 和 3%，与在其余类别上训练的检测器相比。这一改进可以归因于 <strong>ELI</strong> 在调整潜在表示以减少遗忘方面的有效性。这些结果还表明，<strong>ELI</strong> 是一种有效的即插即用方法，可以在分类和检测任务中减少遗忘。图 8 展示了我们的定性结果。</p>
+<h2 id="5-讨论与分析">5. 讨论与分析<a class="anchor-link" href="#5-讨论与分析" title="Permanent link">&para;</a></h2>
+<h3 id="51-eli-作为隐式正则化器">5.1 <strong>ELI</strong> 作为隐式正则化器<a class="anchor-link" href="#51-eli-作为隐式正则化器" title="Permanent link">&para;</a></h3>
+<p>为了展示 <strong>ELI</strong> 提供的隐式正则化的有效性，我们从我们的顶级方法 AANet [31] 中移除了显式的潜在正则化项（在图 6 中称为 ER）。当从基础方法中移除 ER 时，准确率持续下降（绿色条）。<strong>ELI</strong> 能够将这种模型的性能分别提高 5.41%、3.58% 和 2.57%，在 5 任务、10 任务和 25 任务实验中（紫色条）。我们注意到，与将 <strong>ELI</strong> 添加到具有显式正则化的 AANet 相比，增益更为显著，这证实了我们隐式正则化的有效性。</p>
+<h3 id="52-对齐最终层-logits">5.2 对齐最终层 logits<a class="anchor-link" href="#52-对齐最终层-logits" title="Permanent link">&para;</a></h3>
+<p><strong>ELI</strong> 对齐来自特征提取器 <span class="math-inline">z = F_{T_t}^\theta(x)</span> 的潜在表示。另一种选择是对齐最终 logits <span class="math-inline">F_{T_t}^\phi(F_{T_t}^\theta(x))</span>。我们重新评估了在这种设置下的增量 CIFAR-100 实验。我们发现潜在空间对齐比对 logit 空间对齐更有效（在表 6 中称为“+ Logit Aligner”）。这是因为 logits 是针对最终任务的，而潜在表示建模了跨任务的可泛化特征。</p>
+<h3 id="53-在不同大小的潜在空间中对齐">5.3 在不同大小的潜在空间中对齐<a class="anchor-link" href="#53-在不同大小的潜在空间中对齐" title="Permanent link">&para;</a></h3>
+<p><strong>ELI</strong> 可以对齐不同维度的潜在表示。我们在 MNIST 上的玩具实验使用 32 和 512 维潜在空间，而 CIFAR-100 实验使用 64 维空间。ImageNet 和 Pascal VOC 实验分别使用 512 和 2048 维潜在空间。</p>
+<h3 id="54-对超参数的敏感性">5.4 对超参数的敏感性<a class="anchor-link" href="#54-对超参数的敏感性" title="Permanent link">&para;</a></h3>
+<p>我们在表 3、4 和 5 中改变了可能影响 <strong>ELI</strong> 性能的参数。实验是在 CIFAR-100 上进行的，使用“iCaRL + <strong>ELI</strong>”设置。高亮行表示默认配置。</p>
+<p><strong>Langevin 步数</strong>：在表 3 中，我们实验了改变从 EBM 中采样所需的 Langevin 步数 <span class="math-inline">L_{\text{steps}}</span>。<strong>ELI</strong> 能够在很少的步数内对齐潜在表示，因为能量流形擅长指导潜在表示的对齐。</p>
+<p><strong>所需迭代次数</strong>：在使用算法 1 训练 EBM 时，我们改变了所需的迭代次数，并在表 4 中报告了准确率。在大约 1000 次迭代时，EBM 收敛。进一步增加迭代次数不会带来显著改进。</p>
+<p><strong>架构</strong>：我们在表 5 中实验了不同容量的 EBM 模型。我们发现使用较小的架构或显著较大的架构没有帮助。我们认为这是一个理想的特性，因为我们学习的是潜在空间的能量流形，而不是数据空间。</p>
+<h3 id="55-计算和内存">5.5 计算和内存<a class="anchor-link" href="#55-计算和内存" title="Permanent link">&para;</a></h3>
+<p>我们记录了 <strong>ELI</strong> 在 CIFAR-100 上的计算、内存和时间要求。我们使用单个 Nvidia Tesla K80 GPU 进行这些指标的测量。EBM 是一个两层网络，每层有 64 个神经元，具有 8.385K 参数，当尝试学习 64 维潜在特征时，需要 1.057M flops。在对齐 64 维潜在表示时，从该 EBM 采样需要 <span class="math-inline">0.039 \pm 0.003</span> 秒。我们使用 30 次 Langevin 迭代进行采样。两个实验的小批量大小均为 128。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>我们展示了基于能量的模型（EBMs）作为增量学习的有前途的解决方案，通过扩展其自然机制来处理表示偏移。这是通过在潜在特征空间中建模似然，测量在学习任务中经历的分布偏移，并反过来重新对齐它们以优化所有任务的学习来实现的。我们提出的方法 <strong>ELI</strong> 是对现有方法的补充，可以作为附加模块使用，而无需修改其基础管道。<strong>ELI</strong> 在评估多种设置时，为三种主要的类增量分类方法提供了一致的改进。此外，在更困难的增量目标检测任务上，我们的方法比最先进的技术提供了显著的改进。</p>
+<h2 id="致谢">致谢<a class="anchor-link" href="#致谢" title="Permanent link">&para;</a></h2>
+<p>我们感谢 Yaoyao Liu 对 AANET [31] 代码的及时澄清。KJJ 感谢 TCS Research 的博士奖学金。VNB 感谢印度政府 DST 通过 IMPRINT 和 ICPS 计划部分支持这项工作。</p>
+<h2 id="附录">附录<a class="anchor-link" href="#附录" title="Permanent link">&para;</a></h2>
+<h3 id="a-隐式识别重要潜在表示">A. 隐式识别重要潜在表示<a class="anchor-link" href="#a-隐式识别重要潜在表示" title="Permanent link">&para;</a></h3>
+<p>图 7 展示了每个潜在维度如何通过 <strong>ELI</strong> 进行更新。我们看到不同的维度有不同的变化程度，这是由我们的基于能量的模型隐式决定的。</p>
+<h3 id="b-使用-mixup-进行数据增强">B. 使用 mixup 进行数据增强<a class="anchor-link" href="#b-使用-mixup-进行数据增强" title="Permanent link">&para;</a></h3>
+<p>如第 3.2 节所述，我们使用从当前任务分布中采样的数据点来学习基于能量的模型 <span class="math-inline">x_i \sim p_{\tau_t}^{\text{data}}</span>。这里我们使用 mixup，一种由 Zhang 等人 [56] 引入的增强技术，其中每个数据点被修改为 <span class="math-inline">\hat{x} = \lambda x_i + (1-\lambda)x_j</span>，其中 <span class="math-inline">\lambda \sim \text{Beta}(\alpha, \alpha)</span>，并在表 7 中报告结果。在这些增量 CIFAR-100 实验中，我们看到使用 mixup 并没有提高性能，即使使用不同的 <span class="math-inline">\alpha</span> 值。这是因为 EBM 是一个小型的两层网络，不容易过拟合，即使没有这种额外的增强也能表现良好。</p>
+<h3 id="c-更广泛的社会影响">C. 更广泛的社会影响<a class="anchor-link" href="#c-更广泛的社会影响" title="Permanent link">&para;</a></h3>
+<p>当模型在没有遗忘的情况下增量学习时，一个同样重要的要求是选择性地遗忘，以符合任何隐私或立法原因。这样的遗忘可以通过将此类实例视为分布外样本来实现，然而，对此的专门处理超出了我们当前的工作范围。我们目前的工作旨在减少持续学习中的灾难性遗忘和干扰，据我们所知，我们的方法没有任何有害的社会影响，使我们与朝着这个方向进行的其他研究努力不同。</p>
+<h3 id="d-定性结果">D. 定性结果<a class="anchor-link" href="#d-定性结果" title="Permanent link">&para;</a></h3>
+<p>在图 8 中，我们展示了更多关于 Pascal VOC 数据集 [12] 上 15 + 5 设置中的增量目标检测的定性结果。将 plant、sheep、sofa、train 和 tvmonitor 的实例添加到在其余类别上训练的检测器中。表 2 中显示的 <strong>ELI</strong> 相对于最先进方法 [22] 的显著改进归功于 <strong>ELI</strong> 提供的隐式潜在空间正则化。据我们所知，<strong>ELI</strong> 是第一个为大规模增量目标检测模型添加潜在空间正则化的方法。</p>
+<h3 id="e-符号摘要">E. 符号摘要<a class="anchor-link" href="#e-符号摘要" title="Permanent link">&para;</a></h3>
+<p>为了清晰起见，表 8 总结了我们在论文中使用的主要符号及其简明描述。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

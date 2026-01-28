@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#train--dev--test-sets">Train / Dev / Test sets</a></li>
+<li><a href="#划分方法">划分方法</a><ul>
+<li><a href="#留出法">留出法</a></li>
+<li><a href="#交叉验证">交叉验证</a></li>
+<li><a href="#自助法">自助法</a></li>
+</ul>
+</li>
+<li><a href="#mnist">MNIST</a></li>
+<li><a href="#ms-coco">MS-COCO</a></li>
+<li><a href="#imagenet">ImageNet</a><ul>
+<li><a href="#官网下载">官网下载</a></li>
+<li><a href="#数据解压">数据解压</a></li>
+<li><a href="#数据标签">数据标签</a></li>
+<li><a href="#用pytorch加载">用Pytorch加载</a></li>
+</ul>
+</li>
+<li><a href="#imagenet-r">ImageNet-R</a></li>
+<li><a href="#openimages-数据集">OpenImages 数据集</a></li>
+<li><a href="#cifar-10">CIFAR-10</a></li>
+<li><a href="#cil-数据集整理">CIL 数据集整理</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="train--dev--test-sets">Train / Dev / Test sets<a class="anchor-link" href="#train--dev--test-sets" title="Permanent link">&para;</a></h2>
+<p>假设这是训练数据，我用一个长方形表示，我们通常会将这些数据划分成几部分</p>
+<ul>
+<li>训练集： 训练模型</li>
+<li>验证集（dev set）：选定模型</li>
+<li>测试集：评估模型</li>
+</ul>
+<p>在机器学习发展的小数据量时代，常见做法是将所有数据三七分，就是人们常说的 70%训练集，30%测试集。如果明确设置了验证集，也可以按照 60%训练集，20%验证集和 20%测试集来划分。这是前几年机器学习领域普遍认可的最好的实践方法。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956940.png" /></p>
+<p>如果只有 100 条，1000 条或者 1 万条数据，那么上述比例划分是非常合理的。</p>
+<p>但是在大数据时代，我们现在的数据量可能是百万级别，那么<strong>验证集和测试集占数据总量的比例会趋向于变得更小</strong>。因为验证集的目的就是验证不同的算法，检验哪种算法更有效，因此，验证集只要足够大到能评估不同的算法，比如 2 个甚至 10 个不同算法，并迅速判断出哪种算法更有效。我们可能不需要拿出 20%的数据作为验证集。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956268.png" /></p>
+<p>比如我们有 100 万条数据，那么取 1 万条数据便足以进行评估，找出其中表现最好的 1-2 种算法。同样地，根据最终选择的分类器，测试集的主要目的是正确评估分类器的性能，所以，如果拥有百万数据，我们只需要 1000 条数据，便足以评估单个分类器，并且准确评估该分类器的性能。假设我们有 100 万条数据，其中 1 万条作为验证集，1 万条作为测试集，100 万里取 1 万，比例是 1%，即：训练集占 98%，验证集和测试集各占 1%。<strong>对于数据量过百万的应用，训练集可以占到 99.5%，验证和测试集各占 0.25%，或者验证集占 0.4%，测试集占 0.1%。</strong></p>
+<p>要确保验证集和测试集的数据来自同一分布，关于这个问题我也会多讲一些。因为你们要用验证集来评估不同的模型，尽可能地优化性能。如果验证集和测试集来自同一个分布就会很好。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956976.png" /></p>
+<p>最后一点，就算没有测试集也不要紧，测试集的目的是对最终所选定的神经网络系统做出无偏估计，如果不需要无偏估计，也可以不设置测试集。所以如果只有验证集，没有测试集，我们要做的就是，在训练集上训练，尝试不同的模型框架，在验证集上评估这些模型，然后迭代并选出适用的模型。因为验证集中已经涵盖测试集数据，其不再提供无偏性能评估。当然，如果你不需要无偏估计，那就再好不过了。</p>
+<hr />
+<h2 id="划分方法">划分方法<a class="anchor-link" href="#划分方法" title="Permanent link">&para;</a></h2>
+<h3 id="留出法">留出法<a class="anchor-link" href="#留出法" title="Permanent link">&para;</a></h3>
+<p>直接将数据集划分为两个互斥集合，注意保持数据分布的一致性（比如比例相似）。保留类别比例的采样方式又叫<strong>分层采样（stratified sampling）</strong>。举个例子，原始数据集有 100 个样本，假设训练集占 70 个，验证集占 30 个。若训练集中正例反例各 35 个，也即比例为<code>1:1</code>，那么验证集中就应该正例反例个 15 个，同样保持<code>1:1</code>的比例。当然，这个比例最好还是遵循原始数据集中数据的分布规律。</p>
+<p>单独一次留出法的结果往往不可靠，<strong>一般是进行多次随机划分</strong>，然后取各次评估的平均值作为评估结果。</p>
+<p>留出法最大的缺点就是要进行划分，当训练集占的比例较大时，模型可以更准确地刻画原始数据集的特征，但是因为验证集较小，评估的结果往往不稳定也不准确；当训练集占的比例较小时，训练出的模型又不能充分学习到原始数据集的特征，评估结果可信度不高。这个问题没有完美的解决方案，一般取数据集<strong>2/3~4/5</strong>的样本作为训练集，余下的作为验证集。</p>
+<h3 id="交叉验证">交叉验证<a class="anchor-link" href="#交叉验证" title="Permanent link">&para;</a></h3>
+<p>又称为<strong>k 折交叉验证（k-fold cross validation）</strong>，将数据集划分为 k 个互斥子集。每次使用 k-1 个子集的并集作为训练集，余下的一个子集作为验证集，这就构成了 k 组训练/验证集，从而可以进行 k 次训练和验证。最终取 k 次验证的均值作为评估结果。常用的 k 值包括 5，10，20。类似于留出法，因为存在多种划分 k 个子集的方式，为了减少因不同的样本划分而引入的差别，需要进行多次 k 折交叉验证。例如 10 次 10 折交叉验证，指的是进行了总计 100 次训练和 100 次评估。特别地，令 k=数据集样本数的交叉验证称为<strong>留一法（Leave-One-Out，简称 LOO）</strong>，即有多少样本就进行多少次训练/验证，并且每次只留下一个样本做验证。这样做的好处是不需要担心随即样本划分带来的误差，因为这样的划分是唯一的。一般来说，留一法的评估结果被认为是比较准确的。但是！当数据集较大时，使用留一法需要训练的模型太多了！这种计算开销是难以忍受的！</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956434.png" alt="image-20211127111739118" style="zoom:50%;" /></p>
+<p><img alt="image-20220926200526880" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209262005926.png" /></p>
+<h3 id="自助法">自助法<a class="anchor-link" href="#自助法" title="Permanent link">&para;</a></h3>
+<p>在留出法和交叉验证法中，我们都需要对数据集进行划分，从而使得训练所用的数据集比源数据集小，引入了一些因规模不同而造成的偏差，有没有办法避免规模不同造成的影响呢？</p>
+<p><strong>自助法（bootstrapping）</strong>正是我们需要的答案，以<strong>自助采样（bootstrap sampling）</strong>为基础，对包含 m 个样本的源数据集进行有放回的 m 次采样以获得同等规模的训练集。在这 m 次采样中都不被抽到的概率大约为 0.368，也即源数据集中有大约 1/3 的样本是训练集中没有的。因此，我们可以采用这部分样本作为验证集，所得的结果称为<strong>包外估计（out-of-bag estimate）</strong>。</p>
+<p><strong>注意</strong>，自助法适用于数据集小，难以划分训练/验证集的情况。因为自助法能产生多个不同训练集，所以对集成学习也大有好处。但是！<strong>自助法改变了数据集的分布</strong>，也因此引入了一些额外的误差。因此，<strong>数据量足的时候还是留出法和交叉验证法用得多一些</strong>。</p>
+<h2 id="mnist">MNIST<a class="anchor-link" href="#mnist" title="Permanent link">&para;</a></h2>
+<p>链接：<a href="https://link.zhihu.com/?target=https%3A//datahack.analyticsvidhya.com/contest/practice-problem-identify-the-digits/">https://datahack.analyticsvidhya.com/contest/practice-problem-identify-the-digits/</a></p>
+<p>MNIST 是最流行的深度学习数据集之一。这是一个手写数字数据集，包含一个有着 60000 样本的训练集和一个有着 10000 样本的测试集。</p>
+<p>大小：约 50 MB 数量：70000 张图像，共分为 10 个类别</p>
+<h2 id="ms-coco">MS-COCO<a class="anchor-link" href="#ms-coco" title="Permanent link">&para;</a></h2>
+<p>链接：<a href="https://link.zhihu.com/?target=http%3A//cocodataset.org/%23home">http://cocodataset.org/#home</a></p>
+<p>COCO 是一个大型数据集，用于目标检测、分割和标题生成。它有以下几个特征：</p>
+<p>目标分割</p>
+<p>在语境中识别</p>
+<p>超像素物品分割</p>
+<p>33 万张图像（其中超过 20 万张是标注图像）</p>
+<p>150 万个目标实例</p>
+<p>80 个目标类别</p>
+<p>91 个物品分类</p>
+<p>每张图像有 5 个标题</p>
+<p>25 万张带有关键点的人像</p>
+<p>大小：约 25 GB（压缩后） 数量：33 万张图像、80 个目标类别、每张图像 5 个标题、25 万张带有关键点的人像</p>
+<h2 id="imagenet">ImageNet<a class="anchor-link" href="#imagenet" title="Permanent link">&para;</a></h2>
+<p>链接：<a href="https://link.zhihu.com/?target=http%3A//www.image-net.org/">http://www.image-net.org/</a></p>
+<p>ImageNet 是根据 WordNet 层次来组织的图像数据集。WordNet 包含大约 10 万个短语，而 ImageNet 为每个短语提供平均约 1000 张描述图像。</p>
+<ul>
+<li>大小：约 150 GB</li>
+<li>数量：图像的总数约为 1,500,000；</li>
+<li>
+<p>每一张图像都具备多个边界框和各自的类别标签。</p>
+</li>
+<li>
+<p><code>imagenet-1k</code>是 ISLVRC2012 的数据集，训练集大约是 1281167 张+标签，验证集是 50000 张图片加标签，最终打分的测试集是 100000 张图片，一共 1000 个类别。</p>
+</li>
+<li><code>imagenet-21k</code>是 WordNet 架构组织收集的所有图片，大约 1400 万张，2.1 万个类。多用于自监督预训练，比如 ViT。与 ImageNet-1k 相比，ImageNet-21k 具有更高的类别多样性，但它的标签质量可能较低，因为类别不是相互独立的，并且存在多个层级。此外，由于类别的不平衡性，处理起来会相对复杂一些。</li>
+</ul>
+<h3 id="官网下载">官网下载<a class="anchor-link" href="#官网下载" title="Permanent link">&para;</a></h3>
+<p><a href="https://www.image-net.org/">ImageNet</a></p>
+<p>在官方网站注册账号，注册时最好使用教育邮箱(.edu )之后。按照流程申请，收到邮件之后可以就可以在 Download界面里下数据。</p>
+<p>点进去之后，下载如下三个压缩包（图片分类任务用这三个足够了）</p>
+<h3 id="数据解压">数据解压<a class="anchor-link" href="#数据解压" title="Permanent link">&para;</a></h3>
+<p>下载完毕后把 Development kit 留着备用，我们会得到训练集与验证集的两个压缩包，分别是 <code>ILSVRC2012_img_train.tar</code> 和 <code>ILSVRC2012_img_val.tar</code>。</p>
+<p>首先创建两个用于放训练集和测试集的文件夹，然后解压：</p>
+<pre><code class="language-bash">mkdir train
+mkdir val
+tar xvf ILSVRC2012_img_train.tar -C ./train
+tar xvf ILSVRC2012_img_val.tar -C ./val
+</code></pre>
+<p>对于train的压缩包，解压之后其实还是1000个tar压缩包（对应1000个类别），需要再次解压，解压脚本unzip.sh如下（PS：可能需要自己改一下目录 dir ）：</p>
+<pre><code class="language-bash">dir=./train 
+for x in `ls $dir/*tar` do     
+  filename=`basename $x .tar`     
+  mkdir <span class="math-inline">dir/</span>filename     
+  tar -xvf <span class="math-inline">x -C </span>dir/$filename 
+done 
+rm *.tar
+</code></pre>
+<p>执行脚本之后，我们就获得了1000个文件夹和对应的图片数据啦~截至目前，我们已经把所有的 JPEG 图片搞了出来。</p>
+<h3 id="数据标签">数据标签<a class="anchor-link" href="#数据标签" title="Permanent link">&para;</a></h3>
+<p>对于训练集，不同类别的数据躺在不同的文件夹里，用起来很方便（同一文件夹的视为一类）。但是验证集没有对应的标签，需要额外处理。</p>
+<p>验证集的标签在 Development kit （文件名为 <code>ILSVRC2012_devkit_t12.tar.gz</code>）中的<code>ILSVRC2012_devkit_t12\data\ILSVRC2012_validation_ground_truth.txt</code> 中：</p>
+<p>但是新的问题又来了，那就是这个数字和文件夹的名字虽然是一一对应的，但还是需要额外的映射……好在映射关系储存在和txt文件同目录下的 <code>meta.mat</code> 文件中。我们希望验证集的文件结构长得和训练集一样，即 :  </p>
+<ul>
+<li>/val</li>
+<li>/n01440764<ul>
+<li>images</li>
+</ul>
+</li>
+<li>/n01443537</li>
+<li>images</li>
+</ul>
+<p>因此，我们首先解压 devkit 压缩包，把我们需要的东西取出来：  </p>
+<pre><code class="language-bash">tar -xzf ILSVRC2012_devkit_t12.tar.gz
+</code></pre>
+<p>之后，在imagenet目录（devkit和val的根目录下）创建并运行如下 python 脚本  </p>
+<pre><code class="language-python">from scipy import io
+import os
+import shutil
+
+def move_valimg(val_dir='./val', devkit_dir='./ILSVRC2012_devkit_t12'):
+    &quot;&quot;&quot;
+    move valimg to correspongding folders.
+    val_id(start from 1) -&gt; ILSVRC_ID(start from 1) -&gt; WIND
+    organize like:
+    /val
+       /n01440764
+           images
+       /n01443537
+           images
+        .....
+    &quot;&quot;&quot;
+    # load synset, val ground truth and val images list
+    synset = io.loadmat(os.path.join(devkit_dir, 'data', 'meta.mat'))
+
+    ground_truth = open(os.path.join(devkit_dir, 'data', 'ILSVRC2012_validation_ground_truth.txt'))
+    lines = ground_truth.readlines()
+    labels = [int(line[:-1]) for line in lines]
+
+    root, _, filenames = next(os.walk(val_dir))
+    for filename in filenames:
+        # val image name -&gt; ILSVRC ID -&gt; WIND
+        val_id = int(filename.split('.')[0].split('_')[-1])
+        ILSVRC_ID = labels[val_id-1]
+        WIND = synset['synsets'][ILSVRC_ID-1][0][1][0]
+        print(&quot;val_id:%d, ILSVRC_ID:%d, WIND:%s&quot; % (val_id, ILSVRC_ID, WIND))
+
+        # move val images
+        output_dir = os.path.join(root, WIND)
+        if os.path.isdir(output_dir):
+            pass
+        else:
+            os.mkdir(output_dir)
+        shutil.move(os.path.join(root, filename), os.path.join(output_dir, filename))
+
+if __name__ == '__main__':
+    move_valimg()
+</code></pre>
+<h3 id="用pytorch加载">用Pytorch加载<a class="anchor-link" href="#用pytorch加载" title="Permanent link">&para;</a></h3>
+<p>使用 torchvision.datasets.ImageFolder() 就可以直接加载处理好的数据集</p>
+<pre><code class="language-python">import os
+import torch
+import torchvision.datasets as datasets
+
+root = 'data/imagenet'
+def get_imagenet(root, train = True, transform = None, target_transform = None):
+    if train:
+        root = os.path.join(root, 'train')
+    else:
+        root = os.path.join(root, 'val')
+    return datasets.ImageFolder(root = root,
+                               transform = transform,
+                               target_transform = target_transform)
+</code></pre>
+<h2 id="imagenet-r">ImageNet-R<a class="anchor-link" href="#imagenet-r" title="Permanent link">&para;</a></h2>
+<p>ImageNet-R 全称 ImageNet-Rendition，是 ImageNet 数据集的拓展。 ImageNet-R 数据集包含对多个 ImageNet 类别（艺术、卡通、 DIYART 、涂鸦、刺绣、图形、折纸、绘画、图案、塑料制品、毛绒制品、雕塑、素描、纹身、玩具和视频游戏等）的演绎。</p>
+<p>ImageNet-R 数据集涉及对 200 个 ImageNet 类别的演绎，产生了 30,000 张图像。</p>
+<h2 id="openimages-数据集">OpenImages 数据集<a class="anchor-link" href="#openimages-数据集" title="Permanent link">&para;</a></h2>
+<p>链接：<a href="https://link.zhihu.com/?target=https%3A//github.com/openimages/dataset">https://github.com/openimages/dataset</a></p>
+<p>Open Images 是一个包含近 900 万个图像 URL 的数据集。这些图像使用包含数千个类别的图像级标签边界框进行了标注。该数据集的训练集包含 9,011,219 张图像，验证集包含 41,260 张图像，测试集包含 125,436 张图像。</p>
+<p>大小：500GB（压缩后） 数量：9,011,219 张图像，带有超过 5000 个标签</p>
+<h2 id="cifar-10">CIFAR-10<a class="anchor-link" href="#cifar-10" title="Permanent link">&para;</a></h2>
+<p>链接：<a href="https://link.zhihu.com/?target=http%3A//www.cs.toronto.edu/~kriz/cifar.html">http://www.cs.toronto.edu/~kriz/cifar.html</a></p>
+<p>该数据集也用于图像分类。它由 10 个类别共计 60,000 张图像组成（每个类在上图中表示为一行）。该数据集共有 50,000 张训练集图像和 10,000 个测试集图像。数据集分为 6 个部分——5 个训练批和 1 个测试批。每批含有 10,000 张图像。</p>
+<p>大小：170MB 数量：60,000 张图像，共 10 类</p>
+<p><img alt="Untitled" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141536043.png" /></p>
+<p>CIFAR-10 是一个更接近普适物体的彩色图像数据集。CIFAR-10 是由 Hinton 的学生 Alex Krizhevsky 和 Ilya Sutskever 整理的一个用于识别普适物体的小型数据集。</p>
+<p>一共包含 10 个类别的 RGB 彩色图片：飞机（ airplane ）、汽车（ automobile ）、鸟类（ bird ）、猫（ cat ）、鹿（ deer ）、狗（ dog ）、蛙类（ frog ）、马（ horse ）、船（ ship ）和卡车（ truck ）。</p>
+<p>每个图片的尺寸为 32 × 32 ，每个类别有 6000 个图像，数据集中一共有 50000 张训练图片和 10000 张测试图片。</p>
+<p><strong>数据文件名及用途</strong></p>
+<p>在 CIFAR-10 数据集中，文件 data<em>batch_1.bin、data_batch_2.bin 、··data_batch_5.bin 和 test</em> batch.bin 中各有 10000 个样本。一个样本由 3073 个字节组成，第一个字节为标签 label ，剩下 3072 个字节为图像数据。样本和样本之间没高多余的字节分割， 因此这几个二进制文件的大小都是 30730000 字节。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141536507.png"/></div>
+
+<h2 id="cil-数据集整理">CIL 数据集整理<a class="anchor-link" href="#cil-数据集整理" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Domain Similarity</th>
+<th>Classes</th>
+<th>Train</th>
+<th>Train/Class</th>
+<th>Validation</th>
+<th>Test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CropDiseases</td>
+<td>0.386</td>
+<td>35</td>
+<td>34260</td>
+<td>978</td>
+<td>8566</td>
+<td>10692</td>
+</tr>
+<tr>
+<td>ChestX</td>
+<td>0.39</td>
+<td>6</td>
+<td>7252</td>
+<td>1208</td>
+<td>2417</td>
+<td>2417</td>
+</tr>
+<tr>
+<td>ISIC</td>
+<td>0.409</td>
+<td>6</td>
+<td>5940</td>
+<td>990</td>
+<td>1980</td>
+<td>1980</td>
+</tr>
+<tr>
+<td>RESISC45</td>
+<td>0.432</td>
+<td>45</td>
+<td>18900</td>
+<td>420</td>
+<td>6300</td>
+<td>6300</td>
+</tr>
+<tr>
+<td>EuroSAT</td>
+<td>0.444</td>
+<td>10</td>
+<td>16200</td>
+<td>1620</td>
+<td>5400</td>
+<td>5400</td>
+</tr>
+<tr>
+<td>Pets</td>
+<td>0.47</td>
+<td>35</td>
+<td>2774</td>
+<td>79</td>
+<td>706</td>
+<td>3469</td>
+</tr>
+<tr>
+<td>CIFAR-100</td>
+<td>0.491</td>
+<td>100</td>
+<td>40,000</td>
+<td>400</td>
+<td>10,000</td>
+<td>10000</td>
+</tr>
+<tr>
+<td>ImageNet-R</td>
+<td>0.577</td>
+<td>200</td>
+<td>18000</td>
+<td>90</td>
+<td>6000</td>
+<td>6000</td>
+</tr>
+<tr>
+<td>DomainNet</td>
+<td>0.6</td>
+<td>345</td>
+<td>96724</td>
+<td>280</td>
+<td>24182</td>
+<td>52041</td>
+</tr>
+<tr>
+<td>miniImageNet</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>CUB-200</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

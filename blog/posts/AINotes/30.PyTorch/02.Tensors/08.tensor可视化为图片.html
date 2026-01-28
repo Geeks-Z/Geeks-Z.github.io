@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>假设tensor_gpu是你的GPU上的Tensor</title>
+    <meta name="description" content="假设tensor_gpu是你的GPU上的Tensor - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#matplotlib">matplotlib</a></li>
+<li><a href="#transform">transform</a></li>
+<li><a href="#文心一言">文心一言</a><ul>
+<li><a href="#1-准备-tensor">1. 准备 Tensor</a></li>
+<li><a href="#2-传输到-cpu如果需要">2. 传输到 CPU（如果需要）</a></li>
+<li><a href="#3-转换数据格式如果需要">3. 转换数据格式（如果需要）</a></li>
+<li><a href="#4-转换数据类型如果需要">4. 转换数据类型（如果需要）</a></li>
+<li><a href="#5-使用可视化库">5. 使用可视化库</a><ul>
+<li><a href="#使用-matplotlib">使用 matplotlib</a></li>
+<li><a href="#使用-pil">使用 PIL</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#gpt">GPT</a><ul>
+<li><a href="#1-安装必要的库">1. 安装必要的库</a></li>
+<li><a href="#2-导入必要的库">2. 导入必要的库</a></li>
+<li><a href="#3-定义将张量转换为图像的函数">3. 定义将张量转换为图像的函数</a></li>
+<li><a href="#4-示例张量">4. 示例张量</a></li>
+<li><a href="#5-使用-opencv-显示图像">5. 使用 OpenCV 显示图像</a></li>
+<li><a href="#6-完整代码示例">6. 完整代码示例</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>假设tensor_gpu是你的GPU上的Tensor</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/02.Tensors</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="matplotlib">matplotlib<a class="anchor-link" href="#matplotlib" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+  # 转换为[H, W, C]
+tensor_numpy = inputs[0].cpu().permute(2, 1, 0).numpy() * 255
+tensor_numpy = tensor_numpy.astype(np.uint8)  # 转换为无符号8位整型
+
+plt.imshow(tensor_numpy)
+plt.axis('off')  # 不显示坐标轴
+plt.show()
+</code></pre>
+<h2 id="transform">transform<a class="anchor-link" href="#transform" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">image_filepath = self.images[idx]
+image = cv2.imread(image_filepath)
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+label = self.labels[idx]
+if self.trsf is not None:
+    image = self.trsf(image=image)[&quot;image&quot;]
+    # 使用torchvision 把transform的数据转化成tensor
+    from torchvision import transforms as t
+    as_tensor = t.ToTensor()
+    image = as_tensor(image)
+return idx, image, label
+</code></pre>
+<h2 id="文心一言">文心一言<a class="anchor-link" href="#文心一言" title="Permanent link">&para;</a></h2>
+<p>在 GPU 上处理 Tensor（尤其是在使用深度学习框架如 TensorFlow 或 PyTorch 时），将 Tensor 可视化为图片通常是在 CPU 上完成的，因为可视化过程涉及到图形处理，这通常是 CPU 更擅长的领域。不过，你可以从 GPU 上将 Tensor 传输到 CPU，然后使用相应的库（如 matplotlib、PIL 或 OpenCV）来将其转换为图片并显示或保存。</p>
+<p>以下是一个使用 PyTorch 框架将 Tensor 可视化为图片的示例步骤：</p>
+<h3 id="1-准备-tensor">1. 准备 Tensor<a class="anchor-link" href="#1-准备-tensor" title="Permanent link">&para;</a></h3>
+<p>首先，你需要有一个 Tensor，它代表了图像数据。在 PyTorch 中，这个 Tensor 通常是<code>[C, H, W]</code>格式的（C 是通道数，H 是高度，W 是宽度），但也可能需要转换为<code>[H, W, C]</code>格式，这取决于你使用的可视化库的要求。</p>
+<h3 id="2-传输到-cpu如果需要">2. 传输到 CPU（如果需要）<a class="anchor-link" href="#2-传输到-cpu如果需要" title="Permanent link">&para;</a></h3>
+<p>如果 Tensor 在 GPU 上，你需要先将其传输到 CPU。</p>
+<pre><code class="language-python">import torch
+
+# 假设tensor_gpu是你的GPU上的Tensor
+tensor_cpu = tensor_gpu.cpu()
+</code></pre>
+<h3 id="3-转换数据格式如果需要">3. 转换数据格式（如果需要）<a class="anchor-link" href="#3-转换数据格式如果需要" title="Permanent link">&para;</a></h3>
+<p>如果你需要将 Tensor 的通道顺序从<code>[C, H, W]</code>更改为<code>[H, W, C]</code>，可以使用<code>permute</code>方法。</p>
+<pre><code class="language-python">tensor_cpu = tensor_cpu.permute(1, 2, 0)  # 转换为[H, W, C]
+</code></pre>
+<h3 id="4-转换数据类型如果需要">4. 转换数据类型（如果需要）<a class="anchor-link" href="#4-转换数据类型如果需要" title="Permanent link">&para;</a></h3>
+<p>确保 Tensor 的数据类型适合用于可视化。通常，你可能需要将 Tensor 的数据类型从<code>torch.float</code>转换为<code>numpy.array</code>，并可能需要将值归一化到 0-255 的范围内（如果原始数据不是）。</p>
+<pre><code class="language-python">import numpy as np
+
+# 假设tensor_cpu的值在[0, 1]范围内
+tensor_numpy = tensor_cpu.numpy() * 255  # 乘以255并转换为整数
+tensor_numpy = tensor_numpy.astype(np.uint8)  # 转换为无符号8位整型
+</code></pre>
+<h3 id="5-使用可视化库">5. 使用可视化库<a class="anchor-link" href="#5-使用可视化库" title="Permanent link">&para;</a></h3>
+<p>现在，你可以使用 matplotlib 或 PIL 等库来显示或保存图像。</p>
+<h4 id="使用-matplotlib">使用 matplotlib<a class="anchor-link" href="#使用-matplotlib" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+
+plt.imshow(tensor_numpy)
+plt.axis('off')  # 不显示坐标轴
+plt.show()
+</code></pre>
+<h4 id="使用-pil">使用 PIL<a class="anchor-link" href="#使用-pil" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">from PIL import Image
+
+image = Image.fromarray(tensor_numpy)
+image.show()  # 显示图片
+# 或者保存到文件
+# image.save('image.png')
+</code></pre>
+<p>请注意，上述代码示例假设你正在处理的是单个图像。如果你在处理一批图像，你可能需要遍历这个批次的每个图像，并对每个图像执行上述步骤。</p>
+<p>此外，根据你的 Tensor 的具体内容和格式（如是否包含归一化或标准化等预处理步骤），在可视化之前可能需要进行额外的处理步骤。</p>
+<p>TODO 未调通</p>
+<h2 id="gpt">GPT<a class="anchor-link" href="#gpt" title="Permanent link">&para;</a></h2>
+<p>要在 GPU 上进行张量的可视化并显示为图像，我们可以使用 PyTorch 的 CUDA 张量，将其转换为 CPU 张量，然后再进行可视化。以下是一个详细的步骤，说明如何从 GPU 上的张量转换为图像并使用 OpenCV 可视化它：</p>
+<h3 id="1-安装必要的库">1. 安装必要的库<a class="anchor-link" href="#1-安装必要的库" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">pip install torch torchvision opencv-python
+</code></pre>
+<h3 id="2-导入必要的库">2. 导入必要的库<a class="anchor-link" href="#2-导入必要的库" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import torch
+import torchvision.transforms as transforms
+import cv2
+import numpy as np
+from torchvision.utils import make_grid
+</code></pre>
+<h3 id="3-定义将张量转换为图像的函数">3. 定义将张量转换为图像的函数<a class="anchor-link" href="#3-定义将张量转换为图像的函数" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def tensor_to_image(tensor):
+    # 将张量从GPU移动到CPU
+    tensor = tensor.cpu().clone()  # 确保张量在CPU上
+    tensor = tensor.squeeze(0)     # 去掉批次维度
+    tensor = transforms.ToPILImage()(tensor)  # 转换为PIL图像
+    return cv2.cvtColor(np.array(tensor), cv2.COLOR_RGB2BGR)  # 转换为OpenCV格式（BGR）
+</code></pre>
+<h3 id="4-示例张量">4. 示例张量<a class="anchor-link" href="#4-示例张量" title="Permanent link">&para;</a></h3>
+<p>我们从 CIFAR-10 数据集中加载一个示例图片，并将其转换为张量。</p>
+<pre><code class="language-python">from torchvision import datasets
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+])
+
+dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
+
+# 获取一个示例图片
+dataiter = iter(dataloader)
+images, labels = dataiter.next()
+
+# 将批次中的第一个张量移动到GPU
+device = torch.device(&quot;cuda&quot; if torch.cuda.is_available() else &quot;cpu&quot;)
+images = images.to(device)
+
+# 将批次中的第一个张量转换为图片
+image = images[0]
+cv2_image = tensor_to_image(image)
+</code></pre>
+<h3 id="5-使用-opencv-显示图像">5. 使用 OpenCV 显示图像<a class="anchor-link" href="#5-使用-opencv-显示图像" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">cv2.imshow('Image', cv2_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+</code></pre>
+<h3 id="6-完整代码示例">6. 完整代码示例<a class="anchor-link" href="#6-完整代码示例" title="Permanent link">&para;</a></h3>
+<p>将上述所有步骤结合在一起，得到如下完整代码示例：</p>
+<pre><code class="language-python">import torch
+import torchvision.transforms as transforms
+import cv2
+import numpy as np
+from torchvision import datasets
+from torchvision.utils import make_grid
+
+def tensor_to_image(tensor):
+    # 将张量从GPU移动到CPU
+    tensor = tensor.cpu().clone()  # 确保张量在CPU上
+    tensor = tensor.squeeze(0)     # 去掉批次维度
+    tensor = transforms.ToPILImage()(tensor)  # 转换为PIL图像
+    return cv2.cvtColor(np.array(tensor), cv2.COLOR_RGB2BGR)  # 转换为OpenCV格式（BGR）
+
+# 数据预处理
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+])
+
+# 加载数据集
+dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True)
+
+# 获取一个示例图片
+dataiter = iter(dataloader)
+images, labels = dataiter.next()
+
+# 将批次中的第一个张量移动到GPU
+device = torch.device(&quot;cuda&quot; if torch.cuda.is_available() else &quot;cpu&quot;)
+images = images.to(device)
+
+# 将批次中的第一个张量转换为图片
+image = images[0]
+cv2_image = tensor_to_image(image)
+
+# 使用OpenCV显示图像
+cv2.imshow('Image', cv2_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+</code></pre>
+<p>这段代码展示了如何从 GPU 上的张量转换为图像，并使用 OpenCV 进行可视化。通过这种方式，可以在利用 GPU 加速计算的同时方便地检查和调试图像数据。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

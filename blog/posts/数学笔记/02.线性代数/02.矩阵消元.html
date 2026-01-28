@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二讲：矩阵消元</title>
+    <meta name="description" content="第二讲：矩阵消元 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#消元法">消元法</a></li>
+<li><a href="#消元矩阵">消元矩阵</a></li>
+<li><a href="#逆">逆</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>第二讲：矩阵消元</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/02.线性代数</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="第二讲矩阵消元">第二讲：矩阵消元<a class="anchor-link" href="#第二讲矩阵消元" title="Permanent link">&para;</a></h1>
+<p>这个方法最早由高斯提出，我们以前解方程组的时候都会使用，现在来看如何使用矩阵实现消元法。</p>
+<h2 id="消元法">消元法<a class="anchor-link" href="#消元法" title="Permanent link">&para;</a></h2>
+<p>有三元方程组<span class="math-inline">\begin{cases}x&amp;+2y&amp;+z&amp;=2\3x&amp;+8y&amp;+z&amp;=12\&amp;4y&amp;+z&amp;=2\end{cases}</span>，对应的矩阵形式<span class="math-inline">Ax=b</span>为<span class="math-inline">\begin{bmatrix}1&amp;2&amp;1\3&amp;8&amp;1\0&amp;4&amp;1\end{bmatrix}\begin{bmatrix}x\y\z\end{bmatrix}=\begin{bmatrix}2\12\2\end{bmatrix}</span>。</p>
+<p>按照我们以前做消元法的思路：</p>
+<ul>
+<li>第一步，我们希望在第二个方程中消去<span class="math-inline">x</span>项，来操作系数矩阵<span class="math-inline">A=\begin{bmatrix}\underline{1}&amp;2&amp;1\3&amp;8&amp;1\0&amp;4&amp;1\end{bmatrix}</span>，下划线的元素为第一步的主元（pivot）：<span class="math-inline">\begin{bmatrix}\underline{1}&amp;2&amp;1\3&amp;8&amp;1\0&amp;4&amp;1\end{bmatrix}\xrightarrow{row_2-3row_1}\begin{bmatrix}\underline{1}&amp;2&amp;1\0&amp;2&amp;-2\0&amp;4&amp;1\end{bmatrix}</span></li>
+</ul>
+<p>这里我们先不管<span class="math-inline">b</span>向量，等做完<span class="math-inline">A</span>的消元可以再做<span class="math-inline">b</span>的消元。（这是MATLAB等工具经常使用的算法。）</p>
+<ul>
+<li>第二步，我们希望在第三个方程中消去<span class="math-inline">y</span>项，现在第二行第一个非零元素成为了第二个主元：<span class="math-inline">\begin{bmatrix}\underline{1}&amp;2&amp;1\0&amp;\underline{2}&amp;-2\0&amp;4&amp;1\end{bmatrix}\xrightarrow{row_3-2row_2}\begin{bmatrix}\underline{1}&amp;2&amp;1\0&amp;\underline{2}&amp;-2\0&amp;0&amp;\underline{5}\end{bmatrix}</span></li>
+</ul>
+<p>注意到第三行消元过后仅剩一个非零元素，所以它就成为第三个主元。做到这里就算消元完成了。</p>
+<p>再来讨论一下消元失效的情形：首先，主元不能为零；其次，如果在消元时遇到主元位置为零，则需要交换行，使主元不为零；最后提一下，如果我们把第三个方程<span class="math-inline">z</span>前的系数改成<span class="math-inline">-4</span>，会导致第二步消元时最后一行全部为零，则第三个主元就不存在了，至此消元不能继续进行了，这就是下一讲中涉及的不可逆情况。</p>
+<ul>
+<li>接下来就该回代（back substitution）了，这时我们在<span class="math-inline">A</span>矩阵后面加上<span class="math-inline">b</span>向量写成增广矩阵（augmented matrix）的形式：<span class="math-inline">\left[\begin{array}{c|c}A&amp;b\end{array}\right]=\left[\begin{array}{ccc|c}1&amp;2&amp;1&amp;2\3&amp;8&amp;1&amp;12\0&amp;4&amp;1&amp;2\end{array}\right]\to\left[\begin{array}{ccc|c}1&amp;2&amp;1&amp;2\0&amp;2&amp;-2&amp;6\0&amp;4&amp;1&amp;2\end{array}\right]\to\left[\begin{array}{ccc|c}1&amp;2&amp;1&amp;2\0&amp;2&amp;-2&amp;6\0&amp;0&amp;5&amp;-10\end{array}\right]</span></li>
+</ul>
+<p>不难看出，<span class="math-inline">z</span>的解已经出现了，此时方程组变为<span class="math-inline">\begin{cases}x&amp;+2y&amp;+z&amp;=2\&amp;2y&amp;-2z&amp;=6\&amp;&amp;5z&amp;=-10\end{cases}</span>，从第三个方程求出<span class="math-inline">z=-2</span>，代入第二个方程求出<span class="math-inline">y=1</span>，再代入第一个方程求出<span class="math-inline">x=2</span>。</p>
+<h2 id="消元矩阵">消元矩阵<a class="anchor-link" href="#消元矩阵" title="Permanent link">&para;</a></h2>
+<p>上一讲我们学习了矩阵乘以向量的方法，有三个列向量的矩阵乘以另一个向量，按列的线性组合可以写作<span class="math-inline">\Bigg[v_1\ v_2\ v_3\Bigg]\begin{bmatrix}3\4\5\end{bmatrix}=3v_1+4v_2+5v_3</span>。</p>
+<p>但现在我们希望用矩阵乘法表示行操作，则有<span class="math-inline">\begin{bmatrix}1&amp;2&amp;7\end{bmatrix}\begin{bmatrix}&amp;row_1&amp;\&amp;row_2&amp;\&amp;row_3&amp;\end{bmatrix}=1row_1+2row_2+7row_3</span>。易看出这里是一个<strong>行向量从左边乘以矩阵，这个行向量按行操作矩阵的行向量，并将其合成为一个矩阵行向量的线性组合</strong>。</p>
+<p>介绍到这里，我们就可以将消元法所做的行操作写成向量乘以矩阵的形式了。</p>
+<ul>
+<li>
+<p>消元法第一步操作为将第二行改成<span class="math-inline">row_2-3row_1</span>，其余两行不变，则有<span class="math-inline">\begin{bmatrix}1&amp;0&amp;0\-3&amp;1&amp;0\0&amp;0&amp;1\end{bmatrix}\begin{bmatrix}1&amp;2&amp;1\3&amp;8&amp;1\0&amp;4&amp;1\end{bmatrix}=\begin{bmatrix}1&amp;2&amp;1\0&amp;2&amp;-2\0&amp;4&amp;1\end{bmatrix}</span>（另外，如果三行都不变，消元矩阵就是单位矩阵<span class="math-inline">I=\begin{bmatrix}1&amp;0&amp;0\0&amp;1&amp;0\0&amp;0&amp;1\end{bmatrix}</span>，<span class="math-inline">I</span>之于矩阵运算相当于<span class="math-inline">1</span>之于四则运算。）这个消元矩阵我们记作<span class="math-inline">E_{21}</span>，即将第二行第一个元素变为零。</p>
+</li>
+<li>
+<p>接下来就是求<span class="math-inline">E_{32}</span>消元矩阵了，即将第三行第二个元素变为零，则<span class="math-inline">\begin{bmatrix}1&amp;0&amp;0\0&amp;1&amp;0\0&amp;-2&amp;1\end{bmatrix}\begin{bmatrix}1&amp;2&amp;1\0&amp;2&amp;-2\0&amp;4&amp;1\end{bmatrix}=\begin{bmatrix}1&amp;2&amp;1\0&amp;2&amp;-2\0&amp;0&amp;5\end{bmatrix}</span>。这就是消元所用的两个初等矩阵（elementary matrix）。</p>
+</li>
+<li>
+<p>最后，我们将这两步综合起来，即<span class="math-inline">E_{32}(E_{21}A)=U</span>，也就是说如果我们想从<span class="math-inline">A</span>矩阵直接得到<span class="math-inline">U</span>矩阵的话，只需要<span class="math-inline">(E_{32}E_{21})A</span>即可。注意，矩阵乘法虽然不能随意变动相乘次序，但是可以变动括号位置，也就是满足结合律（associative law），而结合律在矩阵运算中非常重要，很多定理的证明都需要巧妙的使用结合律。</p>
+</li>
+</ul>
+<p>既然提到了消元用的初等矩阵，那我们再介绍一种用于置换两行的矩阵：置换矩阵（permutation matrix）：例如<span class="math-inline">\begin{bmatrix}0&amp;1\1&amp;0\end{bmatrix}\begin{bmatrix}a&amp;b\c&amp;d\end{bmatrix}=\begin{bmatrix}c&amp;d\a&amp;b\end{bmatrix}</span>，置换矩阵将原矩阵的两行做了互换。顺便提一下，如果我们希望交换两列，则有<span class="math-inline">\begin{bmatrix}a&amp;b\c&amp;d\end{bmatrix}\begin{bmatrix}0&amp;1\1&amp;0\end{bmatrix}=\begin{bmatrix}b&amp;a\d&amp;c\end{bmatrix}</span>。</p>
+<p>我们现在能够将<span class="math-inline">A</span>通过行变换写成<span class="math-inline">U</span>，那么如何从<span class="math-inline">U</span>再变回<span class="math-inline">A</span>，也就是求消元的逆运算。对某些“坏”矩阵，并没有逆，而本讲的例子都是“好”矩阵。</p>
+<h2 id="逆">逆<a class="anchor-link" href="#逆" title="Permanent link">&para;</a></h2>
+<p>现在，我们以<span class="math-inline">E_{21}</span>为例，<span class="math-inline">\Bigg[\quad ?\quad \Bigg]\begin{bmatrix}1&amp;0&amp;0\-3&amp;1&amp;0\0&amp;0&amp;1\end{bmatrix}=\begin{bmatrix}1&amp;0&amp;0\0&amp;1&amp;0\0&amp;0&amp;1\end{bmatrix}</span>，什么矩阵可以取消这次行变换？这次变换是从第二行中减去三倍的第一行，那么其逆变换就是给第二行加上三倍的第一行，所以逆矩阵就是<span class="math-inline">\begin{bmatrix}1&amp;0&amp;0\3&amp;1&amp;0\0&amp;0&amp;1\end{bmatrix}</span>。</p>
+<p>我们把矩阵<span class="math-inline">E</span>的逆记作<span class="math-inline">E^{-1}</span>，所以有<span class="math-inline">E^{-1}E=I</span>。</p>
+<h1 id="_1"><a class="anchor-link" href="#_1" title="Permanent link">&para;</a></h1>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reinforcement Learning</title>
+    <meta name="description" content="Reinforcement Learning - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#supervised-learningrl">Supervised Learning→RL</a></li>
+<li><a href="#machine-learning--looking-for-a-function">Machine Learning ≈ Looking for a Function</a><ul>
+<li><a href="#example-playing-video-game">Example: Playing Video Game</a></li>
+<li><a href="#example-learning-to-play-go">Example: Learning to play Go</a></li>
+</ul>
+</li>
+<li><a href="#machine-learning-is-so-simple-">Machine Learning is so simple ……</a><ul>
+<li><a href="#step-1-function-with-unknown">Step 1: Function with Unknown</a></li>
+<li><a href="#step-2-define-loss">Step 2: Define “Loss”</a></li>
+<li><a href="#step-3-optimization">Step 3: Optimization</a></li>
+<li><a href="#how-to-control-your-actor">How to control your actor</a></li>
+</ul>
+</li>
+<li><a href="#version-0">Version 0</a></li>
+<li><a href="#version-1">Version 1</a></li>
+<li><a href="#version-2">Version 2</a><ul>
+<li><a href="#qa">Q&amp;A</a></li>
+</ul>
+</li>
+<li><a href="#version-3">Version 3</a></li>
+<li><a href="#policy-gradient_1">Policy Gradient</a><ul>
+<li><a href="#on-policy-vs-off-policy">On-policy v.s. Off-policy</a></li>
+<li><a href="#off-policy--proximal-policy-optimizationppo">Off-policy → Proximal Policy Optimization(PPO)</a></li>
+<li><a href="#collection-training-data-exploration">Collection Training Data: Exploration</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Reinforcement Learning</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="reinforcement-learning">Reinforcement Learning<a class="anchor-link" href="#reinforcement-learning" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>基于李宏毅老师2021年课程的精简版</p>
+</blockquote>
+<h2 id="supervised-learningrl">Supervised Learning→RL<a class="anchor-link" href="#supervised-learningrl" title="Permanent link">&para;</a></h2>
+<p>在 RL 里面，我们遇到的问题是这样子的，机器当我们给它一个输入的时候，我们不知道最佳的输出应该是什么</p>
+<p>举例来说，假设你要叫机器学习下围棋</p>
+<p><img alt="image-20221019211151665" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210192111728.png" /></p>
+<p>下一步应该落子的位置到底应该在哪里呢，哪一个是最好的下一步呢，哪一步是神之一手呢，可能人类根本就不知道在这个<strong>你不知道正确答案是什么的情况下，往往就是 RL 可以派上用场的时候</strong>，所以当你今天，你发现你要收集有标注的资料很困难的时候，正确答案人类也不知道是什么的时候，也许就是你可以考虑使用 RL 的时候</p>
+<p>但是 <strong>RL 在学习的时候，机器其实也不是一无所知的</strong>，我们虽然不知道正确的答案是什么，但是机器会知道什么是好，什么是不好，机器会跟环境去做互动，得到一个叫做 <strong>Reward</strong> 的东西，所以机器会知道，它现在的输出是好的还是不好的，并能够跟环境的互动。</p>
+<h2 id="machine-learning--looking-for-a-function">Machine Learning ≈ Looking for a Function<a class="anchor-link" href="#machine-learning--looking-for-a-function" title="Permanent link">&para;</a></h2>
+<p>什么是机器学习，<strong>机器学习就是找一个 Function</strong>，Reinforcement Learning，RL 也是机器学习的一种，那它也在找一个 Function，它在找什么样的 Function 呢</p>
+<p>那 Reinforcement Learning 里面呢，我们会有一个 <strong>Actor</strong>，还有一个 <strong>Environment</strong>，那这个 <strong>Actor 跟 Environment，会进行互动</strong></p>
+<p><img alt="image-20221019211503939" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210192115971.png" /></p>
+<ul>
+<li>Environment 会给 Actor 一个 Observation，这个 Observation就是 Actor 的输入</li>
+<li>Actor看到这个 Observation 它会有一个输出，叫做 Action， Action 会去影响 Environment</li>
+<li>这个 Actor 采取 Action 以后，Environment 就会给予新的 Observation，然后 Actor会给予新的 Action，那这个 Observation 是 Actor 的输入，那这个 Action 是 Actor 的输出</li>
+</ul>
+<p>所以 <strong>Actor 本身就是一个 Function</strong>，其实 Actor，它就是我们要找的 Function，这个 Function 它的输入，就是环境给它的 Observation，输出就是这个 Actor 要采取的 Action，而今天在这个互动的过程中呢，<strong>这个 Environment，会不断地给这个 Actor 一些 Reward</strong>，告诉它说，你现在采取的这个 Action，它是好的还是不好的</p>
+<p>而我们今天要找的这个 Actor，我们今天要找的这个 Function，可以拿 Observation 当作 Input，Actor 当作 Output 的 Function，这个 Function 的目标，是要去 Maximizing，我们可以从 Environment，获得到的 Reward 的总和，我们希望呢，找一个 Function，那用这个 Function 去跟环境做互动，<strong>用 Observation 当作 Input，输出 Action，最终得到的 Reward 的总和，可以是最大的，这个就是 RL 要找的 Function</strong></p>
+<h3 id="example-playing-video-game">Example: Playing Video Game<a class="anchor-link" href="#example-playing-video-game" title="Permanent link">&para;</a></h3>
+<p>在 Space Invader 里面呢</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210192122423.png" /></p>
+<ul>
+<li>
+<p>你要<strong>操控的是下面这个绿色的东西</strong>，你可以采取的行为，也就是 Action 呢 有三个，<strong>左移 右移跟开火</strong>，就这三个行为，然后你现在要做的事情啊，就是杀掉画面上的这些外星人</p>
+</li>
+<li>
+<p>画面上这些黄色的东西，也就是<strong>外星人</strong>啦，然后你开火，击中那些外星人的话，那外星人就死掉了</p>
+</li>
+<li>
+<p>那前面这些东西是什么呢，那个是你的<strong>防护罩</strong>，如果你不小心打到自己的防护罩的话，你的防护罩呢，也是会被打掉的，那你可以躲在防护罩后面，你就可以挡住外星人的攻击</p>
+</li>
+<li>
+<p>在萤幕画面上会有分数，当你杀死外星人的时候，你会得到<strong>分数</strong>，或者是在有些版本的 Space Invader 里面，会有一个补给包，从上面横过去 飞过去，那你打到补给包的话，会被加一个很高的分数，那这个 Score 呢，就是 Reward，就是环境给我们的 Reward</p>
+</li>
+</ul>
+<p>那这个游戏呢，它是会终止的，那什么时候终止呢，当所有的外星人都被杀光的时候就终止，或者是呢，外星人其实也会对你的母舰开火啦，你的母舰被摧毁了，那这个游戏也就终止了。</p>
+<p>在Space Invader中，Actor 虽然是一个机器，但是它是坐在人的这一个位置，它是站在人这一个角度，去操控摇杆<strong>，去控制那个母舰，去跟外星人对抗，而你的环境是什么，</strong>你的环境呢，是游戏的主机，游戏的主机这边去操控那些外星人，外星人去攻击你的母舰，所以 Observation 是游戏的画面</p>
+<p><img alt="image-20221019212756650" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210192127706.png" /></p>
+<p>所以对 Actor 来说，它看到的，其实就跟人类在玩游戏的时候，看到的东西是一样的，就看到一个游戏的画面</p>
+<p>那输出呢，就是 Actor 可以采取的行为，那可以采取哪些行为，通常是事先定义好的，在这个游戏里面，就只有向左向右跟开火，三种可能的行为而已，好那当你的 Actor 采取向右这个行为的时候，那它会得到 Reward</p>
+<p>那因为在这个游戏里面，只有<strong>杀掉外星人会得到分数，而我们就是把分数定义成我们的 Reward</strong>，那向左向右其实并不会杀掉任何的外星人，所以你得到的 Reward 就是 0 分。当你采取一个 Action 以后呢，游戏的画面就变了：</p>
+<ul>
+<li>
+<p>游戏的画面变的时候，就代表了有了新的 Observation 进来</p>
+</li>
+<li>
+<p>有了新的 Observation 进来，你的 Actor 就会决定采取新的 Action</p>
+</li>
+</ul>
+<p><img alt="image-20221027202226781" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272022557.png" /></p>
+<p>你的 Actor 是一个 Function，这个 Function 会根据输入的 Observation，输出对应的 Action，那新的画面进来，假设你的 Actor，现在它采取的行为是开火，而开火这个行为正好杀掉一隻外星人的时候，你就会得到分数，那这边假设得到的分数是 5 分，那你就得到 Reward 等于 5。</p>
+<p>那这个呢，就是拿 Actor 去玩，玩这个 Space Invader 这个游戏的状况，好 那这个 Actor 呢，它想要学习的是什么呢，我们在玩游戏的过程中，会不断地得到 Reward，那在刚才例子里面，做第一个行为的时候，向右的时候得到的是 0 分，做第二个行为，开火的时候得到的是 5 分，那接下来你采取了一连串行为，都有可能给你分数</p>
+<p>我们要学习的目标就是想要 <strong>Learn 出一个 Actor，这个 Actor（ Function），我们使用它在这个游戏里面的时候，可以让我们得到的 Reward 的总和会是最大的</strong>，这个就是 RL 用在玩这个小游戏里面的时候做的事情。</p>
+<h3 id="example-learning-to-play-go">Example: Learning to play Go<a class="anchor-link" href="#example-learning-to-play-go" title="Permanent link">&para;</a></h3>
+<p>那其实如果把 RL 拿来下围棋，其实做的事情跟小游戏没有那么大的差别，只是规模跟问题的复杂度不太一样而已。那如果今天你要让机器来下围棋，那你的 Actor 就是就是 AlphaGo，你的环境就是 AlphaGo 的人类对手</p>
+<p><img alt="image-20221027205116738" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272051783.png" /></p>
+<p>你的 Actor 的输入就是棋盘上黑子跟白子的位置，那如果是在游戏的一开始，棋盘上就空空的，上面什么都没有，没有任何黑子跟白子，那这个 Actor 呢，看到这个棋盘呢，它就要产生输出，它就要决定它下一步，应该落子在哪里，那如果是围棋的话，你的输出的可能性就是有 19×19 个可能性，那这 19×19 个可能性，每一个可能性，就对应到棋盘上的一个位置</p>
+<p>那假设现在你的 Actor，决定要落子在这个地方</p>
+<p><img alt="image-20221027205305734" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272053771.png" /></p>
+<p>那这一个结果就会输入给你的环境，那其实就是一个棋士，然后这个环境就会再产生新的 Observation，因为李世石也会再落一子，那现在看到的环境又不一样了，那你的 Actor 看到这个新的 Observation，它就会产生新的 Action，然后就这样反覆继续下去</p>
+<p><img alt="image-20221027205430266" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272054341.png" /></p>
+<p><strong>在下围棋里面，你所采取的行为，几乎都没有办法得到任何 Reward</strong>，在下围棋这件事情里面呢，你会定义说，如果赢了，就得到 1 分，如果输了就得到 -1 分</p>
+<p><img alt="image-20221027205526775" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272055861.png" /></p>
+<p>也就是说在下围棋这整个，这个你的 Actor 跟环境互动的过程中，其实<strong>只有游戏结束，只有整场围棋结束的最后一子，你才能够拿到 Reward</strong>，就你最后，最后 Actor 下一子下去，赢了，就得到 1 分，那最后它落了那一子以后，游戏结束了，它输了，那就得到 -1 分，那在中间整个互动的过程中的 Reward，就都算是 0 分，没有任何的 Reward，那这个 Actor 学习的目标就是要去最大化它可能可以得到的 Reward。</p>
+<h2 id="machine-learning-is-so-simple-">Machine Learning is so simple ……<a class="anchor-link" href="#machine-learning-is-so-simple-" title="Permanent link">&para;</a></h2>
+<p>RL 跟机器学习的 Framework，它们之间的关系：</p>
+<p><img alt="image-20221027205917418" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272059510.png" /></p>
+<p>Machine Learning 的三个步骤</p>
+<ol>
+<li>第一个步骤，你有一个 Function，那个 Function 里面有一些未知数，Unknown 的 Variable，这些未知数是要被找出来的</li>
+<li>第二步，订一个 Loss Function，第三步，想办法找出未知数去最小化你的 Loss</li>
+<li>第三步就是 Optimization</li>
+</ol>
+<p>而 RL 其实也是一模一样的三个步骤</p>
+<h3 id="step-1-function-with-unknown">Step 1: Function with Unknown<a class="anchor-link" href="#step-1-function-with-unknown" title="Permanent link">&para;</a></h3>
+<p>第一个步骤，我们现在有未知数的这个 Function。这个有未知数的 Function，就是我们的 Actor，那在 RL 里面，<strong>你的 Actor 呢，就是一个 Network</strong>，那我们现在通常叫它 Policy 的 Network</p>
+<p><img alt="image-20221027210039794" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210272100834.png" /></p>
+<p>那在过去啊，在还没有把 Deep Learning 用到 RL 的时候，通常你的 Actor 是比较简单的，它不是 Network，它可能只是一个 Look-Up-Table，告诉你说看到什么样的输入，就产生什么样的输出，那今天我们都知道要用 Network，来当做这个 Actor，那这个 Network，其实就是一个很复杂的 Function</p>
+<p><img alt="image-20210912213816733" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912213816733.png" /></p>
+<p>这个复杂的 Function 它的输入是什么呢，它的<strong>输入就是游戏的画面</strong>，就是游戏的画面，这个游戏画面上的 Pixel，像素，就是这一个 Actor 的输入</p>
+<p>那它的输出是什么呢，它的<strong>输出就是，每一个可以采取的行为</strong>，它的分数，每一个可以采取的 Action 它的分数，举例来说 输入这样的画面，给你的 Actor，你的 Actor 其实就是一个 Network，它的输出可能就是给，向左 0.7 分，向右 0.2 分，开火 0.1 分</p>
+<p>那事实上啊，这件事情<strong>跟分类是没有什么两样</strong>的，你知道分类就是输入一张图片，输出就是决定这张图片是哪一个类别，那你的 Network 会给每一个类别，一个分数，你可能会通过一个 Softmax Layer，然后每一个类别都有个分数，而且这些分数的总和是 1</p>
+<p>那其实在 RL 里面，你的 Actor 你的 Policy Network，跟分类的那个 Network，其实是一模一样的，你就是输入一张图片，输出其实最后你也会有个 Softmax Layer，然后呢，你就会 Left、Right 跟 Fire，三个 Action 各给一个分数，那这些分数的总和，你也会让它是 1</p>
+<p><img alt="image-20210912213951581" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912213951581.png" /></p>
+<p>那至于这个 <strong>Network 的架构呢，那你就可以自己设计了</strong>，要设计怎么样都行，比如说如果输入是一张图片，欸 也许你就会想要用 CNN 来处理</p>
+<p>不过在助教的程式里面，其实不是用 CNN 来处理啦，因为在我们的作业里面，其实在玩游戏的时候，不是直接让我们的 Machine 去看游戏的画面，让它直接去看游戏的，让它直接去看游戏的画面比较难做啦，所以我们是让，看这个跟现在游戏的状况有关的一些参数而已，所以在这个助教的，在这个作业的这个 Sample Code 里面呢，还没有用到 CNN 那么复杂，就是一个简单的 Fully Connected Network，但是假设你要让你的 Actor，它的输入真的是游戏画面，欸 那你可能就会采取这个 CNN，你可能就用 CNN 当作你的 Network 的架构</p>
+<p><strong>甚至你可能说</strong>，我不要只看现在这一个时间点的游戏画面，我要看整场游戏到目前为止发生的所有事情，可不可以呢</p>
+<p>可以，那过去你可能会用 RNN 考虑，现在的画面跟过去所有的画面，那现在你可能会想要用 Transformer，考虑所有发生过的事情，所以 Network 的架构是你可以自己设计的，只要能够输入游戏的画面，输出类似像类别这样的 Action 就可以了，那最后机器会决定采取哪一个 Action，取决于每一个 Action 取得的分数</p>
+<p>常见的做法啊，是直接把这个分数，就当做一个机率，然后按照这个机率，去 Sample，去随机决定要采取哪一个 Action</p>
+<p><img alt="image-20210912213951581" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912213951581.png" /></p>
+<p>举例来说 在这个例子里面，向左得到 0.7 分，那就是有 70% 的机率会采取向左，20% 的机率会采取向右，10% 的机率会采取开火</p>
+<p>那你可能会问说，为什么不是用argmax呢，为什么不是看 Left 的分数最高，就直接向左呢，你也可以这么做，但是在助教的程式里面，还有多数 RL 应用的时候 你会发现，我们都是采取 Sample，</p>
+<p>采取 <strong>Sample 有一个好处是说，今天就算是看到同样的游戏画面，你的机器每一次采取的行为，也会略有不同</strong>，那在很多的游戏里面这种随机性，也许是重要的，比如说你在做剪刀石头布的时候，如果你总是会出石头，就跟小叮噹一样，那你就很容易被打爆，如果你有一些随机性，就比较不容易被打爆</p>
+<p>那其实之所以今天的输出，是用随机 Sample 的，还有另外一个很重要的理由，那这个我们等一下会再讲到，好 所以这是第一步，我们有一个 Function，这个 Function 有 Unknown 的 Variable，我们有一个 Network，那里面有参数，这个参数就是 Unknown 的 Variable，就是要被学出来的东西，这是第一步</p>
+<h3 id="step-2-define-loss">Step 2: Define “Loss”<a class="anchor-link" href="#step-2-define-loss" title="Permanent link">&para;</a></h3>
+<p>然后接下来第二步，我们要定义 Loss，在 RL 里面，我们的 Loss 长得是什么样子呢，我们再重新来看一下，我们的机器跟环境互动的过程，那只是现在用不一样的方法，来表示刚才说过的事情</p>
+<p><img alt="image-20210912214755516" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912214755516.png" /></p>
+<p>首先有一个初始的游戏画面，这个初始的游戏画面，被作为你的 Actor 的输入</p>
+<p>你的 Actor 那就输出了一个 Action，比如说向右，输入的游戏画面呢，我们叫它 <span class="math-inline">s_1</span>，然后输出的 Action 呢，就叫它 <span class="math-inline">a_1</span></p>
+<p>那现在会得到一个 Reward，这边因为向右没有做任何事情，没有杀死任何的外星人，所以得到的 Reward 可能就是 0 分</p>
+<p><img alt="image-20210912214950357" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912214950357.png" /></p>
+<p>采取向右以后，会看到新的游戏画面，这个叫做 <span class="math-inline">s_2</span>，根据新的游戏画面 <span class="math-inline">s_2</span>，你的 Actor 会采取新的行为，比如说开火，这边用 <span class="math-inline">a_2</span>，来表示看到游戏画面 <span class="math-inline">s_2</span> 的时候，所采取的行为</p>
+<p>那假设开火恰好杀死一隻外星人，和你的 Actor 就得到 Reward，这个 Reward 的分数呢，是 5 分，然后采取开火这个行为以后</p>
+<p><img alt="image-20210912215036248" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912215036248.png" /></p>
+<p>接下来你会看到新的游戏画面，那机器又会采取新的行为，那这个互动的过程呢，就会反覆持续下去，直到机器在采取某一个行为以后，游戏结束了，那什么时候游戏结束呢，就看你游戏结束的条件是什么嘛</p>
+<p>举例来说，采取最后一个行为以后，比如说向右移，正好被外星人的子弹打中，那你的飞船就毁了，那游戏就结束了，或者是最后一个行为是开火，把最后一隻外星人杀掉，那游戏也就结束了，就你执行某一个行为，满足游戏结束的条件以后，游戏就结束了</p>
+<p><img alt="image-20210912215129396" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912215129396.png" /></p>
+<p>那从游戏开始到结束的这整个过程啊，被称之为一个 ==Episode==，那在整个游戏的过程中，机器会采取非常多的行为，每一个行为都可能得到 Reward，把所有的 Reward 通通集合起来，我们就得到一个东西，叫做整场游戏的 ==Total Reward==，</p>
+<p><img alt="image-20210912215203605" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912215203605.png" /></p>
+<p>那这个 Total Reward 呢，就是从游戏一开始得到的 <span class="math-inline">r_1</span>，一直得，一直加，累加到游戏最后结束的时候，得到的 rt，假设这个游戏里面会互动，T 次，那么就得到一个 Total Reward，我们这边用 R，来表示 Total Reward，其实这个 Total Reward 又有另外一个名字啊，叫做 ==Return== 啦，你在这个 RL 的文献上，常常会同时看到 Reward 跟 Return，这两个词会出现，那 Reward 跟 Return 其实有点不一样，Reward 指的是你采取某一个行为的时候，立即得到的好处，这个是 Reward，把整场游戏里面所有的 Reward 通通加起来，这个叫做 Return</p>
+<p>但是我知道说，很快你就会忘记 Reward 跟 Return 的差别了，所以我们等一下就不要再用 Return 这个词彙，我们直接告诉你说，整场游戏的 Reward 的总和，就是 Total 的 Reward，而这个 Total 的 Reward 啊，就是我们想要去最大化的东西，就是我们训练的目标</p>
+<p>那你可能会说，欸 这个跟 Loss 不一样啊，Loss 是要越小越好啊，这个 Total Reward 是要越大越好啊，所以有点不一样吧，但是我们可以说在 RL 的这个情境下，我们把那个 Total Reward 的负号，<strong>负的 Total Reward，就当做我们的 Loss，Total Reward 是要越大越好，那负的 Total Reward，当然就是要它越小越好</strong>吧，就我们完全可以说负的 Total Reward，就是我们的 Loss，就是 RL 里面的 Loss</p>
+<h3 id="step-3-optimization">Step 3: Optimization<a class="anchor-link" href="#step-3-optimization" title="Permanent link">&para;</a></h3>
+<p>那我们再把这个环境跟，Agent 互动的这一件事情啊，再用不一样的图示，再显示一次</p>
+<p><img alt="image-20210912220011837" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912220011837.png" /></p>
+<p>这个是你的环境，你的环境呢，输出一个 Observation，叫做 <span class="math-inline">s_1</span></p>
+<ul>
+<li>
+<p>这个 <span class="math-inline">s_1</span> 呢，会变成你的 Actor 的输入</p>
+</li>
+<li>
+<p>你的 Actor 呢，接下来就是输出 <span class="math-inline">a_1</span></p>
+</li>
+<li>
+<p>然后这个 <span class="math-inline">a_1</span> 呢，又变成环境的输入</p>
+</li>
+<li>
+<p>你的环境呢，看到 <span class="math-inline">a_1</span> 以后，又输出 <span class="math-inline">s_2</span></p>
+</li>
+</ul>
+<p>然后这个互动的过程啊，就会继续下去，<span class="math-inline">s_2</span> 又输入给 Actor，它就输出 <span class="math-inline">a_2</span>，<span class="math-inline">a_2</span> 又输入给 Environment，它就输出给，它就产生 <span class="math-inline">s_3</span></p>
+<p>它这个互动呢，一直下去，直到满足游戏中止的条件，好 那这个 s 跟 a 所形成的这个 Sequence，就是 <span class="math-inline">s_1</span> <span class="math-inline">a_1</span> <span class="math-inline">s_2</span> <span class="math-inline">a_2</span> <span class="math-inline">s_3</span> <span class="math-inline">a_3</span> 这个 Sequence，又叫做 Trajectory，那我们用 <span class="math-inline">τ </span> 表示 Trajectory</p>
+<p><img alt="image-20210912220319849" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912220319849.png" /></p>
+<p>那根据这个互动的过程，Machine 会得到 Reward，你其实可以把 Reward 也想成是一个 Function，我们这边用一个绿色的方块来代表，这个 Reward 所构成的 Function</p>
+<p>那这个 Reward 这个 Function，有不同的表示方法啦，在有的游戏里面，也许你的 Reward，只需要看你采取哪一个 Action 就可以决定，不过通常我们在决定 Reward 的时候，光看 Action 是不够的，你还要看现在的 Observation 才可以，因为并不是每一次开火你都一定会得到分数，开火要正好有击到外星人，外星人正好在你前面，你开火才有分数</p>
+<p>所以通常 <strong>Reward Function 在定义的时候，不是只看 Action，它还需要看 Observation</strong>，同时看 Action 跟 Observation，才能够知道现在有没有得到分数，所以 Reward 是一个 Function，</p>
+<p>这个 Reward 的 Function，它拿 <span class="math-inline">a_1</span> 跟 <span class="math-inline">s_1</span> 当作输入，然后它产生 <span class="math-inline">r_1</span> 作为输出，它拿 <span class="math-inline">a_2</span> 跟 <span class="math-inline">s_2</span> 当作输入，产生 <span class="math-inline">r_2</span> 作为输出，把所有的 r 通通结合起来，把 <span class="math-inline">r_1</span> 加 <span class="math-inline">r_2</span> 加 <span class="math-inline">r_3</span> 一直加到 T，全部结合起来就得到 R，这个就是 Total Reward，也就是 Return，这个是我们要最大化要去 Maximize 的对象</p>
+<p>这个 Optimization 的问题是这个样子，你要去找一个 Network，其实是 Network 里面的参数，你要去 Learn 出一组参数，这一组参数放在 Actor 的里面，它可以让这个 R 的数值越大越好，就这样，结束了，整个 Optimization 的过程就是这样，你要去找一个 Network 的参数，让这边产生出来的 R 越大越好</p>
+<p><img alt="image-20210912220319849" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912220319849.png" /></p>
+<p>那乍看之下，如果这边的，这个 Environment Actor 跟 Reward，它们<strong>都是 Network 的话，这个问题其实也没有什么难的</strong>，这个搞不好你现在都可以解，它看起来就有点像是一个 Recurrent Network，这是一个 Recurrent Network，然后你的 Loss 就是这个样子，那只是这边是 Reward 不是 Loss，所以你是要让它越大越好，你就去 Learn 这个参数，用 Gradient Descent 你就可以让它越大越好</p>
+<p>但是 RL 困难的地方是，<strong>这不是一个一般的 Optimization 的问题</strong>，因为你的 Environment，这边有很多问题导致说，它跟一般的 Network Training 不太一样</p>
+<p>第一个问题是，<strong>你的 Actor 的输出是有随机性的</strong></p>
+<p><img alt="image-20210912221135459" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912221135459.png" /></p>
+<p>这个 <strong><span class="math-inline">a_1</span> 它是用 Sample 产生的</strong>，你定同样的 <span class="math-inline">s_1</span> 每次产生的 <span class="math-inline">a_1</span> 不一定会一样，所以假设你把 Environment Actor 跟 Reward，合起来当做是一个巨大的 Network 来看待，这个 Network 可不是一般的 Network，<strong>这个 Network 里面是有随机性的</strong>，这个 Network 里面的某一个 Layer 是，每次产生出来结果是不一样的，<strong>这个 Network 里面某一个 Layer 是，它的输出每次都是不一样的</strong></p>
+<p>另外还有一个更大的问题就是，<strong>你的 Environment 跟 Reward，它根本就不是 Network 啊，它只是一个黑盒子而已</strong>，你根本不知道里面发生了什么事情，Environment 就是游戏机，那这个游戏机它里面发生什么事情你不知道，你只知道说你输入一个东西会输出一个东西，你采取一个行为它会有对应的回应，但是到底是怎么产生这个对应的回应，我们不知道，它只是一个黑盒子，</p>
+<p><strong>Reward 可能比较明确，但它也不是一个 Network，它就是一条规则</strong>嘛，它就是一个规则说，看到这样子的 Optimization 跟这样的 Action，会得到多少的分数，它就只是一个规则而已，所以它也不是 Network</p>
+<p>而且更麻烦的地方是，<strong>往往 Reward 跟 Environment，它也是有随机性的</strong>，如果是在电玩里面，通常 Reward 可能比较不会有随机性，因为规则是定好的，对有一些 RL 的问题里面，Reward 是有可能有随机性的</p>
+<p>但是在 Environment 里面，就算是在电玩的这个应用中，它也是有随机性的，你给定同样的行为，到底游戏机会怎么样回应，它里面可能也是有乱数的，它可能每次的回应也都是不一样，如果是下围棋，你落同一个子，你落在，你落子在同一个位置，你的对手会怎么样回应，每次可能也是不一样</p>
+<p><img alt="image-20210912230423421" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912230423421.png" /></p>
+<p>所以环境很有可能也是有随机性的，所以这不是一个一般的 Optimization 的问题，你可能不能够用我们这门课已经学过的，训练 Network 的方法来找出这个 Actor，来最大化 Reward</p>
+<p><strong>所以 RL 真正的难点就是，我们怎么解这一个 Optimization 的问题</strong>，怎么找到一组 Network 参数，可以让 R 越大越好</p>
+<p>其实你再仔细想一想啊，这整个问题<strong>跟 GAN 其实有异曲同工之妙</strong>，它们有一样的地方，也有不一样的地方</p>
+<ul>
+<li>
+<p>先说它们<strong>一样</strong>的地方在哪里，你记不记得在训练 GAN 的时候，在训练 Generator 的时候，你会把 Generator 跟 Discriminator 接在一起，然后你希望去调整 Generator 的参数，让 Discriminator 的输出越大越好，今天在 RL 里面，我们也可以说这个 Actor 就像是 Generator，Environment 跟 Reward 就像是 Discriminator，我们要去<strong>调整 Generator 的参数，让 Discriminator 的输出越大越好</strong>，所以它跟 GAN 有异曲同工之妙</p>
+</li>
+<li>
+<p>但什么地方<strong>不一样</strong>呢，在 GAN 里面你的 Discriminator，也是一个 Neural Network，你了解 Discriminator 里面的每一件事情，它也是一个 Network，你可以用 Gradient Descent，来 train 你的 Generator，让 Discriminator 得到最大的输出，但是在 RL 的问题里面，你的 <strong>Reward 跟 Environment，你可以把它们当 Discriminator 来看，但它们不是 Network，它们是一个黑盒子，所以你没有办法用，一般 Gradient Descent 的方法来调整你的参数，来得到最大的输出</strong>，所以这是 RL，跟一般 Machine Learning不一样的地方</p>
+</li>
+</ul>
+<p>但是我们还是可以把 RL 就看成三个阶段，只是在 Optimization 的时候，在你怎么 Minimize Loss，也就怎么 Maximize Reward 的时候，跟之前我们学到的方法是不太一样的</p>
+<h1 id="policy-gradient">Policy Gradient<a class="anchor-link" href="#policy-gradient" title="Permanent link">&para;</a></h1>
+<p>接下来啊，我们就要讲一个拿来解 RL，拿来做 Optimization 那一段常用的一个演算法，叫做 Policy Gradient</p>
+<p><img alt="image-20210912231113114" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912231113114.png" /></p>
+<p>那如果你真的想知道，Policy Gradient 是哪里来的，你可以参见过去上课的<a href="https://youtu.be/W8XF3ME8G2I">录影</a>，对 Policy Gradient 有比较详细的推导，那今天我们是从另外一个角度，来讲 Policy Gradient 这件事情</p>
+<h3 id="how-to-control-your-actor">How to control your actor<a class="anchor-link" href="#how-to-control-your-actor" title="Permanent link">&para;</a></h3>
+<p>那在讲 Policy Gradient 之前，我们先来想想看，我们要怎么操控一个 Actor 的输出，我们要怎么让一个 Actor，在看到某一个特定的 Observation 的时候，采取某一个特定的行为呢，我们怎么让一个 Actor，它的输入是 s 的时候，它就要输出 Action <span class="math-inline">\hat{a}</span> 呢</p>
+<p><img alt="image-20210912231731634" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912231731634.png" /></p>
+<p>那你其实完全可以把它<strong>想成一个分类的问题</strong>，也就是说假设你要让 Actor 输入 s，输出就是 <span class="math-inline">\hat{a}</span>，假设 <span class="math-inline">\hat{a}</span> 就是向左好了，假设你要让，假设你已经知道，假设你就是要教你的 Actor 说，看到这个游戏画面向左就是对的，你就是给我向左，那你要怎么让你的 Actor 学到这件事呢</p>
+<p><img alt="image-20210912231832863" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912231832863.png" /></p>
+<p>那也就说 s 是 Actor 的输入，<span class="math-inline">\hat{a}</span> 就是我们的 Label，就是我们的 Ground Truth，就是我们的正确答案，而接下来呢，你就可以计算你的 Actor，它的输出跟 Ground Truth 之间的 Cross-entropy，那接下来你就可以定义一个 Loss</p>
+<p>假设你希望你的 Actor，它<strong>采取 <span class="math-inline">\hat{a}</span> 这个行为的话</strong>，你就定一个 Loss，这个 Loss 等于 Cross-entropy</p>
+<p><img alt="image-20210912232003035" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912232003035.png" /></p>
+<p>然后呢，你再去 Learn 一个 θ，你再去 Learn 一个 θ，然后这个 θ 可以让 Loss 最小，那你就可以让这个 Actor 的输出，跟你的 Ground Truth 越接近越好</p>
+<p>你就可以让你的 Actor 学到说，看到这个游戏画面的时候，它就是要向左，这个是要让你的 Actor，采取某一个行为的时候的做法</p>
+<p>但是假设你想要让你的 Actor，<strong>不要采取某一个行为</strong>的话，那要怎么做呢，假设你希望做到的事情是，你的 Actor 看到某一个 Observation s 的时候，我就千万不要向左的话怎么做呢，其实很容易，你<strong>只需要把 Loss 的定义反过来就好</strong></p>
+<p><img alt="image-20210912232223834" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912232223834.png" /></p>
+<p>你希望你的 Actor 采取 <span class="math-inline">\hat{a}</span> 这个行为，你就定义你的大 L 等于 Cross-entropy，然后你要 Minimize Cross-entropy，假设你要让你的 Actor，不要采取 <span class="math-inline">\hat{a}</span> 这个行为的话，那你就把你就定一个 Loss，叫做负的 Cross-entropy，Cross-entropy 乘一个负号，那你去 Minimize 这个 L，你去 Minimize 这个 L，就是让 Cross-entropy 越大越好，那也就是让 a 跟 <span class="math-inline">\hat{a}</span> 的距离越远越好，那你就可以避免你的 Actor 在看到 s 的时候，去采取 <span class="math-inline">\hat{a}</span> 这个行为，所以我们有办法控制我们的 Actor，做我们想要做的事，只要我们给它适当的 Label 跟适当的 Loss，</p>
+<p>所以假设我们要让我们的 Actor，<strong>看到 s 的时候采取 <span class="math-inline">\hat{a}</span>，看到 s' 的时候不要采取 <span class="math-inline">\hat{a}</span>'</strong> 的话，要怎么做呢</p>
+<p>这个时候你就会说，Given s 这个 Observation，我们的 Ground Truth 叫做 <span class="math-inline">\hat{a}</span>，Given s' 这个 Observation 的时候，我们有个 Ground Truth 叫做 <span class="math-inline">\hat{a}</span>'，那对这两个 Ground Truth， 我们都可以去计算 Cross-entropy，<span class="math-inline">e_1</span> 跟 <span class="math-inline">e_2</span></p>
+<p><img alt="image-20210912232542292" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912232542292.png" /></p>
+<p>然后接下来呢，我们就定义说我们的 Loss，就是 <span class="math-inline">e_1</span> 减 <span class="math-inline">e_2</span>，也就是说我们要让这个 Case，它的 Cross-entropy 越小越好，这个 Case 它的 Cross-entropy 越大越好</p>
+<p>然后呢，我们去找一个 θ 去 Minimize Loss，得到 <span class="math-inline">θ^⋆</span>，那就是一个可以在 s，可以在看到 s 的时候采取 <span class="math-inline">\hat{a}</span>，看到 s' 的时候采取 <span class="math-inline">\hat{a}</span>' 的 Actor，所以藉由很像是在，Train 一个 Classifier 的这种行为，藉由很像是现在 Train 一个 Classifier，的这种 Data，我们可以去控制一个 Actor 的行为，</p>
+<p>有一个同学问了一个非常好的问题</p>
+<ul>
+<li><strong>Q:</strong>就是如果以 Alien 的游戏来说的话，因为只有射中 Alien 才会有 Reward，这样 Model 不是就会一直倾向于射击吗</li>
+</ul>
+<p><strong>A:</strong>对 这个问题我们等一下会来解决它，之后的投影片就会来解决它</p>
+<p>然后又有另外一个同学，问了一个非常好的问题就是</p>
+<ul>
+<li><strong>Q:</strong>哇 这样不就回到 Supervised Learning 了嘛，这个投影片上看起来，就是在训练一个 Classifier 而已啊，我们就是在训练 Classifier，你只是告诉它说，看到 s 的时候就要输出 <span class="math-inline">\hat{a}</span>，看到 s' 的时候就不要输出 <span class="math-inline">\hat{a}</span>，<span class="math-inline">\hat{a}</span>'，这不就是 Supervised Learning 吗</li>
+<li><strong>A:</strong>这就是 Supervised Learning，这个就是跟 Supervised Learning Train 的，Image Classifier 是一模一样的，但等下我们会看到它跟，一般的 Supervised Learning 不一样在哪里，</li>
+</ul>
+<p>那所以呢，如果我们要训练一个 Actor，我们其实就需要收集一些训练资料，就收集训练资料说，我希望在 <span class="math-inline">s_1</span> 的时候采取 <span class="math-inline">\hat{a}</span>1，我希望在 <span class="math-inline">s_2</span> 的时候不要采取 <span class="math-inline">\hat{a}</span>2</p>
+<p><img alt="image-20210912233019856" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912233019856.png" /></p>
+<p>但可能会问说，欸 这个训练资料哪来的，这个我们等一下再讲训练资料哪来的</p>
+<p>所以你就<strong>收集一大堆的资料，这个跟 Train 一个 Image 的 Classifier 很像的</strong>，这个 s 你就想成是 Image，这个 <span class="math-inline">\hat{a}</span> 你就想成是 Label，只是现在有的行为是想要被采取的，有的行为是不想要被采取的，你就收集一堆这种资料，你就可以去定义一个 Loss Function，有了这个 Loss Function 以后，你就可以去训练你的 Actor，去 <strong>Minimize 这个 Loss Function，就结束了</strong>，你就可以训练一个 Actor，期待它执行我们的行为，期待它执行的行为是我们想要的</p>
+<p>而你甚至还可以更进一步，你可以说<strong>每一个行为并不是只有好或不好</strong>，并不是有想要执行跟不想要执行而已，<strong>它是有程度的差别的</strong>，有执行的非常好的，有 Nice to have 的，有有点不好的，有非常差的</p>
+<p>所以刚才啊，我们是说每一个行为就是要执行 不要执行，这是一个 Binary 的问题，这是我们就用 ±1 来表示</p>
+<p><img alt="image-20210912233324323" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912233324323.png" /></p>
+<p>但是现在啊，我们改成<strong>每一个 s 跟 a 的 Pair，它有对应的一个分数</strong>，这个分数代表说，我们多希望机器在看到 <span class="math-inline">s_1</span> 的时候，执行 <span class="math-inline">\hat{a}_1</span> 这个行为</p>
+<p>那比如说这边第一笔资料跟第三笔资料，我们分别是定 +1.5 跟 +0.5，就代表说我们期待机器看到 <span class="math-inline">s_1</span> 的时候，它可以做 <span class="math-inline">\hat{a}_1</span>，看到 <span class="math-inline">s_3</span> 的时候它可以做 <span class="math-inline">\hat{a}_3</span>，但是我们期待它看到 <span class="math-inline">s_1</span> 的时候，做 <span class="math-inline">\hat{a}_1</span> 的这个期待更强烈一点，比看到 <span class="math-inline">s_3</span> 做 <span class="math-inline">\hat{a}_3</span> 的期待更强烈一点</p>
+<p>那我们希望它在看到 <span class="math-inline">s_2</span> 的时候，不要做 <span class="math-inline">\hat{a}_2</span>，我们期待它看到 sN 的时候，不要做 <span class="math-inline">\hat{a}_N</span>，而且我们非常不希望，它在看到 sN 的时候做 <span class="math-inline">\hat{a}_N</span></p>
+<p>有了这些资讯，你一样可以定义一个 Loss Function，你只是在你的原来的 Cross-entropy 前面，本来是 Cross-entropy 前面，要嘛是 +1 要嘛是 -1</p>
+<p>现在改成乘上 An 这一项，改成乘上 An 这一项，告诉它说有一些行为，我们非常期待 Actor 去执行，有一些行为我们非常不期待 Actor 去执行，有一些行为如果执行是比较好的，有一些行为希望儘量不要执行比较好，但就算执行了也许伤害也没有那么大</p>
+<p>所以我们<strong>透过这个 An 来控制说，每一个行为我们多希望 Actor 去执行</strong>，然后接下来有这个 Loss 以后，一样 Train 一个 θ，Train 下去你就找一个 <span class="math-inline">θ^⋆</span>，你就有个 Actor 它的行为是符合我们期待的</p>
+<p><img alt="image-20210912233513464" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20210912233513464.png" /></p>
+<p>那接下来的难点就是，要怎么定出这一个 a 呢，这个就是我们接下来的难点，就是我们接下来要面对的问题，我们还有另外一个要面对的问题是，怎么产生这个 s 跟 a 的 Pair 呢，怎么知道在 <span class="math-inline">s_1</span> 的时候要执行 <span class="math-inline">a_1</span>，或在 <span class="math-inline">s_2</span> 的时候不要执行 <span class="math-inline">a_2</span> 呢，那这个也是等一下我们要处理的问题，</p>
+<p>讲到目前为止,你可能觉得跟 Supervised Lea<span class="math-inline">rN</span>ing,没有什么不同,那确实就是没有什么不同,接下来真正的重点是,在我们怎么定义 a 上面</p>
+<h2 id="version-0">Version 0<a class="anchor-link" href="#version-0" title="Permanent link">&para;</a></h2>
+<p>那先讲一个最简单的,但是其实是不正确的版本,那这个其实也是,助教的 Sample Code 的版本,那这个不正确的版本是怎么做的呢</p>
+<p>首先我们还是需要收集一些训练资料,就是需要<strong>收集 s 跟 a 的 Pair</strong></p>
+<p>怎么收集这个 s 跟 a 的 Pair 呢?</p>
+<p>你需要先有一个 Actor,这个 Actor 去跟环境做互动,它就可以收集到 s 跟 a 的 Pair</p>
+<p>那这个 Actor 是哪裡来的呢,你可能觉得很奇怪,我们今天的目标,不就是要训练一个 Actor 吗,那你又说你需要拿一个 Actor,去跟环境做互动,然后把这个 Actor,它的 s 跟 a 记录下来,那这个 Actor 是哪裡来的呢?</p>
+<p>你先把这个 Actor,想成就是一个<strong>随机的 Actor</strong> 好了,就它是一个,它就是一个随机的东西,那看到 <span class="math-inline">s1</span>,然后它执行的行为就是乱七八糟的,就是随机的,但是我们会把它在,每一个 s 执行的行为 a,通通都记录下来,好 那通常我们在这个收集资料的话,你不会只把 Actor 跟环境做一个 Episode,通常会做多个 Episode,然后期待你可以收集到足够的资料,比如说在助教 Sample Code裡面,可能就是跑了 5 个 Episode,然后才收集到足够的资料</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025092210834.png" alt="image-20211025092210834" style="zoom: 67%;" /></p>
+<p>所以我们就是去观察,某一个 Actor 它跟环境互动的状况,那把这个 Actor,它在每一个 Observation,执行的 Action 都记录下来,然后接下来,我们就去<strong>评价每一个 Action,它到底是好还是不好</strong>,评价完以后,我们就可以拿我们评价的结果,来训练我们的 Actor</p>
+<p>那怎么评价呢,我们刚才有说,我们会用 A 这一个东西,来评价在每一个 Step,我们希不希望我们的 Actor,採取某一个行为,那最简单的评价方式是,假设在某一个 Step <span class="math-inline">s1</span>,我们执行了 <span class="math-inline">a1</span>,然后得到 Reward <span class="math-inline">r1</span></p>
+<ul>
+<li>那 Reward 如果如果是正的,那也许就代表这个 Action 是好的</li>
+<li>那如果 Reward 是负的,那也许就代表这个 Action 是不好的</li>
+</ul>
+<p>那我们就把这个 Reward <span class="math-inline">r1</span> <span class="math-inline">r2</span>,当做是 a,<span class="math-inline">A1</span> 就是 <span class="math-inline">r1</span>,A2 就是 <span class="math-inline">r2</span>,A3 就是 <span class="math-inline">r3</span>,AN 就是 <span class="math-inline">rN</span>,那这样等同于你就告诉 machine 说,如果我们执行完某一个 Action,<span class="math-inline">a1</span> 那得到的 <strong>Reward 是正的,那这就是一个好的 Action</strong>,你以后看到 <span class="math-inline">s1</span> 就要执行 <span class="math-inline">a1</span>,如果今天在 <span class="math-inline">s2</span> 执行 a2,得到 Reward 是负的,就代表 a2 是不好的 a2,就代表所以以后看到 <span class="math-inline">s2</span> 的时候,就不要执行 a2</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025092531818.png" alt="image-20211025092531818" style="zoom:67%;" /></p>
+<p>那这个,那这个 Version 0,它并不是一个好的版本,为什么它不是一个好的版本呢,因为你用这一个方法,你把 <span class="math-inline">a1</span> 设为 <span class="math-inline">r1</span>,A2 设为 <span class="math-inline">r2</span>,这个方法认出来的 Network,它是一个<strong>短视近利的 Actor</strong>,它就是一个只知道会一时爽的 Actor,它<strong>完全没有长程规划的概念</strong></p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025092851736.png" alt="image-20211025092851736" style="zoom:67%;" /></p>
+<ul>
+<li>
+<p>我们知道说每一个行为,其实都会影响互动接下来的发展,也就是说 Actor 在 <span class="math-inline">s1</span> 执行 <span class="math-inline">a1</span> 得到 <span class="math-inline">r1</span>,这个并不是互动的全部,因为 <span class="math-inline">a1</span> 影响了我们接下来会看到 <span class="math-inline">s2</span>,<span class="math-inline">s2</span> 会影响到接下来会执行 a2,也影响到接下来会产生 <span class="math-inline">r2</span>,所以 <span class="math-inline">a1</span> 也会影响到,我们会不会得到 <span class="math-inline">r2</span>,所以<strong>每一个行为并不是独立的,每一个行为都会影响到接下来发生的事情</strong>,</p>
+</li>
+<li>
+<p>而且我们今天在跟环境做互动的时候,有一个问题叫做,==Reward Delay==,就是有时候你需要<strong>牺牲短期的利益,以换取更长程的目标</strong>,如果在下围棋的时候,如果你有看天龙八部的时候你就知道说,这个虚竹在破解珍珑棋局的时候,堵死自己一块子,让自己被杀了很多子以后,最后反而赢了整局棋</p>
+</li>
+</ul>
+<p>那如果是在这个,Space Invaders 的游戏裡面,你可能需要先左右移动一下进行瞄准,然后射击才会得到分数,而左右移动这件事情是,没有任何 Reward 的,左右移动这件事情得到的 Reward 是零,只有射击才会得到 Reward,但是并不代表左右移动是不重要的,我们会先需要左右移动进行瞄准,那我们的射击才会有效果,所以有时候我们会,需要牺牲一些近期的 Reward,而换取更长程的 Reward</p>
+<ul>
+<li>所以今天假设我们用 Version 0,会发生说今天 Machine,只要是採取向左跟向右,它得到的 Reward 会是 0,如果它採取开火,它得到的 Reward 就会,只有开火的时候,它得到的 Reward 才会是正的,才会是正的,那这样 Machine 就会学到,它只有疯狂狂开火才是对的,因为只有开火这件事才会得到 Reward,其它行为都不会得到 Reward,所以其它行为都是不被鼓励的,只有开火这件事是被鼓励的,那个 Version 0 就只会学到疯狂开火而已,那 Version 0 是助教的范例程式,那这个当然也是可以执行的,那只是它的结果不会太好而已,那助教范例十,程式之所以是 Version 0 是因为,我不知道为什么这个 Version 0,好像是大家,如果你自己在 Implement rl 的时候,你特别容易犯的错误,你特别容易拿自己 Implement 的时候,就直接使用 Version 0,但是得到一个很差的结果</li>
+</ul>
+<p>所以接下来怎么办呢,我们开始正式进入 rl 的领域,真正来看 ==Policy Gradient== 是怎么做的,所以我们需要有 Version 1</p>
+<h2 id="version-1">Version 1<a class="anchor-link" href="#version-1" title="Permanent link">&para;</a></h2>
+<p>在 Version 1 裡面,<span class="math-inline">a1</span> 它有多好,不是在取决于 <span class="math-inline">r1</span>,而是取决于 <strong><span class="math-inline">a1</span> 之后所有发生的事情</strong>,我们会把 <span class="math-inline">a1</span>,执行完 <span class="math-inline">a1</span> 以后,所有得到的 Reward,<span class="math-inline">r1</span> <span class="math-inline">r2</span> <span class="math-inline">r3</span> 到 <span class="math-inline">rN</span>,通通集合起来,通通加起来,得到一个数值叫做 G1,然后我们会说 <span class="math-inline">a1</span> 就等于 G1,我们拿这个 G1,来当作评估一个 Action 好不好的标准</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025095137691.png" alt="image-20211025095137691" style="zoom:67%;" /></p>
+<p>刚才是直接拿 <span class="math-inline">r1</span> 来评估,现在不是,拿 G1 来评估,那接下来所有发生的 r 通通加起来,拿来评估 <span class="math-inline">a1</span> 的好坏,因为我们执行完 <span class="math-inline">a1</span> 以后,就发生这么一连串的事情,那这么一连串的事情加起来,也许就可以评估 <span class="math-inline">a1</span>,到底是不是一个好的 Action</p>
+<p>所以以此类推,a2 它有多好呢,就把执行完 a2 以后,所有的 r,<span class="math-inline">r2</span> 到 <span class="math-inline">rN</span>,通通加起来得到 G2,然后那 a3 它有多好呢,就把执行完 a3 以后,所有的 r 通通加起来,就得到 G3,所以把这些东西通通都加起来,就把那 这些这个 G,叫做 ==Cumulated Reward==,叫做累积的 Reward,把未来所有的 Reward 加起来,来评估一个 Action 的好坏,那像这样子的方法听起来就合理多了</p>
+<p>Gt 是什么呢,就是从 t 这个时间点开始,我们把 rt 一直加到 <span class="math-inline">rN</span>,全部合起来就是,Cumulated 的 Reward Gt,那当我们用,Cumulated 的 Reward 以后,我们就可以解决 Version 0 遇到的问题,因为你可能向右移动以后进行瞄准,接下来开火,就有打中外星人,那这样向右这件事情,它也有 Accumulate Reward,虽然向右这件事情没有立即的 Reward,假设 <span class="math-inline">a1</span> 是向右,那 <span class="math-inline">r1</span> 可能是 0,但接下来可能会因为向右这件事,导致有瞄准,导致有打到外星人,那 Cumulated 的 Reward 就会正的,那我们就会知道说,其实向右也是一个好的 Action,这个是 Version 1</p>
+<p>但是你仔细想一想会发现,==Version 1 好像也有点问题==</p>
+<p><strong>假设这个游戏非常地长</strong>,你<strong>把 <span class="math-inline">rN</span> 归功于 <span class="math-inline">a1</span> 好像不太合适</strong>吧,就是当我们採取 <span class="math-inline">a1</span> 这个行为的时候,立即有影响的是 <span class="math-inline">r1</span>,接下来有影响到 <span class="math-inline">r2</span>,接下来影响到 <span class="math-inline">r3</span>,那假设这个过程非常非常地长的话,那我们说因为有做 <span class="math-inline">a1</span>,导致我们可以得到 <span class="math-inline">rN</span>,这个可能性应该很低吧,也许得到 <span class="math-inline">rN</span> 的功劳,不应该归功于 <span class="math-inline">a1</span>,好 所以怎么办呢</p>
+<h2 id="version-2">Version 2<a class="anchor-link" href="#version-2" title="Permanent link">&para;</a></h2>
+<p>有第二个版本的 Cumulated 的 Reward,我们这边用 G',来表示 Cumulated 的 Reward,好 这个我们会在 r 前面,乘一个 Discount 的 Factor</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025095219890.png" alt="image-20211025095219890" style="zoom:67%;" /></p>
+<p>这个 Discount 的 Factor γ,也会设一个小于 1 的值,有可能会设,比如说 0.9 或 0.99 之类的,所以这个 G'1 相较于 G1 有什么不同呢,G1 是 <span class="math-inline">r1</span> 加 <span class="math-inline">r2</span> 加 <span class="math-inline">r3</span>,那 G'1 呢,是 <span class="math-inline">r1</span> 加 γ<span class="math-inline">r2</span> 加 γ 平方 <span class="math-inline">r3</span>,就是距离採取这个 Action 越远,我们 γ 平方项就越多,所以 <span class="math-inline">r2</span> 距离 <span class="math-inline">a1</span> 一步,就乘个 γ,<span class="math-inline">r3</span> 距离 <span class="math-inline">a1</span> 两步,就乘 γ 平方,那这样一直加到 <span class="math-inline">rN</span> 的时候,<span class="math-inline">rN</span> 对 G'1 就几乎没有影响力了,因为你 γ 乘了非常非常多次了,γ 是一个小于 1 的值,就算你设 0.9,0.9 的比如说 10 次方,那其实也很小了</p>
+<p>所以你今天用这个方法,就可以<strong>把离 <span class="math-inline">a1</span> 比较近的那些 Reward,给它比较大的权重</strong>,离我比较远的那些 Reward,给它比较小的权重,所以我们现在有一个新的 A,这个新的 A 这个评估,这个 Action 好坏的这个 A,我们现在用 G'1 来表示它,那它的式子可以写成这个样子,这个 G't 就是 Summention over,n 等于 t 到 N,然后我们把 <span class="math-inline">rN</span> 乘上 γ 的 n-t 次方,所以离我们现在,採取的 Action 越远的那些 Reward,它的 γ 就被乘越多次,它对我们的 G' 的影响就越小,这是第二个版本,听到这边你是不是觉得合理多了呢 </p>
+<h3 id="qa">Q&amp;A<a class="anchor-link" href="#qa" title="Permanent link">&para;</a></h3>
+<p>Q1:一个大括号是一个 Episode,还是这样蓝色的框住的多个大括号,是一个 Episode</p>
+<p>A1: 一个大括号不是一个 Episode,一个大括号是,我们在这一个 Observation,执行这一个 Action 的时候,这个是一笔资料,它不是一个 Episode,Episode 是很多的,很多次的 Observation,跟很多次的 Action 才合起来,才是一个 Episode</p>
+<p>Q2: G1 需不需要做标准化之类的动作</p>
+<p>A2: 这个问题太棒了,为什么呢,因为这个就是 Version 3</p>
+<p>Q3: 越早的动作就会累积到越多的分数吗,越晚的动作累积的分数就越少</p>
+<p>A3: 对 没错 是,在这个设计的情境裡面,是,越早的动作就会累积到越多的分数,但是这个其实也是一个合理的情境,因为你想想看,比较早的那些动作对接下来的影响比较大,到游戏的终局,没什么外星人可以杀了,你可能做什么事对结果影响都不大,所以比较早的那些 Observation,它们的动作是我们可能需要特别在意的,不过像这种 A 要怎么决定,有很多种不同的方法,如果你不想要比较早的动作 Action 比较大,你完全可以改变这个 A 的定义,事实上不同的 rl 的方法,其实就是在 A 上面下文章,有不同的定义 A 的方法</p>
+<p>Q4: 看来仍然不适合用在围棋之类的游戏,毕竟围棋这种游戏只有结尾才有分数</p>
+<p>A4: 这是一个好问题,这个我们现在讲的这些方法,到底能不能够处理,这种结尾才有分数的游戏呢,其实也是可以的,怎么说呢,假设今天只有 <span class="math-inline">rN</span> 有分数,其它通通都是 0,那会发生什么事,那会发生说,今天我们採取一连串的 Action,<strong>只要最后赢了,这一串的 Action 都是好的,如果输了,这一连串的 Action,通通都算是不好的</strong>,而你可能会觉得这样做,感觉 Train Network 应该会很难 Train,确实很难 Train,但是就我所知,最早的那个版本的 AlphaGo,它是这样 Train 的,很神奇,它就是这样做的,它裡面有用到这样子的技术,当然还有一些其它的方法,比如说 Value Network 等等,那这个等一下也会讲到,那最早的 AlphaGo,它有採取这样子的技术来做学习,它有试著採取这样的技术,看起来是学得起来的,拿预估的误差当 Reward,拿,有一个同学说那其实 AlphaGo,可以拿预估的误差当 Reward,那你要有一个办法先预估误差,那你才拿它来当 Reward,那有没有办法事先预估,我们接下来会得到多少的 Reward 呢,有 那这个在之后的版本裡面,会有这样的技术,但我目前还没有讲到那一块,好 那我们接下来就讲 Version 3,</p>
+<h2 id="version-3">Version 3<a class="anchor-link" href="#version-3" title="Permanent link">&para;</a></h2>
+<p>Version 3 就是像刚才同学问的,要不要做标准化呢?</p>
+<p>要,因为好或坏是相对的,<strong>好或坏是相对的</strong>,怎么说好或坏是相对的呢,假设所有,假设今天在这个游戏裡面,你每次採取一个行动的时候,最低分就预设是 10 分,那你其实得到 10 分的 Reward,根本算是差的,就好像说今天你说你得,在某一门课得到 60 分,这个叫做好或不好,还是不好呢,没有人知道</p>
+<p>因为那要看别人得到多少分数,如果别人都是 40 分,你是全班最高分,那你很厉害,如果别人都是 80 分,你是全班最低分,那就很不厉害,所以 Reward 这个东西是相对的</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025102800545.png" alt="image-20211025102800545" style="zoom:67%;" /></p>
+<p>所以如果我们只是单纯的把 G 算出来,你可能会遇到一个问题,假设这个游戏裡面,可能永远都是拿到正的分数,每一个行为都会给我们正的分数,只是有大有小的不同,那你这边 G 算出来通通都会是正的,有些行为其实是不好的,但是你 仍然会鼓励你的 Model,去採取这些行为</p>
+<p>所以怎么办,我们需要做一下标准化,那这边先讲一个最简单的方法就是,<strong>把所有的 G' 都减掉一个 b</strong>,这个 b 在这边叫做,在 rl 的文献上通常叫做 ==Baseline==,那这个跟我们作业的 Baseline 有点不像,但是反正在 rl 的文献上,就叫做 Baseline 就对了,我们把所有的 G' 都减掉一个 b,目标就是让 G' 有正有负,特别高的 G' 让它是正的,特别低的 G' 让它是负的</p>
+<p>但是这边会有一个问题就是,那要<strong>怎么样设定这个 Baseline</strong> 呢,我们怎么设定一个好的 Baseline,让 G' 有正有负呢,那这个我们在接下来的版本裡面还会再提到,但目前为止我们先讲到这个地方</p>
+<p>Q: 需要个比较好的,Heuristic Function</p>
+<p>A: 对 需要个,就是说在下围棋的时候,假设今天你的 Reward 非常地 Sparse,那你可能会需要一个好的,Heuristic Function,如果你有看过那个最原始的,那个深蓝的那篇 Paper,就是在这个机器下围棋打爆人类之前,其实已经在西洋棋上打爆人类了,那个就叫深蓝,深蓝就有蛮多 Heuristic 的 Function,它就不是只有下到游戏的中盘,才知道 才得到 Reward,中间会有蛮多的状况它都会得到 Reward,好 </p>
+<h2 id="policy-gradient_1">Policy Gradient<a class="anchor-link" href="#policy-gradient_1" title="Permanent link">&para;</a></h2>
+<p>接下来就会实际告诉你说,Policy Gradient 是怎么操作的,那你可以仔细读一下助教的程式,助教就是这么操作的</p>
+<p><img alt="image-20211025103507578" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025103507578.png" /></p>
+<p>首先你要先 Random 初始化,随机初始化你的 Actor,你就给你的 Actor 一个随机初始化的参数,叫做 <span class="math-inline">θ^0</span>,然后接下来你进入你的 Training Iteration,假设你要跑 T 个 Training Iteration,好 那你就拿你的这个,现在手上有的 Actor,一开始是这个 <span class="math-inline">θ^0</span></p>
+<p>一开始很笨 它什么都不会,它採取的行为都是随机的,但它会越来越好,你拿你的 Actor 去跟环境做互动,那你就得到一大堆的 s 跟 a,你就得到一大堆的 s 跟 a,就把它互动的过程记录下来,得到这些 s 跟 a,那接下来你就要进行评价,你用 <span class="math-inline"> A1</span> 到 AN 来决定说,这些 Action 到底是好还是不好</p>
+<p>你先拿你的 Actor 去跟环境做互动,收集到这些观察,接下来你要进行评价,看这些 Action 是好的还是不好的,那你真正需要这个在意的地方,你最需要把它改动的地方,就是在评价这个过程裡面,那助教程式这个 A 就直接设成,Immediate Reward,那你写的要改这一段,你才有可能得到好的结果</p>
+<p>设完这个 A 以后,就结束了</p>
+<p>你就把 Loss 定义出来,然后 Update 你的 Model,这个 Update 的过程,就跟 Gradient Descent 一模一样的,会去计算 L 的 Gradient,前面乘上 Learning Rate,然后拿这个 Gradient 去 Update 你的 Model,就把 <span class="math-inline">θ_{i-1}</span> Update 成 <span class="math-inline">θ_i</span>,</p>
+<p>但是这边有一个神奇的地方是,一般的 training,在我们到目前为止的 Training,Data Collection 都是在 For 循环之外,比如说我有一堆资料,然后把这堆资料拿来做 Training,拿来 Update,Model 很多次,然后最后得到一个收敛的参数,然后拿这个参数来做 Testing</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025104111127.png" alt="image-20211025104111127" style="zoom:67%;" /></p>
+<p>但在 RL 裡面不是这样,你发现<strong>收集资料这一段,居然是在 For 循环裡面</strong>,假设这个 For 循环,你打算跑 400 次,那你就得收集资料 400 次,或者是我们用一个图像化的方式来表示</p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025104803588.png" alt="image-20211025104803588" style="zoom:67%;" /></p>
+<p>这个是你收集到的资料,就是你观察了某一个 Actor,它在每一个 State 执行的 Action,然后接下来你给予一个评价,但要用什么评价 要用哪一个版本,这个是你自己决定的,你给予一个评价,说每一个 Action 是好或不好,你有了这些资料 这些评价以后,拿去训练你的 Actor,你拿这些评价可以定义出一个 Loss,然后你可以更新你的参数一次</p>
+<p>但是有趣的地方是,你<strong>只能更新一次而已,一旦更新完一次参数以后,接下来你就要重新去收集资料了</strong>,登记一次参数以后,你就要重新收集资料,才能更新下一次参数,所以这就是为什么 RL,往往它的训练过程非常花时间</p>
+<p>收集资料这件事情,居然是在 For 循环裡面的,你每次 Update 完一次参数以后,你的资料就要重新再收集一次,再去 Update 参数,然后 Update 完一次以后,又要再重新收集资料,如果你参数要 Update 400 次,那你资料就要收集 400 次,那这个过程显然非常地花时间,那你接下来就会问说,那为什么会这样呢</p>
+<p><strong>为什么我们不能够一组资料,就拿来 Update 模型 Update 400 次,然后就结束了呢,为什么每次 Update 完我们的模型参数以后,Update Network 参数以后,就要重新再收集资料呢</strong></p>
+<p>那我们,那这边一个比较简单的比喻是,你知道<strong>一个人的食物,可能是另外一个人的毒药</strong></p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025105544243.png" alt="image-20211025105544243" style="zoom:67%;" /></p>
+<p>这些资料是由 <span class="math-inline">θ_{i-1}</span> 所收集出来的,这是 <span class="math-inline">θ_{i-1}</span> 跟环境互动的结果,这个是 <span class="math-inline">θ_{i-1}</span> 的经验,这些经验可以拿来更新 <span class="math-inline">θ_{i-1}</span>,可以拿来 Update <span class="math-inline">θ_{i-1}</span> 的参数,但它不一定适合拿来 Update <span class="math-inline">θ_{i}</span> 的参数</p>
+<p>或者是我们举一个具体的例子,这个例子来自棋魂的第八集,大家看过棋魂吧,我应该就不需要解释棋魂的剧情了吧</p>
+<p><img alt="image-20211025105804642" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025105804642.png" /></p>
+<p>这个是进藤光,然后他在跟佐为下棋,然后进藤光就下一步,在大马 现在在小马步飞,这小马步飞具体是什么,我其实也没有非常地确定,但这边有解释一下,就是棋子斜放一格叫做小马步飞,斜放好几格叫做大马步飞,好 阿光下完棋以后,佐为就说这个时候不要下小马步飞,而是要下大马步飞,然后阿光说为什么要下大马步飞呢,我觉得小马步飞也不错</p>
+<p><img alt="image-20211025105831934" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025105831934.png" /></p>
+<p>这个时候佐为就解释了,如果大马步飞有 100 手的话,小马步飞只有 99 手,接下来是重点,之前走小马步飞是对的,因为小马步飞的后续比较容易预测,也比较不容易出错,但是大马步飞的下法会比较复杂,但是阿光假设想要变强的话,他应该要学习下大马步飞,或者是阿光变得比较强以后,他应该要下大马步飞,所以你知道说同样的一个行为,同样是做下小马步飞这件事,对不同棋力的棋士来说,也许它的好是不一样的,对于比较弱的阿光来说,下小马步飞是对的,因为他比较不容易出错,但对于已经变强的阿光来说,应该要下大马步飞比较好,下小马步飞反而是比较不好的</p>
+<p>所以<strong>同一个 Action 同一个行为,对于不同的 Actor 而言,它的好是不一样的</strong></p>
+<p><img src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025110056680.png" alt="image-20211025110056680" style="zoom:67%;" /></p>
+<p>所以今天假设我们用 <span class="math-inline">θ_{i-1}</span>,收集了一堆的资料,这个是 <span class="math-inline">θ_{i-1}</span> 的 Trajectory,这些资料只能拿来训练 <span class="math-inline">θ_{i-1}</span>,你不能拿这些资料来训练 <span class="math-inline">θ_{i}</span>,为什么不能拿这些资料来训练 <span class="math-inline">θ_{i}</span> 呢</p>
+<p>因为假设 假设就算是从 <span class="math-inline">θ_{i-1}</span> 跟 <span class="math-inline">θ_{i}</span>,它们在 <span class="math-inline">s1</span> 都会採取 <span class="math-inline">a1</span> 好了,但之后到了 <span class="math-inline">s2</span> 以后,它们<strong>可能採取的行为就不一样了</strong>,所以假设对 θ,假设今天 <span class="math-inline">θ_{i}</span>,它是看 <span class="math-inline">θ_{i-1}</span> 的这个 Trajectory,那 <span class="math-inline">θ_{i-1}</span> 会执行的这个 Trajectory,跟 <span class="math-inline">θ_{i}</span> 它会採取的行为根本就不一样,所以你拿著 <span class="math-inline">θ_{i-1}</span> 接下来会得到的 Reward,来评估 <span class="math-inline">θ_{i}</span> 接下来会得到的 Reward,其实是不合适的</p>
+<p>所以如果再回到刚才棋魂的那个例子,同样是假设这个 <span class="math-inline">a1</span> 就是下小马步飞,那对于变强以前的阿光,这是一个合适的走法,但是对于变强以后的阿光,它可能就不是一个合适的走法</p>
+<p>所以今天我们在收集资料,来训练你的 Actor 的时候,你要注意就是<strong>收集资料的那个 Actor,要跟被训练的那个 Actor,最好就是同一个</strong>,那当你的 <strong>Actor 更新以后,你就最好要重新去收集资料</strong>,这就是为什么 RL它非常花时间的原因</p>
+<h3 id="on-policy-vs-off-policy">On-policy v.s. Off-policy<a class="anchor-link" href="#on-policy-vs-off-policy" title="Permanent link">&para;</a></h3>
+<p>刚才我们说,这个要被训练的 Actor,跟要拿来跟环境互动的 Actor,最好是同一个,当我们训练的 Actor,跟互动的 Actor 是同一个的时候,这种叫做 ==On-policy  Learning==,那我们刚才示范的那个,Policy Gradient 的整个 Algorithm,它就是 On-policy 的 Learning,那但是还有另外一种状况叫做,==Off-policy Learning==,</p>
+<p><img alt="image-20211025110753839" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025110753839.png" /></p>
+<p>Off-policy 的 Learning 我们今天就不会细讲,Off-policy 的 Learning,期待能够做到的事情是,我们能不能够<strong>让要训练的那个 Actor,还有跟环境互动的那个 Actor,是分开的两个 Actor 呢</strong>,我们要训练的 Actor,能不能够根据其他 Actor 跟环境互动的经验,来进行学习呢</p>
+<p>Off-policy 有一个非常显而易见的好处,你就<strong>不用一直收集资料了</strong>,刚才说 Reinforcement Learning,一个很卡的地方就是,每次更新一次参数就要收集一次资料,你看助教的示范历程是更新 400 次参数,400 次参数相较于你之前 Train 的 Network,没有很多,但我们要收集 400 次资料,跑起来也已经是很卡了,那如果我们可以收一次资料,就 Update 参数很多次,这样不是很好吗,所以 Off-policy 它有不错的优势</p>
+<h3 id="off-policy--proximal-policy-optimizationppo">Off-policy → Proximal Policy Optimization(PPO)<a class="anchor-link" href="#off-policy--proximal-policy-optimizationppo" title="Permanent link">&para;</a></h3>
+<p>但是 Off-policy 要怎么做呢,我们这边就不细讲,有一个非常经典的 Off-policy 的方法,叫做 Proximal Policy Optimization,缩写是 PPO,那这个是今天蛮常使用的一个方法,它也是一个蛮强的方法,蛮常使用的方法</p>
+<p>Off-policy 的重点就是,你<strong>在训练的那个 Network,要知道自己跟别人之间的差距,它要有意识的知道说,它跟环境互动的那个 Actor 是不一样的</strong>,那至于细节我们就不细讲,那我有留那个上课的录影的<a href="https://disp.cc/b/115-bLHe">连结</a>,在投影片的下方,等一下大家如果有兴趣的话,再自己去研究 PPO</p>
+<p><img alt="image-20211025111501212" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025111501212.png" /></p>
+<p>那如果要举个比喻的话,就好像是你去问克里斯伊凡 就是美国队长,怎么追一个女生,然后克里斯伊凡就告诉你说,他就示范给你看,他就是 Actor To Interact,他就是负责去示范的那个 Actor,他说他只要去告白,从来没有失败过,但是你要知道说,你跟克里斯伊凡其实还是不一样,人帅真好 人丑吃草,你跟克里斯伊凡是不一样的,所以克里斯伊凡可以採取的招数,你不一定能够採取,你可能要打一个折扣,那这个就是 Off-policy 的精神</p>
+<p>你的 Actor To Train,要知道 Actor To Interact,跟它是不一样的,所以 Actor To Interact 示范的那些经验,有些可以採纳,有些不一定可以採纳,至于细节怎么做,那过去的上课录影留在这边,给大家参考</p>
+<h3 id="collection-training-data-exploration">Collection Training Data: Exploration<a class="anchor-link" href="#collection-training-data-exploration" title="Permanent link">&para;</a></h3>
+<p>那还有另外一个很重要的概念,叫做 Exploration,Exploration 指的是什么呢,我们刚才有讲过说,我们今天的,我们今天的这个 <strong>Actor,它在採取行为的时候,它是有一些随机性的</strong></p>
+<p>而这个随机性其实非常地重要,很多时候你随机性不够,你会 Train 不起来,为什么呢,举一个最简单的例子,假设你一开始初始的 Actor,它永远都只会向右移动,它从来都不会知道要开火,如果它从来没有採取开火这个行为,你就永远不知道开火这件事情,到底是好还是不好,唯有今天某一个 Actor,去试图做开火这件事得到 Reward,你才有办法去评估这个行为好或不好,假设有一些 Action 从来没被执行过,那你根本就无从知道,这个 Action 好或不好</p>
+<p><img alt="image-20211025111831335" src="https://gitee.com/unclestrong/deep-learning21_note/raw/master/imgbed/image-20211025111831335.png" /></p>
+<p>所以你今天在训练的过程中,这个拿去跟环境的互动的这个 Actor,它本身的随机性是非常重要的,你其实会期待说跟环境互动的这个 Actor,它的<strong>随机性可以大一点</strong>,这样我们才能够收集到,比较多的 比较丰富的资料,才不会有一些状况,它的 Reward 是从来不知道,那为了要让这个 Actor 的随机性大一点,甚至你在 Training 的时候,你会刻意加大它的随机性</p>
+<p>比如说 Actor 的 Output,不是一个 Distribution 吗,有人会刻意加大,那个 Distribution 的 Entropy,那让它在训练的时候,比较容易 Sample 到那些机率比较低的行为,或者是有人会直接在这个 Actor,它的那个参数上面加 Noise,直接在 Actor 参数上加 Noise,让它每一次採取的行为都不一样,好 那这个就是 Exploration,那 Exploration,其实也是 RL Training 的过程中,一个非常重要的技巧,如果你在训练过程中,你没有让 Network 尽量去试不同的 Action,你很有可能你会 Train 不出好的结果</p>
+<p>那我们来看一下,其实这个 PPO 这个方法,DeepMind 跟 Open AI,都同时提出了 PPO 的想法</p>
+<p>那我们来看一下,DeepMind 的 PPO 的 Demo 的影片https://youtu.be/gn4nRCC9TwQ,它看起来是这样子的,好 那这个是 DeepMind 的 PPO,那就是可以用 PPO 这个方法,用这个 Reinforcement Learning 的方法,去 Learn什么,蜘蛛型的机器人或人形的机器人,做一些动作,比如说跑起来 或者是蹦跳,或者是跨过围牆等等</p>
+<p>那接下来是 OpenAI 的 PPOhttps://blog.openai.com/openai-baselines-ppo/,它这个影片就没有刚才那个潮,它没有那个配音,不过我帮它配个音好了,这个影片我叫它,修机器学习的你,好 我修了一门课叫做机器学习,但在这门课裡面,有非常多的障碍 我一直遇到挫折,那个红色的球是 Baseline,而这个 Baseline 一个接一个,永远都不会停止,然后我 Train 一个 Network 很久,我 collate 它就掉线啦,Train 了三个小时的 Model 不见,但我仍然是爬起来继续地向前,我想开一个比较大的模型,看看可不可以 Train 得比较好一点,但是结果发生什么事情呢,Out Of Memory,那个圈圈一直在转,它就是不跑,怎么办,但我还是爬起来,继续向前,结果 Private Set 跟 Public Set,结果不一样,真的是让人觉得非常地生气,这个影片到这边就结束了吗</p>
+<p>没关系 我们最后还是要给它一个正面的结尾,就算是遭遇到这么多挫折,我仍然努力向前好好地学习,这个就是 PPO,好 那讲到这边正好告一个段落</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

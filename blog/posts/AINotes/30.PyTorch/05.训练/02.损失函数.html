@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定义一个简单的线性模型</title>
+    <meta name="description" content="定义一个简单的线性模型 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#损失函数">损失函数</a></li>
+<li><a href="#lossbackward">loss.backward()</a><ul>
+<li><a href="#pytorch-的-autograd-系统">PyTorch 的 autograd 系统</a></li>
+<li><a href="#使用-lossbackward">使用 loss.backward()</a></li>
+<li><a href="#示例">示例</a></li>
+<li><a href="#注意事项">注意事项</a></li>
+</ul>
+</li>
+<li><a href="#二分类交叉熵损失函数">二分类交叉熵损失函数</a></li>
+<li><a href="#交叉熵损失函数">交叉熵损失函数</a></li>
+<li><a href="#l1-损失函数">L1 损失函数</a></li>
+<li><a href="#mse-损失函数">MSE 损失函数</a></li>
+<li><a href="#平滑-l1-smooth-l1损失函数">平滑 L1 (Smooth L1)损失函数</a></li>
+<li><a href="#目标泊松分布的负对数似然损失">目标泊松分布的负对数似然损失</a></li>
+<li><a href="#kl-散度">KL 散度</a></li>
+<li><a href="#marginrankingloss">MarginRankingLoss</a></li>
+<li><a href="#多标签边界损失函数">多标签边界损失函数</a></li>
+<li><a href="#二分类损失函数">二分类损失函数</a></li>
+<li><a href="#多分类的折页损失">多分类的折页损失</a></li>
+<li><a href="#三元组损失">三元组损失</a></li>
+<li><a href="#hingembeddingloss">HingEmbeddingLoss</a></li>
+<li><a href="#余弦相似度">余弦相似度</a></li>
+<li><a href="#ctc-损失函数">CTC 损失函数</a></li>
+<li><a href="#焦点损失-focalloss">焦点损失 FocalLoss</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>定义一个简单的线性模型</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/05.训练</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="损失函数">损失函数<a class="anchor-link" href="#损失函数" title="Permanent link">&para;</a></h2>
+<p>损失函数是衡量模型输出与真实标签之间的差异。我们还经常听到代价函数和目标函数，它们之间差异如下：</p>
+<ul>
+<li>损失函数(Loss Function)是计算<strong>一个</strong>样本的模型输出与真实标签的差异 <span class="math-inline">Loss =f\left(y^{\wedge}, y\right)</span></li>
+<li>代价函数(Cost Function)是计算整个样本集的模型输出与真实标签的差异，是所有样本损失函数的平均值 <span class="math-inline">\cos t=\frac{1}{N} \sum_{i}^{N} f\left(y{i}^{\wedge}, y_{i}\right)</span></li>
+<li>目标函数(Objective Function)就是代价函数加上正则项</li>
+</ul>
+<p>在 PyTorch 中的损失函数也是继承于<code>nn.Module</code>，所以损失函数也可以看作网络层。</p>
+<h2 id="lossbackward">loss.backward()<a class="anchor-link" href="#lossbackward" title="Permanent link">&para;</a></h2>
+<p><code>loss.backward()</code> 是 PyTorch 中一个非常重要的方法，用于自动微分（autograd）系统来反向传播误差（或损失）。</p>
+<h3 id="pytorch-的-autograd-系统">PyTorch 的 autograd 系统<a class="anchor-link" href="#pytorch-的-autograd-系统" title="Permanent link">&para;</a></h3>
+<p>PyTorch 的 autograd 系统能够自动计算张量（tensor）上的所有操作的梯度。它采用计算图（computation graph）的方式来跟踪所有涉及的操作，从而可以轻松地计算梯度。</p>
+<p>当你定义一个计算图时，例如通过定义一系列的张量操作和函数，autograd 会跟踪这些操作。然后，当你调用 <code>loss.backward()</code> 时，autograd 会从损失（loss）开始，反向遍历计算图，计算每个参数的梯度。</p>
+<h3 id="使用-lossbackward">使用 <code>loss.backward()</code><a class="anchor-link" href="#使用-lossbackward" title="Permanent link">&para;</a></h3>
+<p>在训练神经网络时，我们通常有一个损失函数，它衡量模型预测与真实值之间的差异。我们的目标是优化模型的参数，以最小化这个损失。为了做到这一点，我们需要计算损失关于模型参数的梯度，并使用这些梯度来更新参数。</p>
+<p><code>loss.backward()</code> 就是用来计算这些梯度的。它会在计算图中反向传播误差，计算每个参数的梯度，并将这些梯度存储在参数的 <code>.grad</code> 属性中。</p>
+<h3 id="示例">示例<a class="anchor-link" href="#示例" title="Permanent link">&para;</a></h3>
+<p>下面是一个简单的示例，演示了如何在 PyTorch 中使用 <code>loss.backward()</code>：</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+# 定义一个简单的线性模型
+model = nn.Linear(10, 1)
+
+# 定义损失函数
+criterion = nn.MSELoss()
+
+# 创建一些模拟数据
+inputs = torch.randn(16, 10)
+targets = torch.randn(16, 1)
+
+# 前向传播
+outputs = model(inputs)
+loss = criterion(outputs, targets)
+
+# 清除之前的梯度（如果存在的话）
+model.zero_grad()
+
+# 反向传播误差，计算梯度
+loss.backward()
+
+# 现在，model.parameters() 中的每个参数都有一个 .grad 属性，存储了它的梯度
+for param in model.parameters():
+    print(param.grad)
+</code></pre>
+<h3 id="注意事项">注意事项<a class="anchor-link" href="#注意事项" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>梯度累积</strong>：在某些情况下，你可能想要在多个小批量（mini-batches）上累积梯度，然后再更新参数。这可以通过多次调用 <code>loss.backward()</code>（而不是在每次调用之间调用 <code>model.zero_grad()</code>）来实现。然后，你可以使用优化器（如 <code>torch.optim.SGD</code>）来更新参数。</li>
+<li><strong>不需要梯度的操作</strong>：如果你不想跟踪某个操作的梯度，可以使用 <code>torch.no_grad()</code> 上下文管理器。这对于评估模型或生成不需要梯度的数据时很有用。</li>
+<li><strong>梯度清零</strong>：在每次新的迭代（或批次）开始时，通常需要清零模型的梯度，以避免梯度累积。这可以通过调用 <code>model.zero_grad()</code> 来实现。</li>
+</ol>
+<h2 id="二分类交叉熵损失函数">二分类交叉熵损失函数<a class="anchor-link" href="#二分类交叉熵损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.BCELoss(weight=None, size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>：计算二分类任务时的交叉熵（Cross Entropy）函数。在二分类中，label 是{0,1}。对于进入交叉熵函数的 input 为概率分布的形式。一般来说，input 为 sigmoid 激活层的输出，或者 softmax 的输出。</p>
+<p><strong>主要参数</strong>：</p>
+<p><code>weight</code>:每个类别的 loss 设置权值</p>
+<p><code>size_average</code>:数据为 bool，为 True 时，返回的 loss 为平均值；为 False 时，返回的各样本的 loss 之和。</p>
+<p><code>reduce</code>:数据类型为 bool，为 True 时，loss 的返回是标量。</p>
+<p>计算公式如下：<br />
+$<br />
+\ell(x, y)=\left{\begin{array}{ll}<br />
+\operatorname{mean}(L), &amp; \text { if reduction }=\text { 'mean' } \<br />
+\operatorname{sum}(L), &amp; \text { if reduction }=\text { 'sum' }<br />
+\end{array}\right.<br />
+$</p>
+<pre><code class="language-python">m = nn.Sigmoid()
+loss = nn.BCELoss()
+target = torch.empty(3).random_(2)
+output = loss(m(input), target)
+output.backward()
+</code></pre>
+<pre><code class="language-python">print('BCELoss损失函数的计算结果为',output)
+</code></pre>
+<pre><code>    BCELoss损失函数的计算结果为 tensor(0.5732, grad_fn=&lt;BinaryCrossEntropyBackward&gt;)
+</code></pre>
+<h2 id="交叉熵损失函数">交叉熵损失函数<a class="anchor-link" href="#交叉熵损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.CrossEntropyLoss(weight=None, size_average=None, ignore_index=-100, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>：计算交叉熵函数</p>
+<p><strong>主要参数</strong>：</p>
+<p><code>weight</code>:每个类别的 loss 设置权值。</p>
+<p><code>size_average</code>:数据为 bool，为 True 时，返回的 loss 为平均值；为 False 时，返回的各样本的 loss 之和。</p>
+<p><code>ignore_index</code>:忽略某个类的损失函数。</p>
+<p><code>reduce</code>:数据类型为 bool，为 True 时，loss 的返回是标量。</p>
+<p>计算公式如下：<br />
+$<br />
+\operatorname{loss}(x, \text { class })=-\log \left(\frac{\exp (x[\text { class }])}{\sum_{j} \exp (x[j])}\right)=-x[\text { class }]+\log \left(\sum_{j} \exp (x[j])\right)<br />
+$</p>
+<pre><code class="language-python">loss = nn.CrossEntropyLoss()
+input = torch.randn(3, 5, requires_grad=True)
+target = torch.empty(3, dtype=torch.long).random_(5)
+output = loss(input, target)
+output.backward()
+</code></pre>
+<pre><code class="language-python">print(output)
+</code></pre>
+<pre class="highlight"><code>tensor(2.0115, grad_fn=&lt;NllLossBackward&gt;)
+</code></pre>
+
+<h2 id="l1-损失函数">L1 损失函数<a class="anchor-link" href="#l1-损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.L1Loss(size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 计算输出<code>y</code>和真实标签<code>target</code>之间的差值的绝对值。</p>
+<p>我们需要知道的是，<code>reduction</code>参数决定了计算模式。有三种计算模式可选：none：逐个元素计算。<br />
+sum：所有元素求和，返回标量。<br />
+mean：加权平均，返回标量。<br />
+如果选择<code>none</code>，那么返回的结果是和输入元素相同尺寸的。默认计算方式是求平均。</p>
+<p><strong>计算公式如下</strong>：<br />
+$<br />
+L_{n} = |x_{n}-y_{n}|<br />
+$</p>
+<pre><code class="language-python">loss = nn.L1Loss()
+input = torch.randn(3, 5, requires_grad=True)
+target = torch.randn(3, 5)
+output = loss(input, target)
+output.backward()
+</code></pre>
+<pre><code class="language-python">print('L1损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>L1损失函数的计算结果为 tensor(1.5729, grad_fn=&lt;L1LossBackward&gt;)
+</code></pre>
+
+<h2 id="mse-损失函数">MSE 损失函数<a class="anchor-link" href="#mse-损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.MSELoss(size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 计算输出<code>y</code>和真实标签<code>target</code>之差的平方。</p>
+<p>和<code>L1Loss</code>一样，<code>MSELoss</code>损失函数中，<code>reduction</code>参数决定了计算模式。有三种计算模式可选：none：逐个元素计算。<br />
+sum：所有元素求和，返回标量。默认计算方式是求平均。</p>
+<p><strong>计算公式如下</strong>：</p>
+<p>$<br />
+l_{n}=\left(x_{n}-y_{n}\right)^{2}<br />
+$</p>
+<pre><code class="language-python">loss = nn.MSELoss()
+input = torch.randn(3, 5, requires_grad=True)
+target = torch.randn(3, 5)
+output = loss(input, target)
+output.backward()
+</code></pre>
+<pre><code class="language-python">print('MSE损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>MSE损失函数的计算结果为 tensor(1.6968, grad_fn=&lt;MseLossBackward&gt;)
+</code></pre>
+
+<h2 id="平滑-l1-smooth-l1损失函数">平滑 L1 (Smooth L1)损失函数<a class="anchor-link" href="#平滑-l1-smooth-l1损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.SmoothL1Loss(size_average=None, reduce=None, reduction='mean', beta=1.0)
+</code></pre>
+<p><strong>功能</strong>： L1 的平滑输出，其功能是减轻离群点带来的影响</p>
+<p><code>reduction</code>参数决定了计算模式。有三种计算模式可选：none：逐个元素计算。<br />
+sum：所有元素求和，返回标量。默认计算方式是求平均。</p>
+<p><strong>提醒</strong>： 之后的损失函数中，关于<code>reduction</code> 这个参数依旧会存在。所以，之后就不再单独说明。</p>
+<p><strong>计算公式如下</strong>：<br />
+$<br />
+\operatorname{loss}(x, y)=\frac{1}{n} \sum_{i=1}^{n} z_{i}<br />
+$<br />
+其中，<br />
+$<br />
+z_{i}=\left{\begin{array}{ll}<br />
+0.5\left(x_{i}-y_{i}\right)^{2}, &amp; \text { if }\left|x_{i}-y_{i}\right|&lt;1 \<br />
+\left|x_{i}-y_{i}\right|-0.5, &amp; \text { otherwise }<br />
+\end{array}\right.<br />
+$</p>
+<pre><code class="language-python">loss = nn.SmoothL1Loss()
+input = torch.randn(3, 5, requires_grad=True)
+target = torch.randn(3, 5)
+output = loss(input, target)
+output.backward()
+</code></pre>
+<pre><code class="language-python">print('SmoothL1Loss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>SmoothL1Loss损失函数的计算结果为 tensor(0.7808, grad_fn=&lt;SmoothL1LossBackward&gt;)
+</code></pre>
+
+<p><strong>平滑 L1 与 L1 的对比</strong></p>
+<p>这里我们通过可视化两种损失函数曲线来对比平滑 L1 和 L1 两种损失函数的区别。</p>
+<pre><code class="language-python">inputs = torch.linspace(-10, 10, steps=5000)
+target = torch.zeros_like(inputs)
+
+loss_f_smooth = nn.SmoothL1Loss(reduction='none')
+loss_smooth = loss_f_smooth(inputs, target)
+loss_f_l1 = nn.L1Loss(reduction='none')
+loss_l1 = loss_f_l1(inputs,target)
+
+plt.plot(inputs.numpy(), loss_smooth.numpy(), label='Smooth L1 Loss')
+plt.plot(inputs.numpy(), loss_l1, label='L1 loss')
+plt.xlabel('x_i - y_i')
+plt.ylabel('loss value')
+plt.legend()
+plt.grid()
+plt.show()
+</code></pre>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240322184931.png" style="zoom: 60%;" /></div>
+
+<p>可以看出，对于<code>smoothL1</code>来说，在 0 这个尖端处，过渡更为平滑。</p>
+<h2 id="目标泊松分布的负对数似然损失">目标泊松分布的负对数似然损失<a class="anchor-link" href="#目标泊松分布的负对数似然损失" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.PoissonNLLLoss(log_input=True, full=False, size_average=None, eps=1e-08, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 泊松分布的负对数似然损失函数</p>
+<p><strong>主要参数</strong>：</p>
+<p><code>log_input</code>：输入是否为对数形式，决定计算公式。</p>
+<p><code>full</code>：计算所有 loss，默认为 False。</p>
+<p><code>eps</code>：修正项，避免 input 为 0 时，log(input) 为 nan 的情况。</p>
+<p><strong>数学公式</strong>：</p>
+<ul>
+<li>
+<p>当参数<code>log_input=True</code>：<br />
+  $<br />
+\operatorname{loss}\left(x_{n}, y_{n}\right)=e^{x_{n}}-x_{n} \cdot y_{n}<br />
+$</p>
+</li>
+<li>
+<p>当参数<code>log_input=False</code>：</p>
+</li>
+</ul>
+<p>$<br />
+  \operatorname{loss}\left(x<em>{n}, y</em>{n}\right)=x<em>{n}-y</em>{n} \cdot \log \left(x_{n}+\text { eps }\right)<br />
+  $</p>
+<pre><code class="language-python">loss = nn.PoissonNLLLoss()
+log_input = torch.randn(5, 2, requires_grad=True)
+target = torch.randn(5, 2)
+output = loss(log_input, target)
+output.backward()
+</code></pre>
+<pre><code class="language-python">print('PoissonNLLLoss损失函数的计算结果为',output)
+</code></pre>
+<pre><code>PoissonNLLLoss损失函数的计算结果为 tensor(0.7358, grad_fn=&lt;MeanBackward0&gt;)
+</code></pre>
+<h2 id="kl-散度">KL 散度<a class="anchor-link" href="#kl-散度" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.KLDivLoss(size_average=None, reduce=None, reduction='mean', log_target=False)
+</code></pre>
+<p><strong>功能</strong>： 计算 KL 散度，也就是计算相对熵。用于连续分布的距离度量，并且对离散采用的连续输出空间分布进行回归通常很有用。</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 <code>none</code>/<code>sum</code>/<code>mean</code>/<code>batchmean</code>。</p>
+<pre class="highlight"><code>none：逐个元素计算。
+
+sum：所有元素求和，返回标量。
+
+mean：加权平均，返回标量。
+
+batchmean：batchsize 维度求平均值。
+</code></pre>
+
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+\begin{aligned}<br />
+D_{\mathrm{KL}}(P, Q)=\mathrm{E}<em>{X \sim P}\left[\log \frac{P(X)}{Q(X)}\right] &amp;=\mathrm{E}</em>{X \sim P}[\log P(X)-\log Q(X)] \<br />
+&amp;=\sum_{i=1}^{n} P\left(x_{i}\right)\left(\log P\left(x_{i}\right)-\log Q\left(x_{i}\right)\right)<br />
+\end{aligned}<br />
+$</p>
+<pre><code class="language-python">inputs = torch.tensor([[0.5, 0.3, 0.2], [0.2, 0.3, 0.5]])
+target = torch.tensor([[0.9, 0.05, 0.05], [0.1, 0.7, 0.2]], dtype=torch.float)
+loss = nn.KLDivLoss()
+output = loss(inputs,target)
+
+print('KLDivLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>KLDivLoss损失函数的计算结果为 tensor(-0.3335)
+</code></pre>
+
+<h2 id="marginrankingloss">MarginRankingLoss<a class="anchor-link" href="#marginrankingloss" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.MarginRankingLoss(margin=0.0, size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 计算两个向量之间的相似度，用于排序任务。该方法用于计算两组数据之间的差异。</p>
+<p><strong>主要参数:</strong></p>
+<p><code>margin</code>：边界值，<span class="math-inline">x_{1}</span> 与<span class="math-inline">x_{2}</span> 之间的差异值。</p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+\operatorname{loss}(x 1, x 2, y)=\max (0,-y *(x 1-x 2)+\operatorname{margin})<br />
+$</p>
+<pre><code class="language-python">loss = nn.MarginRankingLoss()
+input1 = torch.randn(3, requires_grad=True)
+input2 = torch.randn(3, requires_grad=True)
+target = torch.randn(3).sign()
+output = loss(input1, input2, target)
+output.backward()
+
+print('MarginRankingLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>MarginRankingLoss损失函数的计算结果为 tensor(0.7740, grad_fn=&lt;MeanBackward0&gt;)
+</code></pre>
+
+<h2 id="多标签边界损失函数">多标签边界损失函数<a class="anchor-link" href="#多标签边界损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.MultiLabelMarginLoss(size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 对于多标签分类问题计算损失函数。</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><strong>计算公式</strong>：<br />
+$<br />
+\operatorname{loss}(x, y)=\sum_{i j} \frac{\max (0,1-x[y[j]]-x[i])}{x \cdot \operatorname{size}(0)}<br />
+$</p>
+<p>$<br />
+\begin{array}{l}<br />
+\text { 其中, } i=0, \ldots, x \cdot \operatorname{size}(0), j=0, \ldots, y \cdot \operatorname{size}(0), \text { 对于所有的 } i \text { 和 } j \text {, 都有 } y[j] \geq 0 \text { 并且 }\<br />
+i \neq y[j]<br />
+\end{array}<br />
+$</p>
+<pre><code class="language-python">loss = nn.MultiLabelMarginLoss()
+x = torch.FloatTensor([[0.9, 0.2, 0.4, 0.8]])
+# for target y, only consider labels 3 and 0, not after label -1
+y = torch.LongTensor([[3, 0, -1, 1]])# 真实的分类是，第3类和第0类
+output = loss(x, y)
+
+print('MultiLabelMarginLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>MultiLabelMarginLoss损失函数的计算结果为 tensor(0.4500)
+</code></pre>
+
+<h2 id="二分类损失函数">二分类损失函数<a class="anchor-link" href="#二分类损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.SoftMarginLoss(size_average=None, reduce=None, reduction='mean')torch.nn.(size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 计算二分类的 logistic 损失。</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+\operatorname{loss}(x, y)=\sum_{i} \frac{\log (1+\exp (-y[i] \cdot x[i]))}{x \cdot \operatorname{nelement}()}<br />
+$</p>
+<p>$<br />
+\<br />
+\text { 其中, } x . \text { nelement() 为输入 } x \text { 中的样本个数。注意这里 } y \text { 也有 } 1 \text { 和 }-1 \text { 两种模式。 }<br />
+\<br />
+$</p>
+<pre><code class="language-python">inputs = torch.tensor([[0.3, 0.7], [0.5, 0.5]])  # 两个样本，两个神经元
+target = torch.tensor([[-1, 1], [1, -1]], dtype=torch.float)  # 该 loss 为逐个神经元计算，需要为每个神经元单独设置标签
+
+loss_f = nn.SoftMarginLoss()
+output = loss_f(inputs, target)
+
+print('SoftMarginLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>SoftMarginLoss损失函数的计算结果为 tensor(0.6764)
+</code></pre>
+
+<h2 id="多分类的折页损失">多分类的折页损失<a class="anchor-link" href="#多分类的折页损失" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.MultiMarginLoss(p=1, margin=1.0, weight=None, size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 计算多分类的折页损失</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><code>p：</code>可选 1 或 2。</p>
+<p><code>weight</code>：各类别的 loss 设置权值。</p>
+<p><code>margin</code>：边界值</p>
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+\operatorname{loss}(x, y)=\frac{\sum_{i} \max (0, \operatorname{margin}-x[y]+x[i])^{p}}{x \cdot \operatorname{size}(0)}<br />
+$</p>
+<p>$<br />
+\begin{array}{l}<br />
+\text { 其中, } x \in{0, \ldots, x \cdot \operatorname{size}(0)-1}, y \in{0, \ldots, y \cdot \operatorname{size}(0)-1} \text {, 并且对于所有的 } i \text { 和 } j \text {, }\<br />
+\text { 都有 } 0 \leq y[j] \leq x \cdot \operatorname{size}(0)-1, \text { 以及 } i \neq y[j] \text { 。 }<br />
+\end{array}<br />
+$</p>
+<pre><code class="language-python">inputs = torch.tensor([[0.3, 0.7], [0.5, 0.5]])
+target = torch.tensor([0, 1], dtype=torch.long)
+
+loss_f = nn.MultiMarginLoss()
+output = loss_f(inputs, target)
+
+print('MultiMarginLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>MultiMarginLoss损失函数的计算结果为 tensor(0.6000)
+</code></pre>
+
+<h2 id="三元组损失">三元组损失<a class="anchor-link" href="#三元组损失" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.TripletMarginLoss(margin=1.0, p=2.0, eps=1e-06, swap=False, size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 计算三元组损失。</p>
+<p><strong>三元组:</strong> 这是一种数据的存储或者使用格式。&lt;实体 1，关系，实体 2&gt;。在项目中，也可以表示为&lt; <code>anchor</code>, <code>positive examples</code> , <code>negative examples</code>&gt;</p>
+<p>在这个损失函数中，我们希望去<code>anchor</code>的距离更接近<code>positive examples</code>，而远离<code>negative examples</code></p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><code>p：</code>可选 1 或 2。</p>
+<p><code>margin</code>：边界值</p>
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+L(a, p, n)=\max \left{d\left(a_{i}, p_{i}\right)-d\left(a_{i}, n_{i}\right)+\operatorname{margin}, 0\right}<br />
+$</p>
+<p>$<br />
+\text { 其中, } d\left(x_{i}, y_{i}\right)=\left|\mathbf{x}<em>{i}-\mathbf{y}</em>{i}\right|_{\text {・ }}<br />
+$</p>
+<pre><code class="language-python">triplet_loss = nn.TripletMarginLoss(margin=1.0, p=2)
+anchor = torch.randn(100, 128, requires_grad=True)
+positive = torch.randn(100, 128, requires_grad=True)
+negative = torch.randn(100, 128, requires_grad=True)
+output = triplet_loss(anchor, positive, negative)
+output.backward()
+print('TripletMarginLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>TripletMarginLoss损失函数的计算结果为 tensor(1.1667, grad_fn=&lt;MeanBackward0&gt;)
+</code></pre>
+
+<h2 id="hingembeddingloss">HingEmbeddingLoss<a class="anchor-link" href="#hingembeddingloss" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.HingeEmbeddingLoss(margin=1.0, size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 对输出的 embedding 结果做 Hing 损失计算</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><code>margin</code>：边界值</p>
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+l_{n}=\left{\begin{array}{ll}<br />
+x_{n}, &amp; \text { if } y_{n}=1 \<br />
+\max \left{0, \Delta-x_{n}\right}, &amp; \text { if } y_{n}=-1<br />
+\end{array}\right.<br />
+$<br />
+<strong>注意事项</strong>： 输入 x 应为两个输入之差的绝对值。</p>
+<p>可以这样理解，让个输出的是正例 yn=1,那么 loss 就是 x，如果输出的是负例 y=-1，那么输出的 loss 就是要做一个比较。</p>
+<pre><code class="language-python">loss_f = nn.HingeEmbeddingLoss()
+inputs = torch.tensor([[1., 0.8, 0.5]])
+target = torch.tensor([[1, 1, -1]])
+output = loss_f(inputs,target)
+
+print('HingEmbeddingLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>HingEmbeddingLoss损失函数的计算结果为 tensor(0.7667)
+</code></pre>
+
+<h2 id="余弦相似度">余弦相似度<a class="anchor-link" href="#余弦相似度" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.CosineEmbeddingLoss(margin=0.0, size_average=None, reduce=None, reduction='mean')
+</code></pre>
+<p><strong>功能</strong>： 对两个向量做余弦相似度</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><code>margin</code>：可取值[-1,1] ，推荐为[0,0.5] 。</p>
+<p><strong>计算公式</strong>：</p>
+<p>$<br />
+\operatorname{loss}(x, y)=\left{\begin{array}{ll}<br />
+1-\cos \left(x_{1}, x_{2}\right), &amp; \text { if } y=1 \<br />
+\max \left{0, \cos \left(x_{1}, x_{2}\right)-\text { margin }\right}, &amp; \text { if } y=-1<br />
+\end{array}\right.<br />
+$<br />
+其中,<br />
+$<br />
+\cos (\theta)=\frac{A \cdot B}{|A||B|}=\frac{\sum_{i=1}^{n} A_{i} \times B_{i}}{\sqrt{\sum_{i=1}^{n}\left(A_{i}\right)^{2}} \times \sqrt{\sum_{i=1}^{n}\left(B_{i}\right)^{2}}}<br />
+$</p>
+<p>这个损失函数应该是最广为人知的。对于两个向量，做余弦相似度。将余弦相似度作为一个距离的计算方式，如果两个向量的距离近，则损失函数值小，反之亦然。</p>
+<pre><code class="language-python">loss_f = nn.CosineEmbeddingLoss()
+inputs_1 = torch.tensor([[0.3, 0.5, 0.7], [0.3, 0.5, 0.7]])
+inputs_2 = torch.tensor([[0.1, 0.3, 0.5], [0.1, 0.3, 0.5]])
+target = torch.tensor([1, -1], dtype=torch.float)
+output = loss_f(inputs_1,inputs_2,target)
+
+print('CosineEmbeddingLoss损失函数的计算结果为',output)
+</code></pre>
+<pre class="highlight"><code>CosineEmbeddingLoss损失函数的计算结果为 tensor(0.5000)
+</code></pre>
+
+<h2 id="ctc-损失函数">CTC 损失函数<a class="anchor-link" href="#ctc-损失函数" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torch.nn.CTCLoss(blank=0, reduction='mean', zero_infinity=False)
+</code></pre>
+<p><strong>功能</strong>： 用于解决时序类数据的分类</p>
+<p>计算连续时间序列和目标序列之间的损失。CTCLoss 对输入和目标的可能排列的概率进行求和，产生一个损失值，这个损失值对每个输入节点来说是可分的。输入与目标的对齐方式被假定为 "多对一"，这就限制了目标序列的长度，使其必须是 ≤ 输入长度。</p>
+<p><strong>主要参数:</strong></p>
+<p><code>reduction</code>：计算模式，可为 none/sum/mean。</p>
+<p><code>blank</code>：blank label。</p>
+<p><code>zero_infinity</code>：无穷大的值或梯度值为</p>
+<pre><code class="language-python"># Target are to be padded
+T = 50      # Input sequence length
+C = 20      # Number of classes (including blank)
+N = 16      # Batch size
+S = 30      # Target sequence length of longest target in batch (padding length)
+S_min = 10  # Minimum target length, for demonstration purposes
+
+# Initialize random batch of input vectors, for *size = (T,N,C)
+input = torch.randn(T, N, C).log_softmax(2).detach().requires_grad_()
+
+# Initialize random batch of targets (0 = blank, 1:C = classes)
+target = torch.randint(low=1, high=C, size=(N, S), dtype=torch.long)
+
+input_lengths = torch.full(size=(N,), fill_value=T, dtype=torch.long)
+target_lengths = torch.randint(low=S_min, high=S, size=(N,), dtype=torch.long)
+ctc_loss = nn.CTCLoss()
+loss = ctc_loss(input, target, input_lengths, target_lengths)
+loss.backward()
+
+
+# Target are to be un-padded
+T = 50      # Input sequence length
+C = 20      # Number of classes (including blank)
+N = 16      # Batch size
+
+# Initialize random batch of input vectors, for *size = (T,N,C)
+input = torch.randn(T, N, C).log_softmax(2).detach().requires_grad_()
+input_lengths = torch.full(size=(N,), fill_value=T, dtype=torch.long)
+
+# Initialize random batch of targets (0 = blank, 1:C = classes)
+target_lengths = torch.randint(low=1, high=T, size=(N,), dtype=torch.long)
+target = torch.randint(low=1, high=C, size=(sum(target_lengths),), dtype=torch.long)
+ctc_loss = nn.CTCLoss()
+loss = ctc_loss(input, target, input_lengths, target_lengths)
+loss.backward()
+
+print('CTCLoss损失函数的计算结果为',loss)
+</code></pre>
+<pre class="highlight"><code>CTCLoss损失函数的计算结果为 tensor(16.0885, grad_fn=&lt;MeanBackward0&gt;)
+</code></pre>
+
+<h2 id="焦点损失-focalloss">焦点损失 FocalLoss<a class="anchor-link" href="#焦点损失-focalloss" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">def focal_loss(input_values, gamma):
+    &quot;&quot;&quot;Computes the focal loss&quot;&quot;&quot;
+    p = torch.exp(-input_values)
+    loss = (1 - p) ** gamma * input_values
+    return loss.mean()
+
+class FocalLoss(nn.Module):
+    def __init__(self, cls_num_list=None, weight=None, gamma=0.):
+        super(FocalLoss, self).__init__()
+        assert gamma &gt;= 0
+        self.gamma = gamma
+        self.weight = weight
+
+    def _hook_before_epoch(self, epoch):
+        pass
+
+    def forward(self, output_logits, target):
+        return focal_loss(F.cross_entropy(output_logits, target, reduction='none', weight=self.weight), self.gamma)
+</code></pre>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

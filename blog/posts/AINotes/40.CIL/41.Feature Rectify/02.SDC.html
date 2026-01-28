@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#semantic-drift-compensation-for-class-incremental-learning">Semantic Drift Compensation for Class-Incremental Learning</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-用于嵌入的持续学习">3. 用于嵌入的持续学习</a><ul>
+<li><a href="#31-嵌入网络">3.1 嵌入网络</a></li>
+<li><a href="#32-softmax-分类器与嵌入学习">3.2 Softmax 分类器与嵌入学习</a></li>
+<li><a href="#33-正则化嵌入网络">3.3 正则化嵌入网络</a><ul>
+<li><a href="#微调e-ft">微调（E-FT）</a></li>
+<li><a href="#对齐损失e-lwf19">对齐损失（E-LwF）【19】</a></li>
+<li><a href="#e-ewc17">E-EWC【17】</a></li>
+<li><a href="#e-mas1">E-MAS【1】</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-语义漂移补偿">4. 语义漂移补偿</a><ul>
+<li><a href="#41-语义漂移的计算">4.1 语义漂移的计算</a></li>
+<li><a href="#42-正则化的语义漂移补偿">4.2 正则化的语义漂移补偿</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-数据集">5.1 数据集</a></li>
+<li><a href="#52-实现细节">5.2 实现细节</a></li>
+<li><a href="#53-嵌入网络分类性能">5.3 嵌入网络分类性能</a></li>
+<li><a href="#54-与最新方法的对比">5.4 与最新方法的对比</a><ul>
+<li><a href="#十任务增量学习cub-200-和-caltech-101">十任务增量学习（CUB-200 和 Caltech-101）</a></li>
+<li><a href="#cifar100-和-imagenet-subset-的实验">CIFAR100 和 ImageNet-Subset 的实验</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/41.Feature Rectify</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="semantic-drift-compensation-for-class-incremental-learning">Semantic Drift Compensation for Class-Incremental Learning<a class="anchor-link" href="#semantic-drift-compensation-for-class-incremental-learning" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>深度网络的类增量学习（Class-Incremental Learning）旨在通过连续增加需要分类的类别数量来实现持续学习。在训练过程中，网络每次仅能访问一个任务的数据，其中每个任务包含若干类别。在这种情况下，网络会遭遇“灾难性遗忘”（Catastrophic Forgetting），即对先前任务的性能显著下降。  </p>
+<p>大多数方法针对分类网络研究了这一情景，其中每当新任务到来时，网络的分类层必须添加额外的权重以适应新类别。  </p>
+<p>嵌入网络具有天然的优势，可以在无需添加新权重的情况下包含新类别。因此，我们研究了嵌入网络的增量学习。此外，我们提出了一种新的方法，用于估计特征的漂移（称为语义漂移，Semantic Drift），并在无需任何样本的情况下对其进行补偿。我们基于当前任务数据经历的漂移，近似估计先前任务的漂移。  </p>
+<p>我们在细粒度数据集、CIFAR100 和 ImageNet-Subset 上进行了实验，证明嵌入网络对灾难性遗忘的影响显著较小。我们的方法超越了现有无需样本的方法，并与存储样本的方法相比取得了有竞争力的结果。此外，当我们将提出的 SDC 与现有的防遗忘方法结合使用时，结果得到了持续改进。  </p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>未来的学习机器应该能够适应不断变化的世界。它们应当能够在不遗忘先前任务的前提下，持续学习新任务。然而，与普遍采用的设定（训练数据同时可用于所有任务）不同，持续学习（Continual Learning）需要在连续的方式中完成任务学习。在每一时刻，算法仅能访问单个任务的数据。对于深度神经网络，可以通过微调（Fine-tuning）使其适应最新任务的数据。然而，在缺乏先前任务数据的情况下，网络会遭遇灾难性遗忘（Catastrophic Forgetting）【26】。这指的是网络对先前任务的性能显著下降。持续学习研究致力于缓解灾难性遗忘的影响【17, 19, 30】。</p>
+<p>持续学习探索了多种防止网络遗忘先前任务的策略。Li 等人【19】提出了一种名为“无遗忘学习”（Learning without Forgetting, LwF）的方法。他们使用相同的数据来监督新任务的学习，同时为旧任务提供无监督的输出指导以防止遗忘。弹性权重合并（Elastic Weight Consolidation, EWC）【17】通过估计 Fisher 矩阵来加权一个正则化项，从而偏向于改变在先前任务中被认为不重要的神经元权重，并防止相关神经元适应新任务。进一步的研究包括引入正则化项【1, 20】、通过掩码学习选择子网络【22, 23, 35】，以及使用样本【21, 30】。</p>
+<p>许多早期工作针对任务增量学习（Task-Incremental Learning, Task-IL）场景展开研究【38】，在该场景下，网络在推理时能够访问任务 ID【1, 17, 19, 25, 35】。近年来，更多的研究聚焦于更困难的类别增量学习（Class-Incremental Learning, Class-IL）【2, 10, 15, 20】，其中推理时无法获得任务 ID。对于 Class-IL 来说，主要的额外挑战是旧任务与新任务之间的类别不平衡问题。这一问题通常通过存储先前任务的数据来解决【5, 15, 44】。在本文中，我们提出了一种用于 Class-Incremental Learning 的新方法。我们考虑了一种更困难的场景，即无法存储先前任务的数据。在如今数据隐私和安全对用户日益重要的情况下，许多政府法规对数据的管理提出了更高的要求，因而无需存储数据的持续学习算法的重要性日益增加。</p>
+<p>上述研究都集中在分类网络的持续学习中。对于分类网络，需要添加新的权重来适应新增的类别。而我们选择对嵌入网络进行类别增量学习，嵌入网络可以自然地包含新类别，而无需对网络结构进行调整。嵌入网络将数据映射到嵌入空间中，在该空间中，数据点之间的距离反映了语义上的差异【8】。它们通常用于图像检索【40】、人脸识别【33】等任务。然而，结合最近类均值分类器（Nearest Class Mean Classifier, NCM）【27】，它们也可以用于分类。</p>
+<p>本文中，我们表明嵌入网络比分类网络更不容易遭受灾难性遗忘的影响。此外，我们提出了一种新的方法，称为语义漂移补偿（Semantic Drift Compensation, SDC）。与现有方法旨在防止漂移不同，我们的方法通过估计新任务训练过程中发生的先前任务语义漂移（参见图 1）来进行补偿。我们展示了如何使用 NCM 分类器评估嵌入网络在图像分类任务中的表现，并将类别嵌入均值称为“原型”。我们还展示了如何仅使用当前任务的数据，近似估计先前任务中学习到的原型的漂移。此外，该方法可以轻松与现有的防遗忘方法（如 EWC【17】、LwF【19】或 MAS【1】）结合，以进一步提升性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250110203900.png" style="zoom: 80%;" /></div>
+
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p><strong>持续学习</strong>。 基于正则化的方法通过在当前任务上优化网络参数，同时防止已经巩固的权重发生漂移来实现持续学习。“无遗忘学习”（Learning without Forgetting, LwF）【19】利用一个关于概率的正则化项来调整已学习模型以适应新任务，同时保留之前的知识。弹性权重合并（EWC）【17】及其变体 R-EWC【20】在网络权重中引入一个正则化项，强制当前网络的参数保持接近于先前任务训练得出的参数。Zenke 等人【47】提出了一种在线计算突触（由网络权重表示）巩固强度的方法，并通过记忆积累任务相关信息进行了扩展。Aljundi 等人【1】则采用无监督方式计算权重的重要性。</p>
+<p>基于重演（Rehearsal）的方法通过存储先前任务的小部分训练数据来防止灾难性遗忘。这些样本与当前任务的数据结合（即重演）以联合优化网络参数。一些现有工作使用蒸馏损失（Distillation Loss）来防止遗忘【6, 21, 30, 15】。在【44】中，提出了偏差校正方法，旨在解决旧类别与新类别之间数据不平衡的问题，尤其是在大规模数据集上。另一种替代方法是学习先前任务的生成模型，并生成合成样本（即伪重演）【43, 36】。</p>
+<p>我们在具有挑战性的类别增量学习（Class-Incremental Learning, Class-IL）场景中研究持续学习。一些上述方法可以直接应用于 Class-IL 场景，例如通过调整网络架构【2, 32】。然而，这些方法并不适用于大规模类别数量，因为网络需要不断扩展。在【10】中，提出了一种使用注意力蒸馏损失（Attention Distillation Loss）的方法，通过惩罚注意力图的变化，帮助保留新类别添加时的旧类别信息。在【15】中，引入了三种策略来防止遗忘：交叉归一化（Cross Normalization）、减少遗忘约束（Less-Forgetting Constraint）和使用保存的样本进行类间分离（Inter-Class Separation）。【20】提出了一种适用于 Class-IL 的方法，该方法将 EWC 与网络重参数化（以分解旋转的形式）相结合，从而在先前任务上的性能得到了提升。【44】讨论了大量类别以及新旧类别之间视觉相似性的问题，并通过线性模型校正网络对新类别的输出偏差。在【5】中，通过结合样本集和蒸馏损失来防止 Class-IL 中的遗忘。最后，Belouadah 和 Popescu【3】提出了通过双内存减少灾难性遗忘影响的方法，而 Rajasegaran 等人【29】则提出了一种结合知识蒸馏和回顾的路径选择策略来克服遗忘。</p>
+<p>我们的方法与上述工作有两点主要不同：</p>
+<ol>
+<li>为了训练新任务，我们使用嵌入网络，并以度量学习损失（Metric Learning Loss）而非分类损失为目标。  </li>
+<li>上述方法大多关注在学习新任务的过程中防止遗忘，而我们的方法并不专注于防止遗忘，而是提出估计由于学习新任务导致的特征漂移的方式。有了对漂移的近似，我们可以对先前任务的原型进行补偿。  </li>
+</ol>
+<p><strong>深度度量学习</strong>。 Siamese 网络【8】最初被提出用于人脸验证的嵌入学习。最初，它们使用对比损失（Contrastive Loss），确保同类样本之间的距离更近，而不同类样本之间的距离大于一个特定的阈值。为了解决对比损失的局限性，提出了三元组网络（Triplet Networks）【13, 39】，输入包括锚点图像（Anchor）、正样本（Positive）和负样本（Negative）。三元组网络的目标是学习使相似样本的嵌入距离小于非相似样本嵌入距离的方法（加上一个边界 m）：<br />
+<div class="math-display"><br />
+    L_T = \max(0, d^+ - d^- + m), \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">d^+</span> 和 <span class="math-inline">d^-</span> 分别表示锚点与正样本、负样本之间的欧几里得距离。  </p>
+<p>后续研究对嵌入学习进行了进一步改进，包括在三元组三角形的负点处施加角度约束【40】，以及在多相似性损失函数中利用所有选择的对信息【41】。  </p>
+<p>嵌入网络相比于分类网络的优势一直是一个讨论热点。近期研究指出，分类网络存在一些显著的不足，大多归因于基于 softmax 操作的交叉熵损失。研究发现，嵌入网络在处理对抗样本和分布外样本检测方面表现更为鲁棒【24, 31】。此外，在迁移学习中，深度嵌入被证明优于分类网络【34】，并且初步研究表明它们可能不易遭受灾难性遗忘【45】。  </p>
+<h2 id="3-用于嵌入的持续学习">3. 用于嵌入的持续学习<a class="anchor-link" href="#3-用于嵌入的持续学习" title="Permanent link">&para;</a></h2>
+<p>我们研究了一个类增量学习的设置，其中网络学习多个任务，每个任务包含若干新类别。在任务 <span class="math-inline">t</span> 的训练过程中，我们仅能访问数据集 <span class="math-inline">D_t</span>，其中包含样本对 <span class="math-inline">(x_i, y_i)</span>，其中 <span class="math-inline">x_i</span> 是类别 <span class="math-inline">y_i \in C_t</span> 的图像。对于每个任务，我们假定其数据包含有限类别集合 <span class="math-inline">C_t = {c^t_1, c^t_2, \dots, c^t_{m_t}}</span>，其中 <span class="math-inline">m_t</span> 是任务 <span class="math-inline">t</span> 中的类别数量。我们研究的情景中，假定不同任务的类别之间没有重叠：<br />
+<div class="math-display"><br />
+    C_t \cap C_s = \emptyset \quad \text{若 } t \neq s。<br />
+</div><br />
+完成所有 <span class="math-inline">n</span> 个任务的训练后，我们会对所有类别 <span class="math-inline">C = \bigcup_{i} C_i</span> 进行评估。与其他类增量学习方法一样，我们采用任务无关的设定，即在测试时算法无法获取任务标签。  </p>
+<h3 id="31-嵌入网络">3.1 嵌入网络<a class="anchor-link" href="#31-嵌入网络" title="Permanent link">&para;</a></h3>
+<p>我们首先解释嵌入网络在单个任务中的训练过程。嵌入网络将数据映射到低维输出空间，其中距离表示图像之间的语义差异【4, 8】。它们同时执行特征提取和度量学习。在学习到的嵌入空间中，可以通过简单的度量（如 L2 距离）确定原始图像之间的相似性。  </p>
+<p>Chopra 等人【8】提出使用 Siamese 网络并采用对比损失作为目标函数。这种损失需要关联图像对和非关联图像对，确保关联对之间的距离较小，而非关联对之间的距离大于一个边界。由于对比损失难以训练，提出了其他损失函数。例如，Hoffer 等人【13】基于 Wang 等人【39】的工作，提出了三元组损失。目标函数迫使负样本到锚点的距离大于正样本的距离（加上边界 <span class="math-inline">m</span>）：<br />
+<div class="math-display"><br />
+    L_T = \max(0, d^+ - d^- + m), \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">d^+</span> 和 <span class="math-inline">d^-</span> 分别是锚点 <span class="math-inline">z_a</span> 与正样本 <span class="math-inline">z_p</span>、负样本 <span class="math-inline">z_n</span> 的欧几里得距离。这里，<span class="math-inline">z_i = F(x_i)</span> 是图像 <span class="math-inline">x_i</span> 的嵌入输出。  </p>
+<p>训练嵌入网络后，我们可以在嵌入空间中使用最近类均值分类器（NCM）进行分类，其定义为：<br />
+<div class="math-display"><br />
+    c^*<em>j = \arg\min</em>{c \in C} \text{dist}(z_j, \mu_c), \tag{2}<br />
+</div></p>
+<p><div class="math-display"><br />
+    \mu_c = \frac{1}{n_c} \sum_i [y_i = c] \cdot z_i，\tag{3}<br />
+</div><br />
+其中 <span class="math-inline">n_c</span> 是类别 <span class="math-inline">c</span> 的训练图像数量，<span class="math-inline">[P]</span> 表示布尔表达式 <span class="math-inline">P</span> 为真时的值为 1，否则为 0。我们将 <span class="math-inline">\mu_c</span> 称为类别 <span class="math-inline">c</span> 的“原型”（Prototype）。该术语在多个研究中也被用来指嵌入空间中类别的代表点【37, 45】。  </p>
+<h3 id="32-softmax-分类器与嵌入学习">3.2 Softmax 分类器与嵌入学习<a class="anchor-link" href="#32-softmax-分类器与嵌入学习" title="Permanent link">&para;</a></h3>
+<p>图像分类的传统方法是通过交叉熵损失训练 Softmax 分类器。由于其成功的表现，它成为研究图像分类持续学习方法的自然起点。然而，Softmax 分类器存在几个基本缺陷，这可能限制其在持续学习中的应用：  </p>
+<ol>
+<li>网络的输出与预测类别紧密耦合。当新增对象类别时，需要对架构进行结构性更改，例如新增神经元来适应新类别。这在类增量学习场景中通常意味着为每个任务创建一个新的输出层（头部）【5】。  </li>
+<li>为了从多头网络中获得最终预测，需要对输出进行聚合。  </li>
+<li>更新后的模型可能在预测时对新类别存在偏差【15, 44】。  </li>
+</ol>
+<p>上述问题可以在一定程度上缓解，但对于长任务序列来说，适配基于 Softmax 的分类器进行类增量学习是具有挑战性的。  </p>
+<p>相比之下，使用嵌入网络进行持续学习具有以下优势：  </p>
+<ol>
+<li>新类别可以自然地添加，无需对网络架构进行更改。  </li>
+<li>在学习新任务时，网络可以针对新的数据分布进行微调。然而，度量学习方法不需要直接获取类别信息，仅用于准备输入数据（即正负样本对），因此网络结构保持不变。  </li>
+</ol>
+<p>为比较持续学习场景下的分类网络和嵌入网络，我们对两者进行微调，以适应新任务。这种方法对分类网络已知会导致灾难性遗忘。Softmax 分类器为增量分类使用新头部。在测试中，我们计算每个头部的概率，并选择最大值作为真实预测（称为 FT）。作为另一种方法，我们考虑对 ResNet 网络第 5 层的平均池化输出执行 NCM，该输出与嵌入网络具有相同的维度（记为 FT*）。这种技术也在 iCaRL【30】中使用。嵌入网络（通过三元组损失训练【13】）使用原型表示类别，并通过 NCM 进行分类，记为 E-FT。  </p>
+<p>图 2 展示了在三个数据集上的对比结果，进一步验证了嵌入网络在持续学习中的显著优势。  </p>
+<h3 id="33-正则化嵌入网络">3.3 正则化嵌入网络<a class="anchor-link" href="#33-正则化嵌入网络" title="Permanent link">&para;</a></h3>
+<p>灾难性遗忘问题在分类网络的持续学习中已被广泛研究【6, 17, 19, 20, 30, 36, 43】。据我们所知，目前尚无针对嵌入网络防止遗忘的研究。在本节中，我们将几种现有的针对分类网络的技术适配到嵌入网络上。我们将这些技术的嵌入变体以 "E" 为前缀命名，例如，将适配到嵌入网络的 LwF 称为 E-LwF（Learning without Forgetting）。  </p>
+<h4 id="微调e-ft"><strong>微调（E-FT）</strong><a class="anchor-link" href="#微调e-ft" title="Permanent link">&para;</a></h4>
+<p>已在第 3.2 节中描述，并作为基线方法。所有实验均采用三元组损失【13】进行训练。  </p>
+<h4 id="对齐损失e-lwf19"><strong>对齐损失（E-LwF）【19】</strong><a class="anchor-link" href="#对齐损失e-lwf19" title="Permanent link">&para;</a></h4>
+<p>此方法最初在分类网络中提出，其目的是匹配网络的 Softmax 输出以保留先前模型的知识。对于嵌入网络，我们通过最小化当前任务训练期间图像 <span class="math-inline">x_i</span> 的输出嵌入 <span class="math-inline">z^t_i</span> 与其在先前任务中的嵌入 <span class="math-inline">z^{t-1}<em>i</span> 之间的距离来限制参数漂移，这类似于【46】的方法：<br />
+<div class="math-display"><br />
+    L</em>\text{LwF} = |z^t_i - z^{t-1}_i|, \tag{4}<br />
+</div><br />
+其中 <span class="math-inline">|\cdot|</span> 表示 Frobenius 范数。  </p>
+<h4 id="e-ewc17"><strong>E-EWC【17】</strong><a class="anchor-link" href="#e-ewc17" title="Permanent link">&para;</a></h4>
+<p>该方法最初在分类网络中提出，通过将网络参数保持在先前任务的最优参数附近来减少遗忘。这同样可以应用于嵌入网络。在 EWC 中，我们最小化以下函数：<br />
+<div class="math-display"><br />
+    L_\text{EWC} = \sum_p \frac{1}{2} F^{t-1}_p (\theta^t_p - \theta^{t-1}_p)^2, \tag{5}<br />
+</div><br />
+其中 <span class="math-inline">F^{t-1}</span> 是在学习前一任务 <span class="math-inline">t-1</span> 后计算的 Fisher 信息矩阵，求和范围为网络的所有参数 <span class="math-inline">\theta_p</span>。  </p>
+<h4 id="e-mas1"><strong>E-MAS【1】</strong><a class="anchor-link" href="#e-mas1" title="Permanent link">&para;</a></h4>
+<p>此方法基于网络输出对参数变化的敏感性来累积每个参数的重要性测量，并可直接应用于嵌入网络。在 MAS 中，我们最小化以下函数：<br />
+<div class="math-display"><br />
+    L_\text{MAS} = \sum_p \frac{1}{2} \Omega_p (\theta^t_p - \theta^{t-1}_p)^2, \tag{6}<br />
+</div><br />
+其中 <span class="math-inline">\Omega_p</span> 是通过输出函数的平方 <span class="math-inline">L_2</span> 范数对参数变化的敏感性估算的。  </p>
+<p>上述损失可以与度量学习损失结合，以在训练嵌入网络时防止遗忘：<br />
+<div class="math-display"><br />
+    L = L_\text{ML} + \gamma L_C, \tag{7}<br />
+</div><br />
+其中 <span class="math-inline">C \in {\text{LwF}, \text{EWC}, \text{MAS}}</span>，<span class="math-inline">\gamma</span> 是度量学习损失与其他损失之间的权衡系数。  </p>
+<h2 id="4-语义漂移补偿">4. 语义漂移补偿<a class="anchor-link" href="#4-语义漂移补偿" title="Permanent link">&para;</a></h2>
+<p>在嵌入网络中，当以连续方式学习时，会出现漂移现象。当无法获取先前任务的数据时，使用 NCM 分类器中的原始原型通常会导致性能下降。我们旨在减少漂移引起的误差，并提出了一种漂移补偿方法，用于更新先前计算的原型。主要思想是根据当前任务训练时观测到的漂移来估计未知的漂移，从而进行补偿。</p>
+<hr />
+<h3 id="41-语义漂移的计算">4.1 语义漂移的计算<a class="anchor-link" href="#41-语义漂移的计算" title="Permanent link">&para;</a></h3>
+<p>在第 3.1 节中，我们讨论了如何在单个任务中计算类别的原型。这里，我们将这一理论扩展到持续学习的设置中。我们将类别 <span class="math-inline">c_s</span> 的原型均值定义为 <span class="math-inline">\mu^t_{c_s}</span>，它是类别 <span class="math-inline">c_s</span> 在任务 <span class="math-inline">t</span> 学习后的均值，按公式 (3) 计算。类别 <span class="math-inline">c_s</span> 在任务 <span class="math-inline">s</span> 中被学习（为了简洁，这里省略了 <span class="math-inline">i</span> 下标）。当 <span class="math-inline">t &gt; s</span> 时，我们无法访问任务 <span class="math-inline">s</span> 的数据，因此无法通过再次应用公式 (3) 来计算真实的原型均值。我们将真实类别均值与估计类别均值之间的差异称为语义漂移：<br />
+<div class="math-display"><br />
+    \Delta^{s \to t}<em>{c_s} = \mu^t</em>{c_s} - \mu^s_{c_s}. \tag{8}<br />
+</div><br />
+由于无法直接计算 <span class="math-inline">\mu^t_{c_s}</span>，我们需要寻找替代方法来近似语义漂移 <span class="math-inline">\Delta^{s \to t}<em>{c_s}</span>。我们首先提出一种方法来计算 <span class="math-inline">\Delta^{t-1 \to t}</em>{c_s}</span>，从中推导 <span class="math-inline">\Delta^{s \to t}_{c_s}</span>。</p>
+<p>在任务 <span class="math-inline">t</span> 的训练中，由于无法访问任务 <span class="math-inline">s</span> 的数据，我们无法观察到属于 <span class="math-inline">C_s</span> 的嵌入 <span class="math-inline">z_i</span> 在任务 <span class="math-inline">t</span> 训练期间的漂移。然而，我们可以测量当前任务数据在任务 <span class="math-inline">t</span> 训练期间的漂移：<br />
+<div class="math-display"><br />
+    \delta^{t-1 \to t}_i = z^t_i - z^{t-1}_i, \quad y_i \in C_t, \tag{9}<br />
+</div><br />
+这里 <span class="math-inline">z^t_i</span> 表示数据点 <span class="math-inline">i</span> 在任务 <span class="math-inline">t</span> 训练完成后的嵌入，<span class="math-inline">z^{t-1}_i</span> 表示任务 <span class="math-inline">t-1</span> 训练完成后的嵌入。</p>
+<p>我们提出通过稀疏向量场 <span class="math-inline">\delta^{t-1 \to t}<em>i</span> 来近似语义漂移 <span class="math-inline">\Delta^{t-1 \to t}</em>{c_s}</span>。具体方法是在原型位置 <span class="math-inline">\mu^{t-1}<em>{c_s}</span> 处插值该向量场：<br />
+<div class="math-display"><br />
+    \hat{\Delta}^{t-1 \to t}</em>{c_s} = \frac{\sum_i [y_i \in C_t] w_i \delta^{t-1 \to t}<em>i}{\sum_i [y_i \in C_t] w_i}, \tag{10}<br />
+</div><br />
+其中<br />
+<div class="math-display"><br />
+    w_i = e^{-\frac{|z^{t-1}_i - \mu^{t-1}</em>{c_s}|^2}{2\sigma^2}}, \tag{11}<br />
+</div><br />
+<span class="math-inline">\sigma</span> 是高斯核的标准差。</p>
+<p>总结来说，如图 3 所示，任务 <span class="math-inline">t</span> 中的所有数据点在任务 <span class="math-inline">t</span> 训练过程中都会产生漂移，形成一个漂移向量集合 <span class="math-inline">\delta^{t-1 \to t}<em>i</span>。通过这些向量的权重加权均值，我们可以计算先前任务原型 <span class="math-inline">\mu^{t-1}</em>{c_s}</span> 的漂移（公式 10）。随后，语义漂移补偿（SDC）可以应用如下：<br />
+<div class="math-display"><br />
+    \hat{\mu}^t_{c_s} = \mu^s_{c_s} + \hat{\Delta}^{s \to s+1}<em>{c_s} + \dots + \hat{\Delta}^{t-1 \to t}</em>{c_s}, \tag{12}<br />
+</div><br />
+即总补偿为所有先前步骤中测量的漂移补偿的总和。通常，这一过程采用递归方案，即在每个新任务中更新所有先前任务的原型：<br />
+<div class="math-display"><br />
+    \hat{\mu}^t_{c_s} = \hat{\mu}^{t-1}<em>{c_s} + \hat{\Delta}^{t-1 \to t}</em>{c_s}. \tag{13}<br />
+</div></p>
+<h3 id="42-正则化的语义漂移补偿">4.2 正则化的语义漂移补偿<a class="anchor-link" href="#42-正则化的语义漂移补偿" title="Permanent link">&para;</a></h3>
+<p>许多持续学习方法专注于防止网络使用被认为对先前任务重要的参数【1, 17, 19】。我们的方法基于完全不同的思路：如果我们在任务之间共享参数，并希望所有任务都能通过这些参数改进（即进行反向传播），这将导致先前任务发生漂移。通过近似这一漂移，我们可以对其进行补偿。  </p>
+<p>由于我们的方法采用了不同的防遗忘策略，值得研究它是否与其他方法互补。因此，我们提出将现有方法（如 E-LwF、E-EWC 和 E-MAS）与语义漂移补偿结合使用，并在实验结果中进行评估。</p>
+<p>为了说明 SDC 的效果，我们在 MNIST 数据集上进行了二维嵌入实验。我们将 10 个类别随机分成两个任务。在图 4 中，我们展示了 E-FT 和 E-EWC 情况下由 SDC 估计的漂移向量的例子。结果表明，近似的漂移向量能够将原型的位置调整得更接近真实均值，从而提升整体方法的准确性。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>本节遵循增量学习的评估协议【1, 20, 30】。对于多类数据集，类别以固定的随机顺序排列。每种方法均以类增量的方式在可用数据上进行训练，并在测试集上评估。评估指标包括：  </p>
+<ul>
+<li><strong>平均增量准确率</strong>（Average Incremental Accuracy），即仅针对已经训练过的类别计算的平均准确率。  </li>
+<li><strong>平均遗忘率</strong>（Average Forgetting），用于衡量在 CIFAR100 和 ImageNet-Subset 数据集上先前任务的遗忘情况【6】。  </li>
+</ul>
+<h3 id="51-数据集">5.1 数据集<a class="anchor-link" href="#51-数据集" title="Permanent link">&para;</a></h3>
+<p>我们使用了以下数据集：  </p>
+<ul>
+<li><strong>CUB-200-2011</strong>【42】：包含 200 个鸟类类别，共计 11,788 张图像。  </li>
+<li><strong>Flowers-102</strong>【28】：包含 102 个花卉类别，其中随机选择了 100 类，共计 8,189 张图像。  </li>
+<li><strong>CIFAR100</strong>【18】：每类包含 600 张图像。  </li>
+<li><strong>ImageNet-Subset</strong>【9】：随机选择自 ImageNet 的 100 类，共计 129,156 张图像。  </li>
+<li><strong>Caltech-101</strong>【11】：由属于 101 个类别的对象图像组成。  </li>
+</ul>
+<p>这些数据集均按类别随机分成若干任务。  </p>
+<h3 id="52-实现细节">5.2 实现细节<a class="anchor-link" href="#52-实现细节" title="Permanent link">&para;</a></h3>
+<p>所有模型均使用 PyTorch 实现，优化器采用 Adam【16】。以下是每个数据集的配置：  </p>
+<ul>
+<li><strong>CUB-200-2011 和 Flowers-102</strong>：使用 ResNet-18【12】作为主干网络，从 ImageNet 预训练模型初始化。  </li>
+<li><strong>CIFAR100 和 ImageNet-Subset</strong>：分别使用 ResNet-32 和 ResNet-18，未进行预训练，与【15】一致。  </li>
+</ul>
+<p>训练使用三元组损失【13】，并对所有数据集采用以下通用预处理：  </p>
+<ul>
+<li>图像大小调整为 <span class="math-inline">256 \times 256</span>（CIFAR100 调整为 <span class="math-inline">32 \times 32</span>），并随机裁剪和翻转。  </li>
+<li>小批量大小为 32。  </li>
+<li>学习率及训练轮次：  </li>
+<li>CUB-200-2011：学习率 <span class="math-inline">1 \times 10^{-5}</span>，50 轮；  </li>
+<li>Flowers-102：学习率 <span class="math-inline">1 \times 10^{-4}</span>，20 轮；  </li>
+<li>CIFAR100 和 ImageNet-Subset：学习率 <span class="math-inline">1 \times 10^{-6}</span>，50 轮。  </li>
+</ul>
+<p>最终嵌入维度为 512，并进行归一化。对正则化方法（E-LwF、E-EWC、E-MAS）的权衡参数分别设置为 1、<span class="math-inline">10^7</span> 和 <span class="math-inline">10^6</span>。对于 SDC 向量的权重计算，选择固定的 <span class="math-inline">\sigma = 0.3</span>，CIFAR100 使用 <span class="math-inline">\sigma = 0.2</span>。  </p>
+<h3 id="53-嵌入网络分类性能">5.3 嵌入网络分类性能<a class="anchor-link" href="#53-嵌入网络分类性能" title="Permanent link">&para;</a></h3>
+<p>我们在两个细粒度数据集（CUB-200-2011 和 Flowers-102）的六任务场景中评估了方法的有效性。表 1 展示了实验结果，并分析了训练完成最后一个任务（T6）后的平均结果。  </p>
+<p><strong>结果分析</strong>：  </p>
+<ol>
+<li>
+<p><strong>嵌入网络的防遗忘效果</strong>：<br />
+   将 Softmax 分类网络上的方法（LwF/EWC/MAS）与嵌入网络的变体（E-LwF/E-EWC/E-MAS）进行对比，可以观察到巨大的性能提升，表明嵌入网络对灾难性遗忘的抵抗能力更强。  </p>
+</li>
+<li>
+<p><strong>与基线对比</strong>：<br />
+   我们加入了预训练模型（E-Pre）和固定模型（E-Fix）的 NME 结果作为基线。所有方法结合 SDC 后的性能均超越了这些基线。  </p>
+</li>
+<li>
+<p><strong>SDC 的改进效果</strong>：<br />
+   SDC 提升了所有方法的结果，尤其是对 E-FT，分别在 CUB-200-2011 和 Flowers-102 上带来了 11.9% 和 6.2% 的增益。  </p>
+</li>
+<li>
+<p><strong>嵌入网络的潜力</strong>：<br />
+   简单的嵌入网络微调（E-FT）在 CUB-200-2011 上的结果甚至优于 Softmax 网络方法（LwF、EWC 和 MAS）。结合 SDC 后的进一步提升进一步验证了嵌入网络的潜力。  </p>
+</li>
+</ol>
+<p><strong>漂移补偿验证</strong>：  </p>
+<p>为了进一步分析 SDC 是否有效减少了原型的漂移，我们测量了真实类别均值与原型之间的平均距离（SDC 应用前后）。如图 5 所示，SDC 减少了原型的漂移，显著改善了分类性能。  </p>
+<h3 id="54-与最新方法的对比">5.4 与最新方法的对比<a class="anchor-link" href="#54-与最新方法的对比" title="Permanent link">&para;</a></h3>
+<h4 id="十任务增量学习cub-200-和-caltech-101"><strong>十任务增量学习（CUB-200 和 Caltech-101）</strong><a class="anchor-link" href="#十任务增量学习cub-200-和-caltech-101" title="Permanent link">&para;</a></h4>
+<p>为了评估 SDC 在更长任务序列中的表现，并与无记忆学习（LwM）方法进行对比，我们按照【10】中的设定，在 CUB-200（100 个类别）和 Caltech-101 数据集上进行了实验，将类别随机分为十个任务。  </p>
+<p><strong>实验结果</strong>：  </p>
+<p>图 6 展示了与以下方法的对比结果：<br />
+- FT（Softmax 微调）；<br />
+- LwM【10】；<br />
+- Expert Gate【2】；<br />
+- 联合训练（Joint Training）的上限；<br />
+- 我们的最佳方法 E-MAS 和 E-MAS+SDC。  </p>
+<p>在这两个数据集上，我们的方法取得了显著优势：  </p>
+<ol>
+<li>E-MAS 相比近期方法 LwM，在 CUB-200 和 Caltech-101 上分别高出 21.2% 和 29.0%。  </li>
+<li>应用 SDC 后，分别进一步提高了 6.4% 和 1.4%。  </li>
+</ol>
+<h4 id="cifar100-和-imagenet-subset-的实验"><strong>CIFAR100 和 ImageNet-Subset 的实验</strong><a class="anchor-link" href="#cifar100-和-imagenet-subset-的实验" title="Permanent link">&para;</a></h4>
+<p>在【15】中，为类增量学习提出了十一任务评估协议：第一个任务包含一半的类别，其余类别均分为 10 个任务。我们使用以下两个指标进行评估：  </p>
+<ul>
+<li><strong>平均增量准确率</strong>：仅计算当前任务之前所有任务的平均准确率。  </li>
+<li><strong>平均遗忘率</strong>【6】：定义为先前任务的最大遗忘量：<br />
+<div class="math-display"><br />
+    f^k_j = \max_{l \in 1, \dots, k-1} (a_{l,j} - a_{k,j}), \quad \forall j &lt; k,<br />
+</div><br />
+其中 <span class="math-inline">a_{n,m}</span> 是第 <span class="math-inline">n</span> 任务在第 <span class="math-inline">m</span> 任务训练后的准确率。第 <span class="math-inline">k</span> 任务的平均遗忘率定义为：<br />
+<div class="math-display"><br />
+    F^k = \frac{1}{k-1} \sum_{j=1}^{k-1} f^k_j.<br />
+</div><br />
+<strong>实验结果</strong>：  </li>
+</ul>
+<p>CIFAR100 的结果如图 7 所示，包含三组方法：<br />
+1. <strong>非样本存储方法</strong>：FT、LwF、EWC、MAS、E-MAS+SDC；<br />
+2. <strong>样本存储方法</strong>：iCaRL-CNN【30】、iCaRL-NME【30】、Rebalance【15】；<br />
+3. <strong>联合训练方法</strong>：作为上限基线。  </p>
+<ol>
+<li>
+<p><strong>平均增量准确率</strong>：<br />
+   - 我们的最佳方法 E-EWC+SDC 在非样本存储方法中表现最优，领先 EWC 至少 27.6%。<br />
+   - 同时，它也优于两种样本存储方法 iCaRL-CNN 和 iCaRL-NME，分别高出 7.1% 和 1.1%。  </p>
+</li>
+<li>
+<p><strong>平均遗忘率</strong>：<br />
+   - 我们的方法相比所有样本存储方法（如 Rebalance【15】）的遗忘率更低，相较最佳的 Rebalance 方法有 13.9% 的改进。  </p>
+</li>
+</ol>
+<p><strong>ImageNet-Subset 的结果</strong>：  </p>
+<ul>
+<li>我们的方法同样超越了所有非样本存储方法和两种样本存储方法（iCaRL-CNN 和 iCaRL-NME）。  </li>
+<li>平均增量准确率相比 LwF 提高了 35.0%，比 iCaRL-CNN 高出 15.5%，比 iCaRL-NME 高出 2.5%。  </li>
+<li>在平均遗忘率上，我们的方法比 Rebalance 方法减少了 3.5%。  </li>
+</ul>
+<p>此外，我们还对固定网络（在任务一微调后不再更新）进行了实验，CIFAR100 和 ImageNet-Subset 的准确率分别为 46.3% 和 50.5%。这表明，在多任务场景中，即使是最先进的非样本存储方法也未显著超越这一基线；而某些样本存储方法（如 iCaRL-CNN 和 iCaRL-NME）也未能表现更优。这部分归因于任务一类别数量较多，但若聚焦于后续任务（任务 2 到任务终）的性能，这些方法仍然展现出明确的优势（具体见补充材料）。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>在分类网络上应用微调时，灾难性遗忘的严重性在嵌入网络中要小得多。这表明，当前基于 Softmax 的方法在持续学习中的主导地位需要重新审视。我们的研究结果主张采用嵌入网络作为持续学习的基础。此外，我们提出了一种方法来近似在新任务训练过程中发生的原型语义漂移。这种方法可以与原本设计用于分类网络的增量学习方法互补。</p>
+<p>实验表明，当与现有方法结合使用时，我们的方法能够持续改善结果。在未来工作中，我们计划探索更复杂的漂移建模和更大规模的增量学习场景。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

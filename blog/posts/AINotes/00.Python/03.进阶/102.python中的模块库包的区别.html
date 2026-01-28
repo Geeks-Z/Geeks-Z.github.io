@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>python中的模块、库、包有什么区别？</title>
+    <meta name="description" content="python中的模块、库、包有什么区别？ - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#一模块module">一、模块（module）</a></li>
+<li><a href="#二包package">二、包（package）</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>python中的模块、库、包有什么区别？</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/00.Python/03.进阶</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="python中的模块库包有什么区别">python中的模块、库、包有什么区别？<a class="anchor-link" href="#python中的模块库包有什么区别" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [风影忍着]</p>
+<p><strong>Link:</strong> [https://www.zhihu.com/question/30082392/answer/2030353759]</p>
+<h2 id="一模块module">一、模块（module）<a class="anchor-link" href="#一模块module" title="Permanent link">&para;</a></h2>
+<p>模块，英文为Modules，本质上是一个Python程序，以.py作为文件后缀。任何py文件都可以作为一个模块。</p>
+<p><em>*</em><em>其他可作为module的文件类型还有</em><em>".so"、".pyo"、".pyc"、".dll"、".pyd"，但Python初学者几乎用不到。</em></p>
+<p>通过使用模块，可以有效地避免命名空间的冲突，可以隐藏代码细节让我们专注于高层的逻辑，还可以将一个较大的程序分为多个文件，提升代码的可维护性和可重用性。</p>
+<p><strong>（一）导入</strong></p>
+<p>导入一个模块一般有两种方法：</p>
+<ol>
+<li>import 模块名1 [as 别名1], 模块名2 [as 别名2]，…。此时，模块名1本身被导入，但保存它原有的命名空间，所以我们需要用”模块名1.成员名1“方式访问其函数或变量。</li>
+<li>from 模块名 import 成员名1 [as 别名1]，成员名2 [as 别名2]，…。此时，会将该模块的函数/变量导入到当前模块的命名空间中，无须用“模块名1.成员名1"访问了。</li>
+</ol>
+<p>其中，用 [] 括起来的部分，可以使用，也可以省略。</p>
+<p>注意，模块名里面只要写py文件的名字，不需要加后缀。</p>
+<p>另外，尽量不要使用</p>
+<pre><code>from demo import *
+</code></pre>
+<p>的方式进行导入，否则很容易出现名称重复的情况。</p>
+<p>例如，如果有两个模块里面有相同的成员，或者你自己定义了某一个对象和demo module里面的成员（例如函数）重名了，运行的时候会出问题。因为此时我们无法确认，我们所指的是自己定义的对象还是demo module里面的成员。</p>
+<p><strong>（二）if __name__ == '__main__':</strong></p>
+<p>在完成一个模块的编写之前，我们一般会对模块中的功能进行测试，看看各项功能是否正常运行。对于这些测试的代码，我们希望只在直接运行这个py文件的时候执行，在用其他的程序import这个模块的时候不要执行。这个时候就要借助Python内置的__name__变量。</p>
+<p>__name__变量的取值是什么可以分两种情况，</p>
+<ol>
+<li>当一个py文件被直接运行的时候，__name__变量的值为__main__。</li>
+<li>当一个py文件被import到其他程序的时候，这个py文件里面的__name__变量的值为这个py文件的名字。</li>
+</ol>
+<p>我们可以利用__name__变量的这个特点，结合一个if语句，让我们import某一个模块的时候只用到它提供的功能，而不要运行里面用来测试的代码：</p>
+<pre><code>if __name__ == '__main__':
+    # put your code here
+</code></pre>
+<p><strong>（三）模块的说明文档</strong></p>
+<p>模块的说明文档放在py文件的开头，用成对的三个英文单引号引起来：</p>
+<pre><code>'''
+模块的说明文档放在这里。
+'''
+</code></pre>
+<p>然后我们可以用模块的__doc__属性来访问模块的说明文档：</p>
+<pre><code>import demo
+print(demo.__doc__)
+</code></pre>
+<p>在调用这个模块来写代码的时候，也可以阅读到模块的说明文档。例如下图，我把鼠标放在导入的 re 包名称上面就能看到其说明文档：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412090948512.jpg" /><br />
+在编程中显示的说明文档的内容和原始 py 文件中的内容一样。例如，下面是 re 模块的原始 py 文件中的说明文档：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412090948513.jpg" /><br />
+<strong>（四）模块的路径</strong></p>
+<p>对于用import语句导入的模块，Python会按照下面的路径列表顺序地查找我们需要的模块：</p>
+<ol>
+<li>当前的工作目录；</li>
+<li>PYTHONPATH（环境变量）中的每一个目录；</li>
+<li>Python 默认的安装目录。</li>
+</ol>
+<p>如果我们在导入自己写的模块的时候，Python解释器提示找不到这个模块</p>
+<pre><code>ModuleNotFoundError: No module named '模块名'
+</code></pre>
+<p>那么，说明我们写的模块没有放在上述三类路径。由于这三类目录都保存在标准模块sys的sys.path变量中，因此我们有三种解决方法。</p>
+<p>1.向sys.path变量中临时添加模块文件所在的完整路径。</p>
+<pre><code>import sys
+sys.path.append(r'D:\xxx\yyy')
+</code></pre>
+<p>2.将模块移动到sys.path 变量中已包含的路径中。</p>
+<p>3.修改path 系统的环境变量。</p>
+<p>其中，环境变量又分为用户变量（仅对当前用户生效）和系统变量（对系统里所有用户均生效）。Python在使用path变量时，会先按照系统path变量找，然后按照用户path变量的路径找。</p>
+<p>通常情况下，设置用户path变量即可。</p>
+<h2 id="二包package">二、包（package）<a class="anchor-link" href="#二包package" title="Permanent link">&para;</a></h2>
+<p>在比较大型的项目中常常需要编写、用到大量的模块，此时我们可以使用包（Package）来管理这些模块。</p>
+<p><strong>（一）什么是包？</strong></p>
+<p><strong>Python包，就是里面装了一个__init__.py文件的文件夹。</strong></p>
+<p><strong>__init__.py文件（前后各有 2 个下划线'_'）具有下面4个性质</strong>：</p>
+<ol>
+<li>它本身是一个模块；</li>
+<li>这个模块的模块名不是__init__，而是这个包的名字，也就是装着__init__.py文件的文件夹的名字。</li>
+<li>它的作用是将一个文件夹变为一个Python模块</li>
+<li>它可以不包含代码，不过此时仅仅用import [该包]形式是什么也做不了的。所以一般会包含一些Python初始化代码，在这个包被import的时候，这些代码会自动被执行。</li>
+<li>第4点所指的初始化代码类型一：批量导入我们需要用到的模块，这样我们就不用在用到的时候再一一导入，方便实用。</li>
+<li>第4点所指的初始化代码类型二：如果我们要使用“from pacakge_1 import *”的形式导入一个模块里面的所有内容，则需在__init__.py中加上“all = [‘file_a’, ‘file_b’]”。其中，package_1下有file_a.py和file_b.py。</li>
+<li>不建议在__init__.py中写类，以保证该py文件简单。</li>
+</ol>
+<p>__all__是Python中的一个重要的变量，放在__init__模块中，用于指定此包（package）被import *时，哪些模块（module）会被import进<strong>当前作用域中</strong>。不在 __all__列表中的模块不会被其他程序引用。我们可以对 __all__进行重写。</p>
+<p>__path__也是python中的一个常用变量，它是储存着当前包内的搜索路径的一个列表。默认情况下只有一个元素，即当前包（package）的路径。</p>
+<p><strong>Python包具有下面3个性质</strong>：</p>
+<ol>
+<li>它实质上是一个文件夹；</li>
+<li>该文件夹里面一定有__init__.py模块，其他的模块可以有也可以没有；</li>
+<li>它的本质依然是模块，因此一个包里面还可以装其他的包。</li>
+</ol>
+<p><strong>（二）导入包</strong></p>
+<p><strong>导入包的方法和导入模块比较类似，只不过由于层级比一般模块多了一级，所以多了一条导入形式</strong>：</p>
+<ol>
+<li>import 包名[.模块名 [as 别名]]</li>
+<li>from 包名 import 模块名 [as 别名]</li>
+<li>from 包名.模块名 import 成员名 [as 别名]</li>
+</ol>
+<p>我们在导入包的时候，实际上是导入了它的__init__.py文件文件。</p>
+<p><strong>最后总结一下，Python里面存在这样的关系</strong>：</p>
+<ul>
+<li>
+<p>数据可以封装在容器（列表、元组、字符串、字典）里面；</p>
+</li>
+<li>
+<p>代码可以封装在function里面；</p>
+</li>
+<li>
+<p>function和数据可以封装在class里面（或者说方法和属性可以封装在类里面）；</p>
+</li>
+<li>
+<p>上述三类内容可以打包在module（模块）里面；</p>
+</li>
+<li>
+<p>多个module可以打包在package（包）里面；</p>
+</li>
+<li>
+<p>多个package可以打包在library（库）里面。</p>
+</li>
+</ul>
+<p><strong>此外，关于“库（library）”的概念</strong>：</p>
+<p><a href="https://www.zhihu.com/people/29a618a6a8a39a1683934e8436a1aaf4">https://www.zhihu.com/people/29a618a6a8a39a1683934e8436a1aaf4</a> 在评论区对于“库（library）”的概念做了很好的补充，使得这篇科普更加的完整。请观众老爷移步评论区，阅读本文唯一的一条精选评论。</p>
+<p><a href="https://www.zhihu.com/people/5f4b043a1b4b317a293982593a443b1d">https://www.zhihu.com/people/5f4b043a1b4b317a293982593a443b1d</a> <a href="https://www.zhihu.com/question/30082392/answer/2315826832">https://www.zhihu.com/question/30082392/answer/2315826832</a>，在文末的部分，将库 (library) 和框架 (framework) 对比起来讲解，是另外一个理解库的角度。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

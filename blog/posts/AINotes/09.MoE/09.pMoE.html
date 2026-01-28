@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#patch-level-routing-in-mixture-of-experts-is-provably-sample-efficient-for-convolutional-neural-networks">Patch-level Routing in Mixture-of-Experts is Provably Sample-efficient for Convolutional Neural Networks</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-混合专家">2.1. 混合专家</a></li>
+<li><a href="#22-神经网络的优化和泛化分析">2.2. 神经网络的优化和泛化分析</a></li>
+</ul>
+</li>
+<li><a href="#3-问题表述">3. 问题表述</a><ul>
+<li><a href="#31-神经网络模型">3.1. 神经网络模型</a></li>
+<li><a href="#32-训练算法">3.2. 训练算法</a></li>
+<li><a href="#33-训练算法">3.3. 训练算法</a></li>
+</ul>
+</li>
+<li><a href="#4-理论结果">4. 理论结果</a><ul>
+<li><a href="#41-关键发现一览">4.1. 关键发现一览</a></li>
+<li><a href="#42-数据模型假设和理由">4.2. 数据模型假设和理由</a></li>
+<li><a href="#43-主要理论结果">4.3. 主要理论结果</a><ul>
+<li><a href="#431-单独训练-pmoe-的泛化保证">4.3.1. 单独训练 pMoE 的泛化保证</a></li>
+<li><a href="#432-具有适当路由器的联合训练-pmoe-的泛化保证">4.3.2. 具有适当路由器的联合训练 pMoE 的泛化保证</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-实验结果">5. 实验结果</a><ul>
+<li><a href="#51-两层-cnn-的-pmoe">5.1. 两层 CNN 的 pMoE</a></li>
+<li><a href="#52-宽残差网络wrns的-pmoe">5.2. 宽残差网络（WRNs）的 pMoE</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/09.MoE</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="patch-level-routing-in-mixture-of-experts-is-provably-sample-efficient-for-convolutional-neural-networks">Patch-level Routing in Mixture-of-Experts is Provably Sample-efficient for Convolutional Neural Networks<a class="anchor-link" href="#patch-level-routing-in-mixture-of-experts-is-provably-sample-efficient-for-convolutional-neural-networks" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>在深度学习中，混合专家（MoE）模型基于每个样本或每个标记激活一个或几个专家（子网络），从而显著减少计算量。最近提出的 MoE 中的 patch-level 路由（pMoE）将每个输入分成 n 个 patches（或 tokens），并通过优先路由将 l 个 patches（l ≪ n）发送给每个专家。pMoE 在保持测试精度的同时，展示了在减少训练和推理成本方面的巨大经验成功。然而，pMoE 和通用 MoE 的理论解释仍然难以捉摸。本论文聚焦于使用两层卷积神经网络（CNNs）的监督分类任务，首次证明了 pMoE 可以减少实现理想泛化（称为样本复杂度）所需的训练样本数量，减少因子为 n/l 的多项式阶，并且超越了相同甚至更大容量的单专家对应物。这一优势源于区分路由属性，理论和实践都证明了 pMoE 路由器可以过滤掉与标签无关的 patches，并将类似的类别区分性 patches 路由到同一个专家。我们的实验结果在 MNIST、CIFAR-10 和 CelebA 上支持了我们对 pMoE 泛化的理论研究，并表明 pMoE 可以避免学习虚假相关性。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>深度学习在许多应用中展示了非凡的经验成功，代价是高计算和数据需求。为了解决这个问题，混合专家（MoE）模型仅对每个数据点激活部分神经网络区域，显著降低了深度学习的计算复杂性，而没有损害机器翻译和自然图像分类等应用中的性能。传统的 MoE 模型包含多个专家（子网络）和一个可学习的路由器，路由器将每个输入样本路由到少数而不是全部专家。在语言模型中引入了逐位置 MoE，其中路由决策是针对输入的不同位置的嵌入分别进行的，而不是路由整个文本输入。Riquelme 等人（2021）将其扩展到视觉模型，其中路由决策是针对图像 patches 进行的。Zhou 等人（2022）进一步扩展了这一点，MoE 层的每个专家都有一个路由器，以便路由器为相应的专家选择部分 patches 并丢弃剩余 patches。我们将这种路由模式称为 patch-level 路由，MoE 层称为 patch-level MoE（pMoE）层（见图 1 中的 pMoE 示意图）。值得注意的是，与相同容量的单专家（即接收输入所有 patches 的专家）对应物相比，pMoE 在视觉任务中实现了相同的测试精度，训练计算减少了 20%，推理计算减少了 50%。</p>
+<p>尽管 MoE 在经验上取得了成功，但在理论上仍然难以捉摸，为什么 MoE 在显著减少计算量的同时还能保持测试精度？据我们所知，只有一项最近的 Chen 等人（2022）的工作在理论上表明，在二元分类任务的特殊设置中，传统的逐样本 MoE 比卷积神经网络（CNN）实现了更高的测试精度。然而，Chen 等人（2022）的逐样本分析并不适用于 patch-level MoE，后者采用与传统 MoE 不同的路由策略，他们的数据模型可能无法描述一些实际数据集。本文理论上解决了以下问题：与单专家对应物相比，pMoE 节省了多少计算资源，同时保持相同的泛化保证？</p>
+<p>在本文中，我们考虑了一个监督二元分类任务，其中每个输入样本由 n 个等大小的 patches 组成，包括决定标签的类别区分性模式和不影响标签的类别无关模式。神经网络包含一个 pMoE 层和多个专家，每个专家都是具有相同架构的两层 CNN。路由器向每个专家发送 l（l ≪ n）个 patches。尽管我们考虑了一个简化的神经网络模型以便于对 pMoE 进行正式分析，但这些见解适用于更一般的设置。我们的主要结果包括：</p>
+<ol>
+<li>
+<p>据我们所知，本文首次提供了 pMoE 的理论泛化分析。我们的分析揭示了作为专家的两层 CNN 的 pMoE 可以实现与传统 CNN 相同的泛化性能，同时减少样本复杂度（学习适当模型所需的训练样本数量）和模型复杂度。具体来说，我们证明了，只要 l 大于某个阈值，pMoE 就通过 n/l 的多项式因子减少样本复杂度和模型复杂度，表明随着 l 的减小，泛化能力得到改善。</p>
+</li>
+<li>
+<p>pMoE 路由器的期望属性特征。我们展示了一个期望的 pMoE 路由器可以将相同的类别区分性模式路由到同一个专家，并丢弃一些类别无关模式。这种区分性属性允许专家们在减少与无关模式的干扰的情况下学习类别区分性模式，从而减少了样本复杂度和模型复杂度。我们还从理论上证明了单独训练的 pMoE 路由器具有期望的属性，并在实际 pMoE 路由器上验证了这一属性。</p>
+</li>
+<li>
+<p>pMoE 在深度 CNN 模型中减少样本复杂度的实验演示。除了在从 MNIST 数据集准备的合成数据上验证我们的理论发现外，我们还通过将十层宽残差网络（WRN）的最后一层卷积层替换为 pMoE 层，展示了 pMoE 在一些基准视觉数据集（例如 CIFAR-10 和 CelebA）中的样本效率。这些实验不仅验证了我们对 pMoE 的理论发现，还展示了 pMoE 在减少基于深度 CNN 的视觉模型的样本复杂度方面的适用性，补充了 pMoE 在视觉变换器中的经验成功。</p>
+</li>
+</ol>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-混合专家">2.1. 混合专家<a class="anchor-link" href="#21-混合专家" title="Permanent link">&para;</a></h3>
+<p>MoE 最初在 1990 年代引入，采用密集的逐样本路由，即每个输入样本都被路由到所有专家。后来引入了稀疏逐样本路由，其中每个输入样本在 MoE 层中激活少数专家。最近在大型语言和视觉模型中展示了逐位置/patch 的 MoE 的成功。为了解决负载不平衡问题，Zhou 等人引入了 pMoE 中的专家选择路由，其中每个专家使用一个路由器从输入中选择固定数量的 patches。本文分析了在联合训练和单独训练设置下的稀疏 patch-level MoE。</p>
+<h3 id="22-神经网络的优化和泛化分析">2.2. 神经网络的优化和泛化分析<a class="anchor-link" href="#22-神经网络的优化和泛化分析" title="Permanent link">&para;</a></h3>
+<p>由于深度学习问题的显著非凸性，现有的泛化分析限于线性化或浅层神经网络。Neural-Tangent-Kernel（NTK）方法考虑了强过参数化，并通过一阶泰勒展开近似神经网络。NTK 结果与输入数据无关，实际 NN 与 NTK 结果之间在表示能力和泛化能力上存在性能差距。最近通过高阶泰勒展开或采用高斯输入数据的模型估计方法分析了非线性神经网络，但这些结果限于两层网络。为了更好地描述实际的泛化性能，一些最近的工作使用特征映射方法分析了结构化数据模型，其中一些初始模型权重接近数据特征，以及特征学习，其中一些权重在训练过程中逐渐学习特征。其中，Allen-Zhu &amp; Li 等人分析了 CNN 在由决定标签的类别区分性模式和其他与标签无关的模式组成的结构化数据上的学习。本文扩展了 Allen-Zhu &amp; Li 等人的数据模型，到一个更一般的设置，我们的分析方法是特征学习在路由器中和特征映射在专家中的 pMoE 的结合。</p>
+<h2 id="3-问题表述">3. 问题表述<a class="anchor-link" href="#3-问题表述" title="Permanent link">&para;</a></h2>
+<p>本文考虑了一个监督二元分类问题，给定 N 个独立同分布的训练样本 <span class="math-inline">{(x_i, y_i)}_{i=1}^N</span>，由未知分布 D 生成，目标是学习一个神经网络模型，将 x 映射到 y，对于任何从 D 中采样的 (x, y)。这里，输入 x ∈ R^nd 具有 n 个不相交的 patches，即，<span class="math-inline">x^T = [x^{(1)^T}, x^{(2)^T}, ..., x^{(n)^T}]</span>，其中 <span class="math-inline">x^{(j)} ∈ R^d</span> 表示 x 的第 j 个 patch。y ∈ {+1, −1}表示相应的标签。</p>
+<h3 id="31-神经网络模型">3.1. 神经网络模型<a class="anchor-link" href="#31-神经网络模型" title="Permanent link">&para;</a></h3>
+<p>我们考虑一个包含 k 个专家和相应 k 个路由器的 pMoE 架构。每个路由器为每个专家单独从 <span class="math-inline">n</span> 个 patches 中选择 <span class="math-inline">l</span> 个 patches（l &lt; n）。具体来说，每个专家 s（s ∈ [k]）的路由器包含一个可训练的门控核 ws ∈ R^d。给定一个样本 x，路由器为每个 patch j 计算一个路由值 <span class="math-inline">g_{j,s}(x) = \langle ws, x^{(j)} \rangle</span>。设 J_s(x) 表示所有 patches j ∈ [n] 中 g_{j,s}中最高 l 个值的索引集。只有索引在 J_s(x) 中的 patches 被路由到专家 s，乘以一个门控值 G_{j,s}(x)，在不同的 pMoE 模型中选择不同。</p>
+<p>每个专家是一个具有相同架构的两层 CNN。设 m 表示所有专家中的神经元总数。那么每个专家包含 <span class="math-inline">\frac{m}{k}</span> 个神经元。设 <span class="math-inline">w_r,s ∈ R^d</span> 和 <span class="math-inline">a_r,s ∈ R</span> 分别表示专家 s（s ∈ [k]）中神经元 r（r ∈ [m/k]）的隐藏层和输出层权重。激活函数是修正线性单元（ReLU），其中 ReLU(z) = max(0, z)。</p>
+<p>设θ = {a_r,s, w_r,s, w_s, ∀s ∈ [k], ∀r ∈ [m/k]}包括所有可训练权重。pMoE 模型表示为 f_M，定义如下：<br />
+<div class="math-display"><br />
+    f_M(\theta, x) = \sum_{s=1}^k \sum_{r=1}^{m/k} a_{r,s} \sum_{j \in J_s(w_s, x)} \text{ReLU}(\langle w_{r,s}, x^{(j)} \rangle) G_{j,s}(w_s, x)<br />
+</div><br />
+图 2 给出了（1）的示意图。</p>
+<p>图 2. pMoE 模型的示意图，其中 k = 3，m = 6，n = 6，l = 2。</p>
+<p>学习问题解决了以下经验风险最小化问题，采用逻辑损失函数：<br />
+<div class="math-display"><br />
+    \min_{\theta} : L(\theta) = \frac{1}{N} \sum_{i=1}^N \log (1 + e^{-y_i f_M(\theta, x_i)})<br />
+</div><br />
+我们考虑 pMoE 的两种不同训练模式：路由器和专家的单独训练和联合训练。我们还考虑了传统的 CNN 架构以供比较。</p>
+<h3 id="32-训练算法">3.2. 训练算法<a class="anchor-link" href="#32-训练算法" title="Permanent link">&para;</a></h3>
+<p>在以下算法中，我们固定输出层权重 a_r,s 和 a_r 在它们从标准高斯分布 N(0, 1) 中随机采样的初始值，并且在训练期间不更新它们。这是分析 NN 时的典型简化，如在（Li &amp; Liang, 2018; Brutzkus et al., 2018; Allen-Zhu et al., 2019a; Arora et al., 2019）中使用。</p>
+<p>（I）单独训练 pMoE：在所谓的硬混合专家（Collobert et al., 2003; Ahmed et al., 2016; Gross et al., 2017）的设置下，首先训练路由器权重 ws，然后在训练专家权重时固定它们。在这种情况下，门控值设置为<br />
+<div class="math-display"><br />
+    G_{j,s}(w_s, x) \equiv 1, \forall j, s, x<br />
+</div><br />
+我们选择 k = 2 来简化分析。</p>
+<p>（II）联合训练 pMoE：路由器和专家一起学习，参见，例如，（Lepikhin et al., 2020; Riquelme et al., 2021; Fedus et al., 2022）。这里，门控值是 softmax 函数，具有<br />
+<div class="math-display"><br />
+    G_{j,s}(w_s, x) = \frac{e^{g_{j,s}(x)}}{\sum_{i \in J_s(x)} g_{i,s}(x)}<br />
+</div><br />
+（III）CNN 单专家对应物：具有 m 个神经元的传统两层 CNN，表示为 f_C，满足，<br />
+<div class="math-display"><br />
+    f_C(\theta, x) = \sum_{r=1}^m a_r \left( \frac{1}{n} \sum_{j=1}^n \text{ReLU}(\langle w_r, x^{(j)} \rangle) \right)<br />
+</div><br />
+方程（5）可以被视为（1）的一个特例，当只有一个专家（k = 1），并且所有 patches 被发送到专家（l = n）时，门控值 G_{j,s} ≡ 1。</p>
+<p>设 <span class="math-inline">\tilde{\theta}</span> 表示通过解决（1）学习到的模型参数。测试样本 x 由学习到的模型预测的标签是 sign(f_M(<span class="math-inline">\tilde{\theta}</span>, x))。泛化精度，即所有测试样本的正确预测比例等于 P(x,y)∼D[yf_M(θ, x) &gt; 0]。本文研究了 pMoE 的单独和联合训练，并从实现期望泛化精度所需的样本复杂度的角度比较了它们与 CNN 的性能。</p>
+<h3 id="33-训练算法">3.3. 训练算法<a class="anchor-link" href="#33-训练算法" title="Permanent link">&para;</a></h3>
+<p>在以下算法中，我们固定输出层权重 <span class="math-inline">a_{r,s}</span> 和 <span class="math-inline">a_r</span> 在它们从标准高斯分布 <span class="math-inline">N(0, 1)</span> 中随机采样的初始值，并且在训练期间不更新它们。这是分析 NN 时的典型简化，如在（Li &amp; Liang, 2018; Brutzkus et al., 2018; Allen-Zhu et al., 2019a; Arora et al., 2019）中使用。</p>
+<p>（I）单独训练 pMoE：路由器使用 Nr 个训练样本（Nr &lt; N）单独训练，记为 <span class="math-inline">{(x_i, y_i)}<em>{i=1}^{N_r}</span>，不失一般性。门控核 <span class="math-inline">w_1</span> 和 <span class="math-inline">w_2</span> 通过解决以下最小化问题获得：<br />
+<div class="math-display"><br />
+    \min</em>{w_1, w_2} : l_r(w_1, w_2) = -\frac{1}{N_r} \sum_{i=1}^{N_r} y_i \langle w_1 - w_2, \sum_{j=1}^n x_j^{(i)} \rangle<br />
+</div><br />
+为了解决（6），我们实现了批量大小为 Br 的 mini-batch SGD，迭代 Tr = Nr/Br 次，从以下随机初始化开始：<br />
+<div class="math-display"><br />
+    w_s^{(0)} \sim N(0, \sigma_r^2 I_{d \times d}), \forall s \in [2]<br />
+</div><br />
+其中，<span class="math-inline">\sigma_r = \Theta \left( \frac{1}{\sqrt{n^2 \log (\text{poly}(n)) d}} \right)</span>。</p>
+<p>学习路由器后，我们通过解决（2）训练隐藏层权重 <span class="math-inline">w_{r,s}</span>，同时固定 <span class="math-inline">w_1</span> 和 <span class="math-inline">w_2</span>。我们实现了批量大小为 B 的 mini-batch SGD，迭代 T = N/B 次，从以下初始化开始：<br />
+<div class="math-display"><br />
+    w_r^{(0), s} \sim N(0, \frac{1}{m} I_{d \times d}), \forall s \in [2], \forall r \in [m/2]<br />
+</div><br />
+（II）联合训练 pMoE：在（1）中的 ws 和 <span class="math-inline">w_{r,s}</span> 通过批量大小为 B 的 mini-batch SGD 同时更新，迭代 T = N/B 次，从（7）和（8）中的初始化开始。</p>
+<p>（III）CNN：在（5）中的 <span class="math-inline">w_r</span> 通过批量大小为 B 的 mini-batch SGD 更新，迭代 T = N/B 次，从（8）中的初始化开始。</p>
+<h2 id="4-理论结果">4. 理论结果<a class="anchor-link" href="#4-理论结果" title="Permanent link">&para;</a></h2>
+<h3 id="41-关键发现一览">4.1. 关键发现一览<a class="anchor-link" href="#41-关键发现一览" title="Permanent link">&para;</a></h3>
+<p>在第 4.2 节定义数据模型假设和理由，并在 4.3 节提出正式结果之前，我们首先总结我们的关键发现。我们假设数据 patches 是从决定标签的类别区分性模式或可能无限多的类别无关模式中采样的。参数δ（在（9）中定义）与模式之间的分离成反比，即，当（i）类别区分性模式之间的分离增加，和/或（ii）类别区分性模式和类别无关模式之间的分离增加时，δ减小。关键发现如下。</p>
+<p>（I）。适当训练的 patch-level 路由器将一个类别的类别区分性 patches 发送到同一个专家，同时丢弃一些类别无关 patches。我们证明了单独训练的 pMoE 路由器将标记为 y = +1（或标记为 y = −1）的类别的类别区分性 patches 路由到专家 1（或专家 2），并且与类别区分性 patches 足够远的类别无关模式不会被路由到任何专家（引理 4.1）。这种区分性路由属性也在联合训练的 pMoE 中得到了经验验证（见第 5.1 节）。因此，pMoE 在每个专家学习类别区分性模式时，有效地减少了无关 patches 的干扰。此外，我们通过实验表明，pMoE 可以移除与类别标签虚假相关的类别无关 patches，因此可以避免从数据的虚假相关特征中学习。</p>
+<p>（II）。pMoE 的样本复杂度和所需隐藏节点数量都比 CNN 减少了 n/l 的多项式因子。我们证明了，只要 l（每个专家的 patches 数量）大于一个阈值（随着类别区分性模式和类别无关模式之间的分离增加而减小），学习 pMoE 所需的样本复杂度和神经元数量分别是Ω(l^8) 和Ω(l^10)。相比之下，CNN 的样本和模型复杂度分别是Ω(n^8) 和Ω(n^10)，表明 pMoE 的泛化能力得到了改善。</p>
+<p>（III）。类别区分性模式和类别无关模式之间的更大分离减少了 pMoE 的样本复杂度和模型复杂度。pMoE 的样本复杂度和所需神经元数量都是δ的多项式，当模式之间的分离增加时，δ减小。</p>
+<h3 id="42-数据模型假设和理由">4.2. 数据模型假设和理由<a class="anchor-link" href="#42-数据模型假设和理由" title="Permanent link">&para;</a></h3>
+<p>输入 x 由一个类别区分性模式和 n−1 个类别无关模式组成，标签 y 仅由类别区分性模式决定。</p>
+<p>类别区分性模式的分布：单位向量 o_1 和 o_2 ∈ R^d 表示决定标签的类别区分性模式。o_1 和 o_2 之间的分离度量为δ_d := ⟨o_1, o_2⟩ ∈ (−1, 1)。o_1 和 o_2 在样本中均匀分布，每个样本中恰好有一个。如果 x 包含 o_1（或 o_2），则 y 为 +1（或−1）。</p>
+<p>类别无关模式的分布。类别无关模式是 R^d 中的单位向量，属于 p 个不相交的模式集合 S_1, S_2, ..., S_p，并且这些模式在两个类别中均匀分布。δ_r 度量类别区分性模式和类别无关模式之间的分离，其中|⟨o_i, q⟩| ≤ δ_r, ∀i ∈ [2], ∀q ∈ S_j, j = 1, ..., p。每个 S_j 属于直径为Θ(<span class="math-inline">\sqrt{\frac{1 − δ_r^2}{d^2}}</span>) 的球体。注意，类别无关模式本身之间不需要分离。</p>
+<p>我们定义δ = 1/(1 − max(δ_d^2, δ_r^2))（公式 9）</p>
+<p>δ的减小如果（1）o_1 和 o_2 彼此之间的分离增加，并且（2）两者都与任何集合 Si, i ∈ [p] 的分离增加。我们还定义一个整数 l<em>（l</em> ≤ n），它度量每个样本中最多有多少个类别无关模式与 o_1 比 o_2 更接近，反之亦然。具体来说，如果一个类别无关模式 q 被称为δ'- 更接近（δ' &gt; 0）到 o_1 而不是 o_2，如果⟨o_1 − o_2, q⟩ &gt; δ' 成立。类似地，如果⟨o_2 − o_1, q⟩ &gt; δ'，则 q 更接近 o_2 而不是 o_1。然后，让 l<em> − 1 是任何从 D 中采样的 x 中要么是δ'- 更接近 o_1 而不是 o_2，要么是更接近 o_2 而不是 o_1 的类别无关 patches 的最大数量，其中δ' = Θ(1 − δ_d)。l</em>依赖于 D 和δ_d。当 D 固定时，更小的δ_d 对应于 o_1 和 o_2 之间的更大分离，导致更小的 l<em>。与（Yu et al., 2019; Brutzkus et al., 2018; Chen et al., 2022）中的线性可分数据不同，只要 l</em> = Ω(1)，我们的数据模型就不是线性可分的（见附录 K 中的证明）。</p>
+<h3 id="43-主要理论结果">4.3. 主要理论结果<a class="anchor-link" href="#43-主要理论结果" title="Permanent link">&para;</a></h3>
+<h4 id="431-单独训练-pmoe-的泛化保证">4.3.1. 单独训练 pMoE 的泛化保证<a class="anchor-link" href="#431-单独训练-pmoe-的泛化保证" title="Permanent link">&para;</a></h4>
+<p>引理 4.1 表明，只要每个专家的 patches 数量 l 大于 l*，那么通过解决（6）单独学习的路由器总是将 o_1 发送到专家 1，将 o_2 发送到专家 2。基于学习到的路由器的这种区分性属性，定理 4.2 然后量化了实现期望泛化误差ϵ所需的单独训练 pMoE 的样本复杂度和网络大小。定理 4.3 量化了 CNN 的样本和模型复杂度以供比较。</p>
+<p>引理 4.1（单独训练路由器的区分性属性）。对于每个 l ≥ l*，w.h.p.在（7）中定义的随机初始化之后，在进行批量大小为 Br = Ω(n^2/(1 − δ_d)^2) 和学习率η_r = Θ(1/n) 的 mini-batch SGD，迭代 Tr = Ω(1/(1 − δ_d)) 次之后，返回的 w_1 和 w_2 满足<br />
+<div class="math-display"><br />
+    \arg \max_{j \in [n]} (x^{(j)} = o_1) \in J_1(w_1, x), \forall (x, y = +1) \sim D<br />
+</div></p>
+<p><div class="math-display"><br />
+    \arg \max_{j \in [n]} (x^{(j)} = o_2) \in J_2(w_2, x), \forall (x, y = −1) \sim D<br />
+</div><br />
+即，学习到的路由器总是将 o_1 发送到专家 1，将 o_2 发送到专家 2。</p>
+<p>证明引理 4.1 的主要思想是展示每次迭代的梯度在 o_1 和 o_2 的方向上有一个大的分量。然后在足够的迭代之后，w_1 和 o_1（类似地，w_2 和 o_2）的内积足够大。需要 l ≥ l<em>的直觉是因为最多有 l</em> − 1 个类别无关 patches 足够接近 o_1 而不是 o_2（或反之），那么发送 l ≥ l*个 patches 给一个专家将确保其中之一是 o_1（或 o_2）。注意批量大小 Br 和迭代次数 Tr 依赖于δ_d，即 o_1 和 o_2 之间的分离，但与类别区分性模式和类别无关模式之间的分离无关。</p>
+<p>然后我们展示单独训练的 pMoE 减少了与 CNN 相比的样本复杂度和所需模型大小（定理 4.2）。<br />
+定理 4.2（单独训练 pMoE 的泛化保证）。对于每一个ϵ &gt; 0 和 l ≥ l*，对于每一个 m ≥ MS = Ω(l^10p^12δ^6/ϵ^16) 至少有 NS = Ω(l^8p^12δ^6/ϵ^16) 训练样本，在执行批量大小 B = Ω(l^4p^6δ^3/ϵ^8) 和学习率 η = O(1/(mpoly(l, p, δ, 1/ϵ, log m))) 的 mini-batch SGD 迭代 T = O(l^4p^6δ^3/ϵ^8) 次之后，w.h.p. 有<br />
+<div class="math-display"><br />
+    P_{(x,y) \sim D} [y f_M(\theta(T), x) &gt; 0] \geq 1 - ϵ<br />
+</div><br />
+定理 4.2 意味着，要通过单独训练的 pMoE 实现泛化误差ϵ，我们需要 NS = Ω(l^8p^12δ^6/ϵ^16) 训练样本和 MS = Ω(l^10p^12δ^6/ϵ^16) 隐藏节点。因此，NS 和 MS 都与发送到每个专家的 patches 数量 l 多项式增长。此外，NS 和 MS 都是δ（在公式 9 中定义）的多项式，表明随着模式之间分离的增强，泛化性能得到改善。</p>
+<p>定理 4.3（CNN 的泛化保证）。对于每一个ϵ &gt; 0，对于每一个 m ≥ MC = Ω(n^10p^12δ^6/ϵ^16) 至少有 NC = Ω(n^8p^12δ^6/ϵ^16) 训练样本，在执行批量大小 B = Ω(n^4p^6δ^3/ϵ^8) 和学习率 η = O(1/(mpoly(n, p, δ, 1/ϵ, log m))) 的 mini-batch SGD 迭代 T = O(n^4p^6δ^3/ϵ^8) 次之后，w.h.p. 有<br />
+<div class="math-display"><br />
+    P_{(x,y) \sim D} [y f_C(\theta(T), x) &gt; 0] \geq 1 - ϵ<br />
+</div><br />
+定理 4.3 意味着，使用公式（5）中的 CNN 实现泛化误差ϵ，我们需要 NC = Ω(n^8p^12δ^6/ϵ^16) 训练样本和 MC = Ω(n^10p^12δ^6/ϵ^16) 神经元。</p>
+<p>单 CNN 与混合 CNN 之间的样本复杂度差距。从定理 4.2 和定理 4.3，CNN 到单独训练 pMoE 的样本复杂度比为 NC/NS = Θ((n/l)^8)。同样，所需的神经元数量在单独训练 pMoE 中减少了 MC/MS = Θ((n/l)^10) 的因子。</p>
+<h4 id="432-具有适当路由器的联合训练-pmoe-的泛化保证">4.3.2. 具有适当路由器的联合训练 pMoE 的泛化保证<a class="anchor-link" href="#432-具有适当路由器的联合训练-pmoe-的泛化保证" title="Permanent link">&para;</a></h4>
+<p>定理 4.5 在假设路由器适当训练的情况下描述了联合训练 pMoE 的泛化性能，即在一些 SGD 迭代之后，对于每个类别，至少有一个 k 个专家接收到所有类别区分性 patches，并具有最大的门控值（见假设 4.4）。</p>
+<p>假设 4.4。存在一个整数 T' &lt; T 使得对于所有 t ≥ T'，对于所有 (x, y = +1) ∼ D，存在一个专家 s ∈ [k] 使得<br />
+<div class="math-display"><br />
+    j_{o_1} \in J_s(w_s^{(t)}, x), \text{ 并且 } G_{j_{o_1},s}^{(t)}(x) \geq G_{j,s}^{(t)}(x)<br />
+</div><br />
+对于所有 (x, y = −1) ∼ D，存在一个专家 s ∈ [k] 使得<br />
+<div class="math-display"><br />
+    j_{o_2} \in J_s(w_s^{(t)}, x), \text{ 并且 } G_{j_{o_2},s}^{(t)}(x) \geq G_{j,s}^{(t)}(x)<br />
+</div><br />
+其中 j_{o_1} (j_{o_2}) 表示类别区分性模式 o_1 (o_2) 的索引，G_{j,s}^{(t)}(x) 是样本 x 中 patch j ∈ J_s(w_s^{(t)}, x) 对应专家 s 在迭代 t 的门控输出，w_s^{(t)} 是迭代 t 时专家 s 的门控核。</p>
+<p>假设 4.4 在证明定理 4.5 时是必需的，因为联合训练 pMoE 中路由器动态跟踪的困难。假设 4.4 在第 5.1 节中的实证实验中得到验证，而其理论证明留给未来的工作。</p>
+<p>定理 4.5（联合训练 pMoE 的泛化保证）。假设假设 4.4 成立。那么对于每一个ϵ &gt; 0，对于每一个 m ≥ MJ = Ω(k^3n^2l^6p^12δ^6/ϵ^16) 至少有 NJ = Ω(k^4l^6p^12δ^6/ϵ^16) 训练样本，在执行批量大小 B = Ω(k^2l^4p^6δ^3/ϵ^8) 和学习率 η = O(1/(mpoly(l, p, δ, 1/ϵ, log m))) 的 mini-batch SGD 迭代 T = O(k^2l^2p^6δ^3/ϵ^8) 次之后，w.h.p. 有<br />
+<div class="math-display"><br />
+    P_{(x,y) \sim D} [y f_M(\theta(T), x) &gt; 0] \geq 1 - ϵ<br />
+</div><br />
+定理 4.5 表明，有了适当的路由器，联合训练 pMoE 需要 NJ = Ω(k^4l^6p^12δ^6/ϵ^16) 训练样本和 MJ = Ω(k^3n^2l^6p^12δ^6/ϵ^16) 神经元来实现ϵ泛化误差。与定理 4.3 中的 CNN 相比，联合训练 pMoE 通过Θ(n^8/k^4l^6) 和 Θ(n^10/k^3l^6) 的因子减少了样本复杂度和模型大小。随着专家数量（k）的增加，更容易满足假设 4.4 以学习适当的路由器，但需要更大的样本和模型复杂度。当样本数量固定时，NJ 的表达式也表明ϵ随着 k^(1/4)l^(3/8) 的增加而减少，对应于 k 和 l 减少时泛化能力的提高。</p>
+<p>我们提供了分析的 pMoE 模型与一般 CNN 模型之间的端到端计算复杂度比较，在表 1 中（见附录 N 中的详细信息）。表 1 的结果表明，与 CNN 相比，联合训练 pMoE 中的计算复杂度减少了 O(n^5/k^2l^3) 的因子。同样，单独训练 pMoE 的计算复杂度减少了 O(n^5/l^5) 的因子。</p>
+<h2 id="5-实验结果">5. 实验结果<a class="anchor-link" href="#5-实验结果" title="Permanent link">&para;</a></h2>
+<h3 id="51-两层-cnn-的-pmoe">5.1. 两层 CNN 的 pMoE<a class="anchor-link" href="#51-两层-cnn-的-pmoe" title="Permanent link">&para;</a></h3>
+<p>数据集：我们在从 MNIST 数据集准备的合成数据上验证了我们对模型（1）的理论发现。每个样本包含 n = 16 个 patches，patch 大小 d = 28 × 28。每个 patch 都是从 MNIST 数据集中抽取的。见图 3 作为示例。我们将数字“1”和“0”视为类别区分性模式 o_1 和 o_2。每个从“2”到“9”的数字代表一个类别无关模式集合。</p>
+<p>设置：我们比较了单独训练 pMoE、联合训练 pMoE 和具有相似模型大小的 CNN。单独训练 pMoE 包含两个专家，每个专家有 20 个隐藏节点。联合训练 pMoE 有八个专家，每个专家有五个隐藏节点。CNN 有 40 个隐藏节点。所有这些都使用η = 0.2 的 SGD 进行训练，直到训练误差为零。pMoE 比 CNN 收敛得快得多，需要 150 个 epoch。在单独训练 pMoE 的专家之前，我们训练路由器 100 个 epoch。在 1000 个测试样本上评估模型。</p>
+<p>泛化性能：图 4 比较了三种模型的测试精度，其中 l = 2 和 l = 6 分别用于单独训练和联合训练 pMoE。误差条显示了五个独立实验的平均值加减一个标准差。pMoE 在相同数量的训练样本下比 CNN 表现更好。pMoE 只需要 CNN 所需训练样本的 60% 就能达到 95% 的测试精度。</p>
+<p>图 5 显示了单独训练 pMoE 相对于 l 的样本复杂度。每个区块代表 20 个独立试验。白色区块表示全部成功，黑色区块表示全部失败。样本复杂度是 l 的多项式，验证了定理 4.2。图 7 和 6 分别显示了固定样本大小时联合训练 pMoE 的测试精度随着 l 和 k 的变化。当 l 大于 l*，即图 7 中的 6 时，测试精度与我们预测的顺序相匹配。类似地，当 k 足够大以使假设 4.4 成立时，对 k 的依赖性也与我们的预测相匹配。</p>
+<p>路由器性能：图 8 通过显示测试数据中类别区分性模式（o_1 和 o_2）在单独训练路由器的 l 个顶部 patches 中的百分比，验证了单独训练路由器的区分性属性（引理 4.1）。用非常少的训练样本（如 300 个），人们已经可以学习一个适当的路由器，该路由器对 95% 的数据在前 4 个 patches 中有区分性模式。图 9 验证了联合训练路由器的区分性属性（假设 4.4）。用仅 300 个训练样本，联合训练的路由器对 95% 的类别 1 数据将 o_1 以最大的门控值调度到特定专家，并且对 92% 的类别 2 数据对 o_2 也类似。</p>
+<p>图 8. 单独训练路由器正确路由的区分性模式的百分比。<br />
+图 9. 联合训练路由器正确路由的区分性模式的百分比。l = 6。</p>
+<h3 id="52-宽残差网络wrns的-pmoe">5.2. 宽残差网络（WRNs）的 pMoE<a class="anchor-link" href="#52-宽残差网络wrns的-pmoe" title="Permanent link">&para;</a></h3>
+<p>神经网络模型：我们使用 10 层 WRN（Zagoruyko &amp; Komodakis, 2016）作为专家，其扩展因子为 10。我们通过将 WRN 的最后一层卷积层替换为具有相同数量可训练参数的 pMoE 层，构建了 WRN 的 patch-level MoE 对应物，称为 WRN-pMoE（见附录中的图 18）。WRN-pMoE 使用联合训练方法进行训练。所有结果都在五个独立实验中平均。</p>
+<p>数据集：我们考虑了 CelebA（Liu et al., 2015）和 CIFAR-10 数据集。CIFAR-10 的实验推迟到附录（见 A 节）。我们将 CelebA 的图像下采样到 64 × 64。WRN 的最后一层卷积层接收一个（16×16×640）维的特征图。在 WRN-pMoE 中，特征图被分成 16 个 4×4×640 大小的 patches。pMoE 层的 k = 8 和 l = 2。</p>
+<p>性能比较：图 10 显示了属性“微笑”的二元分类问题的测试精度。WRN-pMoE 需要的训练样本不到 WRN 的五分之一就能达到 86% 的精度。图 11 显示了当训练数据包含与发色作为虚假属性的虚假相关性时的性能。具体来说，95% 具有属性“微笑”的训练图像也具有属性“黑发”，而 95% 具有属性“不微笑”的训练图像具有属性“金发”。模型可能会学习发色属性而不是“微笑”由于虚假相关性，因此图 11 中的测试精度低于图 10。尽管如此，WRN-pMoE 的表现优于 WRN，并减少了实现相同精度所需的样本复杂度。</p>
+<p>图 12 显示了 CelebA 中多类分类（四类具有类别属性：“不微笑，眼镜”，“微笑，眼镜”，“微笑，无眼镜”和“不微笑，无眼镜”）的测试精度。结果与二元分类结果一致。此外，表 2 在 CelebA 的多类分类中实证验证了 WRN-pMoE 相对于 WRN 的计算效率。即使在相同数量的训练样本下，WRN-pMoE 仍然比 WRN 具有更高的计算效率，因为 WRN-pMoE 需要较少的迭代次数才能收敛，并且每次迭代的成本更低。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>MoE 在各种实证研究中显著降低了计算成本，而没有损害泛化性能，但理论解释大多难以捉摸。本文提供了 patch-level MoE 的首次理论分析，并定量证明了与单专家对应物相比，它在样本复杂度和模型大小上的节省。尽管本文以使用两层 CNN 的分类任务为中心，但我们的理论见解在深度架构和多个数据集上得到了实证验证。未来的工作包括分析其他 MoE 架构，如视觉变换器（ViT）中的 MoE，并将 MoE 与其他稀疏化方法联系起来，以进一步减少计算。</p>
+<p>致谢</p>
+<p>本工作得到了 AFOSR FA9550-20-1-0122、NSF 1932196 和伦斯勒理工学院 -IBM AI 研究合作（http://airc.rpi.edu），IBM AI 地平线网络（http://ibm.biz/AIHorizons）的一部分的支持。我们感谢密歇根州立大学的 Yihua Zhang 在 CelebA 数据集实验中的帮助。我们感谢所有匿名审稿人。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

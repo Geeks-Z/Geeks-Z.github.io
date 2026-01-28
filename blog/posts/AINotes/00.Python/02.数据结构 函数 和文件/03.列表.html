@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乘号表示列表元素的重复</title>
+    <meta name="description" content="乘号表示列表元素的重复 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#列表定义">列表定义</a></li>
+<li><a href="#列表类型操作函数和方法">列表类型操作函数和方法</a></li>
+<li><a href="#列表切片">列表切片</a></li>
+<li><a href="#列表生成式">列表生成式</a></li>
+<li><a href="#_1"></a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>乘号表示列表元素的重复</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/00.Python/02.数据结构 函数 和文件</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>列表（<code>list</code>），是一种结构化的、非标量类型，它的值是有序序列，每个值都可以通过索引进行标识。</p>
+<h2 id="列表定义">列表定义<a class="anchor-link" href="#列表定义" title="Permanent link">&para;</a></h2>
+<ul>
+<li>列表用 <strong>[ ]</strong> 表示，是有序集合，索引从0开始，最后一个索引可用 <strong>-1</strong> 表示</li>
+<li>列表是一种序列类型，创建后可以随意被修改</li>
+<li>使用方括号 <strong>[ ]</strong> 或 <strong>list() 创建</strong>，元素间用逗号 , 分隔</li>
+<li>列表中各<strong>元素类型可以不同</strong>，无长度限制</li>
+<li>方括号 <strong>[ ]</strong> 真正创建一个列表，<strong>赋值仅传递引用</strong></li>
+</ul>
+<h2 id="列表类型操作函数和方法"><strong>列表类型操作函数和方法</strong><a class="anchor-link" href="#列表类型操作函数和方法" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>方法名称</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>s[i] = x</strong></td>
+<td>替换列表s第i元素为x</td>
+</tr>
+<tr>
+<td><strong>ls[i: j: k] = lt</strong></td>
+<td>用列表lt替换ls切片后所对应元素子列表</td>
+</tr>
+<tr>
+<td><strong>ls += lt</strong></td>
+<td>更新列表ls，将列表lt元素增加到列表ls中</td>
+</tr>
+<tr>
+<td><strong>ls *= n</strong></td>
+<td>更新列表ls，其元素重复n次</td>
+</tr>
+<tr>
+<td><strong>ls.clear()</strong></td>
+<td>删除列表ls中所有元素</td>
+</tr>
+<tr>
+<td><strong>ls.copy()</strong></td>
+<td>生成一个新列表，赋值ls中所有元素</td>
+</tr>
+<tr>
+<td><strong>ls.insert(i,x)</strong></td>
+<td>在列表ls的第i位置增加元素x</td>
+</tr>
+<tr>
+<td><strong>ls.pop(i)</strong></td>
+<td>将列表ls中第i位置元素取出并删除该元素,默认返回最后元素</td>
+</tr>
+<tr>
+<td><strong>ls.remove(x)</strong></td>
+<td>将列表ls中出现的第一个元素x删除</td>
+</tr>
+<tr>
+<td><strong>ls.reverse()</strong></td>
+<td>将列表ls中的元素反转</td>
+</tr>
+<tr>
+<td><strong>ls.extend()</strong></td>
+<td>将多个值附加到列表末尾；拼接不修改原来序列的值，但是extend修改；a[len(a) : ] = b效果同extend；</td>
+</tr>
+<tr>
+<td><strong>append()</strong></td>
+<td>在末尾直接添加</td>
+</tr>
+<tr>
+<td><strong>del()</strong></td>
+<td>如果知道索引，可用del</td>
+</tr>
+<tr>
+<td><strong>sort()</strong></td>
+<td>永久对原列表排序，不返回排序后列表的副本； sort（reverse = True） 反序</td>
+</tr>
+<tr>
+<td><strong>sorted()</strong></td>
+<td>临时排序，返回排序后列表的副本、reverse（）：永久反转列表元素，不返回任何值</td>
+</tr>
+<tr>
+<td><strong>sort(key,reverse)</strong></td>
+<td>将其设置为一个用于排序的函数； <strong>reverse(True、False)</strong> 是否按相反顺序对列表排序</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>遍历整个列表</strong></li>
+</ul>
+<p><strong>for</strong> <strong>变量名 in 列表名</strong>:</p>
+<p>​    每个缩进代码行都是循环一部分</p>
+<ul>
+<li><strong>复制列表</strong></li>
+</ul>
+<p>同时省略起始和终止索引，eg、 <strong>player[：]</strong> ；如果只是将变量复制，两个变量将同时指向同一个列表；或者调用方法 <strong>copy()</strong>； 或者 <strong>list(列表名)</strong></p>
+<h2 id="列表切片">列表切片<a class="anchor-link" href="#列表切片" title="Permanent link">&para;</a></h2>
+<ul>
+<li>支持正向索引(0)和负向索引(-1);</li>
+<li>默认步长为1；</li>
+</ul>
+<pre><code class="language-python">#格式：  
+li[start : end : step]    
+#start是切片起点索引，end是切片终点索引，但切片结果不包括终点索引的值。step是步长默认是1。
+#在step的符号一定的情况下，start和end可以混合使用正向和反向索引，无论怎样，你都要保证
+#start和end之间有和step方向一致元素间隔，否则会切出空列表
+li=[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;]
+t=li[0:2]
+t=li[0:-2]
+t=li[-4:-2]
+t=li[-4:2]
+#上面的结果都是一样的；t为[&quot;A&quot;,&quot;B&quot;]
+
+</code></pre>
+<p><img alt="image-20211011203549951" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152014258.png" /></p>
+<pre><code class="language-python">t=li[-1:-3:-1]
+t=li[-1:1:-1]
+t=li[3:1:-1]
+t=li[3:-3:-1]
+#上面的结果都是一样的；t为[&quot;D&quot;,&quot;C&quot;]
+</code></pre>
+<p><img alt="image-20211011203713725" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152014552.png" /></p>
+<pre><code class="language-python">t=li[-1:-3]
+t=li[-1:1]
+t=li[3:1]
+t=li[3:-3]
+#都切出空列表
+</code></pre>
+<p><img alt="image-20211011204201325" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152014870.png" /></p>
+<pre><code class="language-python">#省略start 和 end表示以原列表全部为目标
+t=li[::-1]     t---&gt;[&quot;C&quot;,&quot;B&quot;,&quot;A&quot;]     #反向切，切出全部
+t=li[:]        t---&gt;[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;]   #正向切全部
+</code></pre>
+<hr />
+<h2 id="列表生成式"><strong>列表生成式</strong><a class="anchor-link" href="#列表生成式" title="Permanent link">&para;</a></h2>
+<ul>
+<li>列表推导</li>
+</ul>
+<p>列表推导可以帮助我们<strong>把一个序列或是其他可迭代类型中的元素过滤或是加工</strong>，然后再新建一个列表。Python 内置的 filter 和 map 函数组合起来也能达到这一效果，但是可读性上打了不小的折扣。</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>colors = ['black', 'white']</p>
+<p>sizes = ['S', 'M', 'L']</p>
+<p>tshirts = [(color, size) for color in colors for size in sizes] </p>
+<p>tshirts</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>[('black', 'S'), ('black', 'M'), ('black', 'L'), ('white', 'S'),</p>
+<p>('white', 'M'), ('white', 'L')]<br />
+  ```</p>
+<ul>
+<li>生成器表达式</li>
+</ul>
+<p>虽然也可以用列表推导来<strong>初始化元组、数组或其他序列类型</strong>，但是生成器表达式是更好的选择。这是因为生成器表达式背后遵守了迭代器协议，可以<strong>逐个地产出元素</strong>，而不是先建立一个完整的列表，然后再把这个列表传递到某个构造函数里。前面那种方式显然<strong>能够节省内存</strong>。</p>
+<p>生成器表达式的语法跟列表推导差不多，只不过把<strong>方括号换成圆括号</strong>而已。</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>symbols = '$¢£¥€¤'</p>
+<p>tuple(ord(symbol) for symbol in symbols) </p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>(36, 162, 163, 165, 8364, 164)<br />
+  ```</p>
+<ul>
+<li>如果要生成[1x1, 2x2, 3x3, ..., 10x10]怎么做？方法一是循环：</li>
+</ul>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>L = []<br />
+    &gt;&gt;&gt; for x  in range(1, 11):<br />
+   ...   L.append(x * x)<br />
+   ...<br />
+    &gt;&gt;&gt; L<br />
+   [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]<br />
+  ```</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>但是循环太繁琐，而列表生成式则可以用一行语句代替循环生成上面的list：</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>[x * x for x  in range(1, 11)]<br />
+   [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]<br />
+  ```</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>写列表生成式时，把要生成的元素x * x放到前面，后面跟for循环，就可以把list创建出来</p>
+<p>for循环后面还可以加上if判断，这样我们就可以筛选出仅偶数的平方：</p>
+<p><code>python
+  [x * x for x  in range(1, 11) if x % 2 == 0]
+  [4, 16, 36, 64, 100]</code></p>
+<ul>
+<li>还可以使用<strong>两层循环</strong>，可以生成<strong>全排列</strong>：</li>
+</ul>
+<p><code>python
+  [m + n for m in 'ABC' for n in 'XYZ']
+  ['AX', 'AY', 'AZ', 'BX', 'BY', 'BZ', 'CX', 'CY', 'CZ']</code></p>
+<ul>
+<li>列表生成式也可以使用<strong>两个变量</strong>来生成list：</li>
+</ul>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>d = {'x': 'A', 'y': 'B', 'z': 'C' }<br />
+[k + '=' + v for k, v in d.items()]<br />
+  ['y=B', 'x=A', 'z=C']</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>```</p>
+<ul>
+<li>if ... else</li>
+</ul>
+<p>以下代码正常输出偶数：</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>[x for x in range(1, 11) if x % 2 == 0]<br />
+  [2, 4, 6, 8, 10]<br />
+  ```</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>但是，我们不能在最后的if加上else：</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>[x for x in range(1, 11) if x % 2 == 0 else 0]<br />
+    File "<stdin>", line 1<br />
+      [x for x in range(1, 11) if x % 2 == 0 else 0]<br />
+  SyntaxError: invalid syntax</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>```</p>
+<p>这是因为跟在for后面的if是一个筛选条件，不能带else，否则如何筛选？</p>
+<p>另一些童鞋发现把if写在for前面必须加else，否则报错：</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>[x if x % 2 == 0 for x in range(1, 11)]<br />
+    File "<stdin>", line 1<br />
+      [x if x % 2 == 0 for x in range(1, 11)]<br />
+                         ^<br />
+  SyntaxError: invalid syntax</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>```</p>
+<p>这是因为for<strong>前面的部分是一个表达式</strong>，它必须根据x计算出一个结果。因此，考察表达式：x if x % 2 == 0，它无法根据x计算出结果，因为缺少else，必须加上else：</p>
+<p>```python</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>[x if x % 2 == 0 else -x for x in range(1, 11)]<br />
+  [-1, 2, -3, 4, -5, 6, -7, 8, -9, 10]<br />
+  ```</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>上述for前面的表达式x if x % 2 == 0 else -x才能根据x计算出确定的结果。可见，在一个列表生成式中，for前面的if ... else是表达式，而for后面的if是过滤条件，不能带else。连接列表代价更高，因为创建了一个新列表，并复制了对象。</p>
+<p>下面的代码演示了如何定义列表、如何遍历列表以及列表的下标运算。</p>
+<pre><code class="language-Python">list1 = [1, 3, 5, 7, 100]
+print(list1) # [1, 3, 5, 7, 100]
+# 乘号表示列表元素的重复
+list2 = ['hello'] * 3
+print(list2) # ['hello', 'hello', 'hello']
+# 计算列表长度(元素个数)
+print(len(list1)) # 5
+# 下标(索引)运算
+print(list1[0]) # 1
+print(list1[4]) # 100
+# print(list1[5])  # IndexError: list index out of range
+print(list1[-1]) # 100
+print(list1[-3]) # 5
+list1[2] = 300
+print(list1) # [1, 3, 300, 7, 100]
+# 通过循环用下标遍历列表元素
+for index in range(len(list1)):
+    print(list1[index])
+# 通过for循环遍历列表元素
+for elem in list1:
+    print(elem)
+# 通过enumerate函数处理列表之后再遍历可以同时获得元素索引和值
+for index, elem in enumerate(list1):
+    print(index, elem)
+</code></pre>
+<p>下面的代码演示了如何向列表中添加元素以及如何从列表中移除元素。</p>
+<pre><code class="language-Python">list1 = [1, 3, 5, 7, 100]
+# 添加元素
+list1.append(200)
+list1.insert(1, 400)
+# 合并两个列表
+# list1.extend([1000, 2000])
+list1 += [1000, 2000]
+print(list1) # [1, 400, 3, 5, 7, 100, 200, 1000, 2000]
+print(len(list1)) # 9
+# 先通过成员运算判断元素是否在列表中，如果存在就删除该元素
+if 3 in list1:
+    list1.remove(3)
+if 1234 in list1:
+    list1.remove(1234)
+print(list1) # [1, 400, 5, 7, 100, 200, 1000, 2000]
+# 从指定的位置删除元素
+list1.pop(0)
+list1.pop(len(list1) - 1)
+print(list1) # [400, 5, 7, 100, 200, 1000]
+# 清空列表元素
+list1.clear()
+print(list1) # []
+</code></pre>
+<p>和字符串一样，列表也可以做切片操作，通过切片操作我们可以实现对列表的复制或者将列表中的一部分取出来创建出新的列表，代码如下所示。</p>
+<pre><code class="language-Python">fruits = ['grape', 'apple', 'strawberry', 'waxberry']
+fruits += ['pitaya', 'pear', 'mango']
+# 列表切片
+fruits2 = fruits[1:4]
+print(fruits2) # apple strawberry waxberry
+# 可以通过完整切片操作来复制列表
+fruits3 = fruits[:]
+print(fruits3) # ['grape', 'apple', 'strawberry', 'waxberry', 'pitaya', 'pear', 'mango']
+fruits4 = fruits[-3:-1]
+print(fruits4) # ['pitaya', 'pear']
+# 可以通过反向切片操作来获得倒转后的列表的拷贝
+fruits5 = fruits[::-1]
+print(fruits5) # ['mango', 'pear', 'pitaya', 'waxberry', 'strawberry', 'apple', 'grape']
+</code></pre>
+<p>下面的代码实现了对列表的排序操作。</p>
+<pre><code class="language-Python">list1 = ['orange', 'apple', 'zoo', 'internationalization', 'blueberry']
+list2 = sorted(list1)
+# sorted函数返回列表排序后的拷贝不会修改传入的列表
+# 函数的设计就应该像sorted函数一样尽可能不产生副作用
+list3 = sorted(list1, reverse=True)
+# 通过key关键字参数指定根据字符串长度进行排序而不是默认的字母表顺序
+list4 = sorted(list1, key=len)
+print(list1)
+print(list2)
+print(list3)
+print(list4)
+# 给列表对象发出排序消息直接在列表对象上进行排序
+list1.sort(reverse=True)
+print(list1)
+</code></pre>
+<p>我们还可以使用列表的生成式语法来创建列表，代码如下所示。</p>
+<pre><code class="language-Python">f = [x for x in range(1, 10)]
+print(f)
+f = [x + y for x in 'ABCDE' for y in '1234567']
+print(f)
+# 用列表的生成表达式语法创建列表容器
+# 用这种语法创建列表之后元素已经准备就绪所以需要耗费较多的内存空间
+f = [x ** 2 for x in range(1, 1000)]
+print(sys.getsizeof(f))  # 查看对象占用内存的字节数
+print(f)
+# 请注意下面的代码创建的不是一个列表而是一个生成器对象
+# 通过生成器可以获取到数据但它不占用额外的空间存储数据
+# 每次需要数据的时候就通过内部的运算得到数据(需要花费额外的时间)
+f = (x ** 2 for x in range(1, 1000))
+print(sys.getsizeof(f))  # 相比生成式生成器不占用存储数据的空间
+print(f)
+for val in f:
+    print(val)
+</code></pre>
+<h2 id="_1"><a class="anchor-link" href="#_1" title="Permanent link">&para;</a></h2>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

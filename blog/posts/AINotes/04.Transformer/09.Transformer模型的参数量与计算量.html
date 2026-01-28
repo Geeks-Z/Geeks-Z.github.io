@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-前言">1. 前言</a></li>
+<li><a href="#2-模型参数量">2. 模型参数量</a><ul>
+<li><a href="#21-训练过程中的显存占用分析">2.1 训练过程中的显存占用分析</a></li>
+<li><a href="#22-推理过程中的显存占用分析">2.2 推理过程中的显存占用分析</a></li>
+</ul>
+</li>
+<li><a href="#3-计算量flops估计">3. 计算量FLOPs估计</a><ul>
+<li><a href="#31-计算量与参数量的关联">3.1 计算量与参数量的关联</a></li>
+<li><a href="#32-训练时间估计">3.2 训练时间估计</a></li>
+</ul>
+</li>
+<li><a href="#4-中间激活值分析">4. 中间激活值分析</a><ul>
+<li><a href="#41-对比中间激活与模型参数的显存大小">4.1 对比中间激活与模型参数的显存大小</a></li>
+</ul>
+</li>
+<li><a href="#5-kv-cache">5. KV cache</a></li>
+<li><a href="#6-总结">6. 总结</a></li>
+<li><a href="#7-参考链接">7. 参考链接</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/04.Transformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="1-前言">1. 前言<a class="anchor-link" href="#1-前言" title="Permanent link">&para;</a></h2>
+<p>最近，OpenAI推出的ChatGPT展现出了卓越的性能，引发了大规模语言模型(Large Language Model, LLM)的研究热潮。大规模语言模型的“大”体现在两个方面：模型参数规模大，训练数据规模大。以GPT3为例，GPT3的参数量为1750亿，训练数据量达到了570GB。进而，训练大规模语言模型面临两个主要挑战：显存效率和计算效率。</p>
+<p>现在业界的大语言模型都是基于transformer模型的，模型结构主要有两大类：encoder-decoder（代表模型是T5）和decoder-only，具体的，decoder-only结构又可以分为Causal LM（代表模型是GPT系列）和Prefix LM（代表模型是GLM）。归因于GPT系列取得的巨大成功，大多数的主流大语言模型都采用Causal LM结构。因此，针对decoder-only框架，为了更好地理解训练训练大语言模型的显存效率和计算效率，本文分析采用decoder-only框架transformer模型的模型参数量、计算量、中间激活值、KV cache。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410110921833.jpg"/></div>
+
+<p>为了方便分析，先定义好一些数学符号。记transformer模型的层数为 <span class="math-inline">l</span> ，隐藏层维度为 <span class="math-inline">h</span> ，注意力头数为 <span class="math-inline">a</span> 。词表大小为 <span class="math-inline">V</span> ，训练数据的批次大小为 <span class="math-inline">b</span> ，序列长度为 <span class="math-inline">s</span> 。</p>
+<h2 id="2-模型参数量">2. 模型参数量<a class="anchor-link" href="#2-模型参数量" title="Permanent link">&para;</a></h2>
+<p>transformer模型由 <span class="math-inline">l</span> 个相同的层组成，每个层分为两部分：<strong>self-attention</strong>块和<strong>MLP</strong>块。</p>
+<p><strong>self-attention</strong>块的模型参数有 <span class="math-inline">Q、K、V</span> 的权重矩阵 <span class="math-inline">W_Q、W_K、W_V</span> 和偏置，输出权重矩阵 <span class="math-inline">W_O</span> 和偏置，4个权重矩阵的形状为 <span class="math-inline">[h,h]</span> ，4个偏置的形状为 <span class="math-inline">[h]</span> 。self-attention块的参数量为 <span class="math-inline">4h^2+4h</span> 。</p>
+<p><strong>MLP</strong>块由2个线性层组成，一般地，第一个线性层是先将维度从 <span class="math-inline">h</span> 映射到 <span class="math-inline">4h</span> ，第二个线性层再将维度从<span class="math-inline">4h</span> 射到<span class="math-inline">h</span>。第一个线性层的权重矩阵 <span class="math-inline">W_1</span> 的形状为 <span class="math-inline">[h,4h]</span> ，偏置的形状为 <span class="math-inline">[4h]</span> 。第二个线性层权重矩阵 <span class="math-inline">W_2</span> 的形状为 <span class="math-inline">[4h,h]</span> ，偏置形状为 <span class="math-inline">[h]</span> 。MLP块的参数量为 <span class="math-inline">8h^2+5h</span> 。</p>
+<p>self-attention块和MLP块各有一个<strong>layer normalization</strong>，包含了2个可训练模型参数：缩放参数 <span class="math-inline">\gamma</span> 和平移参数 <span class="math-inline">\beta</span> ，形状都是 <span class="math-inline">[h]</span> 。2个layer normalization的参数量为 <span class="math-inline">4h</span> 。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410110921834.jpg"/></div>
+
+<p>总的，<strong>每个transformer层的参数量</strong>为 <span class="math-inline">12h^2+13h</span> 。</p>
+<p>除此之外，词嵌入矩阵的参数量也较多，词向量维度通常等于隐藏层维度 <span class="math-inline">h</span> ，词嵌入矩阵的参数量为 <span class="math-inline">Vh</span> 。最后的输出层的权重矩阵通常与词嵌入矩阵是参数共享的。</p>
+<p>关于位置编码，如果采用可训练式的位置编码，会有一些可训练模型参数，数量比较少。如果采用相对位置编码，例如RoPE和ALiBi，则不包含可训练的模型参数。我们忽略这部分参数。</p>
+<p>综上， <strong><span class="math-inline">l</span> 层transformer模型的可训练模型参数量为</strong> <span class="math-inline">l(12h^2+13h)+Vh</span> 。当隐藏维度 <span class="math-inline">h</span> 较大时，可以忽略一次项，<strong>模型参数量近似为</strong> <span class="math-inline">12lh^2</span> 。</p>
+<p>接下来，我们估计不同版本LLaMA模型的参数量。</p>
+<table>
+<thead>
+<tr>
+<th>实际参数量</th>
+<th>隐藏维度 <span class="math-inline">h</span></th>
+<th>层数 <span class="math-inline">l</span></th>
+<th><span class="math-inline">12lh^2</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6.7B</td>
+<td>4096</td>
+<td>32</td>
+<td>6,442,450,944</td>
+</tr>
+<tr>
+<td>13.0B</td>
+<td>5120</td>
+<td>40</td>
+<td>12,582,912,000</td>
+</tr>
+<tr>
+<td>32.5B</td>
+<td>6656</td>
+<td>60</td>
+<td>31,897,681,920</td>
+</tr>
+<tr>
+<td>65.2B</td>
+<td>8192</td>
+<td>80</td>
+<td>64,424,509,440</td>
+</tr>
+</tbody>
+</table>
+<h3 id="21-训练过程中的显存占用分析">2.1 训练过程中的显存占用分析<a class="anchor-link" href="#21-训练过程中的显存占用分析" title="Permanent link">&para;</a></h3>
+<p>在训练神经网络的过程中，占用显存的大头主要分为四部分<strong>：模型参数、前向计算过程中产生的中间激活、后向传递计算得到的梯度、优化器状态</strong>。这里着重分析参数、梯度和优化器状态的显存占用，中间激活的显存占用后面会详细介绍。训练大模型时通常会采用AdamW优化器，并用混合精度训练来加速训练，基于这个前提分析显存占用。</p>
+<p>在一次训练迭代中，每个可训练模型参数都会对应1个梯度，并对应2个优化器状态（Adam优化器梯度的一阶动量和二阶动量）。设模型参数量为 <span class="math-inline">\Phi</span> ，那么梯度的元素数量为 <span class="math-inline">\Phi</span> ，AdamW优化器的元素数量为 <span class="math-inline">2\Phi</span> 。float16数据类型的元素占2个bytes，float32数据类型的元素占4个bytes。在混合精度训练中，会使用float16的模型参数进行前向传递和后向传递，计算得到float16的梯度；在优化器更新模型参数时，会使用float32的优化器状态、float32的梯度、float32的模型参数来更新模型参数。因此，对于每个可训练模型参数，占用了 <span class="math-inline">(2+4) + (2+4)+(4+4)=20bytes</span> 。使用AdamW优化器和混合精度训练来训练参数量为 <span class="math-inline">\Phi</span> 的大模型，<strong>模型参数、梯度和优化器状态占用的显存大小为</strong> <span class="math-inline">20\Phi \space bytes</span> 。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410110921835.jpg"/></div>
+
+<h3 id="22-推理过程中的显存占用分析">2.2 推理过程中的显存占用分析<a class="anchor-link" href="#22-推理过程中的显存占用分析" title="Permanent link">&para;</a></h3>
+<p>在神经网络的推理阶段，没有优化器状态和梯度，也不需要保存中间激活。<strong>少了梯度、优化器状态、中间激活，模型推理阶段占用的显存要远小于训练阶段</strong>。模型推理阶段，占用显存的大头主要是模型参数，如果使用float16来进行推理，<strong>推理阶段模型参数占用的显存大概是</strong> <span class="math-inline">2\Phi\space bytes</span> 。如果使用KV cache来加速推理过程，<strong>KV cache也需要占用显存</strong>，KV cache占用的显存下文会详细介绍。此外，输入数据也需要放到GPU上，还有一些中间结果（推理过程中的中间结果用完会尽快释放掉），不过这部分占用的显存是很小的，可以忽略。</p>
+<h2 id="3-计算量flops估计">3. 计算量FLOPs估计<a class="anchor-link" href="#3-计算量flops估计" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>FLOPs，floating point operations，表示浮点数运算次数，衡量了计算量的大小。 <br />
+如何计算矩阵乘法的FLOPs呢？ <br />
+对于 <span class="math-inline">A\in R^{1\times n},B\in R^{n\times 1}</span> ，计算 <span class="math-inline">AB</span> 需要进行 <span class="math-inline"> n</span> 次乘法运算和 <span class="math-inline">n</span> 次加法运算，共计 <span class="math-inline">2n</span> 次浮点数运算，需要 <span class="math-inline">2n</span> 的FLOPs。对于 <span class="math-inline">A\in R^{m\times n},B\in R^{n\times p}</span> ，计算 <span class="math-inline">AB</span> 需要的浮点数运算次数为 <span class="math-inline">2mnp</span> 。</p>
+</blockquote>
+<p>在一次训练迭代中，假设输入数据的形状为 <span class="math-inline">[b,s ]</span> 。我们<strong>先分析self-attention块的计算</strong>，计算公式如下：<br />
+<div class="math-display"><br />
+Q=xW_Q,K=xW_K,V=xW_V\x_{out}=softmax(\frac{QK^{T}}{\sqrt{h}})\cdot V\cdot W_o + x\<br />
+</div></p>
+<ol>
+<li>
+<p>计算 <span class="math-inline">Q,K,V</span> ：矩阵乘法的输入和输出形状为 <span class="math-inline">[b,s,h] \times [h,h]\rightarrow [b,s,h]</span> 。计算量为 <span class="math-inline">3*2bsh^2=6bsh^2</span> 。</p>
+</li>
+<li>
+<p><span class="math-inline">QK^{T}</span> 矩阵乘法的输入和输出形状为 <span class="math-inline">[b, head_num, s,per_head_hidden_size]\times [b,head_num,per_head_hidden_size,s]\rightarrow [b,head_num,s,s]</span> 。计算量为 <span class="math-inline">2bs^2h</span> 。</p>
+</li>
+<li>
+<p>计算在 <span class="math-inline">V</span> 上的加权 <span class="math-inline">score\cdot V</span> ，矩阵乘法的输入和输出形状为 <span class="math-inline">[b,head_num,s,s]\times[b,head_num,s,per_head_hidden_size]\rightarrow[b,head_num,s,per_head_hidden_size]</span> 。计算量为 <span class="math-inline">2bs^2h</span> 。</p>
+</li>
+<li>
+<p>attention后的线性映射，矩阵乘法的输入和输出形状为 <span class="math-inline">[b,s,h]\times[h,h]\rightarrow [b,s,h]</span> 。计算量为 <span class="math-inline">2bsh^2</span> 。</p>
+</li>
+</ol>
+<p><strong>接下来分析MLP块的计算，计算公式如下</strong>：<br />
+<div class="math-display"><br />
+x=f_{gelu}(x_{out}W_1)W_2+x_{out}<br />
+</div></p>
+<ol>
+<li>
+<p>第一个线性层，矩阵乘法的输入和输出形状为 <span class="math-inline">[b,s,h]\times[h,4h]\rightarrow[b,s,4h]</span> 。计算量为 <span class="math-inline">8bsh^2</span> 。</p>
+</li>
+<li>
+<p>第二个线性层，矩阵乘法的输入和输出形状为 <span class="math-inline">[b,s,4h]\times[4h,h]\rightarrow[b,s,h]</span> 。计算量为 <span class="math-inline">8bsh^2</span> 。</p>
+</li>
+</ol>
+<p>将上述计算量相加，得到<strong>每个transformer层的计算量大约为</strong> <span class="math-inline">24bsh^2+4bs^2h</span> 。</p>
+<p>此外，另一个计算量的大头是logits的计算，将隐藏向量映射为词表大小。矩阵乘法的输入和输出形状为 <span class="math-inline">[b,s,h]\times[h,V]\rightarrow [b,s,V]</span> ，计算量为 <span class="math-inline">2bshV</span> 。</p>
+<p>因此，对于一个 <span class="math-inline">l</span> 层的transformer模型，输入数据形状为 <span class="math-inline">[b,s]</span> 的情况下，<strong>一次训练迭代的计算量为</strong> <span class="math-inline">l*(24bsh^2+4bs^2h)+2bshV</span> 。</p>
+<h3 id="31-计算量与参数量的关联">3.1 计算量与参数量的关联<a class="anchor-link" href="#31-计算量与参数量的关联" title="Permanent link">&para;</a></h3>
+<p>当隐藏维度 <span class="math-inline">h</span> 比较大，且远大于序列长度 <span class="math-inline">s</span> 时，我们可以忽略一次项，计算量可以近似为 <span class="math-inline">24bsh^2<em>l</span> 。前面提到当模型参数量为 <span class="math-inline">12lh^2</span> ，输入的tokens数为 <span class="math-inline">bs</span> ，存在等式 <span class="math-inline">\frac{24bsh^2l}{12lh^2\times bs}=2</span> 。我们可以近似认为</em><em>：在一次前向传递中，对于每个token，每个模型参数，需要进行2次浮点数运算</em>*，即一次乘法法运算和一次加法运算。</p>
+<p>一次训练迭代包含了前向传递和后向传递，<strong>后向传递的计算量是前向传递的2倍</strong>。因此，前向传递 + 后向传递的系数 <span class="math-inline">=1+2=3</span> 。一次训练迭代中，对于每个token，每个模型参数，需要进行 <span class="math-inline">2*3=6</span> 次浮点数运算。</p>
+<p>接下来，我们可以估计训练GPT3-175B所需要的计算量。对于GPT3，每个token，每个参数进行了6次浮点数运算，再乘以参数量和总tokens数就得到了总的计算量。GPT3的模型参数量为 <span class="math-inline">174600M</span> ，训练数据量为 <span class="math-inline">300B </span> tokens。</p>
+<p><div class="math-display">6 \times 174600 \times 10^{6} \times 300 \times 10^{9} = 3.1428 \times 10^{23} flops\</div></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410110921836.jpg"/></div>
+
+<h3 id="32-训练时间估计">3.2 训练时间估计<a class="anchor-link" href="#32-训练时间估计" title="Permanent link">&para;</a></h3>
+<p>模型参数量和训练总tokens数决定了训练transformer模型需要的计算量。给定硬件GPU类型的情况下，可以估计所需要的训练时间。给定计算量，训练时间（也就是GPU算完这么多flops的计算时间）不仅跟GPU类型有关，还与GPU利用率有关。计算端到端训练的GPU利用率时，不仅要考虑前向传递和后向传递的计算时间，还要<strong>考虑CPU加载数据、优化器更新、多卡通信和记录日志的时间</strong>。一般来讲，<strong>GPU利用率一般在 <span class="math-inline">0.3\sim0.55</span> 之间</strong>。</p>
+<p>上文讲到一次前向传递中，对于每个token，每个模型参数，进行2次浮点数计算。使用激活重计算技术来减少中间激活显存（下文会详细介绍）需要进行一次额外的前向传递，因此前向传递 + 后向传递 + 激活重计算的系数=1+2+1=4。使用<strong>激活重计算</strong>的一次训练迭代中，对于每个token，每个模型参数，需要进行 <span class="math-inline">2<em>4=8</span> 次浮点数运算。</em><em>在给定训练tokens数、硬件环境配置的情况下，训练transformer模型的计算时间为</em>*：<br />
+<div class="math-display"><br />
+训练时间\approx \frac{8\times tokens数\times 模型参数量}{GPU数\times GPU峰值flops\times GPU利用率}\<br />
+</div></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410110921837.jpg"/></div>
+
+<p>以GPT3-175B为例，在1024张40GB显存的A100上，在300B tokens的数据上训练175B参数量的GPT3。40GB显存A100的峰值性能为312TFLOPS，设GPU利用率为0.45，则<strong>所需要的训练时间为34天，这与[7]中的训练时间是对得上的</strong>。 <br />
+<div class="math-display"><br />
+\frac{8\times(300 \times 10^9) \times (175 \times 10^9)}{1024\times (312\times 10^{12})\times 0.45}\approx 2921340 \space seconds\approx 34 days\<br />
+</div><br />
+以LLaMA-65B为例，在2048张80GB显存的A100上，在1.4TB tokens的数据上训练了65B参数量的模型。80GB显存A100的峰值性能为624TFLOPS，设GPU利用率为0.3，则<strong>所需要的训练时间为21天，这与[4]中的实际训练时间是对得上的</strong>。<br />
+<div class="math-display"><br />
+\frac{8\times (1.4\times 10^{12})\times(65\times 10^9)}{2048\times (624\times 10^{12})\times 0.3}\approx 1898871\space seconds\approx 21 days\<br />
+</div></p>
+<h2 id="4-中间激活值分析">4. 中间激活值分析<a class="anchor-link" href="#4-中间激活值分析" title="Permanent link">&para;</a></h2>
+<p>除了模型参数、梯度、优化器状态外，占用显存的大头就是前向传递过程中计算得到的中间激活值了，需要保存中间激活以便在后向传递计算梯度时使用。这里的激活（activations）指的是<strong>：前向传递过程中计算得到的，并在后向传递过程中需要用到的所有张量</strong>。这里的激活不包含模型参数和优化器状态，但包含了dropout操作需要用到的mask矩阵。</p>
+<p>在分析中间激活的显存占用时，只考虑激活占用显存的大头，忽略掉一些小的buffers。比如，对于layer normalization，计算梯度时需要用到层的输入、输入的均值 <span class="math-inline">\mu</span> 和方差 <span class="math-inline">\sigma^2</span> 。输入包含了 <span class="math-inline">bsh</span> 个元素，而输入的均值和方差分别包含了 <span class="math-inline">bs</span> 个元素。由于 <span class="math-inline">h</span> 通常是比较大的（千数量级），有 <span class="math-inline">bsh\gg bs</span> 。因此，对于layer normalization，中间激活近似估计为 <span class="math-inline">bsh</span> ，而不是 <span class="math-inline">bsh + 2bs</span> 。</p>
+<p>大模型在训练过程中通常采用混合精度训练，中间激活值一般是float16或者bfloat16数据类型的。在分析中间激活的显存占用时，<strong>假设中间激活值是以float16或bfloat16数据格式来保存的，每个元素占了2个bytes。唯一例外的是，dropout操作的mask矩阵，每个元素只占1个bytes</strong>。在下面的分析中，单位是bytes，而不是元素个数。</p>
+<p>每个transformer层包含了一个self-attention块和MLP块，并分别对应了一个layer normalization连接。</p>
+<p><strong>先分析self-attention块的中间激活</strong>。self-attention块的计算公式如下：<br />
+<div class="math-display"><br />
+Q=xW_Q,K=xW_K,V=xW_V\<br />
+</div></p>
+<p><div class="math-display"><br />
+x_{out}=softmax(\frac{QK^{T}}{\sqrt{h}})\cdot V\cdot W_o + x\<br />
+</div></p>
+<ol>
+<li>
+<p>对于 <span class="math-inline">Q,K,V</span> ，需要保存它们共同的输入 <span class="math-inline">x</span> ，这就是中间激活。输入 <span class="math-inline">x</span> 的形状为 <span class="math-inline">[b,s,h]</span> ，元素个数为 <span class="math-inline">bsh</span> ，占用显存大小为 <span class="math-inline">2*bsh=2bsh</span> 。</p>
+</li>
+<li>
+<p>对于 <span class="math-inline">QK^T</span> 矩阵乘法，需要保存中间激活 <span class="math-inline">Q,K</span> ，两个张量的形状都是 <span class="math-inline">[b,s,h]</span> ，占用显存大小合计为 <span class="math-inline">2<em>2</em>bsh=4bsh</span> 。</p>
+</li>
+<li>
+<p>对于 <span class="math-inline">softmax()</span> 函数，需要保存函数的输入 <span class="math-inline">QK^T</span> ，占用显存大小为 <span class="math-inline">2bs^2a</span> ，这里的 <span class="math-inline">a</span> 表示注意力头数。 <br />
+   <div class="math-display"><br />
+   score = softmax(\frac{QK^T}{\sqrt{d_k}})\<br />
+   </div><br />
+   <span class="math-inline">Q</span> 的形状为： <span class="math-inline">[b, head_num, s, per_head_hidden_size]</span> </p>
+</li>
+</ol>
+<p><span class="math-inline">K^{T}</span> 的形状为： <span class="math-inline">[b,head_num,per_head_hidden_size,s]</span> </p>
+<p><span class="math-inline">QK^T</span> 的形状为： <span class="math-inline">[b,head_num,s,s]</span> ，元素个数为 <span class="math-inline">bs^2a</span> ，占用显存大小为 <span class="math-inline">2bs^2a</span> 。</p>
+<ol start="4">
+<li>
+<p>计算完 <span class="math-inline">softmax()</span> 函数后，会进行dropout操作。需要保存一个mask矩阵，mask矩阵的形状与 <span class="math-inline">QK^T</span> 相同，占用显存大小为 <span class="math-inline">bs^2a</span> 。</p>
+</li>
+<li>
+<p>计算在 <span class="math-inline">V</span> 上的attention，即 <span class="math-inline">score\cdot V</span> ，需要保存 <span class="math-inline">score</span> ，大小为 <span class="math-inline">2bs^2a</span> ；以及 <span class="math-inline">V</span> ，大小为 <span class="math-inline">2bsh</span> 。二者占用显存大小合计为 <span class="math-inline">2bs^2a+2bsh</span> 。</p>
+</li>
+<li>
+<p>计算输出映射以及一个dropout操作。输入映射需要保存其输入，大小为 <span class="math-inline">2bsh</span> ；dropout需要保存mask矩阵，大小为 <span class="math-inline">bsh</span> 。二者占用显存大小合计为 <span class="math-inline">3bsh</span> 。</p>
+</li>
+</ol>
+<p>因此，将上述中间激活相加得到，self-attention块的中间激活占用显存大小为 <span class="math-inline">11bsh+5bs^2a</span> 。</p>
+<p>接下来<strong>看MLP块的中间激活。MLP块的计算公式如下</strong>： <br />
+<div class="math-display"><br />
+x=f_{gelu}(x_{out}W_1)W_2+x_{out}<br />
+</div></p>
+<ol>
+<li>
+<p>第一个线性层需要保存其输入，占用显存大小为 <span class="math-inline">2bsh</span> 。</p>
+</li>
+<li>
+<p>激活函数需要保存其输入，占用显存大小为 <span class="math-inline">8bsh</span> 。</p>
+</li>
+<li>
+<p>第二个线性层需要保存其输入，占用显存大小为 <span class="math-inline">8bsh</span> 。</p>
+</li>
+<li>
+<p>最后有一个dropout操作，需要保存mask矩阵，占用显存大小为 <span class="math-inline">bsh</span> 。</p>
+</li>
+</ol>
+<p>对于MLP块，需要保存的中间激活值为 <span class="math-inline">19bsh</span> 。</p>
+<p>另外，self-attention块和MLP块分别对应了一个layer normalization。每个layer norm需要保存其输入，大小为 <span class="math-inline">2bsh</span> 。2个layer norm需要保存的中间激活为 <span class="math-inline">4bsh</span> 。</p>
+<p>综上，<strong>每个transformer层需要保存的中间激活占用显存大小为</strong> <span class="math-inline">34bsh+5bs^2a</span> 。对于 <span class="math-inline">l</span> 层transformer模型，还有embedding层、最后的输出层。embedding层不需要中间激活。总的而言，当隐藏维度 <span class="math-inline">h</span> 比较大，层数 <span class="math-inline">l</span> 较深时，这部分的中间激活是很少的，可以忽略。因此，<strong>对于 <span class="math-inline">l</span> 层transformer模型，中间激活占用的显存大小可以近似为</strong> <span class="math-inline">(34bsh+5bs^2a)*l</span> 。</p>
+<h3 id="41-对比中间激活与模型参数的显存大小">4.1 对比中间激活与模型参数的显存大小<a class="anchor-link" href="#41-对比中间激活与模型参数的显存大小" title="Permanent link">&para;</a></h3>
+<p>在一次训练迭代中，模型参数（或梯度）占用的显存大小只与模型参数量和参数数据类型有关，与输入数据的大小是没有关系的。优化器状态占用的显存大小也是一样，与优化器类型有关，与模型参数量有关，但与输入数据的大小无关。而<strong>中间激活值与输入数据的大小（批次大小 <span class="math-inline">b</span> 和序列长度 <span class="math-inline">s</span> ）是成正相关的</strong>，随着批次大小 <span class="math-inline">b</span> 和序列长度 <span class="math-inline">s</span> 的增大，中间激活占用的显存会同步增大。当我们训练神经网络遇到显存不足OOM（Out Of Memory）问题时，通常会尝试减小批次大小来避免显存不足的问题，这种方式减少的其实是中间激活占用的显存，而不是模型参数、梯度和优化器的显存。</p>
+<p>以GPT3-175B为例，我们来直观地对比下模型参数与中间激活的显存大小。GPT3的模型配置如下。我们假设采用混合精度训练，模型参数和中间激活都采用float16数据类型，每个元素占2个bytes。</p>
+<table>
+<thead>
+<tr>
+<th>模型名</th>
+<th>参数量</th>
+<th>层数</th>
+<th>隐藏维度</th>
+<th>注意力头数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT3</td>
+<td>175B</td>
+<td>96</td>
+<td>12288</td>
+<td>96</td>
+</tr>
+</tbody>
+</table>
+<p>GPT3的模型参数量为175B，占用的显存大小为 <span class="math-inline">2\times 175\times 10^9bytes=350GB</span> 。GPT3模型需要占用350GB的显存。</p>
+<p>GPT3的序列长度 <span class="math-inline">s</span> 为 <span class="math-inline">2048</span> 。对比不同的批次大小 <span class="math-inline">b</span> 占用的中间激活：</p>
+<p>当 <span class="math-inline">b=1</span> 时，中间激活占用显存为 <span class="math-inline">(34bsh+5bs^2a)*l=275,414,777,856bytes\approx275GB</span> ，大约是模型参数显存的0.79倍。</p>
+<p>当 <span class="math-inline">b=64</span> 时，中间激活占用显存为 <span class="math-inline">(34bsh+5bs^2a)*l=17,626,545,782,784bytes\approx17.6TB</span> ，大约是模型参数显存的50倍。</p>
+<p>当 <span class="math-inline">b=128</span> 时，中间激活占用显存为 <span class="math-inline">(34bsh+5bs^2a)*l=35,253,091,565,568bytes\approx35.3TB</span> ，大约是模型参数显存的101倍。</p>
+<p>可以看到随着批次大小 <span class="math-inline">b</span> 的增大，中间激活占用的显存远远超过了模型参数显存。通常会采用<strong>激活重计算</strong>技术来减少中间激活，理论上可以将中间激活显存从 <span class="math-inline">O(n)</span> 减少到 <span class="math-inline">O(\sqrt{n})</span> ，代价是增加了一次额外前向计算的时间，本质上是“时间换空间”。</p>
+<h2 id="5-kv-cache">5. KV cache<a class="anchor-link" href="#5-kv-cache" title="Permanent link">&para;</a></h2>
+<p>在推断阶段，transformer模型加速推断的一个常用策略就是使用 KV cache。一个典型的大模型生成式推断包含了两个阶段：</p>
+<ol>
+<li>
+<p><strong>预填充阶段</strong>：输入一个prompt序列，为每个transformer层生成 key cache和value cache（KV cache）。</p>
+</li>
+<li>
+<p><strong>解码阶段</strong>：使用并更新KV cache，一个接一个地生成词，当前生成的词依赖于之前已经生成的词。</p>
+</li>
+</ol>
+<p>第 <span class="math-inline">i</span> 个transformer层的权重矩阵为 <span class="math-inline">W^i_Q,W^i_K,W^i_V,W^i_O,W^i_1,W^i_2</span> 。其中，self-attention块的4个权重矩阵 <span class="math-inline">W^i_Q,W^i_K,W^i_V,W^i_O\in R^{h\times h}</span> ，并且MLP块的2个权重矩阵 <span class="math-inline">W^i_1\in R^{h\times 4h},W^i_2\in R^{4h\times h}</span> 。</p>
+<p><strong>预填充阶段</strong></p>
+<p>假设第 <span class="math-inline">i</span> 个transformer层的输入为 <span class="math-inline">x^i</span> ，self-attention块的key、value、query和output表示为 <span class="math-inline">x^i_K,x^i_V,x^i_Q,x^i_{out}</span> ，其中， <span class="math-inline">x^i_K,x^i_V,x^i_Q,x^i_{out}\in R^{b\times s\times h}</span> 。</p>
+<p>key cache和value cache的计算过程为：<br />
+<div class="math-display"><br />
+x^{i}<em>{K} = x^{i} \cdot W^{i}</em>{K}\ x^{i}<em>{V} = x^{i} \cdot W^{i}</em>{V}\<br />
+</div><br />
+第 <span class="math-inline">i</span> 个transformer层剩余的计算过程为：<br />
+<div class="math-display"><br />
+x^{i}<em>{Q} = x^{i} \cdot W^{i}</em>{Q}\ x^{i}<em>{out} = softmax(\frac{x^{i}</em>{Q} {x^{i}<em>{K}}^{T}}{\sqrt{h}})  \cdot x^{i}</em>{V} \cdot W^{i}<em>{O} + x^{i}\ x^{i+1} = f</em>{gelu}(x^{i}<em>{out}\cdot W_1) \cdot W_2 + x^{i}</em>{out}\<br />
+</div><br />
+<strong>解码阶段</strong></p>
+<p>给定当前生成词在第 <span class="math-inline">i </span> 个transformer层的向量表示为 <span class="math-inline">t^{i}\in R^{b\times 1\times h}</span> 。推断计算分两部分：更新KV cache和计算第 <span class="math-inline">i</span> 个transformer层的输出。</p>
+<p>更新key cache和value cache的计算过程如下：<br />
+<div class="math-display"><br />
+x^{i}<em>{K} \leftarrow Concat(x^{i}</em>{K}, t^{i}\cdot W^{i}_{K})\<br />
+</div></p>
+<p><div class="math-display"><br />
+x^{i}<em>{V} \leftarrow Concat(x^{i}</em>{V}, t^{i}\cdot W^{i}_{V})\<br />
+</div></p>
+<p>第 <span class="math-inline">i</span> 个transformer层剩余的计算过程为：<br />
+<div class="math-display"><br />
+t^{i}<em>{Q} = t</em>{i} \cdot W^{i}_{Q}<br />
+</div></p>
+<p><div class="math-display"><br />
+t^{i}<em>{out} = softmax(\frac{{t^{i}</em>{Q}x^{i}<em>{K}}^{T}}{\sqrt{h}}) \cdot x^{i}</em>{V} \cdot W^{i}<em>{O} + t^{i}\ t^{i+1} = f</em>{gelu}(t^{i}<em>{out}\cdot W_1) \cdot W_2 + t^{i}</em>{out}\<br />
+</div></p>
+<p><strong>KV cache的显存占用分析</strong>  </p>
+<p>假设输入序列的长度为 <span class="math-inline">s</span> ，输出序列的长度为 <span class="math-inline">n</span> ，以float16来保存KV cache，那么<strong>KV cache的峰值显存占用大小为</strong> <span class="math-inline">b(s+n)h * l * 2 * 2=4blh(s+n)</span> 。这里第一个2表示K/V cache，第二个2表示float16占2个bytes。</p>
+<p>以GPT3为例，对比KV cache与模型参数占用显存的大小。GPT3模型占用显存大小为350GB。假设批次大小 <span class="math-inline">b=64</span> ，输入序列长度 <span class="math-inline">s=512</span> ，输出序列长度 <span class="math-inline">n=32</span> ，则KV cache占用显存为 <span class="math-inline">4blh(s+n)=164,282,499,072bytes\approx 164GB</span> ，大约是模型参数显存的0.5倍。</p>
+<h2 id="6-总结">6. 总结<a class="anchor-link" href="#6-总结" title="Permanent link">&para;</a></h2>
+<p>本文首先介绍了如何计算transformer模型的参数量，基于参数量可以进一步估计模型参数、梯度和优化器状态占用的显存大小。接着，本文估计了训练迭代中，在给定训练tokens数的情况下transformer模型的计算量，给予计算量和显卡性能可以进一步估计训练迭代的计算耗时。然后，本文分析了transformer模型前向计算过程中产生的中间激活值的显存大小，中间激活的显存大小与输入数据大小正相关，甚至会远超过模型参数占用的显存。最后，本文介绍了transformer模型推理过程常用的加速策略：使用KV cache。总的来说，分析transformer模型的参数量、计算量、中间激活和KV cache，有助于理解大模型训练和推断过程中的显存效率和计算效率。</p>
+<h2 id="7-参考链接">7. 参考链接<a class="anchor-link" href="#7-参考链接" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Raffel C, Shazeer N, Roberts A, et al. Exploring the limits of transfer learning with a unified text-to-text transformer[J]. The Journal of Machine Learning Research, 2020, 21(1): 5485-5551.</p>
+</li>
+<li>
+<p>Vaswani A, Shazeer N, Parmar N, et al. Attention is all you need[J]. Advances in neural information processing systems, 2017, 30.</p>
+</li>
+<li>
+<p>Brown T, Mann B, Ryder N, et al. Language models are few-shot learners[J]. Advances in neural information processing systems, 2020, 33: 1877-1901.</p>
+</li>
+<li>
+<p>Touvron H, Lavril T, Izacard G, et al. Llama: Open and efficient foundation language models[J]. arXiv preprint arXiv:2302.13971, 2023.</p>
+</li>
+<li>
+<p>Sheng Y, Zheng L, Yuan B, et al. High-throughput generative inference of large language models with a single gpu[J]. arXiv preprint arXiv:2303.06865, 2023.</p>
+</li>
+<li>
+<p>Korthikanti V, Casper J, Lym S, et al. Reducing activation recomputation in large transformer models[J]. arXiv preprint arXiv:2205.05198, 2022.</p>
+</li>
+<li>
+<p>Narayanan D, Shoeybi M, Casper J, et al. Efficient large-scale language model training on gpu clusters using megatron-lm[C]//Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis. 2021: 1-15.</p>
+</li>
+<li>
+<p>Smith S, Patwary M, Norick B, et al. Using deepspeed and megatron to train megatron-turing nlg 530b, a large-scale generative language model[J]. arXiv preprint arXiv:2201.11990, 2022.</p>
+</li>
+</ol>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/624740065">分析transformer模型的参数量、计算量、中间激活、KV cache</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

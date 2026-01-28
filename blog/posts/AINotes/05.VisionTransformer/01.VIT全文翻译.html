@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#an-image-is-worth-16x16-words-transformers-for-image-recognition-at-scale">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-方法">3. 方法</a><ul>
+<li><a href="#31-视觉-transformervit">3.1 视觉 Transformer（ViT）</a></li>
+<li><a href="#32-微调和更高分辨率">3.2 微调和更高分辨率</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-设置">4.1 设置</a></li>
+<li><a href="#42-与最新技术的比较">4.2 与最新技术的比较</a></li>
+<li><a href="#43-预训练数据需求">4.3 预训练数据需求</a></li>
+<li><a href="#44-扩展研究">4.4 扩展研究</a></li>
+<li><a href="#45-检查视觉-transformer">4.5 检查视觉 Transformer</a></li>
+<li><a href="#46-自监督">4.6 自监督</a></li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a></li>
+<li><a href="#致谢">致谢</a></li>
+<li><a href="#附录">附录</a><ul>
+<li><a href="#a-多头自注意力">A. 多头自注意力</a></li>
+<li><a href="#b-实验细节">B. 实验细节</a></li>
+<li><a href="#c-附加结果">C. 附加结果</a></li>
+<li><a href="#d-附加分析">D. 附加分析</a></li>
+<li><a href="#d11-vtab-分析">D.11 VTAB 分析</a></li>
+<li><a href="#d12-注意力可视化">D.12 注意力可视化</a></li>
+<li><a href="#d13-自注意力机制的进一步讨论">D.13 自注意力机制的进一步讨论</a></li>
+<li><a href="#d14-实验结果的总结">D.14 实验结果的总结</a></li>
+<li><a href="#d15-对未来的展望">D.15 对未来的展望</a></li>
+<li><a href="#d16-结论">D.16 结论</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/05.VisionTransformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="an-image-is-worth-16x16-words-transformers-for-image-recognition-at-scale">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale<a class="anchor-link" href="#an-image-is-worth-16x16-words-transformers-for-image-recognition-at-scale" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>虽然 Transformer 架构已成为自然语言处理任务的实际标准，但其在计算机视觉中的应用仍然有限。在视觉领域，注意力机制要么与卷积网络结合使用，要么用来替换卷积网络的某些部分，同时保持其整体结构不变。我们展示了这种对 CNNs 的依赖并非必要，直接应用于图像块序列的纯 Transformer 在图像分类任务上可以表现得非常好。当在大量数据上预训练并转移到多个中小规模的图像识别基准测试时（如 ImageNet、CIFAR-100、VTAB 等），视觉 Transformer（ViT）与最先进的卷积网络相比，在分类准确率上取得了相当或更好的结果，同时在训练过程中需要的计算资源大大减少。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>基于自注意力的架构，特别是 Transformer（Vaswani et al., 2017），已成为自然语言处理（NLP）的首选模型。主流的方法是在大型文本语料库上预训练，然后在较小的任务特定数据集上微调（Devlin et al., 2019）。由于 Transformer 的计算效率和可扩展性，训练具有超过 100B 参数的前所未有的模型已成为可能（Brown et al., 2020; Lepikhin et al., 2020）。随着模型和数据集的增长，性能仍未见饱和迹象。</p>
+<p>然而，在计算机视觉领域，卷积架构仍然占据主导地位（LeCun et al., 1989; Krizhevsky et al., 2012; He et al., 2016）。受到 NLP 成功的启发，多项工作尝试将类似 CNN 的架构与自注意力结合（Wang et al., 2018; Carion et al., 2020），有些则完全替换了卷积（Ramachandran et al., 2019; Wang et al., 2020a）。这些模型虽然理论上高效，但由于使用了特殊的注意力模式，尚未在现代硬件加速器上有效扩展。因此，在大规模图像识别中，经典的类似 ResNet 的架构仍然是最先进的（Mahajan et al., 2018; Xie et al., 2020; Kolesnikov et al., 2020）。</p>
+<p>受到 NLP 中 Transformer 扩展成功的启发，我们尝试直接将标准 Transformer 应用于图像，尽可能少地修改。为此，我们将图像分割成固定大小的块，并将这些块的线性嵌入序列作为输入提供给 Transformer。图像块被视为 NLP 应用中的标记（单词）。我们以监督的方式对模型进行图像分类训练。</p>
+<p>当在中等规模的数据集上训练，如 ImageNet，且没有强正则化时，这些模型的准确率只有几个百分点低于可比较大小的 ResNets。这种看似令人沮丧的结果可能是预期的：Transformer 缺乏 CNNs 固有的一些归纳偏好，例如平移等变性和局部性，因此在训练数据不足时泛化能力不佳。</p>
+<p>然而，如果模型在更大的数据集上训练（1400 万 -3 亿图像），我们发现大规模训练胜过归纳偏好。我们的视觉 Transformer（ViT）在足够规模的预训练后，在数据点较少的任务上取得了优异的结果。当在公共的 ImageNet-21k 数据集或内部的 JFT-300M 数据集上预训练时，ViT 在多个图像识别基准测试中接近或超越了最先进的水平。特别是，最佳模型在 ImageNet 上的准确率达到了 88.55%，在 ImageNet-ReaL 上达到了 90.72%，在 CIFAR-100 上达到了 94.55%，在 VTAB 的 19 项任务套件上达到了 77.63%。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>Transformer 由 Vaswani et al. (2017) 提出用于机器翻译，此后已成为许多 NLP 任务的最新方法。大型基于 Transformer 的模型通常在大型语料库上预训练，然后微调以适应手头的任务：BERT（Devlin et al., 2019）使用去噪自监督预训练任务，而 GPT 系列工作使用语言建模作为其预训练任务（Radford et al., 2018; 2019; Brown et al., 2020）。</p>
+<p>直接将自注意力应用于图像将要求每个像素都关注其他每个像素。随着像素数量的二次方成本，这在实际输入尺寸上无法扩展。因此，为了在图像处理的背景下应用 Transformer，过去尝试了几种近似方法。Parmar et al. (2018) 将自注意力仅应用于每个查询像素的局部邻域，而不是全局。这样的局部多头点积自注意力块可以完全替换卷积（Hu et al., 2019; Ramachandran et al., 2019; Zhao et al., 2020）。在另一项工作中，Sparse Transformers（Child et al., 2019）使用可扩展的全局自注意力近似，以便适用于图像。另一种扩展注意力的方法是在不同大小的块中应用它（Weissenborn et al., 2019），在极端情况下仅沿单个轴（Ho et al., 2019; Wang et al., 2020a）。这些专门的注意力架构在计算机视觉任务上显示出了有希望的结果，但需要复杂的工程才能在硬件加速器上有效实现。</p>
+<p>与我们最相关的模型是 Cordonnier et al. (2020) 的模型，它从输入图像中提取 2×2 大小的块，并在顶部应用完整的自注意力。这个模型与 ViT 非常相似，但我们的工作进一步证明了大规模预训练使普通的 Transformer 能够与（甚至优于）最先进的 CNNs 竞争。此外，Cordonnier et al. (2020) 使用 2×2 像素的小补丁尺寸，这使得模型只适用于小分辨率图像，而我们同时处理中等分辨率图像。</p>
+<p>在将卷积神经网络（CNNs）与自注意力形式结合方面也有许多兴趣，例如通过增强特征图进行图像分类（Bello et al., 2019）或通过自注意力进一步处理 CNN 的输出，例如用于目标检测（Hu et al., 2018; Carion et al., 2020）、视频处理（Wang et al., 2018; Sun et al., 2019）、图像分类（Wu et al., 2020）、无监督目标发现（Locatello et al., 2020）或统一的文本 - 视觉任务（Chen et al., 2020c; Lu et al., 2019; Li et al., 2019）。</p>
+<p>另一个相关的近期模型是 image GPT（iGPT）（Chen et al., 2020a），它在降低图像分辨率和颜色空间后将 Transformer 应用于图像像素。该模型以无监督的方式作为生成模型进行训练，然后可以对分类性能进行微调或线性探测，最高准确率达到了 72% 的 ImageNet。</p>
+<p>我们的工作增加了探索比标准 ImageNet 数据集更大尺度的图像识别的论文数量。使用额外的数据源可以在标准基准测试上实现最先进的结果（Mahajan et al., 2018; Touvron et al., 2019; Xie et al., 2020）。此外，Sun et al. (2017) 研究了 CNN 性能如何随着数据集大小的扩展而扩展，Kolesnikov et al. (2020); Djolonga et al. (2020) 对从大规模数据集如 ImageNet-21k 和 JFT-300M 进行 CNN 迁移学习的实证探索。我们也关注这两个后者的数据集，但训练的是 Transformer 而不是以前工作中使用的基于 ResNet 的模型。</p>
+<h2 id="3-方法">3. 方法<a class="anchor-link" href="#3-方法" title="Permanent link">&para;</a></h2>
+<p>在模型设计中，我们尽可能紧密地遵循原始的 Transformer（Vaswani et al., 2017）。这个有意设计的简单设置的一个优点是，可扩展的 NLP Transformer 架构及其高效实现几乎可以直接使用。</p>
+<h3 id="31-视觉-transformervit">3.1 视觉 Transformer（ViT）<a class="anchor-link" href="#31-视觉-transformervit" title="Permanent link">&para;</a></h3>
+<p>模型的概览如图 1 所示。标准 Transformer 接收一个 1D 的标记嵌入序列作为输入。为了处理 2D 图像，我们将图像 <span class="math-inline">x \in R^{H \times W \times C}</span> 重塑为一个扁平的 2D 块序列 <span class="math-inline">x_p \in R^{N \times (P^2 \cdot C)}</span>，其中 <span class="math-inline">(H, W)</span> 是原始图像的分辨率，<span class="math-inline">C</span> 是通道数，<span class="math-inline">(P, P)</span> 是每个图像块的分辨率，<span class="math-inline">N = \frac{HW}{P^2}</span> 是结果的块数，也作为 Transformer 的有效输入序列长度。Transformer 在其所有层中使用恒定的潜在向量大小 <span class="math-inline">D</span>，因此我们扁平化块并使用可训练的线性投影映射到 <span class="math-inline">D</span> 维度。我们称这个投影的输出为块嵌入。</p>
+<p>类似于 BERT 的 [class] 标记，我们在嵌入块序列前添加一个可学习的嵌入，其在 Transformer 编码器的输出状态（<span class="math-inline">z_0^L</span>）作为图像表示 <span class="math-inline">y</span>。在预训练和微调期间，一个分类头附加到 <span class="math-inline">z_0^L</span>。分类头在预训练时通过一个带有隐藏层的 MLP 实现，在微调时通过一个单层线性层实现。</p>
+<p>位置嵌入被添加到块嵌入中以保留位置信息。我们使用标准的可学习 1D 位置嵌入，因为我们没有观察到使用更高级的 2D 感知位置嵌入有显著的性能提升（附录 D.4）。得到的嵌入向量序列作为编码器的输入。</p>
+<p>Transformer 编码器（Vaswani et al., 2017）由交替的多头自注意力（MSA，见附录 A）和 MLP 块组成。在每个块之前应用 LayerNorm（LN），并在每个块之后应用残差连接（Wang et al., 2019; Baevski &amp; Auli, 2019）。</p>
+<p>MLP 包含两层，使用 GELU 非线性。<br />
+<div class="math-display"><br />
+    z_0 = [x_{class}; x_{1p}^E; x_{2p}^E; \cdots; x_{Np}^E] + E_{pos}, E \in R^{(P^2 \cdot C) \times D}, E_{pos} \in R^{(N+1) \times D} \tag{1}<br />
+</div></p>
+<p><div class="math-display"><br />
+    z'^{\ell} = \text{MSA}(\text{LN}(z^{\ell-1})) + z^{\ell-1}, \ell = 1 \cdots L \tag{2}<br />
+</div></p>
+<p><div class="math-display"><br />
+    z^{\ell} = \text{MLP}(\text{LN}(z'^{\ell})) + z'^{\ell}, \ell = 1 \cdots L \tag{3}<br />
+</div></p>
+<p><div class="math-display"><br />
+    y = \text{LN}(z_0^L) \tag{4}<br />
+</div><br />
+归纳偏好。我们注意到，与 CNNs 相比，视觉 Transformer 对图像的特定归纳偏好要少得多。在 CNNs 中，局部性、二维邻域结构和平移等变性被整合到整个模型的每一层中。在 ViT 中，只有 MLP 层是局部的和平移等变的，而自注意力层是全局的。二维邻域结构被非常节制地使用：在模型开始时通过将图像切割成块，以及在微调时调整不同分辨率图像的位置嵌入（如下所述）。除此之外，初始化时的位置嵌入不包含有关块的 2D 位置的信息，所有空间关系都需要从头学习。</p>
+<p>混合架构。作为原始图像块的替代方案，输入序列可以从 CNN 的特征图中形成（LeCun et al., 1989）。在这种混合模型中，块嵌入投影 <span class="math-inline">E</span>（方程 1）应用于从 CNN 特征图中提取的块。作为一个特殊情况，块可以有 1x1 的空间尺寸，这意味着输入序列是通过简单地扁平化特征图的空间维度并投影到 Transformer 维度来获得的。分类输入嵌入和位置嵌入如上所述添加。</p>
+<h3 id="32-微调和更高分辨率">3.2 微调和更高分辨率<a class="anchor-link" href="#32-微调和更高分辨率" title="Permanent link">&para;</a></h3>
+<p>通常，我们在大型数据集上预训练 ViT，并对其进行微调以适应（较小的）下游任务。为此，我们移除了预训练的预测头，并附加了一个零初始化的 <span class="math-inline">D \times K</span> 前馈层，其中 <span class="math-inline">K</span> 是下游类别的数量。通常在比预训练更高的分辨率下进行微调是有益的（Touvron et al., 2019; Kolesnikov et al., 2020）。在输入更高分辨率的图像时，我们保持相同的补丁大小，这导致更大的有效序列长度。视觉 Transformer 可以处理任意序列长度（直到内存限制），然而，预训练的位置嵌入可能不再有意义。因此，我们根据它们在原始图像中的位置，对预训练的位置嵌入进行 2D 插值。注意，这种分辨率调整和补丁提取是唯一手动将关于图像 2D 结构的归纳偏好注入视觉 Transformer 的点。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<p>我们评估了 ResNet、视觉 Transformer（ViT）和混合模型的表示学习能力。为了理解每个模型的数据需求，我们在不同大小的数据集上进行预训练，并在多个基准任务上进行评估。在考虑模型预训练的计算成本时，ViT 的表现非常有利，以较低的预训练成本在大多数识别基准测试上实现了最先进的水平。最后，我们进行了一个小规模的自监督实验，并表明自监督 ViT 有望在未来实现。</p>
+<h3 id="41-设置">4.1 设置<a class="anchor-link" href="#41-设置" title="Permanent link">&para;</a></h3>
+<p>数据集。为了探索模型的可扩展性，我们使用了 ILSVRC-2012 ImageNet 数据集，包含 1k 类别和 1.3M 图像（以下简称为 ImageNet）、其超集 ImageNet-21k，包含 21k 类别和 14M 图像（Deng et al., 2009），以及 JFT（Sun et al., 2017），包含 18k 类别和 303M 高分辨率图像。我们根据 Kolesnikov et al. (2020) 对预训练数据集进行了去重，以适应下游任务的测试集。我们将在这些数据集上训练的模型转移到几个基准任务：ImageNet 在原始验证标签和清理过的 ReaL 标签（Beyer et al., 2020）、CIFAR-10/100（Krizhevsky, 2009）、Oxford-IIIT Pets（Parkhi et al., 2012）和 Oxford Flowers-102（Nilsback &amp; Zisserman, 2008）。对于这些数据集，预处理遵循 Kolesnikov et al. (2020)。</p>
+<p>我们还评估了 19 项任务的 VTAB 分类套件（Zhai et al., 2019b）。VTAB 评估低数据转移到多样化任务，每个任务使用 1000 个训练样本。任务被分为三组：自然——像上述任务一样，Pets、CIFAR 等。专业——医学和卫星图像，以及结构化——需要几何理解的任务，如定位。</p>
+<p>模型变体。我们基于 BERT（Devlin et al., 2019）使用的配置来构建 ViT 配置，如表 1 所示。“Base”和“Large”模型直接采用自 BERT，我们增加了更大的“Huge”模型。在下文中，我们使用简短的符号来表示模型大小和输入补丁尺寸：例如，ViT-L/16 表示“Large”变体，输入补丁尺寸为 16×16。请注意，Transformer 的序列长度与补丁尺寸的平方成反比，因此较小补丁尺寸的模型在计算上更昂贵。</p>
+<p>对于基线 CNNs，我们使用 ResNet（He et al., 2016），但将批量归一化层（Ioffe &amp; Szegedy, 2015）替换为组归一化（Wu &amp; He, 2018），并使用了标准化卷积（Qiao et al., 2019）。这些修改改善了迁移（Kolesnikov et al., 2020），我们称修改后的模型为“ResNet (BiT)”。对于混合模型，我们将中间特征图输入到 ViT 中，补丁尺寸为一个“像素”。为了实验不同的序列长度，我们要么（i）取常规 ResNet50 的第 4 阶段的输出，要么（ii）移除第 4 阶段，在第 3 阶段放置相同数量的层（保持总层数），并取这个扩展的第 3 阶段的输出。选项（ii）导致序列长度是原来的 4 倍，ViT 模型更昂贵。</p>
+<p>训练和微调。我们使用 Adam（Kingma &amp; Ba, 2015）训练所有模型，包括 ResNets，使用 <span class="math-inline">\beta_1 = 0.9</span>，<span class="math-inline">\beta_2 = 0.999</span>，批量大小为 4096，并应用高权重衰减 0.1，我们发现这对所有模型的迁移都有益（附录 D.1 显示，与常见做法相反，在我们的设置中，Adam 比 SGD 对 ResNets 略好）。我们使用线性学习率预热和衰减，附录 B.1 包含详细信息。对于微调，我们对所有模型使用 SGD 和动量，批量大小为 512，参见附录 B.1.1。对于表 2 中的 ImageNet 结果，我们在更高分辨率下进行了微调：ViT-L/16 为 512，ViT-H/14 为 518，并且还使用了 Polyak &amp; Juditsky (1992) 平均，因子为 0.9999（Ramachandran et al., 2019; Wang et al., 2020b）。</p>
+<p>指标。我们在下游数据集上报告通过少量样本或微调准确度的结果。微调准确度捕获了每个模型在相应数据集上微调后的性能。少量样本准确度是通过解决一个正则化最小二乘回归问题获得的，该问题将子集训练图像的（冻结的）表示映射到 <span class="math-inline">{-1, 1}^K</span> 目标向量。这种表述允许我们精确地以封闭形式恢复确切的解。尽管我们主要关注微调性能，但有时我们使用线性少量样本准确度进行快速即时评估，如果微调成本过高。</p>
+<h3 id="42-与最新技术的比较">4.2 与最新技术的比较<a class="anchor-link" href="#42-与最新技术的比较" title="Permanent link">&para;</a></h3>
+<p>我们首先比较我们最大的模型——ViT-H/14 和 ViT-L/16——与文献中的最先进的 CNNs。第一个比较点是 Big Transfer (BiT)（Kolesnikov et al., 2020），它使用大型 ResNets 进行监督迁移学习。第二个是比较点是 Noisy Student（Xie et al.,2020），这是一个大型 EfficientNet，使用半监督学习在 ImageNet 和 JFT300M 上进行训练，标签被移除。目前，Noisy Student 在 ImageNet 上是最先进的，BiT-L 在此处报告的其他数据集上也是最先进的。所有模型都在 TPUv3 硬件上训练，我们报告了预训练每个模型所需的 TPUv3 核心天数，即用于训练的 TPU v3 核心数（每个芯片 2 个）乘以训练天数。</p>
+<p>表 2 显示了结果。较小的 ViT-L/16 模型在 JFT-300M 上预训练，在所有任务上的表现超过了在同一数据集上预训练的 BiT-L，同时需要的计算资源大大减少。更大的模型，ViT-H/14，特别是在更具挑战性的数据集上——ImageNet、CIFAR-100 和 VTAB 套件上——进一步提高了性能。有趣的是，这个模型在预训练上仍然大大减少了计算量。然而，我们注意到预训练效率可能不仅受架构选择的影响，还受到其他参数的影响，如训练计划、优化器、权重衰减等。我们在第 4.4 节中提供了不同架构的性能与计算的对照研究。最后，ViT-L/16 模型在公共 ImageNet-21k 数据集上预训练也在大多数数据集上表现良好，同时预训练所需的资源更少：它可以在大约 30 天内使用标准云 TPUv3 和 8 个核心进行训练。</p>
+<p>图 2 分解了 VTAB 任务到各自的组，并与此基准上的先前 SOTA 方法进行了比较：BiT、VIVI——一个在 ImageNet 和 Youtube 上共同训练的 ResNet（Tschannen et al., 2020），以及 S4L——在 ImageNet 上的监督加半监督学习（Zhai et al., 2019a）。ViT-H/14 在自然和结构化任务上超过了 BiT-R152x4 和其他方法。在专业化任务上，前两个模型的性能相似。</p>
+<h3 id="43-预训练数据需求">4.3 预训练数据需求<a class="anchor-link" href="#43-预训练数据需求" title="Permanent link">&para;</a></h3>
+<p>视觉 Transformer 在大型 JFT-300M 数据集上预训练时表现良好。与 ResNets 相比，ViT 对视觉的归纳偏好更少，那么数据集大小有多关键呢？我们进行了两个系列的实验。</p>
+<p>首先，我们在不同大小的数据集上预训练 ViT 模型：ImageNet、ImageNet-21k 和 JFT300M。为了提高在较小数据集上的性能，我们优化了三个基本的正则化参数——权重衰减、dropout 和标签平滑。图 3 显示了微调到 ImageNet 后的结果（其他数据集的结果见表 5）2。当在最小的数据集上预训练时，ViT-Large 模型的表现不如 ViT-Base 模型，尽管（适度）正则化。在 ImageNet-21k 预训练时，它们的性能相似。只有在 JFT-300M 上，我们才看到了大型模型的全部好处。图 3 还显示了 BiT 模型的性能范围。BiT CNNs 在 ImageNet 上的表现优于 ViT，但随着数据集的增大，ViT 迎头赶上。</p>
+<p>其次，我们在 9M、30M 和 90M 的随机子集以及完整的 JFT300M 数据集上训练我们的模型。我们不对较小的子集进行额外的正则化，并为所有设置使用相同的超参数。这样，我们评估了模型的内在属性，而不是正则化的影响。然而，我们确实使用了早期停止，并报告了训练过程中实现的最佳验证准确度。为了节省计算资源，我们报告了少量样本线性准确度而不是完整的微调准确度。图 4 包含了结果。视觉 Transformer 在较小的数据集上比具有可比计算成本的 ResNets 过拟合得更多。例如，ViT-B/32 略快于 ResNet50；它在 9M 子集上的表现要差得多，但在 90M+ 子集上表现更好。对于 ResNet152x2 和 ViT-L/16 也是如此。这个结果加强了这样的直觉：卷积归纳偏好对于较小的数据集很有用，但对于较大的数据集，直接从数据中学习相关模式是足够的，甚至是有益的。</p>
+<p>总的来说，ImageNet 上的少量样本结果（图 4）以及 VTAB 上的低数据结果（表 2）对于非常低数据迁移来说看起来很有希望。对 ViT 的少量样本属性进行进一步分析是未来工作的一个激动人心的方向。</p>
+<h3 id="44-扩展研究">4.4 扩展研究<a class="anchor-link" href="#44-扩展研究" title="Permanent link">&para;</a></h3>
+<p>我们通过评估从 JFT-300M 迁移的性能，对不同模型进行了受控的扩展研究。在这个设置中，数据大小并不限制模型的性能，我们评估了每个模型的性能与预训练成本。模型包括：7 个 ResNets，R50x1、R50x2、R101x1、R152x1、R152x2，预训练 7 个周期，加上 R152x2 和 R200x3 预训练 14 个周期；6 个视觉 Transformers，ViT-B/32、B/16、L/32、L/16，预训练 7 个周期，加上 L/16 和 H/14 预训练 14 个周期；以及 5 个混合模型，R50+ViT-B/32、B/16、L/32、L/16 预训练 7 个周期，加上 R50+ViT-L/16 预训练 14 个周期（对于混合模型，模型名称末尾的数字不代表补丁尺寸，而是 ResNet 主干的总下采样比率）。</p>
+<p>图 5 包含了迁移性能与总预训练计算量（见附录 D.5 有关计算成本的详细信息）。每个模型的详细结果提供在附录表 6 中。可以观察到几个模式。首先，视觉 Transformer 在性能/计算权衡上优于 ResNets。ViT 使用大约 2-4 倍更少的计算量就能达到相同的性能（5 个数据集上的平均值）。其次，混合模型在较小的计算预算下略优于 ViT，但对于更大的模型，差异消失了。这个结果有点令人惊讶，因为人们可能会期望卷积局部特征处理在任何尺寸上都能协助 ViT。第三，视觉 Transformer 似乎在尝试的范围内没有饱和，这激发了未来扩展 ViT 的动力。</p>
+<h3 id="45-检查视觉-transformer">4.5 检查视觉 Transformer<a class="anchor-link" href="#45-检查视觉-transformer" title="Permanent link">&para;</a></h3>
+<p>为了开始理解视觉 Transformer 如何处理图像数据，我们分析了其内部表示。视觉 Transformer 的第一层将扁平化的补丁线性投影到低维空间（方程 1）。图 7（左）显示了学习到的嵌入滤波器的主成分。这些分量类似于每个补丁内细结构的低维表示的合理基函数。</p>
+<p>在投影之后，添加了一个学习到的位置嵌入到补丁表示中。图 7（中）显示，模型学习在位置嵌入的相似性中编码图像内的距离，即更接近的补丁倾向于具有更相似的位置嵌入。进一步，行 - 列结构出现了；同一行/列的补丁具有相似的嵌入。最后，对于更大的网格，有时可以明显看出正弦结构（附录 D）。位置嵌入学习表示 2D 图像拓扑解释了为什么手工制作的 2D 感知嵌入变体没有改进（附录 D.4）。</p>
+<p>自注意力允许 ViT 即使在最低层也将整个图像的信息整合在一起。我们调查了网络在多大程度上利用了这种能力。具体来说，我们根据注意力权重计算了基于注意力权重在图像空间中整合信息的平均距离（图 7，右）。这个“注意力距离”类似于 CNNs 中的接受域大小。我们发现，一些头已经在最低层关注了大部分图像，表明模型确实使用了整合全球信息的能力。其他注意力头在低层有一致的小注意力距离。这种高度局部的注意力在应用 ResNet 后再应用 Transformer 的混合模型中不太明显，表明它可能与 CNNs 中的早期卷积层功能相似。此外，注意力距离随着网络深度的增加而增加。总体而言，我们发现模型关注对分类有语义相关性的图像区域（图 6）。</p>
+<h3 id="46-自监督">4.6 自监督<a class="anchor-link" href="#46-自监督" title="Permanent link">&para;</a></h3>
+<p>Transformer 在 NLP 任务上表现出色。然而，它们的成功不仅源于其出色的可扩展性，还源于大规模自监督预训练（Devlin et al., 2019; Radford et al., 2018）。我们也对掩码补丁预测进行了初步的自监督探索，模仿 BERT 中使用的掩码语言建模任务。通过自监督预训练，我们的较小 ViT-B/16 模型在 ImageNet 上达到了 79.9% 的准确率，比从头开始训练有显著的 2% 提升，但仍比大规模监督预训练低 4%。附录 B.1.2 包含更多细节。我们将探索对比预训练（Chen et al., 2020b; He et al., 2020; Bachman et al., 2019; H´enaff et al., 2020）的工作留待未来。</p>
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>我们已经探索了 Transformer 直接应用于图像识别的可能性。与以往在计算机视觉中使用自注意力的工作不同，我们没有引入图像特定的归纳偏好到架构中，除了最初的补丁提取步骤。相反，我们将图像解释为补丁序列，并使用标准 Transformer 编码器处理，就像在 NLP 中一样。这种简单但可扩展的策略在与大规模数据集预训练结合时出奇地有效。因此，视觉 Transformer 在许多图像分类数据集上匹配或超过了最新技术，同时预训练相对便宜。</p>
+<p>虽然这些初步结果是令人鼓舞的，但仍有许多挑战。之一是将 ViT 应用于其他计算机视觉任务，如检测和分割。我们的结果，加上 Carion et al. (2020) 的结果，表明这种方法是有希望的。另一个挑战是继续探索自监督预训练方法。我们的初步实验显示了自监督预训练的进步，但自监督和大规模监督预训练之间仍有较大差距。最后，进一步扩展 ViT 可能会提高性能。</p>
+<h2 id="致谢">致谢<a class="anchor-link" href="#致谢" title="Permanent link">&para;</a></h2>
+<p>这项工作在柏林、苏黎世和阿姆斯特丹进行。我们感谢谷歌的许多同事的帮助，特别是 Andreas Steiner 在基础设施和代码开源发布方面的帮助；Joan Puigcerver 和 Maxim Neumann 在大规模训练基础设施方面的帮助；Dmitry Lepikhin、Aravindh Mahendran、Daniel Keysers、Mario Lucić、Noam Shazeer、Ashish Vaswani 和 Colin Raffel 进行了有益的讨论。</p>
+<h2 id="附录">附录<a class="anchor-link" href="#附录" title="Permanent link">&para;</a></h2>
+<h3 id="a-多头自注意力">A. 多头自注意力<a class="anchor-link" href="#a-多头自注意力" title="Permanent link">&para;</a></h3>
+<p>标准的 qkv 自注意力（SA，Vaswani et al. (2017)）是神经网络架构中流行的构建块。对于输入序列 <span class="math-inline">z \in R^{N \times D}</span> 中的每个元素，我们计算所有值 <span class="math-inline">v</span> 的加权和。注意力权重 <span class="math-inline">A_{ij}</span> 基于序列中两个元素及其各自的查询 <span class="math-inline">q_i</span> 和键 <span class="math-inline">k_j</span> 表示之间的成对相似性。<br />
+<div class="math-display"><br />
+    [q, k, v] = z U^{qkv} \in R^{D \times 3D/h}, \tag{5}<br />
+</div></p>
+<p><div class="math-display"><br />
+    A = \text{softmax} \left( \frac{qk^T}{\sqrt{D/h}} \right) \in R^{N \times N}, \tag{6}<br />
+</div></p>
+<p><div class="math-display"><br />
+    \text{SA}(z) = Av. \tag{7}<br />
+</div><br />
+多头自注意力（MSA）是 SA 的扩展，其中我们并行运行 k 个自注意力操作，称为“头”，并连接它们的输出。为了在改变 k 时保持计算和参数数量不变，<span class="math-inline">D/h</span>（方程 5）通常设置为 <span class="math-inline">D/k</span>。<br />
+<div class="math-display"><br />
+    \text{MSA}(z) = [SA_1(z); SA_2(z); \cdots; SA_k(z)] U^{msa} \in R^{k \cdot D/h \times D} \tag{8}<br />
+</div></p>
+<h3 id="b-实验细节">B. 实验细节<a class="anchor-link" href="#b-实验细节" title="Permanent link">&para;</a></h3>
+<p>B.1 训练</p>
+<p>表 3 总结了我们不同模型的训练设置。我们发现，当在 ImageNet 上从头开始训练模型时，强正则化是关键。如果使用 dropout，则在除了 qkv 投影之外的每个密集层之后应用，也直接在添加位置嵌入后应用。混合模型的训练设置与它们的 ViT 对应物完全相同。最后，所有训练都在 224 的分辨率下进行。</p>
+<p>B.1.1 微调</p>
+<p>我们使用 SGD 对所有 ViT 模型进行微调，动量为 0.9。我们在学习率上运行一个小的网格搜索，见表 4 中的学习率范围。为此，我们使用训练集的小子集（Pets 和 Flowers 的 10%，CIFAR 的 2%，ImageNet 的 1%）作为开发集，并在剩余数据上训练。对于最终结果，我们在完整训练集上训练，并在各自的测试数据上评估。对于 ResNets 和混合模型的微调，我们使用与 ViT 完全相同的设置，唯一的例外是在 ImageNet 上，我们在学习率扫描中增加了另一个值 0.06。此外，对于 ResNets，我们还运行了 Kolesnikov et al. (2020) 的设置，并选择了在该运行和我们的扫描中获得的最佳结果。最后，如果未提及，所有微调实验都在 384 分辨率下运行（与训练不同的分辨率进行微调是常见的实践）。</p>
+<p>当将 ViT 模型转移到另一个数据集时，我们移除整个头部（两个线性层），并用一个单一的零初始化线性层替换，输出目标数据集所需的类别数量。我们发现这比简单地重新初始化最后一层更稳健。</p>
+<p>对于 VTAB，我们遵循 Kolesnikov et al. (2020) 的协议，并为所有任务使用相同的超参数设置。我们使用 0.01 的学习率，并训练 2500 步（表 4）。我们通过在两个学习率和两个计划上运行一个小范围的扫描，并选择在 200 个样本验证集上获得最高 VTAB 分数的设置来选择此设置。我们遵循 Kolesnikov et al. (2020) 使用的预处理，除了我们不使用特定任务的输入分辨率。相反，我们发现视觉 Transformer 最受益于所有任务的高分辨率（384×384）。</p>
+<p>B.1.2 自监督</p>
+<p>我们采用掩码补丁预测目标进行初步的自监督实验。为此，我们破坏了 50% 的补丁嵌入，要么用可学习的 [mask] 嵌入替换它们的嵌入（80%），要么用另一个随机补丁嵌入替换（10%），或者保持原样（10%）。这个设置与 Devlin et al. (2019) 用于语言的设置非常相似。最后，我们使用它们各自的补丁表示预测每个损坏补丁的 3 位平均颜色（即总共 512 种颜色）。</p>
+<p>我们训练了我们的自监督模型大约 1M 步（约 14 个周期）在 JFT 上，批量大小为 4096。我们使用 Adam，基础学习率为 <span class="math-inline">2 \times 10^{-4}</span>，预热 10k 步，余弦学习率衰减。作为预训练的目标，我们尝试了以下设置：1）仅预测平均、3 位颜色（即 1 个预测 512 种颜色），2）同时预测 16×16 补丁的 4×4 缩小版本和 3 位颜色（即 16 个预测 512 种颜色），3）使用 L2 对完整补丁进行回归（即对 3 个 RGB 通道进行 256 个回归）。令人惊讶的是，我们发现所有这些都相当有效，尽管 L2 稍微差一些。我们只报告选项 1）的最终结果，因为它在少量样本性能上表现最好。我们还尝试了 Devlin et al. (2019) 使用的 15% 损坏率，但结果在我们的少量样本指标上也稍微差一些。</p>
+<p>最后，我们想说的是，我们的掩码补丁预测实例不需要如此大量的预训练或像 JFT 这样的大型数据集就能在 ImageNet 分类上获得类似的性能提升。也就是说，我们观察到在下游性能上，在 100k 预训练步骤之后出现了边际效应递减，并且在 ImageNet 上预训练时也看到了类似的提升。</p>
+<h3 id="c-附加结果">C. 附加结果<a class="anchor-link" href="#c-附加结果" title="Permanent link">&para;</a></h3>
+<p>我们报告了与论文中图表相对应的详细结果。表 5 对应于论文中的图 3，显示了在不同大小的数据集上预训练的不同 ViT 模型的迁移性能：ImageNet、ImageNet-21k 和 JFT-300M。表 6 对应于论文中的图 5，显示了 ViT、ResNet 和混合模型的不同大小的迁移性能，以及它们预训练的估计计算成本。</p>
+<h3 id="d-附加分析">D. 附加分析<a class="anchor-link" href="#d-附加分析" title="Permanent link">&para;</a></h3>
+<p>D.1 SGD 与 ResNet 的 Adam</p>
+<p>ResNet 通常使用 SGD 进行训练，而我们使用 Adam 作为优化器是非常不寻常的。这里我们展示了激励这一选择的实验。也就是说，我们比较了两个 ResNet——50x1 和 152x2——在 JFT 上使用 SGD 和 Adam 进行预训练的性能。对于 SGD，我们使用了 Kolesnikov et al. (2020) 推荐的超参数。结果在表 7 中呈现。Adam 预训练在大多数数据集上的表现优于 SGD 预训练，并且在平均值上也是如此。这证明了我们选择 Adam 作为在 JFT 上预训练 ResNets 的优化器。注意，绝对数字比 Kolesnikov et al. (2020) 报告的要低，因为我们只预训练了 7 个周期，而不是 30 个周期。</p>
+<p>D.2 Transformer 形状</p>
+<p>我们对扩展 Transformer 架构的不同维度进行了消融研究，以找出最适合扩展到非常大的模型的维度。图 8 显示了不同配置在 ImageNet 上的 5-shot 性能。所有配置都基于具有 8 层、<span class="math-inline">D = 1024</span>、<span class="math-inline">D_{MLP} = 2048</span> 和一个 32 补丁尺寸的 ViT 模型，所有线条的交点。我们可以看到，扩展深度带来了最大的改进，直到 64 层都非常明显。然而，16 层之后已经可以看到收益递减。有趣的是，扩展网络的宽度似乎带来的变化最小。减小补丁尺寸，从而增加有效序列长度，出人意料地在不引入参数的情况下稳健改进。这些发现表明，计算可能是比参数数量更好的性能预测器，如果有任何的话，扩展应该强调深度而不是宽度。总的来说，我们发现成比例地扩展所有维度可以稳健地改进。</p>
+<p>D.3 头部类型和类别标记</p>
+<p>为了尽可能接近原始的 Transformer 模型，我们使用了额外的 [class] 标记，该标记被视为图像表示。然后通过一个小的多层感知器（MLP）将这个标记的输出转换为类别预测，其中单个隐藏层使用 tanh 作为非线性。</p>
+<p>这种设计是从文本的 Transformer 模型继承来的，我们在整个主要论文中都使用它。最初尝试仅使用图像补丁嵌入，全局平均池化（GAP）它们，然后使用线性分类器——就像 ResNet 的最终特征图一样——表现得非常差。然而，我们发现这既不是因为额外的标记，也不是因为 GAP 操作。相反，性能差异完全可以通过不同的学习率来解释，见图 9。</p>
+<p>D.4 位置嵌入</p>
+<p>我们对使用位置嵌入编码空间信息的不同方式进行了消融研究。我们尝试了以下情况：</p>
+<ul>
+<li>不提供位置信息：将输入视为补丁袋。</li>
+<li>1 维位置嵌入：将输入视为补丁序列的光栅顺序。</li>
+<li>2 维位置嵌入：将输入视为二维网格的补丁。在这种情况下，学习两组嵌入，每个轴一组，X 嵌入和 Y 嵌入，每个大小为 <span class="math-inline">D/2</span>。然后，根据补丁在输入中的坐标，我们连接 X 和 Y 嵌入以获得该补丁的最终位置嵌入。</li>
+<li>相对位置嵌入：考虑补丁之间的相对距离来编码空间信息，而不是它们的绝对位置。为此，我们使用 1 维相对注意力，其中我们定义了所有可能的补丁对的相对距离。因此，对于每对给定的（一个作为查询，另一个作为注意力机制中的键/值），我们有一个偏移 <span class="math-inline">p_q - p_k</span>，每个偏移与一个嵌入相关联。然后，我们简单地运行额外的注意力，其中我们使用原始查询（查询的内容），但使用相对位置嵌入作为键。然后我们使用相对注意力的 logits 作为偏置项，并将其添加到主注意力（基于内容的注意力）的 logits 上，然后应用 softmax。</li>
+</ul>
+<p>除了不同的方式来编码空间信息，我们还尝试了不同的方式来将这些信息整合到我们的模型中。对于 1 维和 2 维位置嵌入，我们尝试了三种不同的案例：（1）在模型的茎之后立即将位置嵌入添加到输入中，然后在将输入提供给 Transformer 编码器之前（本文中所有其他实验的默认设置）；（2）在每个层开始时学习并添加位置嵌入到输入中；（3）在每个层开始时添加学习的位置嵌入到输入中（在层之间共享）。</p>
+<p>表 8 总结了这项关于 ViT-B/16 模型的消融研究的结果。正如我们所见，虽然没有位置嵌入的模型与具有位置嵌入的模型之间的性能有很大的差距，但不同编码位置信息的方式之间几乎没有差异。我们推测，由于我们的 Transformer 编码器在补丁级别输入上操作，与像素级别输入相比，如何编码空间信息的差异不那么重要。更确切地说，在补丁级别输入中，空间维度比原始像素级别输入要小得多，例如 14×14 而不是 224×224，在这个分辨率下学习表示空间关系对于这些不同的位置编码策略同样容易。尽管如此，网络学习到的特定位置嵌入相似性模式取决于训练超参数（图 10）。</p>
+<p>D.5 经验计算成本</p>
+<p>我们还对架构在硬件上的实际速度感兴趣，这并不总是能被理论 FLOPs 很好地预测，因为车道宽度和缓存大小等细节。为此，我们对主要模型在 TPUv3 加速器上进行了推理速度的计时；推理和反向传播速度之间的差异是一个常数模型无关因子。</p>
+<p>图 12（左）显示了每个核心可以处理的图像数量，跨各种输入尺寸。每个点都指的是在广泛的批量大小上测量的峰值性能。可以看出，ViT 的理论双二次方与图像大小的扩展仅在最大模型和最大分辨率下才开始发生。</p>
+<p>另一个感兴趣的量是每个模型可以适应核心的最大批量大小，更大的对于扩展到大型数据集更有利。图 12（右）显示了这个量对于相同的一组模型。这表明大型 ViT 模型在内存效率方面明显优于 ResNet 模型。</p>
+<p>D.6 轴向注意力</p>
+<p>轴向注意力（Huang et al., 2020; Ho et al., 2019）是一种简单但有效的技术，用于在组织为多维张量的大输入上运行自注意力。轴向注意力的一般思想是执行多个注意力操作，每个操作沿输入张量的一个轴，而不是将 1 维注意力应用于输入的扁平版本。在轴向注意力中，每个注意力沿特定轴混合信息，同时保持沿其他轴的信息独立。沿着这条线，Wang et al. (2020b) 提出了 AxialResNet 模型，其中 ResNet50 中的所有 3×3 卷积被轴向自注意力替换，即行和列注意力，并增加了相对位置编码。我们实现了 AxialResNet 作为基线模型。3</p>
+<p>此外，我们修改了 ViT 以处理 2 维形状的输入，而不是 1 维补丁序列，并结合了轴向 Transformer 块，其中不是自注意力后跟 MLP，而是行自注意力加上 MLP 后跟列自注意力加上 MLP。</p>
+<p>图 13 展示了 Axial ResNet、Axial-ViT-B/32 和 Axial-ViT-B/16 在预训练 JFT 数据集时在 ImageNet 5shot 线性上的性能，与它们的预训练计算量相比，无论是在 FLOPs 数量还是推理时间（每秒示例）上。可以看出，Axial-ViT-B/32 和 Axial-ViT-B/16 在性能上都优于它们的 ViT-B 对应物，但代价是更多的计算。这是因为在 Axial-ViT 模型中，每个具有全局自注意力的 Transformer 块被两个 Axial Transformer 块替换，一个用于行自注意力，一个用于列自注意力，尽管自注意力操作的序列长度在轴向情况下更小，但每个 Axial-ViT 块有一个额外的 MLP。对于 AxialResNet，尽管在准确性/计算权衡（图 13，左）方面看起来合理，但朴素实现在 TPUs 上极其缓慢（图 13，右）。</p>
+<p>D.7 注意力距离</p>
+<p>为了理解 ViT 如何使用自注意力在图像间整合信息，我们分析了不同层的注意力权重跨越的平均距离（图 11）。这个“注意力距离”类似于 CNNs 中的接受域大小。平均注意力距离在较低层的头部之间变化很大，一些头部关注大部分图像，而其他头部关注查询位置附近的小区域。随着深度的增加，所有头部的注意力距离都增加了。在网络的后半部分，大多数头部都在令牌间广泛关注。</p>
+<p>D.8 注意力图</p>
+<p>为了计算输出标记到输入空间的注意力图（图 6 和 14），我们使用了注意力展开（Abnar &amp; Zuidema, 2020）。简而言之，我们平均了 ViTL/16 的注意力权重，然后递归地乘以所有层的权重矩阵。这考虑了通过所有层的注意力在标记间的混合。</p>
+<p>D.9 ObjectNet 结果</p>
+<p>我们还在 ObjectNet 基准上评估了我们的旗舰 ViT-H/14 模型，遵循 Kolesnikov et al. (2020) 的评估设置，结果是 82.1% 的 top-5 准确率和 61.7% 的 top-1 准确率。</p>
+<p>D.10 VTAB 分解</p>
+<p>表 9 显示了在每个 VTAB-1k 任务上获得的分数。</p>
+<h3 id="d11-vtab-分析">D.11 VTAB 分析<a class="anchor-link" href="#d11-vtab-分析" title="Permanent link">&para;</a></h3>
+<p>表 9 详细列出了在 VTAB-1k 各个任务上的得分情况，提供了对模型在不同任务上性能的深入了解。</p>
+<h3 id="d12-注意力可视化">D.12 注意力可视化<a class="anchor-link" href="#d12-注意力可视化" title="Permanent link">&para;</a></h3>
+<p>为了进一步理解 ViT 是如何通过自注意力机制在图像间整合信息的，我们分析了不同层的注意力权重，并计算了它们覆盖的平均距离（图 11）。这个“注意力距离”类似于卷积神经网络（CNNs）中的接受域大小。我们发现，在较低层中，不同头部的平均注意力距离变化很大，一些头部的注意力覆盖了大部分图像，而其他头部则只关注查询位置附近的小区域。随着网络深度的增加，所有头部的注意力距离都有所增加。在网络的后半部分，大多数头部的注意力覆盖了广泛的区域。</p>
+<h3 id="d13-自注意力机制的进一步讨论">D.13 自注意力机制的进一步讨论<a class="anchor-link" href="#d13-自注意力机制的进一步讨论" title="Permanent link">&para;</a></h3>
+<p>我们通过注意力展开技术（Attention Rollout）来计算输出标记到输入空间的注意力图（如图 6 和图 14 所示）。该技术通过平均 ViT 模型所有头部的注意力权重，然后递归地乘以所有层的权重矩阵来实现。这考虑了通过所有层的注意力在标记间的混合。</p>
+<h3 id="d14-实验结果的总结">D.14 实验结果的总结<a class="anchor-link" href="#d14-实验结果的总结" title="Permanent link">&para;</a></h3>
+<p>通过对 VTAB 任务的分析和注意力机制的深入研究，我们得出结论，ViT 模型能够有效地处理图像识别任务，并且在多个基准测试中取得了优异的性能。这些结果进一步证实了 Transformer 架构在计算机视觉领域的潜力，特别是在处理大规模数据集时。</p>
+<h3 id="d15-对未来的展望">D.15 对未来的展望<a class="anchor-link" href="#d15-对未来的展望" title="Permanent link">&para;</a></h3>
+<p>尽管 ViT 在多个任务上表现出色，但仍有许多挑战需要克服。例如，将 ViT 应用于其他计算机视觉任务（如目标检测和语义分割）是一个值得探索的方向。此外，自监督预训练方法的探索也是一个重要的研究方向，这可能会进一步提高模型的性能，并减少对大规模标注数据集的依赖。</p>
+<h3 id="d16-结论">D.16 结论<a class="anchor-link" href="#d16-结论" title="Permanent link">&para;</a></h3>
+<p>本研究展示了 Transformer 架构在图像识别任务上的应用潜力，特别是在大规模数据集上预训练时。ViT 模型通过自注意力机制有效地整合了图像信息，并在多个基准测试中取得了优异的性能。未来的研究可以进一步探索 ViT 在其他视觉任务上的应用，并探索更有效的自监督预训练方法。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

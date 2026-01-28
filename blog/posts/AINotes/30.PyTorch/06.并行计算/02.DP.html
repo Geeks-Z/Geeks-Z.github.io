@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>这里要 model.cuda()</title>
+    <meta name="description" content="这里要 model.cuda() - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#简介">简介</a></li>
+<li><a href="#使用">使用</a></li>
+<li><a href="#实现">实现</a></li>
+<li><a href="#分析">分析</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>这里要 model.cuda()</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/06.并行计算</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>单机多卡（ Data Parallel，DP）</p>
+</blockquote>
+<h2 id="简介">简介<a class="anchor-link" href="#简介" title="Permanent link">&para;</a></h2>
+<p>DataParallel 可以帮助我们（使用单进程控）将模型和数据加载到多个 GPU 中，控制数据在 GPU 之间的流动，协同不同 GPU 上的模型进行并行训练（细粒度的方法有 scatter，gather 等等）。</p>
+<p>DP 基于单机多卡，所有设备都负责计算和训练网络，除此之外， device[0] (并非 GPU 真实标号而是输入参数 device_ids 首位) 还要负责整合梯度，更新参数。图 1 即为 GPU 0 作为 device[0] 的例子。从图中我们可以看出，有三个主要过程：</p>
+<ul>
+<li>过程一（图中红色部分）：各卡分别计算损失和梯度</li>
+<li>过程二（图中蓝色部分）：所有梯度整合到 device[0]</li>
+<li>过程三（图中绿色部分）：device[0] 进行参数更新，其他卡拉取 device[0] 的参数进行更新</li>
+</ul>
+<p>所有卡都并行运算（图中红色），将梯度收集到 device[0]（图中浅蓝色）和 device[0] 分享模型参数给其他 GPU（图中绿色）三个主要过程。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250302191353.png" style="zoom: 80%;" /></div>
+
+<p>虽然 DP 只能实现单机训练不能算是严格意义上的分布式训练（多个节点），但是其原理和分布式训练算法里的 Parameter Server 架构很相近，我们借用 PS 的伪代码来说明一下。  </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250302191916.png" style="zoom: 60%;" /></div>
+
+<p>我们可以看到 PS 的并行梯度下降流程分为四部分：</p>
+<p>Task Scheduler：负责加载数据并分发数据至每个 worker 节点，并执行多轮迭代。</p>
+<p>在每轮迭代中，worker 负责：</p>
+<ul>
+<li>初始化：载入数据并将全部模型参数从 server 节点拉下来（图 1 绿色）</li>
+<li>梯度计算：利用该节点的数据计算梯度（图 1 红色）并将梯度更新到 server 节点（图 1 蓝色）</li>
+</ul>
+<p>Server 负责：</p>
+<ul>
+<li>汇总梯度</li>
+<li>更新参数</li>
+</ul>
+<h2 id="使用">使用<a class="anchor-link" href="#使用" title="Permanent link">&para;</a></h2>
+<p>DataParallel 使用起来非常方便，我们只需要用 DataParallel 包装模型，再设置一些参数即可。主要使用到了<code>nn.DataParallel</code>函数，需要定义的参数包括：参与训练的 GPU 有哪些，device_ids=gpus；用于汇总梯度的 GPU 是哪个，output_device=gpus[0] 。DataParallel 会自动帮我们将数据切分 load 到相应 GPU，将模型复制到相应 GPU，进行正向传播计算梯度并汇总：</p>
+<pre><code class="language-python">model = nn.DataParallel(model.cuda(), device_ids=gpus, output_device=gpus[0])
+</code></pre>
+<p>指定 GPU 进行并行训练，一般有两种方式</p>
+<ul>
+<li><code>nn.DataParallel</code>函数传入<code>device_ids</code>参数，可以指定了使用的 GPU 编号</li>
+</ul>
+<p><code>python
+  model = nn.DataParallel(model, device_ids=[0,1]) # 使用第0和第1张卡进行并行训练</code></p>
+<ul>
+<li>要<strong>手动指定对程序可见的 GPU 设备</strong></li>
+</ul>
+<p><code>python
+  os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"</code></p>
+<p>值得注意的是，模型和数据都需要先 load 进 GPU 中，DataParallel 的 module 才能对其进行处理，否则会报错：</p>
+<pre><code class="language-python"># 这里要 model.cuda()
+model = nn.DataParallel(model.cuda(), device_ids=gpus, output_device=gpus[0])
+
+for epoch in range(100):
+   for batch_idx, (data, target) in enumerate(train_loader):
+      # 这里要 images/target.cuda()
+      images = images.cuda(non_blocking=True)
+      target = target.cuda(non_blocking=True)
+      ...
+      output = model(images)
+      loss = criterion(output, target)
+      ...
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+</code></pre>
+<p>汇总一下，DataParallel 并行训练部分主要与如下代码段有关：</p>
+<pre><code class="language-python"># main.py
+import torch
+import torch.distributed as dist
+
+gpus = [0, 1, 2, 3]
+torch.cuda.set_device('cuda:{}'.format(gpus[0]))
+
+train_dataset = ...
+
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=...)
+
+model = ...
+model = nn.DataParallel(model.to(device), device_ids=gpus, output_device=gpus[0])
+
+optimizer = optim.SGD(model.parameters())
+
+for epoch in range(100):
+   for batch_idx, (data, target) in enumerate(train_loader):
+      images = images.cuda(non_blocking=True)
+      target = target.cuda(non_blocking=True)
+      ...
+      output = model(images)
+      loss = criterion(output, target)
+      ...
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+</code></pre>
+<p>在使用时，使用 python 执行即可：</p>
+<pre><code class="language-python">python main.py
+</code></pre>
+<p>在 ImageNet 上的完整训练代码，请点击<a href="https://link.zhihu.com/?target=https%3A//github.com/tczhangzhi/pytorch-distributed/blob/master/dataparallel.py">Github</a>。</p>
+<h2 id="实现">实现<a class="anchor-link" href="#实现" title="Permanent link">&para;</a></h2>
+<p>这一节主要讨论 DP 的实现，首先先贴上源码（顺便看一下comment 部分）：</p>
+<pre><code class="language-python">class DataParallel(Module):
+
+    def __init__(self, module, device_ids=None, output_device=None, dim=0):
+        super(DataParallel, self).__init__()
+
+        # 检查是否有可用的 GPU
+        device_type = _get_available_device_type()
+        if device_type is None:
+            self.module = module
+            self.device_ids = []
+            return
+                # 默认使用所有可见的 GPU
+        if device_ids is None:
+            device_ids = _get_all_device_indices()
+
+                # 默认 server 是 device_ids 列表上第一个
+        if output_device is None:
+            output_device = device_ids[0]
+
+        self.dim = dim
+        self.module = module
+        self.device_ids = list(map(lambda x: _get_device_index(x, True), device_ids))
+        self.output_device = _get_device_index(output_device, True)
+        self.src_device_obj = torch.device(device_type, self.device_ids[0])
+
+        # 检查负载是否平衡， 不平衡（指内存或者处理器 max/min &gt; 0.75 会有警告）
+        _check_balance(self.device_ids)
+
+        # 单卡
+        if len(self.device_ids) == 1:
+            self.module.to(self.src_device_obj)
+
+    def forward(self, *inputs, **kwargs):
+
+        # 没 GPU 可用
+        if not self.device_ids:
+            return self.module(*inputs, **kwargs)
+
+                # 运行前 GPU device_ids[0] （即我们的 server ）上必须有 parallelized module 的parameters 和 buffers
+        # 因为 DP 保证 GPU device_ids[0] 和 base parallelized module 共享存储
+        # 所以在device[0] 上的 in-place 更新也会被保留下来，其他的则不会
+
+        for t in chain(self.module.parameters(), self.module.buffers()):
+            if t.device != self.src_device_obj:
+                raise RuntimeError(&quot;module must have its parameters and buffers &quot;
+                                   &quot;on device {} (device_ids[0]) but found one of &quot;
+                                   &quot;them on device: {}&quot;.format(self.src_device_obj, t.device))
+
+                # nice 现在 device[0] 上已经有了 module 和 input， 接下来我们就要开始 PS 算法了
+        # 可以开始看正文了
+
+        inputs, kwargs = self.scatter(inputs, kwargs, self.device_ids)
+
+        # 如果仅有单卡可用，直接单卡计算，不用并行
+        if len(self.device_ids) == 1:
+            return self.module(*inputs[0], **kwargs[0])
+
+        replicas = self.replicate(self.module, self.device_ids[:len(inputs)])
+        outputs = self.parallel_apply(replicas, inputs, kwargs)
+        return self.gather(outputs, self.output_device)
+
+    def replicate(self, module, device_ids):
+        return replicate(module, device_ids, not torch.is_grad_enabled())
+
+    def scatter(self, inputs, kwargs, device_ids):
+        return scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
+
+    def parallel_apply(self, replicas, inputs, kwargs):
+        return parallel_apply(replicas, inputs, kwargs, self.device_ids[:len(replicas)])
+
+    def gather(self, outputs, output_device):
+        return gather(outputs, output_device, dim=self.dim)
+</code></pre>
+<p>从 forward 函数可以看出，关键函数有 scatter, replicate, parallel_apply 和 gather，我们一个一个看一下。</p>
+<p>首先是 scatter 函数，即 scatter_kwargs 函数。</p>
+<pre><code class="language-python">def scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
+    r&quot;&quot;&quot;Scatter with support for kwargs dictionary&quot;&quot;&quot;
+
+    # 主要函数
+    inputs = scatter(inputs, target_gpus, dim) if inputs else []
+    kwargs = scatter(kwargs, target_gpus, dim) if kwargs else []
+
+    # 用空项补全使 inputs 和 kwargs 长度相当
+    if len(inputs) &lt; len(kwargs):
+        inputs.extend([() for _ in range(len(kwargs) - len(inputs))])
+    elif len(kwargs) &lt; len(inputs):
+        kwargs.extend([{} for _ in range(len(inputs) - len(kwargs))])
+    # 返回 tuple
+    inputs = tuple(inputs)
+    kwargs = tuple(kwargs)
+    return inputs, kwargs
+</code></pre>
+<p>scatter_kwargs 函数中最重要的就是 scatter 函数，负责将 tensor 分成大概相等的块并将他们分给不同的 GPU。对其他的数据类型，则是复制分散给不同的 GPU 。</p>
+<pre><code class="language-python">def scatter(inputs, target_gpus, dim=0):
+    r&quot;&quot;&quot;
+    Slices tensors into approximately equal chunks and
+    distributes them across given GPUs. Duplicates
+    references to objects that are not tensors.
+    &quot;&quot;&quot;
+    def scatter_map(obj):
+        if isinstance(obj, torch.Tensor):
+            return Scatter.apply(target_gpus, None, dim, obj)
+        if is_namedtuple(obj):
+            return [type(obj)(*args) for args in zip(*map(scatter_map, obj))]
+        if isinstance(obj, tuple) and len(obj) &gt; 0:
+            return list(zip(*map(scatter_map, obj)))
+        if isinstance(obj, list) and len(obj) &gt; 0:
+            return [list(i) for i in zip(*map(scatter_map, obj))]
+        if isinstance(obj, dict) and len(obj) &gt; 0:
+            return [type(obj)(i) for i in zip(*map(scatter_map, obj.items()))]
+        return [obj for targets in target_gpus]
+
+    # After scatter_map is called, a scatter_map cell will exist. This cell
+    # has a reference to the actual function scatter_map, which has references
+    # to a closure that has a reference to the scatter_map cell (because the
+    # fn is recursive). To avoid this reference cycle, we set the function to
+    # None, clearing the cell
+    try:
+        res = scatter_map(inputs)
+    finally:
+        scatter_map = None
+    return res
+</code></pre>
+<p>其中，针对 tensor 的函数，</p>
+<pre><code class="language-python">class Scatter(Function):
+
+    @staticmethod
+    def forward(ctx, target_gpus, chunk_sizes, dim, input):
+        target_gpus = [_get_device_index(x, True) for x in target_gpus]
+        ctx.dim = dim
+        ctx.input_device = input.get_device() if input.device.type != &quot;cpu&quot; else -1
+        streams = None
+        if torch.cuda.is_available() and ctx.input_device == -1:
+            # Perform CPU to GPU copies in a background stream
+
+            # 新建 cuda stream
+            streams = [_get_stream(device) for device in target_gpus]
+
+        # 真正的操作
+        outputs = comm.scatter(input, target_gpus, chunk_sizes, ctx.dim, streams)
+
+        # Synchronize with the copy stream
+        if streams is not None:
+            for i, output in enumerate(outputs):
+                with torch.cuda.device(target_gpus[i]):
+                    main_stream = torch.cuda.current_stream()
+                    main_stream.wait_stream(streams[i])
+                    output.record_stream(main_stream)
+        return outputs
+
+    @staticmethod
+    def backward(ctx, *grad_output):
+        return None, None, None, Gather.apply(ctx.input_device, ctx.dim, *grad_output)
+</code></pre>
+<p>comm.scatter 依赖于 C++，就不介绍了。</p>
+<p>回顾 DP 代码块，我们已经运行完 scatter函数，即将一个 batch 近似等分成更小的 batch。接下来我们要看 replicate 函数和 gather 函数 （假设我们有不少于两张卡）。</p>
+<pre><code class="language-python">#  DP forward 里的代码
+    replicas = self.replicate(self.module, self.device_ids[:len(inputs)])
+
+    # 实现
+    def replicate(network, devices, detach=False):
+
+        if not _replicatable_module(network):
+            raise RuntimeError(&quot;Cannot replicate network where python modules are &quot;
+                               &quot;childrens of ScriptModule&quot;)
+
+        if not devices:
+            return []
+
+        # 需要复制到哪些 GPU， 复制多少份
+        devices = [_get_device_index(x, True) for x in devices]
+        num_replicas = len(devices)
+
+        # 复制 parameters
+        params = list(network.parameters())
+        param_indices = {param: idx for idx, param in enumerate(params)}
+
+        # 拉到代码块底部看原函数，然后再回来
+        param_copies = _broadcast_coalesced_reshape(params, devices, detach)
+
+
+        # 复制 buffers
+        buffers = list(network.buffers())
+        buffers_rg = []
+        buffers_not_rg = []
+        for buf in buffers:
+            if buf.requires_grad and not detach:
+                buffers_rg.append(buf)
+            else:
+                buffers_not_rg.append(buf)
+
+                # 记录需要和不需要求导的 buffer 的 index
+        buffer_indices_rg = {buf: idx for idx, buf in enumerate(buffers_rg)}
+        buffer_indices_not_rg = {buf: idx for idx, buf in enumerate(buffers_not_rg)}
+
+                # 分别拷贝，这个咱们已经会了
+        buffer_copies_rg = _broadcast_coalesced_reshape(buffers_rg, devices, detach=detach)
+        buffer_copies_not_rg = _broadcast_coalesced_reshape(buffers_not_rg, devices, detach=True)
+
+        # 现在开始拷贝网络
+        # 准备过程：将 network.modules() 变成list
+        # 然后再为之后复制的模型准备好空的 list 和 indices
+
+        modules = list(network.modules())
+        module_copies = [[] for device in devices]
+        module_indices = {}
+        scriptmodule_skip_attr = {&quot;_parameters&quot;, &quot;_buffers&quot;, &quot;_modules&quot;, &quot;forward&quot;, &quot;_c&quot;}
+
+        for i, module in enumerate(modules):
+            module_indices[module] = i
+            for j in range(num_replicas):
+                replica = module._replicate_for_data_parallel()
+                # This is a temporary fix for DDP. DDP needs to access the
+                # replicated model parameters. It used to do so through
+                # `mode.parameters()`. The fix added in #33907 for DP stops the
+                # `parameters()` API from exposing the replicated parameters.
+                # Hence, we add a `_former_parameters` dict here to support DDP.
+                replica._former_parameters = OrderedDict()
+
+                module_copies[j].append(replica)
+
+                # 接下来分别复制 module，param，buffer
+        for i, module in enumerate(modules):
+            for key, child in module._modules.items():
+                if child is None:
+                    for j in range(num_replicas):
+                        replica = module_copies[j][i]
+                        replica._modules[key] = None
+                else:
+                    module_idx = module_indices[child]
+                    for j in range(num_replicas):
+                        replica = module_copies[j][i]
+                        setattr(replica, key, module_copies[j][module_idx])
+            for key, param in module._parameters.items():
+                if param is None:
+                    for j in range(num_replicas):
+                        replica = module_copies[j][i]
+                        replica._parameters[key] = None
+                else:
+                    param_idx = param_indices[param]
+                    for j in range(num_replicas):
+                        replica = module_copies[j][i]
+                        param = param_copies[j][param_idx]
+                        # parameters in replicas are no longer leaves,
+                        # so setattr them as non-parameter attributes
+                        setattr(replica, key, param)
+                        # expose the parameter for DDP
+                        replica._former_parameters[key] = param
+            for key, buf in module._buffers.items():
+                if buf is None:
+                    for j in range(num_replicas):
+                        replica = module_copies[j][i]
+                        replica._buffers[key] = None
+                else:
+                    if buf.requires_grad and not detach:
+                        buffer_copies = buffer_copies_rg
+                        buffer_idx = buffer_indices_rg[buf]
+                    else:
+                        buffer_copies = buffer_copies_not_rg
+                        buffer_idx = buffer_indices_not_rg[buf]
+                    for j in range(num_replicas):
+                        replica = module_copies[j][i]
+                        setattr(replica, key, buffer_copies[j][buffer_idx])
+
+        return [module_copies[j][0] for j in range(num_replicas)]
+
+    # ！！！从replicate来看这里
+    def _broadcast_coalesced_reshape(tensors, devices, detach=False):
+
+      from ._functions import Broadcast
+
+      # 先看 else 的 comment，因为不 detach 也会用到同样的函数
+      if detach:
+          return comm.broadcast_coalesced(tensors, devices)
+      else:
+          # Use the autograd function to broadcast if not detach
+          if len(tensors) &gt; 0:
+
+            # 下拉看源码
+              tensor_copies = Broadcast.apply(devices, *tensors)
+
+              return [tensor_copies[i:i + len(tensors)]
+                      for i in range(0, len(tensor_copies), len(tensors))]
+          else:
+              return []
+
+   #  Broadcast.apply
+   class Broadcast(Function):
+
+    @staticmethod
+    def forward(ctx, target_gpus, *inputs):
+        assert all(i.device.type != 'cpu' for i in inputs), (
+            'Broadcast function not implemented for CPU tensors'
+        )
+        target_gpus = [_get_device_index(x, True) for x in target_gpus]
+        ctx.target_gpus = target_gpus
+        if len(inputs) == 0:
+            return tuple()
+        ctx.num_inputs = len(inputs)
+        # input 放在 device[0]
+        ctx.input_device = inputs[0].get_device()
+
+        # 和 detach 的情况一样
+        outputs = comm.broadcast_coalesced(inputs, ctx.target_gpus)
+
+        # comm.broadcast_coalesced 的代码
+        # tensors 必须在同一个设备，CPU 或者 GPU； devices 即是要拷贝到的设备；buffer_size 则是最大的buffer
+        # 这里用到 buffer 将小张量合并到缓冲区以减少同步次数
+        # def broadcast_coalesced(tensors, devices, buffer_size=10485760):
+        #    devices = [_get_device_index(d) for d in devices]
+            #       return torch._C._broadcast_coalesced(tensors, devices, buffer_size)
+
+        non_differentiables = []
+        for idx, input_requires_grad in enumerate(ctx.needs_input_grad[1:]):
+            if not input_requires_grad:
+                for output in outputs:
+                    non_differentiables.append(output[idx])
+        ctx.mark_non_differentiable(*non_differentiables)
+        return tuple([t for tensors in outputs for t in tensors])
+
+    @staticmethod
+    def backward(ctx, *grad_outputs):
+        return (None,) + ReduceAddCoalesced.apply(ctx.input_device, ctx.num_inputs, *grad_outputs)
+</code></pre>
+<p>下面继续 parallel_apply 部分。⚠️ DP 和 DDP 共用 parallel_apply 代码</p>
+<pre><code class="language-python"># DP 代码
+outputs = self.parallel_apply(replicas, inputs, kwargs)
+
+# threading 实现，用前面准备好的 replica 和输入数据，然后
+# for 循环启动多线程
+
+# 源码
+def parallel_apply(modules, inputs, kwargs_tup=None, devices=None):
+
+        # 每个 GPU 都有模型和输入
+    assert len(modules) == len(inputs)
+
+    # 确保每个 GPU 都有相应的数据，如没有就空白补全
+    if kwargs_tup is not None:
+      # 咱们在 scatter 已经补全了
+        assert len(modules) == len(kwargs_tup)
+    else:
+        kwargs_tup = ({},) * len(modules)
+
+    if devices is not None:
+        assert len(modules) == len(devices)
+    else:
+        devices = [None] * len(modules)
+
+    devices = [_get_device_index(x, True) for x in devices]
+
+    # 多线程实现
+
+    lock = threading.Lock()
+    results = {}
+    grad_enabled, autocast_enabled = torch.is_grad_enabled(), torch.is_autocast_enabled()
+
+    # 定义 worker
+    def _worker(i, module, input, kwargs, device=None):
+        torch.set_grad_enabled(grad_enabled)
+        if device is None:
+            device = get_a_var(input).get_device()
+        try:
+            with torch.cuda.device(device), autocast(enabled=autocast_enabled):
+                # this also avoids accidental slicing of `input` if it is a Tensor
+                if not isinstance(input, (list, tuple)):
+                    input = (input,)
+                output = module(*input, **kwargs)
+            with lock:
+              # 并行计算得到输出
+                results[i] = output
+        except Exception:
+            with lock:
+                results[i] = ExceptionWrapper(
+                    where=&quot;in replica {} on device {}&quot;.format(i, device))
+
+    if len(modules) &gt; 1:
+
+      # 如有一个进程控制多个 GPU ，起多个线程
+      # 需要强调一下，虽然 DDP 推荐单卡单进程，即每次调用 DDP device_ids 都只输入一张卡的 id（通常是 args.local_rank），但是如果输入多个 device_id，此时 DDP 就是单进程多线程控制多卡，和 DP 一样，关于 DDP 的解读可以看下文
+
+        threads = [threading.Thread(target=_worker,
+                                    args=(i, module, input, kwargs, device))
+                   for i, (module, input, kwargs, device) in
+                   enumerate(zip(modules, inputs, kwargs_tup, devices))]
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+    else:
+      # 一个 GPU 一个进程 （ DDP 推荐操作）
+        _worker(0, modules[0], inputs[0], kwargs_tup[0], devices[0])
+
+    outputs = []
+    for i in range(len(inputs)):
+        output = results[i]
+
+        # error handle
+        if isinstance(output, ExceptionWrapper):
+            output.reraise()
+        outputs.append(output)
+    # 输出 n 个计算结果
+    return outputs
+</code></pre>
+<p>现在我们已经得到并行计算的结果了，接下来我们要将结果收集到 device[0]。</p>
+<pre><code class="language-python"># DP 代码
+return self.gather(outputs, self.output_device)
+# 收集到 devices[0]
+
+# 源码
+def gather(outputs, target_device, dim=0):
+    r&quot;&quot;&quot;
+    Gathers tensors from different GPUs on a specified device
+      (-1 means the CPU).
+    &quot;&quot;&quot;
+    def gather_map(outputs):
+        out = outputs[0]
+        if isinstance(out, torch.Tensor):
+            return Gather.apply(target_device, dim, *outputs)
+        if out is None:
+            return None
+        if isinstance(out, dict):
+            if not all((len(out) == len(d) for d in outputs)):
+                raise ValueError('All dicts must have the same number of keys')
+            return type(out)(((k, gather_map([d[k] for d in outputs]))
+                              for k in out))
+        return type(out)(map(gather_map, zip(*outputs)))
+
+    # Recursive function calls like this create reference cycles.
+    # Setting the function to None clears the refcycle.
+    try:
+        res = gather_map(outputs)
+    finally:
+        gather_map = None
+    return res
+
+# Gather 源码
+
+class Gather(Function):
+
+    @staticmethod
+    def forward(ctx, target_device, dim, *inputs):
+        assert all(i.device.type != 'cpu' for i in inputs), (
+            'Gather function not implemented for CPU tensors'
+        )
+
+        target_device = _get_device_index(target_device, True)
+
+        ctx.target_device = target_device
+
+        ctx.dim = dim
+        ctx.input_gpus = tuple(i.get_device() for i in inputs)
+
+        if all(t.dim() == 0 for t in inputs) and dim == 0:
+            inputs = tuple(t.view(1) for t in inputs)
+            warnings.warn('Was asked to gather along dimension 0, but all '
+                          'input tensors were scalars; will instead unsqueeze '
+                          'and return a vector.')
+            ctx.unsqueezed_scalar = True
+        else:
+            ctx.unsqueezed_scalar = False
+        ctx.input_sizes = tuple(i.size(ctx.dim) for i in inputs)
+        return comm.gather(inputs, ctx.dim, ctx.target_device)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        scattered_grads = Scatter.apply(ctx.input_gpus, ctx.input_sizes, ctx.dim, grad_output)
+        if ctx.unsqueezed_scalar:
+            scattered_grads = tuple(g[0] for g in scattered_grads)
+        return (None, None) + scattered_grads
+
+# comm.gather 涉及到 C++，具体实现咱也不讲了 ；)  
+# Gathers tensors from multiple GPU devices.   
+def gather(tensors, dim=0, destination=None, *, out=None):
+    tensors = [_handle_complex(t) for t in tensors]
+    if out is None:
+        if destination == -1:
+            warnings.warn(
+                'Using -1 to represent CPU tensor is deprecated. Please use a '
+                'device object or string instead, e.g., &quot;cpu&quot;.')
+        destination = _get_device_index(destination, allow_cpu=True, optional=True)
+        return torch._C._gather(tensors, dim, destination)
+    else:
+        if destination is not None:
+            raise RuntimeError(
+                &quot;'destination' must not be specified when 'out' is specified, but &quot;
+                &quot;got destination={}&quot;.format(destination))
+        return torch._C._gather_out(tensors, out, dim)
+</code></pre>
+<p>因为大量实现都依赖 C++，这篇笔记就不涉及了。</p>
+<p>最后，用一张图形象地看一下 DP Module 究竟怎么执行的，具体看第一行和第三行：</p>
+<p>前向传播的时候我们会先用 Scatter 函数将数据从 device[0] 分配并复制到不同的卡，之后用 Replicate 函数将模型从 device[0] 复制到不同的卡，之后各个卡都有了同样的模型和不同的数据，分别调用 forward 计算损失和梯度。</p>
+<p>反向传播的时候，我们会将梯度收集到 device[0] 然后在 device[0] 更新参数。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250302192148.png" style="zoom: 80%;" /></div>
+
+<blockquote>
+<p><a href="https://medium.com/huggingface/training-larger-batches-practical-tips-on-1-gpu-multi-gpu-distributed-setups-ec88c3e51255">图片来源</a></p>
+</blockquote>
+<h2 id="分析">分析<a class="anchor-link" href="#分析" title="Permanent link">&para;</a></h2>
+<ul>
+<li>负载不均衡</li>
+</ul>
+<p>device[0] 负载大一些</p>
+<ul>
+<li>通信开销</li>
+</ul>
+<p>假设有 <span class="math-inline">k</span> 个 GPU， 完成一次通信需要时间 <span class="math-inline">\frac{p}{b}</span> ，那么使用 PS 算法，总共需要花费时间 <span class="math-inline">T = 2(k-1)\frac{p}{b} </span></p>
+<ul>
+<li>单进程</li>
+</ul>
+<blockquote>
+<p>The difference between <a href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel">DistributedDataParallel</a> and <a href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel">DataParallel</a><code>is:</code><a href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel">DistributedDataParallel</a> uses multiprocessing where a process is created for each GPU, while <a href="https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel">DataParallel</a> uses multithreading. By using multiprocessing, each GPU has its dedicated process, this avoids the performance overhead caused by GIL of Python interpreter.  </p>
+<p><a href="https://pytorch.org/docs/stable/notes/cuda.html?highlight=buffer">官方文档</a></p>
+</blockquote>
+<ul>
+<li><a href="https://opensource.com/article/17/4/grok-gil">Global Interpreter Lock (GIL)</a> <a href="https://zhuanlan.zhihu.com/p/20953544">全局解释器锁</a>，简单来说就是，一个 Python 进程只能利用一个 CPU kernel，即单核多线程并发时，只能执行一个线程。考虑多核，多核多线程可能出现线程颠簸 (thrashing) 造成资源浪费，所以 Python 想要利用多核最好是多进程。</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-预备知识">2 预备知识</a><ul>
+<li><a href="#21-transformer模型回顾">2.1 Transformer模型回顾</a></li>
+<li><a href="#22-之前参数高效调整方法的概述">2.2 之前参数高效调整方法的概述</a></li>
+</ul>
+</li>
+<li><a href="#3-弥合差距---统一视角">3 弥合差距 - 统一视角</a><ul>
+<li><a href="#31-前缀调整的深入观察">3.1 前缀调整的深入观察</a></li>
+<li><a href="#32-统一框架">3.2 统一框架</a></li>
+<li><a href="#33-通过转移设计元素">3.3 通过转移设计元素</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4 实验</a></li>
+<li><a href="#41-通用设置">4.1 通用设置</a></li>
+<li><a href="#42-现有方法的结果">4.2 现有方法的结果</a></li>
+<li><a href="#43-哪种插入形式---顺序还是并行">4.3 哪种插入形式 - 顺序还是并行？</a></li>
+<li><a href="#44-哪种修改表示---注意力还是-ffn">4.4 哪种修改表示 - 注意力还是 FFN？</a><ul>
+<li><a href="#45-哪种组合函数">4.5 哪种组合函数？</a></li>
+<li><a href="#46-通过转移有利设计元素进行有效整合">4.6 通过转移有利设计元素进行有效整合</a></li>
+<li><a href="#5-讨论">5 讨论</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/14.PEFT/00.Survey</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://github.com/jxhe/unify-parameter-efficient-tuning">Code</a></p>
+</blockquote>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>微调大型预训练语言模型（PLMs）以适应下游任务已成为自然语言处理（NLP）中的默认学习范式。然而，传统方法通常微调预训练模型的所有参数，随着模型规模和任务数量的增加，这种做法变得不可行。最近的研究提出了多种参数高效的迁移学习方法，只需微调少量（额外的）参数即可达到强大的性能。尽管这些方法效果显著，但其成功的关键因素以及各方法之间的联系尚不清楚。在本文中，我们分解了最新的参数高效迁移学习方法的设计，并提出了一个统一的框架，建立了它们之间的联系。具体来说，我们将它们重新框架化为对预训练模型中特定隐藏状态的修改，并定义了一组设计维度，这些方法在这些维度上有所不同，例如计算修改的函数和应用修改的位置。通过在机器翻译、文本摘要、语言理解和文本分类基准上的全面实证研究，我们利用统一视角识别了先前方法中的重要设计选择。此外，我们的统一框架还使得设计元素可以在不同方法间进行迁移，结果是我们能够实例化新的参数高效微调方法，这些方法微调的参数更少，同时更为有效，在所有四个任务上达到了与微调所有参数相当的结果。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>从预训练语言模型（PLMs）进行迁移学习已成为自然语言处理领域的主流范式，并在许多任务上表现出了强大的性能（Peters 等，2018；Devlin 等，2019；Qiu 等，2020）。将通用的 PLMs 适应下游任务的最常见方式是微调所有模型参数（完全微调）。然而，这导致了每个任务的微调模型参数都需要单独存储，当需要处理大量任务时，这种方法的成本高昂。随着 PLMs 的规模不断增大，这个问题变得尤为突出，目前的模型参数量级从数亿（Radford 等，2019；Lewis 等，2020）到数千亿（Brown 等，2020）甚至上万亿（Fedus 等，2021）不等。</p>
+<p>为了解决这一问题，研究人员提出了一些轻量级的替代方法，这些方法只更新少量额外的参数，而保留大部分预训练参数不变。例如，适配器调优（Houlsby 等，2019）在预训练网络的每一层插入小型神经模块（称为适配器），并且在微调时只训练适配器。受提示方法（prompting）控制 PLMs 的成功启发（Brown 等，2020；Liu 等，2021a），前缀调优（prefix tuning）（Li &amp; Liang，2021）和提示调优（prompt tuning）（Lester 等，2021）通过在输入前增加可调参数前缀来实现控制。这些参数高效的迁移学习方法（PEFT）在 NLP 中已经展示了显著的性能，并且只需更新极少数的参数。然而，现有的 PEFT 方法各自提出了不同的设计，并且这些方法的设计在不同的任务和模型架构上表现出了不同的性能。这引发了一个关键问题：这些方法的成功因素是什么？它们之间的关系是什么？通过回答这些问题，我们可以更好地理解 PEFT 的设计空间，并有可能进一步改进这些方法。</p>
+<p>为了回答这些问题，在本文中，我们首先回顾了现有的 PEFT 方法并将它们重新框架化。我们发现，尽管这些方法的表面设计不同，但它们的核心思想可以被统一为对预训练模型中特定隐藏状态的修改。基于这一观察，我们提出了一个统一的框架，该框架揭示了不同 PEFT 方法之间的关系，并定义了它们的设计维度，包括：1）修改的函数类型；2）应用修改的位置；3）修改的规模；以及 4）训练方式。</p>
+<p>通过在机器翻译、文本摘要、语言理解和文本分类基准上的全面实证研究，我们分析了这些设计选择对模型性能的影响。我们的研究揭示了哪些设计选择对于不同任务是最有效的，并解释了现有 PEFT 方法的成功原因。此外，基于我们的统一框架，我们还展示了如何将不同 PEFT 方法的设计元素进行迁移，实例化新的 PEFT 方法。实验结果表明，这些新方法能够在更少的参数更新下，达到甚至超越完全微调的性能。</p>
+<p>我们的贡献总结如下：<br />
+1. 我们提出了一个统一的框架，将现有的 PEFT 方法统一为对隐藏状态的修改，并揭示了它们的设计维度和相互关系。<br />
+2. 我们进行了全面的实证研究，识别了重要的设计选择，并解释了其对模型性能的影响。<br />
+3. 我们基于统一框架，实例化了新的 PEFT 方法，这些方法在参数效率和性能上都优于现有的方法。</p>
+<h2 id="2-预备知识">2 预备知识<a class="anchor-link" href="#2-预备知识" title="Permanent link">&para;</a></h2>
+<h3 id="21-transformer模型回顾">2.1 Transformer模型回顾<a class="anchor-link" href="#21-transformer模型回顾" title="Permanent link">&para;</a></h3>
+<p>Transformer模型（Vaswani 等人，2017）是大多数最先进的预训练语言模型（PLMs）背后的主力架构。在这一部分，我们为了完整性回顾了这个模型的公式。Transformer模型由 L 层堆叠块组成，每个块（如图 1 所示）包含两种类型的子层：多头自注意力和全连接前馈网络（FFN）。传统的注意力函数将查询 <span class="math-inline">Q \in \mathbb{R}^{n \times dk}</span> 和键值对 <span class="math-inline">K \in \mathbb{R}^{m \times dk}, V \in \mathbb{R}^{m \times dv}</span> 映射为：<br />
+<div class="math-display"><br />
+    \text{Attn}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{dk}}\right)V, \quad (1)<br />
+</div><br />
+其中 n 和 m 分别是查询和键值对的数量。多头注意力并行地在 <span class="math-inline">Nh</span> 个头上执行注意力函数，每个头分别由 <span class="math-inline">W^{(i)}_q, W^{(i)}_k, W^{(i)}_v \in \mathbb{R}^{d \times dh}</span> 参数化以将输入投影到查询、键和值。给定一个序列 <span class="math-inline">C \in \mathbb{R}^{m \times d}</span> 的向量，我们希望在这些向量上执行注意力，并且有一个查询向量 <span class="math-inline">x \in \mathbb{R}^d</span>，多头注意力（MHA）计算每个头的输出并将它们连接起来：<br />
+<div class="math-display"><br />
+    \text{MHA}(C, x) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W_o, \quad \text{head}_i = \text{Attn}(xW^{(i)}_q, CW^{(i)}_k, CW^{(i)}_v), \quad (2)<br />
+</div><br />
+其中 <span class="math-inline">W_o \in \mathbb{R}^{d \times d}</span>。d 是模型维度，在 MHA 中 <span class="math-inline">dh</span> 通常被设置为 <span class="math-inline">d/Nh</span> 以节省参数，这表明每个注意力头在较低维度的空间中操作。另一重要的子层是全连接前馈网络（FFN），它由两个线性变换组成，中间有一个 ReLU 激活函数：<br />
+<div class="math-display"><br />
+    \text{FFN}(x) = \text{ReLU}(xW_1 + b_1)W_2 + b_2, \quad (3)<br />
+</div><br />
+其中 <span class="math-inline">W_1 \in \mathbb{R}^{d \times dm}, W_2 \in \mathbb{R}^{dm \times d}</span>。Transformer通常使用一个大的 <span class="math-inline">dm</span> ，例如 <span class="math-inline">dm = 4d</span>。最后，使用残差连接后跟层归一化（Ba 等人，2016）。</p>
+<h3 id="22-之前参数高效调整方法的概述">2.2 之前参数高效调整方法的概述<a class="anchor-link" href="#22-之前参数高效调整方法的概述" title="Permanent link">&para;</a></h3>
+<p>下面和图 1 中，我们介绍了几种最先进的参数高效调整方法。除非另有说明，它们只调整添加的参数，而 PLMs 是冻结的。</p>
+<p>适配器（Houlsby 等人，2019）：适配器方法在Transformer层之间插入小模块（适配器）。适配器层通常使用 <span class="math-inline">W_{\text{down}} \in \mathbb{R}^{d \times r}</span> 将输入 h 投影到由瓶颈维度 r 指定的低维空间，然后是 <span class="math-inline">f(\cdot)</span> 非线性激活函数，以及 <span class="math-inline">W_{\text{up}} \in \mathbb{R}^{r \times d}</span> 的上投影。这些适配器被残差连接所包围，导致最终形式为：<br />
+<div class="math-display"><br />
+    h \leftarrow h + f(hW_{\text{down}})W_{\text{up} }. \quad (4)<br />
+</div><br />
+Houlsby 等人（2019）在Transformer的一层内，一个在多头注意力之后，一个在 FFN 子层之后，依次放置两个适配器。Pfeiffer 等人（2021）提出了一个更有效的适配器变体，它仅在 FFN “加 &amp; 层归一化” 子层之后插入。</p>
+<p>前缀调整（Li 和 Liang，2021）：受到文本提示方法（Liu 等人，2021a）成功的启发，前缀调整在每个层的多头注意力的键和值前添加了 l 个可调前缀向量。具体来说，两组前缀向量 <span class="math-inline">P_k, P_v \in \mathbb{R}^{l \times d}</span> 与原始键 K 和值 V 连接。然后在新的前缀键和值上执行多头注意力。方程 2 中的 <span class="math-inline">\text{head}_i</span> 变为：<br />
+<div class="math-display"><br />
+    \text{head}_i = \text{Attn}(xW^{(i)}_q, \text{concat}(P^{(i)}_k, C W^{(i)}_k), \text{concat}(P^{(i)}_v, C W^{(i)}_v)), \quad (5)<br />
+</div><br />
+其中 <span class="math-inline">P_k</span> 和 <span class="math-inline">P_v</span> 分别被分割成 <span class="math-inline">Nh</span> 个头向量，并且 <span class="math-inline">P^{(i)}_k, P^{(i)}_v \in \mathbb{R}^{l \times d/Nh}</span> 表示第 i 个头向量。提示调整（Lester 等人，2021）通过仅在第一层的输入词嵌入中添加前缀来简化前缀调整；类似的工作还包括 P- 调整（Liu 等人，2021b）。</p>
+<p>LoRA（Hu 等人，2021）：LoRA 将可训练的低秩矩阵注入Transformer层中，以近似权重更新。对于一个预训练的权重矩阵 <span class="math-inline">W \in \mathbb{R}^{d \times k}</span>，LoRA 用低秩分解表示其更新 <span class="math-inline">W + \Delta W = W + W_{\text{down}}W_{\text{up}}</span>，其中 <span class="math-inline">W_{\text{down}} \in \mathbb{R}^{d \times r}, W_{\text{up}} \in \mathbb{R}^{r \times k}</span> 是可调参数。LoRA 将此更新应用于多头注意力子层中的查询和值投影矩阵 <span class="math-inline">W_q, W_v</span>，如图 1 所示。对于特定的输入 x 到多头注意力中的线性投影，LoRA 修改投影输出 h 如下：<br />
+<div class="math-display"><br />
+    h \leftarrow h + s \cdot xW_{\text{down}}W_{\text{up}}, \quad (6)<br />
+</div><br />
+其中 s ≥ 1 是一个可调的标量超参数。</p>
+<p>其他：其他参数高效调整方法包括 BitFit（Ben Zaken 等人，2021），它只微调预训练模型中的偏置向量，以及 diff-pruning（Guo 等人，2021），它学习一个稀疏的参数更新向量。</p>
+<h2 id="3-弥合差距---统一视角">3 弥合差距 - 统一视角<a class="anchor-link" href="#3-弥合差距---统一视角" title="Permanent link">&para;</a></h2>
+<p>我们首先推导出前缀调整的一个等价形式，以建立其与适配器的联系。然后，我们提出了一个统一框架，旨在将几种最先进的参数高效调整方法统一起来。</p>
+<h3 id="31-前缀调整的深入观察">3.1 前缀调整的深入观察<a class="anchor-link" href="#31-前缀调整的深入观察" title="Permanent link">&para;</a></h3>
+<p>公式 (5) 描述了通过在原始注意力键和值前添加 l 个可学习向量来改变注意力模块的前缀调整机制。在这里，我们推导出公式 (5) 的一个等价形式，并提供前缀调整的替代视角：<br />
+<div class="math-display"><br />
+    \text{head} = \text{Attn}(xW_q, \text{concat}(P_k, C W_k), \text{concat}(P_v, C W_v)) = (1 - \lambda(x)) \text{softmax}(xW_qW_k^T C^T)CW_v + \lambda(x) \text{softmax}(xW_qP_k^T)P_v<br />
+</div></p>
+<p><div class="math-display"><br />
+    = (1 - \lambda(x)) \text{Attn}(xW_q, C W_k, C W_v) + \lambda(x) \text{Attn}(xW_q, P_k, P_v), \quad (7)<br />
+</div><br />
+其中 <span class="math-inline">\lambda(x)</span> 是一个标量，表示在前缀上的归一化注意力权重的和：<br />
+<div class="math-display"><br />
+    \lambda(x) = \frac{\sum_i \exp(xW_qP_k^T)<em>i}{\sum_i \exp(xW_qP_k^T)_i + \sum_j \exp(xW_qW_k^T C^T)_j}. \quad (8)<br />
+</div><br />
+注意，公式 (7) 中的第一项 <span class="math-inline">\text{Attn}(xW_q, C W_k, C W_v)</span> 是没有前缀的原始注意力，而第二项是与 C 无关的位置级修改。公式 (7) 提供了一种通过线性插值对原始头部注意力输出 h 进行位置级修改的前缀调整的替代视角：<br />
+<div class="math-display"><br />
+    h \leftarrow (1 - \lambda(x))h + \lambda(x) \Delta h, \quad \Delta h := \text{softmax}(xW_qP_k^T)P_v. \quad (9)<br />
+</div><br />
+与适配器的联系：我们定义 <span class="math-inline">W_1 = W_qP_k^T, W_2 = P_v, f = \text{softmax}</span>，并重写公式 (9)：<br />
+<div class="math-display"><br />
+    h \leftarrow (1 - \lambda(x))h + \lambda(x) f(xW_1)W_2, \quad (10)<br />
+</div><br />
+这与公式 (4) 中的适配器函数形式非常相似，只是前缀调整执行加权加法，而适配器是无加权的。图 3b 展示了从前缀调整的这个视角抽象出的计算图，这允许将前缀调整视为像适配器一样的插件模块。此外，我们注意到当 l 很小时，<span class="math-inline">W_1 \in \mathbb{R}^{d_h \times l}</span> 和 <span class="math-inline">W_2 \in \mathbb{R}^{l \times d_h}</span> 是低秩矩阵，因此它们的功能与适配器中的 <span class="math-inline">W</em>{\text{down}}</span> 和 <span class="math-inline">W_{\text{up}}</span> 矩阵类似。这种视角还表明，前缀向量的数量 l 在功能上类似于适配器中的瓶颈维度 r：它们都表示计算修改向量 <span class="math-inline">\Delta h</span> 的秩限制。因此，我们也称 l 为瓶颈维度。直观上，秩限制意味着对于任何 x，<span class="math-inline">\Delta h</span> 是相同的 l（或 ≤ l）个基向量的线性组合。</p>
+<p>与适配器的区别：除了门控变量 <span class="math-inline">\lambda</span> 外，我们强调前缀调整和适配器之间的三个区别。(1) 如图 3 所示，前缀调整使用 x，即 PLM 层的输入，来计算 <span class="math-inline">\Delta h</span>，而适配器使用 h，即 PLM 层的输出。因此，前缀调整可以被看作是与 PLM 层“并行”的计算，而典型的适配器是“顺序”计算。(2) 适配器在插入位置方面比前缀调整更灵活：适配器通常修改注意力或 FFN 输出，而前缀调整仅修改每个头的注意力输出。实证上，这在 §4.4 中将显示出很大的差异。(3) 公式 (10) 适用于每个注意力头，而适配器始终是单头的，这使得前缀调整更具表现力：头注意力是 d/Nh 维度的 - 基本上，如果 l ≥ d/Nh，我们对每个注意力头都有全秩更新，但我们只有在 r ≥ d 时才能使用适配器获得整个注意力输出的全秩更新。值得注意的是，当 l = r 时，前缀调整并没有比适配器增加更多的参数。我们在 §4.4 中实证验证了这种多头影响。</p>
+<h3 id="32-统一框架">3.2 统一框架<a class="anchor-link" href="#32-统一框架" title="Permanent link">&para;</a></h3>
+<p>受到前缀调整和适配器之间联系的启发，我们提出了一个通用框架，旨在统一几种最先进的参数高效调整方法。具体来说，我们将它们视为学习一个修改向量 <span class="math-inline">\Delta h</span>，该向量应用于各种隐藏表示。正式地，我们表示要直接修改的隐藏表示为 h，计算 h 的直接输入到 PLM 子模块的为 x（例如 h 和 x 分别可以是注意力输出和输入）。为了表征这个修改过程，我们定义了一组设计维度，并且可以通过在这些维度上变化值来实例化不同的方法。我们下面详细说明设计维度，并展示适配器、前缀调整和 LoRA 如何沿着它们变化，如表 1 所示：</p>
+<p>功能形式是计算 <span class="math-inline">\Delta h</span> 的特定函数。我们已经分别为适配器、前缀调整和 LoRA 在公式 (4)、(6) 和 (10) 中详细说明了功能形式。所有这些方法的功能形式都类似于 proj down → nonlinear → proj up 架构，而“nonlinear”在 LoRA 中退化为恒等函数。</p>
+<p>修改表示指直接修改的隐藏表示。</p>
+<p>插入形式是添加模块插入到网络中的方式。如前一节和图 3 所示，传统上适配器以顺序方式插入到网络中的某个位置，其中输入和输出都是 h。前缀调整和 LoRA - 尽管最初没有这样描述 - 结果上等同于并行插入，其中 x 是输入。</p>
+<p>组合函数是修改向量 <span class="math-inline">\Delta h</span> 如何与原始隐藏表示 h 组合以形成新的隐藏表示。例如，适配器执行简单的加性组合，前缀调整使用如公式 (10) 所示的门控加性组合，LoRA 按恒定因子缩放 <span class="math-inline">\Delta h</span> 并将其添加到原始隐藏表示，如公式 (6) 所示。</p>
+<p>我们注意到，表 1 中未出现的许多其他方法也适合此框架。例如，提示调整以类似于前缀调整的方式修改第一层的头部注意力，各种适配器变体（Pfeiffer 等人，2021; Mahabadi 等人，2021）可以类似地表示为适配器。关键地，统一框架允许我们沿着这些设计维度研究参数高效调整方法，识别关键设计选择，并可能像下一节中那样跨方法转移设计元素。</p>
+<h3 id="33-通过转移设计元素">3.3 通过转移设计元素<a class="anchor-link" href="#33-通过转移设计元素" title="Permanent link">&para;</a></h3>
+<p>在这里，并且在图 3 中，我们描述了一些新方法，这些方法可以通过我们上述的统一视角通过跨方法转移设计元素来推导出来：(1) 并行适配器是通过将前缀调整的并行插入转移到适配器中的变体。有趣的是，尽管我们由于它与前缀调整的相似性而提出并行适配器，但同时工作的 Zhu 等人（2021）独立地提出了这个变体并对其进行了实证研究；(2) 多头并行适配器是使适配器更类似于前缀调整的进一步步骤：我们应用并行适配器来修改头部注意力输出，就像前缀调整一样。这样，该变体通过利用我们在 §3.1 中讨论的多头投影，免费提高了容量。(3) 缩放并行适配器是通过将 LoRA 的组合和插入形式转移到适配器中的变体，如图 3e 所示。</p>
+<p>到目前为止，我们的讨论和公式提出了一些问题：改变上述设计元素的方法是否表现出不同的属性？哪些设计维度特别重要？上述描述的新方法是否能够带来更好的性能？我们将在下一个问题中回答这些问题。</p>
+<h2 id="4-实验">4 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<h2 id="41-通用设置">4.1 通用设置<a class="anchor-link" href="#41-通用设置" title="Permanent link">&para;</a></h2>
+<p><strong>数据集</strong>：我们研究了四个下游任务：(1) XSum（Narayan 等人，2018）是一个英文摘要数据集，模型需要根据新闻文章预测摘要；(2) 使用 WMT 2016 英罗数据集（Bojar 等人，2016）的英语到罗马尼亚语翻译；(3) MNLI（Williams 等人，2018）是一个英文自然语言推理数据集，模型需要预测一个句子是否包含、矛盾或对另一个句子中立；(4) SST2（Socher 等人，2013）是一个英文情感分类基准，模型需要预测句子的情感是积极的还是消极的。</p>
+<p><strong>设置</strong>：我们使用 BARTLARGE（Lewis 等人，2020）和它的多语言版本 mBARTLARGE（Liu 等人，2020a）分别作为 XSum 和英罗翻译任务的基础预训练模型，我们使用 RoBERTaBASE（Liu 等人，2019）用于 MNLI 和 SST2。我们根据需要在 {1, 30, 200, 512, 1024} 中变化瓶颈维度。我们主要研究适配器、前缀调整和 LoRA，这些方法在实验中的表现大大超过了 BitFit 和提示调整。在分析部分（§4.3-4.5），我们在注意力或 FFN 层插入适配器以便于分析，但在最终比较（§4.6）中包括了在两个位置插入的结果。我们根据各自的公共代码重新实现了这些方法。我们使用 huggingface transformers 库（Wolf 等人，2020）进行实现。完整的设置细节可以在附录 A 中找到。</p>
+<p><strong>评估</strong>：我们在 XSum 测试集上报告 ROUGE 1/2/L 分数，在英罗测试集上报告 BLEU 分数，在 MNLI 和 SST2 开发集上报告准确率。对于 MNLI 和 SST2，我们取五次随机运行的中位数。我们还报告相对于全参数调整的调整参数数量。</p>
+<p><strong>可调整参数数量</strong>：BART 和 mBART 具有编码器 - 解码器结构，其中有三种类型的注意力：编码器自注意力、解码器自注意力和解码器交叉注意力。RoBERTa 只有编码器自注意力。每种方法使用的参数数量为：(1) 前缀调整在键和值前添加 l 个向量，使用 2×l×d 参数；(2) 适配器有 Wdown 和 Wup，因此使用 2×r×d 参数；(3) LoRA 对查询和值投影使用一对 Wdown 和 Wup，因此使用 4×r×d 参数。对于 FFN 的适配器修改，它使用 2×r×d 参数，这与注意力上的适配器相同。因此，对于特定的 r 或 l 值，前缀调整使用的参数数量与适配器相同，而 LoRA 使用的参数更多。更多细节可以在附录 B 中找到。</p>
+<h2 id="42-现有方法的结果">4.2 现有方法的结果<a class="anchor-link" href="#42-现有方法的结果" title="Permanent link">&para;</a></h2>
+<p>我们首先概述现有方法在四个任务上的结果。如图 4 和表 2 所示，尽管现有方法可以通过调整少于 1% 的参数在 MNLI 和 SST2 上实现竞争性能，但如果我们在 XSum 和 en-ro 中增加 5% 的参数，差距仍然很大。即使我们将相对参数大小增加到 &gt;10%，差距仍然显著。Raffel 等人（2020）在高资源 MT 任务上观察到了更大的差距。这表明，许多声称在只有编码器的 GLUE 基准测试中与全参数调整相当的方法（Guo 等人，2021; Ben Zaken 等人，2021; Mahabadi 等人，2021），或者在相对简单的生成基准测试如 E2E（Novikova 等人，2017）中与全参数调整相当的方法（Li 和 Liang，2021），可能无法很好地泛化到其他标准基准测试。影响因素可能很复杂，包括训练样本的数量、任务复杂性或模型架构。因此，我们提倡未来的研究在此方向上报告更多多样化基准测试的结果，以展示它们的性能概况。以下，我们的分析将主要集中在 XSum 和 en-ro 数据集上，以更好地区分不同的设计选择。我们注意到这两个基准测试是相对高资源的，并且使用了编码器 - 解码器模型（BART），而我们将在 §4.6 中讨论在 MNLI 和 SST2 上使用编码器模型（RoBERTa）的结果。</p>
+<h2 id="43-哪种插入形式---顺序还是并行">4.3 哪种插入形式 - 顺序还是并行？<a class="anchor-link" href="#43-哪种插入形式---顺序还是并行" title="Permanent link">&para;</a></h2>
+<p>我们首先研究插入形式设计维度，比较提出的并行适配器（PA）变体与传统的顺序适配器（SA）在注意力（att）和 FFN 修改上的表现。我们也包括前缀调整作为参考点。如表 3 所示，使用并行插入的前缀调整优于顺序适配器。此外，并行适配器在所有情况下都能击败顺序适配器，其中 PA (ffn) 在 XSum 上比 SA (ffn) 高出 1.7 R-2 分，在 en-ro 上高出 0.8 BLEU 分。鉴于并行适配器相对于顺序适配器的优越结果，我们在接下来的章节中专注于并行适配器的结果。</p>
+<h2 id="44-哪种修改表示---注意力还是-ffn">4.4 哪种修改表示 - 注意力还是 FFN？<a class="anchor-link" href="#44-哪种修改表示---注意力还是-ffn" title="Permanent link">&para;</a></h2>
+<p><strong>设置</strong>：我们现在研究修改不同表示的效果。我们主要比较并行适配器在注意力和 FFN 上的修改，并以前缀调整作为参考。我们还转移 FFN 修改到 LoRA，以有一个 LoRA (ffn) 变体进行全面比较。具体来说，我们使用 LoRA 来近似 FFN 权重 W1 ∈ Rd×dm 和 W2 ∈ Rdm×d 的参数更新。在这种情况下，LoRA 中 W1 的 Wup（以及 W2 的 Wdown）的维度将是 r × dm，其中 dm = 4d 正如 §2.1 中所描述的。因此，我们通常在后续实验中为 LoRA (ffn) 使用较小的 r，以匹配它们的整体参数大小。</p>
+<p><strong>结果</strong>：如图 5 所示，任何具有 FFN 修改的方法在所有情况下都优于所有具有注意力修改的方法（红色标记通常高于所有蓝色标记，唯一的例外是参数为 2.4% 的 ffn-PA），通常使用的参数更少。第二，同一方法应用于 FFN 总是比其注意力对应物表现得更好。例如，LoRA (ffn) 在 XSum 上比 LoRA (attn) 高出 1 R-2 分。我们还强调，前缀调整在进一步增加容量时并没有持续改进，这也在 Li 和 Liang（2021）中观察到。这些结果表明，无论功能形式或组合函数是什么，FFN 修改都可以比注意力更有效地利用添加的参数。我们推测，这是因为 FFN 学习特定于任务的文本模式（Geva 等人，2021），而注意力学习成对的位置交互，这些交互不需要大容量来适应新任务。</p>
+<p>当我们使用 0.1% 的参数时，情况是否不同？在 §3.1 中，我们推理前缀调整比适配器（attn）更具表现力，然而，这在图 5 中并没有反映出来。我们推测这是因为多头注意力只有在参数预算很小的时候才更优越。为了验证这个假设，我们将前缀调整与并行适配器在它们添加 0.1% 的预训练参数时进行比较。为了消除组合函数的影响，我们还报告了去除前缀调整中的门控功能 h + ∆h 的结果。我们还包括了在 §3.3 中描述的多头并行适配器变体（MH PA）的结果。如表 4 所示，多头方法 - 前缀调整和 MH PA (attn) - 以至少 1.6 BLEU 分的优势胜过所有其他方法。令人惊讶的是，将 l 从 200 减少到 30 只会导致前缀调整的 BLEU 分数下降 0.4，而 PA (attn) 下降了 1.9 分。前缀调整中的门控组合函数稍微帮助结果提高了 0.3点。我们强调，多头并行适配器通过 1.6 分提高了单头版本的表现，这再次验证了多头形式的有效性。</p>
+<p>结合图 5 和表 4 的结果，我们得出结论：当参数预算非常少时，修改头部注意力会得到最好的结果，而 FFN 在更大的容量下可以更好地利用修改。这表明，将更多的参数预算分配给 FFN 修改而不是像 Houlsby 等人（2019）那样平等对待注意力和 FFN，可能是有效的。</p>
+<h3 id="45-哪种组合函数">4.5 哪种组合函数？<a class="anchor-link" href="#45-哪种组合函数" title="Permanent link">&para;</a></h3>
+<p>我们已经在 §3.2 中介绍了三种组合函数：简单加法（适配器）、门控加法（前缀调整）和缩放加法（LoRA）。由于将确切的门控加法纳入不使用 softmax 的方法中是不自然的，我们通过在 LoRA 上进行消融实验并将其与提出的缩放并行适配器（Scaled PA）进行比较，来检验其他两种组合函数。</p>
+<p>表 5 报告了在 XSum 上的结果。我们将适配器的 r 设置为 512，LoRA 的 r 设置为 102，以便它们的调整参数大小相同。我们根据开发集上的 R-2 分数选择 s。我们观察到，当 s = 4 时，LoRA 比并行适配器表现得更好。然而，如果我们通过设置 s = 1 移除缩放，优势就消失了。通过将 LoRA 的组合函数插入并行适配器，得到的结果 Scaled PA 比普通并行适配器提高了 0.56 ROUGE-2 分数。我们还尝试了可学习的标量，但并没有得到更好的结果。因此，我们得出结论，缩放组合函数比普通的加性组合函数更好，同时易于应用。</p>
+<h3 id="46-通过转移有利设计元素进行有效整合">4.6 通过转移有利设计元素进行有效整合<a class="anchor-link" href="#46-通过转移有利设计元素进行有效整合" title="Permanent link">&para;</a></h3>
+<p>我们首先强调前面几节中的三个发现：(1) 缩放并行适配器是修改 FFN 的最佳变体；(2) FFN 在更大的容量下可以更有效地利用修改；(3) 像前缀调整那样修改头部注意力，即使只用 0.1% 的参数也能取得强大的性能。受到这些发现的启发，我们混合并匹配这些发现背后的有利设计：具体来说，我们在注意力子层使用小瓶颈维度（l = 30）的前缀调整，并分配更多的参数预算来修改 FFN 表示，使用缩放并行适配器（r = 512）。由于前缀调整可以在我们的统一框架中被视为适配器的一种形式，我们将这个变体命名为 Mix-And-Match 适配器（MAM Adapter）。在表 6 中，我们将 MAM 适配器与各种参数高效调整方法进行了比较。为了完整性，我们还在表 6 中展示了其他组合版本的结果：在注意力和 FFN 层使用并行适配器，以及将前缀调整（attn）与 LoRA（ffn）结合 - 这两种组合版本都可以超过它们各自的原型。然而，MAM 适配器在两个任务上都取得了最佳性能，并且仅通过更新 6.7% 的预训练参数就能与我们的全参数调整结果相匹配。在表 2 中，我们也展示了 MAM 适配器在 MNLI 和 SST2 上的结果，其中 MAM 适配器通过仅添加 0.5% 的预训练参数就实现了与全参数调整相当的结果。</p>
+<h3 id="5-讨论">5 讨论<a class="anchor-link" href="#5-讨论" title="Permanent link">&para;</a></h3>
+<p>我们为几种高性能的参数调整方法提供了一个统一的框架，这使我们能够通过跨方法转移技术，实例化一个更有效的模型，其性能与全参数调整方法相匹配。我们希望我们的工作能为未来关于参数高效调整的研究提供见解和指导。</p>
+<p>我们的工作提出了一种有效调整预训练模型的方法，特别是语言模型。预训练语言模型有各种各样的积极应用，例如我们论文中描述的摘要、翻译或语言理解的应用。同时，语言模型也存在一些普遍的伦理问题，包括对生成有偏见或歧视性文本的担忧（Bordia 和 Bowman，2019），从训练数据中泄露私人信息的担忧（Carlini 等人，2020），以及训练或调整它们的环境影响（Strubell 等人，2019）。</p>
+<p>我们的方法尝试通过对他们现有的参数进行最小的改变来训练语言模型。虽然这是一个有趣的研究问题，即参数高效调整方法是否加剧、减轻或对诸如偏见或信息泄露等问题几乎没有改变，但据我们所知，以前没有工作检查过这个主题。这是未来工作的一个有趣途径。</p>
+<p>关于环境影响，本文提出的方法向现有模型添加了少量额外的参数和组件，因此它们对训练和推理时间的负面影响是名义上的 - 例如，在我们的四个基准测试中，最终的 MAM 适配器需要全参数调整的 100% - 150% 训练时间，因为参数高效调整通常需要更多的周期才能收敛；推理时间大致与全参数调整得到的模型相同。另一方面，由于本文提出的方法可能避免了全参数调整的需要，这也可能显著降低服务模型的成本（以内存/部署服务器的形式）。值得注意的是，本文的大部分实验都是在完全由可再生能源供电的数据中心进行的。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

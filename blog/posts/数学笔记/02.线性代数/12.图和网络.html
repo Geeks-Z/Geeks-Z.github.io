@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#图和网络">图和网络</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/02.线性代数</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="图和网络">图和网络<a class="anchor-link" href="#图和网络" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">import networkx as nx
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+dg = nx.DiGraph()
+dg.add_edges_from([(1,2), (2,3), (1,3), (1,4), (3,4)])
+edge_labels = {(1, 2): 1, (1, 3): 3, (1, 4): 4, (2, 3): 2, (3, 4): 5}
+
+pos = nx.spring_layout(dg)
+nx.draw_networkx_edge_labels(dg,pos,edge_labels=edge_labels, font_size=16)
+nx.draw_networkx_labels(dg, pos, font_size=20, font_color='w')
+nx.draw(dg, pos, node_size=1500, node_color=&quot;gray&quot;)
+</code></pre>
+<p><img alt="png" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222014350.png" /></p>
+<p>该图由4个节点与5条边组成，</p>
+<p><div class="math-display"><br />
+\begin{array}{c | c c c c}<br />
+       &amp; node_1 &amp; node_2 &amp; node_3 &amp; node_4 \<br />
+\hline<br />
+edge_1 &amp; -1     &amp; 1      &amp; 0      &amp; 0      \<br />
+edge_2 &amp; 0      &amp; -1     &amp; 1      &amp; 0      \<br />
+edge_3 &amp; -1     &amp; 0      &amp; 1      &amp; 0      \<br />
+edge_4 &amp; -1     &amp; 0      &amp; 0      &amp; 1      \<br />
+edge_5 &amp; 0      &amp; 0      &amp; -1     &amp; 1      \<br />
+\end{array}<br />
+</div></p>
+<p>我们可以建立<span class="math-inline">5 \times 4</span>矩阵<br />
+$<br />
+A=<br />
+\begin{bmatrix}<br />
+-1 &amp; 1 &amp; 0 &amp; 0 \<br />
+0 &amp; -1 &amp; 1 &amp; 0 \<br />
+-1 &amp; 0 &amp; 1 &amp; 0 \<br />
+-1 &amp; 0 &amp; 0 &amp; 1 \<br />
+0 &amp; 0 &amp; -1 &amp; 1 \<br />
+\end{bmatrix}<br />
+$</p>
+<p>观察前三行，易看出这三个行向量线性相关，也就是这三个向量可以形成回路（loop）。</p>
+<p>现在，解<span class="math-inline">Ax=0</span>：<br />
+$<br />
+Ax=<br />
+\begin{bmatrix}<br />
+-1 &amp; 1 &amp; 0 &amp; 0 \<br />
+0 &amp; -1 &amp; 1 &amp; 0 \<br />
+-1 &amp; 0 &amp; 1 &amp; 0 \<br />
+-1 &amp; 0 &amp; 0 &amp; 1 \<br />
+0 &amp; 0 &amp; -1 &amp; 1 \<br />
+\end{bmatrix}<br />
+\begin{bmatrix}<br />
+x_1\x_2\x_3\x_4\<br />
+\end{bmatrix}<br />
+$。</p>
+<p>展开得到：<br />
+<span class="math-inline">\begin{bmatrix}x_2-x_1 \x_3-x_2 \x_3-x_1 \x_4-x_1 \x_4-x_3 \ \end{bmatrix}=\begin{bmatrix}0\0\0\0\0\ \end{bmatrix}</span></p>
+<p>引入矩阵的实际意义：将<span class="math-inline">x=\begin{bmatrix}x_1 &amp; x_2 &amp; x_3 &amp; x_4\end{bmatrix}</span>设为各节点电势（Potential at the Nodes）。</p>
+<p>则式子中的诸如<span class="math-inline">x_2-x_1</span>的元素，可以看做该边上的电势差（Potential Differences）。</p>
+<p>容易看出其中一个解<span class="math-inline">x=\begin{bmatrix}1\1\1\1\end{bmatrix}</span>，即等电势情况，此时电势差为<span class="math-inline">0</span>。</p>
+<p>化简<span class="math-inline">A</span>易得<span class="math-inline">rank(A)=3</span>，所以其零空间维数应为<span class="math-inline">n-r=4-3=1</span>，即<span class="math-inline">\begin{bmatrix}1\1\1\1\end{bmatrix}</span>就是其零空间的一组基。</p>
+<p>其零空间的物理意义为，当电位相等时，不存在电势差，图中无电流。</p>
+<p>当我们把图中节点<span class="math-inline">4</span>接地后，节点<span class="math-inline">4</span>上的电势为<span class="math-inline">0</span>，此时的<br />
+$<br />
+A=<br />
+\begin{bmatrix}<br />
+-1 &amp; 1 &amp; 0 \<br />
+0 &amp; -1 &amp; 1 \<br />
+-1 &amp; 0 &amp; 1 \<br />
+-1 &amp; 0 &amp; 0 \<br />
+0 &amp; 0 &amp; -1 \<br />
+\end{bmatrix}<br />
+<span class="math-inline">，各列线性无关，</span>rank(A)=3$。</p>
+<p>现在看看<span class="math-inline">A^Ty=0</span>（这是应用数学里最常用的式子）：</p>
+<p><span class="math-inline">A^Ty=0=\begin{bmatrix}-1 &amp; 0 &amp; -1 &amp; -1 &amp; 0 \1 &amp; -1 &amp; 0 &amp; 0 &amp; 0 \0 &amp; 1 &amp; 1 &amp; 0 &amp; -1 \0 &amp; 0 &amp; 0 &amp; 1 &amp; 1 \ \end{bmatrix}\begin{bmatrix}y_1\y_2\y_3\y_4\y_5\end{bmatrix}=\begin{bmatrix}0\0\0\0\end{bmatrix}</span>，对于转置矩阵有<span class="math-inline">dim N(A^T)=m-r=5-3=2</span>。</p>
+<p>接着说上文提到的的电势差，矩阵<span class="math-inline">C</span>将电势差与电流联系起来，电流与电势差的关系服从欧姆定律：边上的电流值是电势差的倍数，这个倍数就是边的电导（conductance）即电阻（resistance）的倒数。</p>
+<p>$<br />
+电势差<br />
+\xrightarrow[欧姆定律]{矩阵C}<br />
+各边上的电流y_1, y_2, y_3, y_4, y_5<br />
+<span class="math-inline">，而</span>A^Ty=0$的另一个名字叫做“基尔霍夫电流定律”（Kirchoff's Law, 简称KCL）。</p>
+<p>再把图拿下来观察：</p>
+<pre><code class="language-python">import networkx as nx
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+dg = nx.DiGraph()
+dg.add_edges_from([(1,2), (2,3), (1,3), (1,4), (3,4)])
+edge_labels = {(1, 2): 1, (1, 3): 3, (1, 4): 4, (2, 3): 2, (3, 4): 5}
+
+pos = nx.spring_layout(dg)
+nx.draw_networkx_edge_labels(dg,pos,edge_labels=edge_labels, font_size=16)
+nx.draw_networkx_labels(dg, pos, font_size=20, font_color='w')
+nx.draw(dg, pos, node_size=1500, node_color=&quot;gray&quot;)
+</code></pre>
+<p><img alt="png" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222014790.png" /></p>
+<p>将<span class="math-inline">A^Ty=0</span>中的方程列出来：<br />
+$<br />
+\left{<br />
+\begin{aligned}<br />
+y_1 + y_3 + y_4 &amp;= 0 \<br />
+y_1 - y_2 &amp;= 0 \<br />
+y_2 + y_3 - y_5 &amp;= 0 \<br />
+y_4 - y_5 &amp;= 0 \<br />
+\end{aligned}<br />
+\right.<br />
+$</p>
+<p>对比看<span class="math-inline">A^Ty=0</span>的第一个方程，<span class="math-inline">-y_1-y_3-y_4=0</span>，可以看出这个方程是关于节点<span class="math-inline">1</span>上的电流的，方程指出节点<span class="math-inline">1</span>上的电流和为零，基尔霍夫定律是一个平衡方程、守恒定律，它说明了流入等于流出，电荷不会在节点上累积。</p>
+<p>对于<span class="math-inline">A^T</span>，有上文得出其零空间的维数是<span class="math-inline">2</span>，则零空间的基应该有两个向量。</p>
+<ul>
+<li>现在假设<span class="math-inline">y_1=1</span>，也就是令<span class="math-inline">1</span>安培的电流在边<span class="math-inline">1</span>上流动；</li>
+<li>由图看出<span class="math-inline">y_2</span>也应该为<span class="math-inline">1</span>；</li>
+<li>再令<span class="math-inline">y_3=-1</span>，也就是让<span class="math-inline">1</span>安培的电流流回节点<span class="math-inline">1</span>；</li>
+<li>令<span class="math-inline">y_4=y_5=0</span>；</li>
+</ul>
+<p>得到一个符合KCL的向量<span class="math-inline">\begin{bmatrix}1\1\-1\0\0\end{bmatrix}</span>，代回方程组发现此向量即为一个解，这个解发生在节点<span class="math-inline">1,2,3</span>组成的回路中，该解即为零空间的一个基。</p>
+<p>根据上一个基的经验，可以利用<span class="math-inline">1,3,4</span>组成的节点求另一个基：</p>
+<ul>
+<li>令<span class="math-inline">y_1=y_2=0</span>；</li>
+<li>令<span class="math-inline">y_3=1</span>；</li>
+<li>由图得<span class="math-inline">y_5=1</span>；</li>
+<li>令<span class="math-inline">y_4=-1</span>；</li>
+</ul>
+<p>得到令一个符合KCL的向量<span class="math-inline">\begin{bmatrix}0\0\1\-1\1\end{bmatrix}</span>，代回方程可知此为另一个解。</p>
+<p>则<span class="math-inline">N(A^T)</span>的一组基为<span class="math-inline">\begin{bmatrix}1\1\-1\0\0\end{bmatrix}\quad\begin{bmatrix}0\0\1\-1\1\end{bmatrix}</span>。</p>
+<p>看图，利用节点<span class="math-inline">1,2,3,4</span>组成的大回路（即边<span class="math-inline">1,2,5,4</span>）：</p>
+<ul>
+<li>令<span class="math-inline">y_3=0</span>；</li>
+<li>令<span class="math-inline">y_1=1</span>；</li>
+<li>则由图得<span class="math-inline">y_2=1, y_5=1, y_4=-1</span>；</li>
+</ul>
+<p>得到符合KCL的向量<span class="math-inline">\begin{bmatrix}1\1\0\-1\1\end{bmatrix}</span>，易看出此向量为求得的两个基之和。</p>
+<p>接下来观察<span class="math-inline">A</span>的行空间，即<span class="math-inline">A^T</span>的列空间，方便起见我们直接计算<br />
+$<br />
+A^T=<br />
+\begin{bmatrix}<br />
+-1 &amp; 0 &amp; -1 &amp; -1 &amp; 0 \<br />
+1 &amp; -1 &amp; 0 &amp; 0 &amp; 0 \<br />
+0 &amp; 1 &amp; 1 &amp; 0 &amp; -1 \<br />
+0 &amp; 0 &amp; 0 &amp; 1 &amp; 1 \<br />
+\end{bmatrix}<br />
+$<br />
+的列空间。</p>
+<p>易从基的第一个向量看出前三列<span class="math-inline">A^T</span>的线性相关，则<span class="math-inline">A^T</span>的主列为第<span class="math-inline">1,2,4</span>列，对应在图中就是边<span class="math-inline">1,2,4</span>，可以发现这三条边没有组成回路，则在这里可以说<strong>线性无关等价于没有回路</strong>。由<span class="math-inline">4</span>个节点与<span class="math-inline">3</span>条边组成的图没有回路，就表明<span class="math-inline">A^T</span>的对应列向量线性无关，也就是节点数减一（<span class="math-inline">rank=nodes-1</span>）条边线性无关。另外，没有回路的图也叫作树（Tree）。</p>
+<p>再看左零空间的维数公式：<span class="math-inline">dim N(A^T)=m-r</span>，左零空间的维数就是相互无关的回路的数量，于是得到<span class="math-inline">loops=edges-(nodes-1)</span>，整理得：</p>
+<p><div class="math-display"><br />
+nodes-edges+loops=1<br />
+</div></p>
+<p>此等式对任何图均有效，任何图都有此拓扑性质，这就是著名的欧拉公式（Euler's Formula）。<span class="math-inline">零维（节点）-一维（边）+二维（回路）=1</span>便于记忆。</p>
+<p>总结：</p>
+<ul>
+<li>将电势记为<span class="math-inline">e</span>，则在引入电势的第一步中，有<span class="math-inline">e=Ax</span>；</li>
+<li>电势差导致电流产生，<span class="math-inline">y=Ce</span>；</li>
+<li>电流满足基尔霍夫定律方程，<span class="math-inline">A^Ty=0</span>；</li>
+</ul>
+<p>这些是在无电源情况下的方程。</p>
+<p>电源可以通过：在边上加电池（电压源），或在节点上加外部电流 两种方式接入。</p>
+<p>如果在边上加电池，会体现在<span class="math-inline">e=Ax</span>中；如果在节点上加电流，会体现在<span class="math-inline">A^Ty=f</span>中，<span class="math-inline">f</span>向量就是外部电流。</p>
+<p>将以上三个等式连起来得到<span class="math-inline">A^TCAx=f</span>。另外，最后一个方程是一个平衡方程，还需要注意的是，方程仅描述平衡状态，方程并不考虑时间。最后，<span class="math-inline">A^TA</span>是一个对称矩阵。</p>
+<h1 id="_1"><a class="anchor-link" href="#_1" title="Permanent link">&para;</a></h1>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

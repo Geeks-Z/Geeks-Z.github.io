@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-视觉语言模型vlm微调">2.1 视觉语言模型（VLM）微调</a></li>
+<li><a href="#22-类别增量学习cil">2.2 类别增量学习（CIL）</a></li>
+<li><a href="#23-基于-vlm-的-cil">2.3 基于 VLM 的 CIL</a></li>
+</ul>
+</li>
+<li><a href="#3-从旧类别到新类别">3. 从旧类别到新类别</a><ul>
+<li><a href="#31-类别增量学习">3.1 类别增量学习</a></li>
+<li><a href="#32-视觉语言模型">3.2 视觉语言模型</a></li>
+<li><a href="#33-克服类别增量学习中的遗忘问题">3.3 克服类别增量学习中的遗忘问题</a></li>
+</ul>
+</li>
+<li><a href="#4-proof视觉语言模型的投影融合">4. PROOF：视觉语言模型的投影融合</a><ul>
+<li><a href="#41-可扩展的特征投影">4.1 可扩展的特征投影</a></li>
+<li><a href="#42-使用自注意力机制实现上下文投影融合">4.2 使用自注意力机制实现上下文投影融合</a><ul>
+<li><a href="#如何定义上下文">如何定义上下文？</a></li>
+<li><a href="#学习上下文提示">学习上下文提示</a></li>
+<li><a href="#使用自注意力机制实现-t">使用自注意力机制实现 $T$</a></li>
+<li><a href="#跨模态融合的效果">跨模态融合的效果</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#43-proof-总结">4.3 PROOF 总结</a></li>
+<li><a href="#5-实验">5. 实验</a></li>
+<li><a href="#51-实验设置">5.1 实验设置</a><ul>
+<li><a href="#数据集">数据集</a></li>
+<li><a href="#对比方法">对比方法</a></li>
+<li><a href="#实现细节">实现细节</a></li>
+<li><a href="#评估指标">评估指标</a></li>
+</ul>
+</li>
+<li><a href="#52-基准比较">5.2 基准比较</a></li>
+<li><a href="#53-消融实验">5.3 消融实验</a><ul>
+<li><a href="#531-不同的预训练权重">5.3.1 不同的预训练权重</a></li>
+<li><a href="#532-组件消融实验">5.3.2 组件消融实验</a></li>
+<li><a href="#533-上下文提示长度的影响">5.3.3 上下文提示长度的影响</a></li>
+<li><a href="#534-上下文信息的影响">5.3.4 上下文信息的影响</a></li>
+<li><a href="#535-投影层类型的影响">5.3.5 投影层类型的影响</a></li>
+<li><a href="#536-参数分析">5.3.6 参数分析</a><ul>
+<li><a href="#推理时的参数合并">推理时的参数合并</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#54-进一步分析">5.4 进一步分析</a><ul>
+<li><a href="#541-任务类别数的影响">5.4.1 任务类别数的影响</a></li>
+<li><a href="#542-持续跨模态检索任务">5.4.2 持续跨模态检索任务</a></li>
+</ul>
+</li>
+<li><a href="#55-扩展实验">5.5 扩展实验</a><ul>
+<li><a href="#551-适用于不同的-vlm">5.5.1 适用于不同的 VLM</a></li>
+<li><a href="#552-在无重叠数据集上的表现">5.5.2 在无重叠数据集上的表现</a></li>
+<li><a href="#553-零样本性能的退化分析">5.5.3 零样本性能的退化分析</a></li>
+</ul>
+</li>
+<li><a href="#56-小结">5.6 小结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/43.多模态增量学习MMCL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://arxiv.org/abs/2305.19270">Paper</a> </p>
+</blockquote>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>类别增量学习（Class-Incremental Learning, CIL）或持续学习是一种在现实世界中非常需要的能力，它要求学习系统在适应新任务的同时，不遗忘先前的任务。虽然传统的 CIL 方法侧重于通过视觉信息来掌握核心特征，但近年来，视觉语言模型（Vision-Language Models, VLM）的进展展示了在文本信息帮助下学习通用表示的潜力。然而，当持续地引入新类别进行训练时，VLM 往往会遭遇对先前知识的灾难性遗忘。将 VLM 应用于 CIL 提出了两个主要挑战：1）如何在不遗忘的情况下适应模型；2）如何充分利用多模态信息。为此，我们提出了 PROjectiOn Fusion (PROOF) 方法，使 VLM 能够在不遗忘的情况下学习。为了解决第一个挑战，我们提出了基于冻结的图像/文本编码器训练任务特定投影的方法。当面对新任务时，新投影层被扩展，而先前的投影层保持固定，从而减轻了旧概念的遗忘。对于第二个挑战，我们提出了融合模块，以更好地利用跨模态信息。通过联合调整视觉和文本特征，模型能够捕捉语义信息，并具有更强的表示能力。对九个基准数据集的大量实验验证了 PROOF 在实现最先进性能方面的有效性。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>在我们不断变化的世界中，训练数据通常以流格式到来，并伴随着新类别的出现，要求学习系统不断吸收这些知识[19, 18]。为了应对学习新类别的挑战，提出了类别增量学习（CIL）[47]。然而，在 CIL 中，旧类别的缺失会引发灾难性遗忘[16]，即学习新概念会覆盖旧知识，导致性能下降[33]。在机器学习领域，许多努力[37, 15, 79, 53, 62, 77]已经致力于解决灾难性遗忘问题。</p>
+<p>随着预训练技术[20]的快速发展，近年来 CIL 研究已经从从头训练[67, 21, 78]转向利用预训练模型（PTM）[63, 64, 49]。例如，通过利用预训练模型（如 Vision Transformers[13]），增量模型可以天然地具备强大的迁移能力，以掌握视觉特征。面对由增量类别引入的领域差异，它们只需要学习有限数量的附加参数[26, 11, 34]，这些参数作为补丁桥接了差异，大大简化了增量学习的挑战。</p>
+<p>尽管基于预训练的 ViT 方法在 CIL 中专注于学习视觉特征以识别新概念，最近视觉语言模型（VLM）展示了文本信息在构建通用特征表示中的潜力。一个典型的工作，即对比语言 - 图像预训练[46]（CLIP），将视觉和文本信息映射到共享的嵌入空间，使得从不同来源学习和识别概念变得更加稳健。视觉和文本模态的结合为开发能够有效适应现实场景的持续学习模型提供了一个有前途的方向。</p>
+<p>将 VLM 扩展到 CIL 中面临着两个显著的挑战。首先，依次调整 VLM 会覆盖其固有的通用性和先前的概念，导致遗忘并在未来任务中表现不佳。其次，仅依靠文本信息进行分类忽略了多模态输入中存在的宝贵跨模态特征。为了充分利用这些信息，有必要探索跨模态融合的方法，而不仅仅是依赖文本特征。</p>
+<p>因此，我们旨在将 VLM 转变为一个既能保持其能力又能全面利用信息的持续学习者。保持能力指的是模型能够维持其预训练能力，从而保留通用性，使其在未来任务中表现出色而不会遗忘。全面利用指的是模型能够整合并调整来自多模态的信息。通过利用这些特性，我们可以减轻灾难性遗忘，并使用跨模态特征构建更稳健的分类器。</p>
+<p>在本文中，我们提出了 PROjectiOn Fusion (PROOF) 方法，以应对 VLM 中的灾难性遗忘。为了使模型保持能力，我们冻结了预训练的图像/文本骨干网络，并在其上附加了线性投影。任务特定的信息通过映射投影特征编码在相应的投影层中。当面对新任务时，新投影层会扩展，而旧投影层保持固定，从而保留了先前的知识。此外，我们旨在通过跨模态融合将来自不同模态的信息融合在一起，这使得查询嵌入能够随着上下文信息进行调整。最终，PROOF 能够有效地整合新类别，同时抵抗旧类别的遗忘，在九个基准数据集上实现了最先进的性能。我们还探讨了 VLM 在新的评估协议和指标下的零样本性能，并发现 PROOF 通过简单的修改能够保持其零样本性能。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-视觉语言模型vlm微调">2.1 视觉语言模型（VLM）微调<a class="anchor-link" href="#21-视觉语言模型vlm微调" title="Permanent link">&para;</a></h3>
+<p>近年来，视觉语言模型（VLM）研究蓬勃发展，例如 CLIP[46]、ALIGN[25]、CoCa[70]、Florence[73]、BLIP[31]、CLIPPO[54]和 Flamingo[1]。这些模型在大量图像和文本上进行预训练，跨模态实现了统一的嵌入空间。凭借出色的通用性，它们可以零样本方式应用于下游任务。然而，预训练数据集与下游任务之间仍然存在领域差异，需要进一步微调以获得更好的性能。CoOp 和 CoCoOp[85, 84]通过可学习的提示标记将提示学习[32]应用于 VLM 微调。后续的工作探讨了通过适配器微调[17]、提示分布学习[39]、任务残差学习[72]、相似性学习[76]、描述符学习[42]和最优传输映射[10]的 VLM 微调。然而，它们只关注将 VLM 适配到下游任务，而忽略了先前任务的遗忘。</p>
+<h3 id="22-类别增量学习cil">2.2 类别增量学习（CIL）<a class="anchor-link" href="#22-类别增量学习cil" title="Permanent link">&para;</a></h3>
+<p>类别增量学习（CIL）旨在从不断变化的数据中学习，并吸收新知识而不遗忘[81]。基于复习的方法[40, 4, 8, 38, 9]通过保存和重放先前实例来在学习新知识时恢复旧知识。基于知识蒸馏的方法[47, 33, 14]通过映射模型之间的关系作为正则化。基于参数正则化的方法[27, 2, 74, 3]通过为不同参数赋予重要性来进行正则化。基于模型修正的方法[50, 78, 67, 71]通过纠正归纳偏差来进行无偏预测。动态网络[69, 58, 82, 59]通过随着数据的演变扩展网络结构表现出强大的性能。</p>
+<h3 id="23-基于-vlm-的-cil">2.3 基于 VLM 的 CIL<a class="anchor-link" href="#23-基于-vlm-的-cil" title="Permanent link">&para;</a></h3>
+<p>前述的 CIL 方法旨在从头训练增量模型，而使用预训练模型作为起点更为简单[30]。将预训练的 Vision Transformer[13]集成到 CIL 中已引起了社区的关注，大多数方法[63, 64, 49]采用参数高效微调技术来实现无遗忘学习。S-Prompt[61]在领域增量学习中探索了 CLIP 的应用，但在 CIL 中对 VLM 的应用仍然相对较少。WiSE-FT[66]利用权重集成进行稳健微调，但无法扩展到多个任务。本文旨在通过提出一个综合的解决方案，解决在不遗忘的情况下微调视觉语言模型的问题。</p>
+<h2 id="3-从旧类别到新类别">3. 从旧类别到新类别<a class="anchor-link" href="#3-从旧类别到新类别" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们介绍了类别增量学习和视觉语言模型的背景信息。我们还讨论了在类别增量学习中微调视觉语言模型的一些简单解决方案。</p>
+<h3 id="31-类别增量学习">3.1 类别增量学习<a class="anchor-link" href="#31-类别增量学习" title="Permanent link">&para;</a></h3>
+<p>在一个不断出现新类别的数据流中，类别增量学习的目标是不断吸收知识并构建一个统一的分类器[81]。我们将包含不重叠类别的 <span class="math-inline">B</span> 个训练集序列表示为</p>
+<p><div class="math-display"><br />
+    {D_1, D_2, \dots, D_B}<br />
+</div></p>
+<p>其中，<span class="math-inline">D_b = {(x_i, y_i)}<em>{i=1}^{n_b}</span> 是第 <span class="math-inline">b</span> 个训练集，包含 <span class="math-inline">n_b</span> 个实例。一个训练实例 <span class="math-inline">x_i \in \mathbb{R}^D</span> 属于类 <span class="math-inline">y_i \in Y_b</span>。<span class="math-inline">Y_b</span> 是任务 <span class="math-inline">b</span> 的标签空间，且 <span class="math-inline">Y_b \cap Y</em>{b'} = \ varnothing</span> 对于 <span class="math-inline">b \neq b'</span>。按照典型的 CIL 设置[47, 22, 67]，从前一个类别中选择固定数量的样本作为示例集 <span class="math-inline">E</span>。在第 <span class="math-inline">b</span> 个增量阶段，我们只能访问来自 <span class="math-inline">D_b</span> 和 <span class="math-inline">E</span> 的数据用于模型训练。目标是不断构建一个针对所有已见类别 <span class="math-inline">Y_b = Y_1 \cup \dots \cup Y_b</span> 的统一分类器。换句话说，我们希望找到一个模型 <span class="math-inline">f(x) : X \rightarrow Y_b</span> 来最小化期望风险：</p>
+<p><div class="math-display"><br />
+    f^* = \arg\min_{f \in \mathcal{H}} \mathbb{E}_{(x, y) \sim D_1^t \cup \dots \cup D_b^t} [\mathbb{I}(y \neq f(x))],<br />
+</div></p>
+<p>其中，<span class="math-inline">\mathcal{H}</span> 表示假设空间，<span class="math-inline">\mathbb{I}(\cdot)</span> 是指示函数，<span class="math-inline">D_b^t</span> 表示任务 <span class="math-inline">b</span> 的数据分布。按照[63, 64, 61]的设定，我们假设一个预训练的视觉语言模型可以作为 <span class="math-inline">f(x)</span> 的初始化，如在第 4.2 节中介绍。</p>
+<h3 id="32-视觉语言模型">3.2 视觉语言模型<a class="anchor-link" href="#32-视觉语言模型" title="Permanent link">&para;</a></h3>
+<p>本文重点关注对比语言 - 图像预训练（CLIP）[46]作为视觉语言模型。在预训练期间，CLIP 以对比的方式联合学习了一个图像编码器 <span class="math-inline">g_i(\cdot) : \mathbb{R}^D \rightarrow \mathbb{R}^d</span> 和一个文本编码器 <span class="math-inline">g_t(\cdot) : \mathbb{R}^{D_t} \rightarrow \mathbb{R}^d</span>，其中 <span class="math-inline">D/D_t</span> 是图像/文本的输入维度，<span class="math-inline">d</span> 是嵌入维度。CLIP 将一批图像 - 文本对投射到一个共享的嵌入空间中。它最大化了配对输入的余弦相似度，并最小化不匹配对的相似度。受益于海量训练数据，CLIP 可以生成一个零样本分类器，能够推广到未见过的类别。CLIP 的输出公式如下：</p>
+<p><div class="math-display"><br />
+    p(y_i \mid x) = \frac{\exp (\cos(z, w_i) / \tau)}{\sum_{j=1}^{|Y_b|} \exp (\cos(z, w_j) / \tau)} \tag{2},<br />
+</div></p>
+<p>其中，<span class="math-inline">\cos(\cdot, \cdot)</span> 表示余弦相似度，<span class="math-inline">\tau</span> 是可学习的温度参数，<span class="math-inline">z = g_i(x)</span> 是图像嵌入。相应地，<span class="math-inline">w_i</span> 是通过将模板化文本（例如，“a photo of a [CLASS]”）输入文本编码器获得的类 <span class="math-inline">y_i</span> 的文本嵌入。我们将类 <span class="math-inline">i</span> 的模板化文本表示为 <span class="math-inline">t_i</span>。公式（2）的目标是找到与查询图像相似度最大的文本 <span class="math-inline">t_i</span>。</p>
+<h3 id="33-克服类别增量学习中的遗忘问题">3.3 克服类别增量学习中的遗忘问题<a class="anchor-link" href="#33-克服类别增量学习中的遗忘问题" title="Permanent link">&para;</a></h3>
+<p>类别增量学习作为一个长期存在的问题，已经引起了研究社区的广泛关注。在本节中，我们介绍了两种典型的适应预训练模型以应对新类别的解决方案。</p>
+<p><strong>基于视觉的学习</strong>：传统的 CIL 方法主要依赖图像编码器来捕捉新类别的模式。例如，L2P[64]利用视觉提示微调[26]来使预训练的 Vision Transformer[13]能够进行增量更新。通过冻结图像编码器，L2P 训练了一个可学习的提示池 <span class="math-inline">\text{Pool}</span> 并将其与图像块嵌入结合以获得实例特定的嵌入。优化目标可以表示为：</p>
+<p><div class="math-display"><br />
+    L = \ell(h(g_i(x_i, \text{Pool})), y_i) + L_{\text{reg}} \tag{3},<br />
+</div></p>
+<p>其中，<span class="math-inline">h(\cdot)</span> 是分类头部，<span class="math-inline">g_i</span> 是冻结的图像编码器，<span class="math-inline">L_{\text{reg}}</span> 是用于提示选择的正则化损失。通过冻结编码器，公式（3）在很少遗忘的情况下掌握了新的模式。</p>
+<p><strong>CLIP 微调</strong>：在 CIL 中如何微调 VLM 而不遗忘仍然没有得到解决，因为以往的工作只关注将 CLIP 转移到下游任务，而没有考虑以前任务的表现。例如，CoOp[85]将文本输入转换为一个可学习的提示，即：</p>
+<p><div class="math-display"><br />
+    t_i = [V]_1 [V]_2 \dots [V]_M [CLASS]_i.<br />
+</div></p>
+<p>公式（2）中的后验概率转换为：</p>
+<p><div class="math-display"><br />
+    p(y_i \mid x) = \frac{\exp (\cos(z, g_t(t_i)) / \tau)}{\sum_{j=1}^{|Y_b|} \exp (\cos(z, g_t(t_j)) / \tau)} \tag{4}.<br />
+</div></p>
+<p>借助学习的提示，公式（4）使得模型可以被转移到下游任务。然而，由于提示模板对于所有任务是共享的，依次微调 CoOp 将导致先前概念的灾难性遗忘。</p>
+<p><strong>讨论</strong>：当前的方法关注 CIL 的不同方面。基于视觉的方法（如公式（3））解决了遗忘的问题，但忽略了文本中传达的宝贵语义信息。相反，CLIP 预训练的文本编码器捕捉了类间的关系，这可以增强模型学习。同时，迁移学习方法（如公式（4））有效利用了跨模态信息，但依次微调它们会导致先前概念的灾难性遗忘。是否有可能结合跨模态信息，同时抵抗灾难性遗忘？</p>
+<h2 id="4-proof视觉语言模型的投影融合">4. PROOF：视觉语言模型的投影融合<a class="anchor-link" href="#4-proof视觉语言模型的投影融合" title="Permanent link">&para;</a></h2>
+<p>鉴于典型的基于视觉的方法在利用文本信息方面的局限性以及 CLIP 微调中的遗忘问题，我们旨在利用 CLIP 中的跨模态知识，同时有效减轻遗忘。为此，我们必须使模型具有保持能力和全面性。保持能力意味着能够适应下游任务而不遗忘，我们提出使用投影层将预训练特征映射到投影特征空间。我们独特的训练策略通过冻结旧的投影层并为新任务扩展新的投影层来确保保留先前的知识。全面性方面，我们通过共同调整并利用跨模态信息来增强统一的预测。查询实例的嵌入受到视觉和文本信息的共同影响，允许实例特定的适应，从而实现全面的预测。</p>
+<p>在以下各节中，我们介绍了学习范式和共同适应过程。最后，我们提供了关于训练和推理的详细指南。</p>
+<h3 id="41-可扩展的特征投影">4.1 可扩展的特征投影<a class="anchor-link" href="#41-可扩展的特征投影" title="Permanent link">&para;</a></h3>
+<p>CLIP 以其强大的零样本性能而著称[46]，即使在未对特定任务进行显式训练的情况下，公式（2）也能获得具有竞争力的结果。然而，考虑到预训练任务与下游任务之间的领域差异，仍然需要一个适应过程来捕捉后者的特征。具体而言，我们引入了一个线性层（称为“投影”），它附加在冻结的图像和文本嵌入之后，以促进成对投影特征的匹配。将图像/文本的投影表示为 <span class="math-inline">P_i(\cdot) : \mathbb{R}^d \rightarrow \mathbb{R}^d</span> 和 <span class="math-inline">P_t(\cdot) : \mathbb{R}^d \rightarrow \mathbb{R}^d</span>，公式（2）转换为：</p>
+<p><div class="math-display"><br />
+    p(y_i \mid x) = \frac{\exp(\cos(P_i (z), P_t (w_i)) / \tau)}{\sum_{j=1}^{|Y_b|} \exp(\cos(P_i (z), P_t (w_j)) / \tau)} \quad \text{Projected Matching} \tag{5}.<br />
+</div></p>
+<p>我们将基于公式（5）的分类称为 <span class="math-inline">f_{\text{PM}}(x)</span>。通过冻结图像和文本编码器，它在投影空间中对齐了下游特征，使得模型能够将相关的下游信息编码到投影层中。由于预训练模型输出的是具有通用性的特征，投影层学会以数据驱动的方式重新组合特征。例如，在涉及“鸟类”的任务中，投影层会为“喙”和“翅膀”等特征赋予更高的权重。这种适应使得投影特征能够更好地区分和识别下游任务。</p>
+<p><strong>可扩展的投影</strong>：然而，依次训练单个投影层仍然会导致先前任务的遗忘，导致旧概念和新概念混淆。为此，我们为每个新任务扩展了任务特定的投影层。</p>
+<p>具体而言，当新任务 <span class="math-inline">D_b</span> 到达时，我们附加了一个新初始化的投影层 <span class="math-inline">P_i^b</span> 和 <span class="math-inline">P_t^b</span>。这导致了投影层集：<span class="math-inline">{P_i^1, P_i^2, \dots, P_i^b}, \quad {P_t^1, P_t^2, \dots, P_t^b}</span> ，我们采用聚合作为输出，即：</p>
+<p><div class="math-display"><br />
+    P_i(z) = \sum_{m=1}^b P_i^m(z), \quad P_t(w) = \sum_{n=1}^b P_t^n(w) \tag{6}.<br />
+</div></p>
+<p>在公式（6）中，不同阶段的投影特征被映射并聚合，以捕捉先前和后续任务的不同重点。例如，先前的任务可能强调“鸟喙”特征，而后续任务可能更注重“胡须”特征，以区分猫类。不同投影的聚合产生了对查询实例的全面表示。通过将公式（6）代入公式（5），模型在联合空间中对齐了统一的特征。</p>
+<p><strong>如何抵抗先前投影的遗忘？</strong> 为了克服对旧概念的遗忘，在学习新任务时，我们冻结先前任务的投影层，即 <span class="math-inline">{P_i^1, P_i^2, \dots, P_i^b}</span>（文本投影层 <span class="math-inline">P_t</span> 同样如此）。这样，新初始化的投影层可以学习新任务的残差信息，同时保留先前任务的知识。在任务 <span class="math-inline">b</span> 的学习过程中，我们通过优化交叉熵损失将任务特定的信息编码到当前投影层中。</p>
+<p><strong>投影的效果</strong>：投影的示意图如图 1（左）所示。PROOF 基于预训练的编码器学习投影，适应新模式并保持预训练模型的通用性。每个投影层的参数数量为 <span class="math-inline">d \times d</span>，相对于预训练模型而言可以忽略不计。此外，模型为新任务学习新的投影层，任务特定的投影层能够轻松适应新概念。由于我们仅优化当前投影层并冻结旧的投影层，先前的知识得以保留，遗忘得以减轻。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240827160052.png" style="zoom: 70%;" /></div>
+
+<h3 id="42-使用自注意力机制实现上下文投影融合">4.2 使用自注意力机制实现上下文投影融合<a class="anchor-link" href="#42-使用自注意力机制实现上下文投影融合" title="Permanent link">&para;</a></h3>
+<p>在公式 (5) 中，投影后的视觉和文本特征直接在联合空间中进行匹配。然而，进一步<strong>优化</strong>这些特征以捕捉图像和文本之间的<strong>上下文关系</strong>将是有益的。例如，当查询实例是“熊猫”时，希望以<strong>一致</strong>的方式调整视觉和文本特征，以突出诸如“黑色眼睛和耳朵”等判别性属性。同样，当查询实例是“猫”时，应强调诸如“胡须和尾巴”等特征。这个调整过程涉及联合调整查询嵌入和上下文信息（例如文本信息），以获得<strong>上下文化</strong>的嵌入。相应地，我们提出了一种<strong>集合到集合</strong>的函数，用于上下文化和融合查询嵌入与上下文信息。</p>
+<p>具体来说，我们将调整函数表示为 <span class="math-inline">T(\cdot)</span>。它接收查询实例和上下文信息作为集合，即 <span class="math-inline">[P_i(z), \text{Context}]</span>，并输出调整后的嵌入集合，同时保持排列不变性：<br />
+<div class="math-display"><br />
+    T([P_i(z), \text{Context}]) = [\tilde{P}_i(z), \tilde{\text{Context}}] \tag{8}<br />
+</div><br />
+<span class="math-inline">T(\cdot)</span> 对集合信息进行编码，并对每个组件进行调整。接下来，我们描述上下文信息 <span class="math-inline">\text{Context}</span> 的构建，并详细介绍集合到集合函数的实现。</p>
+<h4 id="如何定义上下文">如何定义上下文？<a class="anchor-link" href="#如何定义上下文" title="Permanent link">&para;</a></h4>
+<p>在公式 (5) 中，映射是在查询实例和文本信息（即分类器）之间建立的。分类器代表了相应类别的典型文本描述，即共同特征。因此，一个朴素的想法是利用文本特征作为上下文，即 <span class="math-inline">W = [P_t(w_1), P_t(w_2), \cdots, P_t(w_{|Y_b|})] \in \mathbb{R}^{|Y_b| \times d}</span>（所有文本分类器的拼接）。然而，最近的研究发现视觉和文本嵌入之间存在固有的领域差距 [91]。这个差距导致视觉和文本嵌入在嵌入空间中分属两个不同的簇，阻碍了有效的成对映射。相应地，我们利用视觉<strong>原型特征</strong> [92] 作为捕捉每个类别共同特征的有用工具。我们定义类别 <span class="math-inline">k</span> 的视觉原型为：<br />
+<div class="math-display"><br />
+    p_k = \frac{1}{N} \sum_{j=1}^{|D_b|} \mathbb{I}(y_j = k) g_i(x_j) \tag{7}<br />
+</div><br />
+其中 <span class="math-inline">N = \sum_{j=1}^{|D_b|} \mathbb{I}(y_j = k)</span>。它们在每个增量阶段开始时通过前向传递计算，并在后续任务中保持不变。视觉原型是对应类别的<strong>代表性特征</strong>，可以作为<strong>视觉上下文</strong>来调整嵌入。因此，我们通过投影的视觉信息来增强上下文，即 <span class="math-inline">[P, W]</span>，其中 <span class="math-inline">P = [P_i(p_1), P_i(p_2), \cdots, P_i(p_{|Y_b|})] \in \mathbb{R}^{|Y_b| \times d}</span> 是所有视觉原型的拼接。结合来自多个模态的原型有助于模型以跨模态的方式适应和融合信息，这超越了简单的视觉 - 文本匹配。</p>
+<h4 id="学习上下文提示">学习上下文提示<a class="anchor-link" href="#学习上下文提示" title="Permanent link">&para;</a></h4>
+<p>除了视觉原型和文本分类器外，我们还引入了一组可学习的<strong>上下文提示</strong> <span class="math-inline">{c_1, \cdots, c_b}</span>，<span class="math-inline">c_i \in \mathbb{R}^{c \times d}</span>，随着数据的演化进行优化。<span class="math-inline">c</span> 表示每个提示的长度。类似于投影层，我们使上下文提示<strong>可扩展</strong>，以捕捉新任务的新特征。我们在学习新任务时初始化一个新的上下文提示，并冻结其他提示 <span class="math-inline">{\bar{c}_1, \bar{c}_2, \cdots, c_b}</span>。上下文提示作为<strong>可适应</strong>的上下文信息，增强了共同调整。因此，上下文信息被公式化为 <span class="math-inline">\text{Context} = [P, W, C]</span>，其中 <span class="math-inline">C</span> 是所有上下文提示的聚合。</p>
+<h4 id="使用自注意力机制实现-t">使用自注意力机制实现 <span class="math-inline">T</span><a class="anchor-link" href="#使用自注意力机制实现-t" title="Permanent link">&para;</a></h4>
+<p>在我们的实现中，我们使用<strong>自注意力机制</strong>（SA）[93], [94] 作为跨模态融合函数 <span class="math-inline">T</span>。由于自注意力机制具有排列不变性，它擅长在长依赖关系下输出调整后的嵌入，这自然适合调整函数的特性。具体来说，自注意力机制保留三元组（查询 <span class="math-inline">Q</span>、键 <span class="math-inline">K</span> 和值 <span class="math-inline">V</span>）。输入被投影到相同的空间，即 <span class="math-inline">K = W_K^\top [k_k; \forall k_k \in K] \in \mathbb{R}^{d \times |K|}</span>。类似地，对 <span class="math-inline">Q</span> 和 <span class="math-inline">V</span> 也进行投影。查询 <span class="math-inline">x_q \in Q</span> 与一系列键 <span class="math-inline">K</span> 进行匹配，每个键都有一个值 <span class="math-inline">V</span>。输出是所有值的加权和，权重由键与查询点的接近程度决定：<br />
+<div class="math-display"><br />
+    \tilde{P}<em>i(z) = P_i(z) + \sum_k \alpha</em>{qk} V_{:,k} \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">\alpha_{qk} \propto \exp\left(\frac{P_i(z)^\top W_Q \cdot K}{\sqrt{d}}\right)</span>，<span class="math-inline">V_{:,k}</span> 是 <span class="math-inline">V</span> 的第 <span class="math-inline">k</span> 列。对于 <span class="math-inline">\text{Context}</span> 中的其他组件，调整过程是相同的。具体来说，我们有 <span class="math-inline">Q = K = V = [P_i(z), \text{Context}] = [P_i(z), P, W, C]</span>。调整后的特征分别表示为 <span class="math-inline">[\tilde{P}_i(z), \tilde{P}, \tilde{W}, \tilde{C}]</span>，以反映上下文信息。</p>
+<h4 id="跨模态融合的效果">跨模态融合的效果<a class="anchor-link" href="#跨模态融合的效果" title="Permanent link">&para;</a></h4>
+<p>投影融合的示意图如图 1（右）所示。我们利用已见类别的视觉和文本信息作为上下文信息，帮助调整<strong>实例特定</strong>的嵌入。融合模型随着数据的演化逐步训练，以调整嵌入，反映上下文信息。通过上下文化的嵌入，我们可以进行<strong>视觉匹配</strong>和<strong>文本匹配</strong>：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250311193733.png" style="zoom: 80%;" /></div>
+
+<p>在公式 (9) 中，模型通过查询实例与调整后的视觉和文本原型的相似性为其分配 logits。跨模态匹配的引入增强了预测性能。需要注意的是，上下文提示 <span class="math-inline">C</span> 仅将任务特定的信息编码到自注意力过程中，即它不作为公式 (9) 中的匹配目标。</p>
+<h2 id="43-proof-总结">4.3  PROOF 总结<a class="anchor-link" href="#43-proof-总结" title="Permanent link">&para;</a></h2>
+<p>在 PROOF 中，我们首先通过投影映射实现新概念的学习。然后，为了在不干扰先前任务的情况下适应新概念，我们为每个新任务初始化新的投影并冻结以前的投影。此外，我们利用自注意力机制来调整查询实例的嵌入和上下文信息，以促进跨模态融合。图 1 展示了三个匹配目标，即投影匹配（公式 5）、视觉/文本匹配（公式 9）。我们将这些模型分别表示为 <span class="math-inline">f_{PM}(x)</span>、<span class="math-inline">f_{VM}(x)</span>、<span class="math-inline">f_{TM}(x)</span>。在训练过程中，我们优化交叉熵损失：<br />
+<div class="math-display"><br />
+    \min_{{P_b^i, P_b^t, T, c_b}} \ell(f_{PM}(x), y) + \ell(f_{VM}(x), y) + \ell(f_{TM}(x), y), \tag{10}<br />
+</div><br />
+其中 <span class="math-inline">(x, y) \in D_b \cup E</span>。在公式 10 中，所有预训练的权重都被冻结，我们仅优化这些额外的参数。在推理时，我们聚合三个 logits，即 <span class="math-inline">f(x) = f_{PM}(x) + f_{VM}(x) + f_{TM}(x)</span>。</p>
+<p><strong>伪代码</strong>：我们在算法 1 中给出了 PROOF 的伪代码，以说明训练过程。在每个增量阶段，我们都会得到训练数据集 <span class="math-inline">D_b</span> 和样本集 <span class="math-inline">E</span> 来更新当前模型 <span class="math-inline">f(·)</span>。在训练之前，我们首先提取新类别的视觉原型。这些原型是使用冻结的视觉嵌入 <span class="math-inline">g_i(·)</span> 计算的，确保它们在模型更新过程中保持稳定。随后，我们冻结以前的投影和上下文提示，同时为新的增量任务初始化新的投影和上下文提示（第 2 行到第 4 行）。这些步骤代表了模型扩展过程，随后是学习过程。</p>
+<p>在学习过程中，我们将当前数据集和样本集中的训练实例连接起来，启动一个 for 循环。对于每个实例 - 标签对，我们计算投影的视觉和文本嵌入（第 6 行到第 7 行）。随后，我们计算投影匹配损失（第 8 行），将任务特定的信息编码到当前投影层中。基于投影特征，我们推导出上下文信息并执行跨模态融合（第 9 行到第 10 行）。因此，我们获得了三个 logits 用于模型更新，并利用交叉熵损失更新这些模块（第 11 行）。更新后的模型随后作为训练过程的输出返回。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本部分，我们在基准数据集上将 PROOF 与最先进的方法进行比较，以研究其克服遗忘的能力。此外，我们还进行了消融实验，以分析模型中每个组件的影响。我们还将 PROOF 扩展到其他视觉 - 语言模型（VLMs）和持续学习场景，探索无重叠数据集，并分析零样本性能下降的现象。  </p>
+<h2 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h2>
+<h3 id="数据集">数据集<a class="anchor-link" href="#数据集" title="Permanent link">&para;</a></h3>
+<p>按照基准类增量学习（CIL）设定【6, 18, 19, 73, 96】的要求，我们在 CIFAR100【98】、CUB200【99】、ObjectNet【100】 和 ImageNet-R【101】上评估性能。此外，我们参考 VLM 调优的基准【33】，将 FGVCAircraft【102】、StanfordCars【103】、Food101【104】、SUN397【105】和 UCF101【106】纳入 CIL 设定。具体而言，我们从 CIFAR100、Aircraft、Cars、Food、UCF 中随机抽取（或直接采用）100 个类别，从 CUB200、ObjectNet、ImageNet-R 中选取 200 个类别，并从 SUN 中选取 300 个类别，以便进行数据划分。按照【6】的做法，训练类别的顺序是使用随机种子 1993 进行洗牌的。数据集划分表示为 Base-x, Inc-y，其中 x 代表初始阶段的类别数量，y 代表每个后续任务的新类别数量。当 x = 0 时，意味着每个任务都包含 y 个类别。  </p>
+<h3 id="对比方法">对比方法<a class="anchor-link" href="#对比方法" title="Permanent link">&para;</a></h3>
+<p>我们首先与最先进的 CIL 方法进行比较，包括 iCaRL【6】、MEMO【77】、SimpleCIL【96】、L2P【19】和 DualPrompt【18】。我们还将顺序微调（Finetune）作为基线，并结合不同的调优技术，如 LiT【95】、PLOT【40】和 CoOp【33】。此外，我们报告 CLIP 在零样本分类中的性能（ZS-CLIP），即通过匹配模板文本计算的分类结果（参见公式 2）。此外，我们还报告上限（Oracle）性能，即在所有任务上联合训练的结果【15】。所有方法均基于相同的预训练 CLIP 进行比较，以确保公平性。  </p>
+<h3 id="实现细节">实现细节<a class="anchor-link" href="#实现细节" title="Permanent link">&para;</a></h3>
+<p>我们在 Tesla V100 上使用 PyTorch【107】实现所有方法。所有对比方法均采用相同的网络主干，即 ViT-B/16 版本的 CLIP，以保证公平性。我们实验了两种常见的预训练 CLIP 权重，即 OpenAI【26】提供的权重和 OpenCLIP LAION-400M【108】。模型以 64 的 batch size 训练 5 轮，并使用带动量的 SGD 进行优化。学习率初始为 0.001，并采用余弦退火进行衰减。按照【6】的做法，我们使用 herding【109】算法为每个类别选择 20 个样本作为存储样本进行回放。上下文提示（context prompt）长度设为 3，自注意力（self-attention）头数设为 1。CLIP 中用于分类的模板文本与【110】保持一致。  </p>
+<h3 id="评估指标">评估指标<a class="anchor-link" href="#评估指标" title="Permanent link">&para;</a></h3>
+<p>设第 <span class="math-inline">b</span> 轮阶段后的准确率为 <span class="math-inline">A_b</span>，我们采用【6】中的评估标准，使用最终阶段性能 <span class="math-inline">A_B</span> 以及所有阶段的平均性能<br />
+<div class="math-display"><br />
+    \bar{A} = \frac{1}{B} \sum_{b=1}^{B} A_b<br />
+</div><br />
+进行评价。  </p>
+<h2 id="52-基准比较">5.2 基准比较<a class="anchor-link" href="#52-基准比较" title="Permanent link">&para;</a></h2>
+<p>我们在九个基准数据集上报告了 PROOF 的性能，并使用 CLIP 的 ViT-B/16（OpenCLIP LAION-400M）进行实验，结果如表 1 以及图 2、图 3 所示。这些数据集划分涵盖了大规模和小规模的基础类别设定。值得注意的是，PROOF 在所有方法中始终取得了最优性能。  </p>
+<p>对比方法的顺序微调（Finetune）模型在使用对比损失进行微调后，会出现严重的遗忘现象，无论使用何种调优技术（如 LiT 和 CoOp）。由于 SimpleCIL 和 ZS-CLIP 并未对模型参数进行微调，它们能够在下游任务中保留预训练阶段的知识，从而取得较为稳健的性能。然而，大多数方法的最终结果仍优于 ZS-CLIP，这表明在下游任务上进行增量学习是必要的。此外，由于 L2P、DualPrompt 和 CODA-Prompt 的实验是在 CLIP 的视觉分支上进行的，因此其性能与原始论文有所不同。  </p>
+<p>从这些实验结果中，我们可以得出以下三个关键结论：  </p>
+<ul>
+<li>在第一阶段，PROOF 的性能优于典型的提示学习方法 CoOp，这验证了使用投影层学习下游任务特征的有效性。  </li>
+<li>PROOF 的性能曲线在所有方法中始终排名靠前，表明其能够有效抵抗遗忘。  </li>
+<li>与仅使用视觉信息的方法（如 L2P、DualPrompt、CODA-Prompt、DAP）相比，PROOF 取得了显著的性能提升，表明联合适应视觉和文本信息可以有效促进增量学习。  </li>
+</ul>
+<hr />
+<h2 id="53-消融实验">5.3 消融实验<a class="anchor-link" href="#53-消融实验" title="Permanent link">&para;</a></h2>
+<h3 id="531-不同的预训练权重">5.3.1 不同的预训练权重<a class="anchor-link" href="#531-不同的预训练权重" title="Permanent link">&para;</a></h3>
+<p>在第 5.2 节的实验中，我们基于 LAION-400M 预训练的 CLIP 进行评测。作为另一种流行的 CLIP 预训练权重，我们还探索了 OpenAI 提供的权重。在图 4(a) 中，我们可以看到 PROOF 在所有数据集上仍然取得了最佳性能，进一步验证了其稳健性和泛化能力。  </p>
+<h3 id="532-组件消融实验">5.3.2 组件消融实验<a class="anchor-link" href="#532-组件消融实验" title="Permanent link">&para;</a></h3>
+<p>我们在 CIFAR100 B0 Inc10 设定下研究 PROOF 的不同组件对性能的影响。具体而言，我们分别对比了以下模型变体：  </p>
+<ul>
+<li>仅使用可扩展投影层（Projection）  </li>
+<li>仅使用跨模态融合模块（Fusion）  </li>
+<li>同时使用可扩展投影层和跨模态融合（Projection &amp; Fusion）  </li>
+<li>进一步加入上下文提示（Context Prompt）  </li>
+</ul>
+<p>实验结果如图 4(b) 所示。可以发现：  </p>
+<ul>
+<li>仅使用投影层或跨模态融合模块都能提升 CIL 的性能，表明增量任务特定的投影表示以及跨模态信息的融合均有助于学习过程。  </li>
+<li>当将两者结合（Projection &amp; Fusion）时，性能进一步提升，说明投影和融合机制可以相互补充。  </li>
+<li>在此基础上，引入上下文提示后（Projection &amp; Fusion &amp; Context Prompt），模型的性能达到最佳，验证了在增量学习中使用可扩展的任务特定提示的有效性。  </li>
+</ul>
+<h3 id="533-上下文提示长度的影响">5.3.3 上下文提示长度的影响<a class="anchor-link" href="#533-上下文提示长度的影响" title="Permanent link">&para;</a></h3>
+<p>在图 4(c) 中，我们研究了上下文提示长度 <span class="math-inline">c</span> 对模型性能的影响，实验仍基于 CIFAR100 B0 Inc10。我们测试了不同的提示长度 <span class="math-inline">c \in {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30, 50, 100}</span>，并报告了模型的平均性能（<span class="math-inline">\bar{A}</span>）和最终性能（<span class="math-inline">A_B</span>）。  </p>
+<p>从结果来看，PROOF 的性能对提示长度变化较为鲁棒，这表明即使提示的规模较小，也能有效编码任务特定信息。因此，我们将 <span class="math-inline">c = 3</span> 作为默认设定。  </p>
+<h3 id="534-上下文信息的影响">5.3.4 上下文信息的影响<a class="anchor-link" href="#534-上下文信息的影响" title="Permanent link">&para;</a></h3>
+<p>在本部分，我们研究不同的上下文信息构造方式对 PROOF 性能的影响。我们在 CIFAR100 B0 Inc10 上进行实验，并对比以下几种设置：  </p>
+<ul>
+<li>仅使用视觉原型（Context = [P]）  </li>
+<li>仅使用文本原型（Context = [W]）  </li>
+<li>同时使用视觉和文本原型（Context = [P, W]）  </li>
+<li>同时使用视觉原型、文本原型和上下文提示（Context = [P, W, C]）  </li>
+</ul>
+<p>结果如图 5(a) 所示：  </p>
+<ul>
+<li>仅使用视觉或文本原型时，模型的性能相近，说明它们对任务信息的贡献类似。  </li>
+<li>结合视觉和文本原型（Context = [P, W]）后，性能明显提升，说明利用跨模态信息能增强模型学习。  </li>
+<li>进一步引入上下文提示（Context = [P, W, C]）后，模型的性能达到最佳，验证了可扩展任务特定提示在增量学习中的重要性。  </li>
+</ul>
+<h3 id="535-投影层类型的影响">5.3.5 投影层类型的影响<a class="anchor-link" href="#535-投影层类型的影响" title="Permanent link">&para;</a></h3>
+<p>除了使用简单的线性层作为投影层外，我们还探索了其他几种投影方法，例如：  </p>
+<ul>
+<li><strong>SSF（层级缩放）</strong>【25】：学习一个 <span class="math-inline">d</span> 维的缩放参数来调整特征映射。  </li>
+<li><strong>Adapter（适配器）</strong>【111】：学习降维和升维的映射，以进行特征变换。  </li>
+</ul>
+<p>我们在 CIFAR100 B0 Inc10 设定下对比了不同的投影方法，结果如图 5(b) 所示。从结果可以看出，采用单个线性层作为投影层的性能最佳，这表明简单的线性映射足以有效地跨越视觉和文本领域之间的特征鸿沟。  </p>
+<h3 id="536-参数分析">5.3.6 参数分析<a class="anchor-link" href="#536-参数分析" title="Permanent link">&para;</a></h3>
+<p>PROOF 额外的参数来源主要包括三个部分：  </p>
+<ul>
+<li><strong>投影层</strong>：每个投影层使用一个单层线性变换，每个任务新增一个投影层，参数量为 <span class="math-inline">d \times d</span>。  </li>
+<li><strong>跨模态融合模块</strong>：使用单头自注意力（Self-Attention）机制，其中 <span class="math-inline">W_Q, W_K, W_V</span> 各包含 <span class="math-inline">d \times d</span> 个参数。  </li>
+<li><strong>视觉原型存储</strong>：需要存储 <span class="math-inline">B \times d</span> 维的视觉原型，其中 <span class="math-inline">B</span> 是所有类别的总数。  </li>
+</ul>
+<p>总体而言，额外参数量约为 <span class="math-inline">(2b + 3) \times d^2 + B \times d</span>，相比于 CLIP 预训练模型约 1.5 亿的参数规模，这些额外参数是可忽略的。  </p>
+<h4 id="推理时的参数合并"><strong>推理时的参数合并</strong><a class="anchor-link" href="#推理时的参数合并" title="Permanent link">&para;</a></h4>
+<p>由于投影层是线性层，我们可以在推理时合并所有任务的投影层，从而减少存储开销。设所有任务的投影层为 <span class="math-inline">P_1, P_2, \dots, P_b</span>，则可以使用加权求和进行合并：<br />
+<div class="math-display"><br />
+    P_i(z) = \sum_{m=1}^{b} P_m (z) = \left( \sum_{m=1}^{b} P_m \right) (z) = \hat{P}_i(z)<br />
+</div><br />
+其中，合并后的投影层 <span class="math-inline">\hat{P}_i</span> 仍然是一个单层线性变换，因此合并后总的存储需求仅为 <span class="math-inline">5 \times d^2 + B \times d</span>，显著减少了参数占用。  </p>
+<p>在图 5(c) 中，我们比较了不同方法的参数规模，并展示了 PROOF 在推理时进行参数合并后的存储优势。可以看到，PROOF 仅比其他微调方法多出少量参数，但取得了显著更优的增量学习性能。  </p>
+<hr />
+<h2 id="54-进一步分析">5.4 进一步分析<a class="anchor-link" href="#54-进一步分析" title="Permanent link">&para;</a></h2>
+<h3 id="541-任务类别数的影响">5.4.1 任务类别数的影响<a class="anchor-link" href="#541-任务类别数的影响" title="Permanent link">&para;</a></h3>
+<p>在表 2 中，我们测试了不同的任务类别数对 PROOF 及其他方法的影响，实验分别在 CIFAR100 和 ImageNet-R 上进行。可以发现，PROOF 在不同的类别划分下仍然保持最佳性能，这表明该方法在不同的任务粒度下都具有较强的适应性。  </p>
+<h3 id="542-持续跨模态检索任务">5.4.2 持续跨模态检索任务<a class="anchor-link" href="#542-持续跨模态检索任务" title="Permanent link">&para;</a></h3>
+<p>我们进一步探索 PROOF 在跨模态检索任务中的性能。我们将 CLIP 作为基础模型，并使用 PROOF 进行增量学习，以测试其在 <strong>图像到文本（Image → Text）</strong> 和 <strong>文本到图像（Text → Image）</strong> 任务中的表现。表 3 展示了 PROOF 与其他方法在召回率（Recall@k）上的比较结果，可以发现：  </p>
+<ul>
+<li>PROOF 在所有任务中均优于其他方法，表明其在持续学习场景下仍能有效利用跨模态信息。  </li>
+<li>传统的 CIL 方法（如 iCaRL 和 MEMO）在跨模态检索任务中表现较差，而 PROOF 通过投影融合机制，显著提升了检索性能。  </li>
+</ul>
+<h2 id="55-扩展实验">5.5 扩展实验<a class="anchor-link" href="#55-扩展实验" title="Permanent link">&para;</a></h2>
+<h3 id="551-适用于不同的-vlm">5.5.1 适用于不同的 VLM<a class="anchor-link" href="#551-适用于不同的-vlm" title="Permanent link">&para;</a></h3>
+<p>尽管 PROOF 的主要实验基于 CLIP【26】，但该方法可以适用于各种视觉 - 语言模型（VLM）。我们在 CIFAR100 B0 Inc10 设定下，测试了 PROOF 在以下 VLM 预训练模型上的性能：  </p>
+<ul>
+<li><strong>CLIP-ViT-B/16（OpenAI 版本）</strong>【26】  </li>
+<li><strong>CLIP-ViT-B/16（LAION-400M）</strong>【108】  </li>
+<li><strong>ALIGN</strong>【27】  </li>
+<li><strong>BLIP</strong>【30】  </li>
+</ul>
+<p>实验结果如表 4 所示，可以发现：  </p>
+<ol>
+<li><strong>PROOF 在不同的 VLM 上均保持较优性能</strong>，表明该方法的通用性。  </li>
+<li><strong>预训练模型的选择会影响增量学习效果</strong>，如 CLIP（LAION-400M）整体优于 OpenAI 版本，ALIGN 由于更强的文本对齐能力，也在部分任务上表现更优。  </li>
+<li><strong>相比于直接微调（Finetune）或基于 prompt 的方法（如 CoOp）</strong>，PROOF 能更好地保持跨任务的知识一致性，减少遗忘效应。  </li>
+</ol>
+<h3 id="552-在无重叠数据集上的表现">5.5.2 在无重叠数据集上的表现<a class="anchor-link" href="#552-在无重叠数据集上的表现" title="Permanent link">&para;</a></h3>
+<p>为了进一步评估 PROOF 在实际应用中的可扩展性，我们在一个无重叠的 TV 节目分类数据集上进行实验，该数据集包含多个独立的子任务，每个任务的类别互不重叠。实验结果表明：  </p>
+<ul>
+<li>传统的 CIL 方法在该数据集上的性能下降明显，而 PROOF 能够有效适应每个子任务，同时保持先前任务的知识。  </li>
+<li>由于跨任务类别的文本描述较为稳定，PROOF 的跨模态融合机制在该数据集上尤其有效。  </li>
+</ul>
+<h3 id="553-零样本性能的退化分析">5.5.3 零样本性能的退化分析<a class="anchor-link" href="#553-零样本性能的退化分析" title="Permanent link">&para;</a></h3>
+<p>尽管 CLIP 在零样本分类任务中表现强劲，但在持续学习过程中，其零样本能力可能会受到影响。我们在表 5 中分析了 PROOF 在零样本分类任务中的性能退化程度，并与其他方法进行对比。  </p>
+<p>结果表明：  </p>
+<ol>
+<li><strong>标准的 CLIP（ZS-CLIP）在增量学习任务后会出现一定的零样本性能下降</strong>，即便模型未被直接微调。  </li>
+<li><strong>PROOF 通过冻结主干网络并引入可扩展投影层，能够较大程度保持零样本能力</strong>，相比于直接微调 CLIP 的方法（如 CoOp），其零样本分类准确率下降幅度更小。  </li>
+<li><strong>跨模态融合模块（Projection Fusion）能进一步减少零样本能力的损失</strong>，表明该模块不仅有助于增量学习，也能增强模型对未见类别的泛化能力。  </li>
+</ol>
+<hr />
+<h2 id="56-小结">5.6 小结<a class="anchor-link" href="#56-小结" title="Permanent link">&para;</a></h2>
+<p>本节详细探讨了 PROOF 在各种持续学习任务中的性能表现，并进行了以下分析：  </p>
+<ul>
+<li>在多个基准数据集上，PROOF 在 CIL 任务中的表现均优于现有方法，能够有效减少遗忘效应。  </li>
+<li>消融实验表明，<strong>可扩展投影层和跨模态融合模块是 PROOF 的关键组成部分</strong>，它们共同促进了知识保留与新任务适应。  </li>
+<li>PROOF 可适用于不同的 VLM 预训练模型，并能在无重叠任务和跨模态检索任务中保持良好的性能。  </li>
+<li>与其他方法相比，PROOF <strong>能更好地保持 VLM 的零样本能力</strong>，进一步增强了模型的泛化性。  </li>
+</ul>
+<p>至此，第 5 章 <strong>实验</strong> 部分已全部翻译完成。如果你需要继续翻译第 6 章 <strong>结论</strong>，请告诉我！</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

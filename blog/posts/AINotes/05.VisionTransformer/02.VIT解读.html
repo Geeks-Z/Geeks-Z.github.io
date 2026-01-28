@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#vision-transformer-详解">Vision Transformer 详解</a></li>
+<li><a href="#一-前言">一 前言</a></li>
+<li><a href="#二-vision-transformer-模型详解">二 Vision Transformer 模型详解</a><ul>
+<li><a href="#21-embedding-层结构详解">2.1 Embedding 层结构详解</a><ul>
+<li><a href="#211-token-emebdding">2.1.1 Token Emebdding</a></li>
+<li><a href="#212-position-embedding位置向量">2.1.2 Position Embedding（位置向量）</a></li>
+</ul>
+</li>
+<li><a href="#22-为什么要处理成-patch">2.2 为什么要处理成 patch</a></li>
+<li><a href="#23-transformer-encoder-详解">2.3 Transformer Encoder 详解</a></li>
+<li><a href="#24-mlp-head-详解">2.4 MLP Head 详解</a></li>
+</ul>
+</li>
+<li><a href="#三-hybrid-模型详解">三 Hybrid 模型详解</a></li>
+<li><a href="#四-模型架构的数学表达">四 模型架构的数学表达</a></li>
+<li><a href="#五-vit-效果">五 ViT 效果</a><ul>
+<li><a href="#51-不同-vit-模型的表示符号">5.1 不同 ViT 模型的表示符号</a></li>
+<li><a href="#52-vit-vs-卷积神经网络">5.2 ViT VS 卷积神经网络</a><ul>
+<li><a href="#521-卷积神经网络的归纳偏置">5.2.1 卷积神经网络的归纳偏置</a></li>
+<li><a href="#522-vit大力出奇迹">5.2.2 ViT：大力出奇迹</a></li>
+</ul>
+</li>
+<li><a href="#53-vit-的-attention-到底看到了什么">5.3 ViT 的 Attention 到底看到了什么</a></li>
+<li><a href="#54-vit-的位置编码学到了什么">5.4 ViT 的位置编码学到了什么</a></li>
+</ul>
+</li>
+<li><a href="#六-总结vit-的意义何在">六 总结：ViT 的意义何在</a></li>
+<li><a href="#七-vit改进">七 ViT改进</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/05.VisionTransformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="vision-transformer-详解">Vision Transformer 详解<a class="anchor-link" href="#vision-transformer-详解" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/vit.gif" style="zoom: 80%;" /></div>
+
+<blockquote>
+<p>论文名称：<a href="https://so.csdn.net/so/search?q=Scale&amp;spm=1001.2101.3001.7020">An Image Is Worth 16x16 Words: Transformers For Image Recognition At Scale</a></br><br />
+原论文对应源码：<a href="https://github.com/google-research/vision_transformer">https://github.com/google-research/vision_transformer</a></br><br />
+PyTorch 实现代码： <a href="https://github.com/WZMIAOMIAO/deep-learning-for-image-processing/tree/master/pytorch_classification/vision_transformer">pytorch_classification/vision_transformer</a></br><br />
+Tensorflow2 实现代码：<a href="https://github.com/WZMIAOMIAO/deep-learning-for-image-processing/tree/master/tensorflow_classification/vision_transformer">tensorflow_classification/vision_transformer</a></br><br />
+在 bilibili 上的视频讲解：<a href="https://www.bilibili.com/video/BV1Jh411Y7WQ">https://www.bilibili.com/video/BV1Jh411Y7WQ</a></p>
+</blockquote>
+<h2 id="一-前言">一 前言<a class="anchor-link" href="#一-前言" title="Permanent link">&para;</a></h2>
+<p><a href="https://so.csdn.net/so/search?q=Transformer&amp;spm=1001.2101.3001.7020">Transformer</a>最初提出是针对 NLP 领域的，并且在 NLP 领域大获成功。这篇论文也是受到其启发，尝试将 Transformer 应用到 CV 领域。通过这篇文章的实验，给出的最佳模型在 ImageNet1K 上能够达到 88.55%的准确率（先在 Google 自家的 JFT 数据集上进行了预训练），说明 Transformer 在 CV 领域确实是有效的，而且效果还挺惊人。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121058155.png"/></div>
+
+<hr />
+<h2 id="二-vision-transformer-模型详解">二 Vision Transformer 模型详解<a class="anchor-link" href="#二-vision-transformer-模型详解" title="Permanent link">&para;</a></h2>
+<p>下图是原论文中给出的关于 Vision Transformer(ViT)的模型框架。简单而言，模型由三个模块组成：</p>
+<ul>
+<li>Linear Projection of Flattened Patches(Embedding 层)</li>
+<li>Transformer Encoder(图右侧有给出更加详细的结构)</li>
+<li>MLP Head（最终用于分类的层结构）</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121100546.png"/></div>
+
+<h3 id="21-embedding-层结构详解">2.1 Embedding 层结构详解<a class="anchor-link" href="#21-embedding-层结构详解" title="Permanent link">&para;</a></h3>
+<p>对于标准的 Transformer 模块，要求输入的是 token（向量）序列，即二维矩阵[num_token, token_dim]，如下图，token0-9 对应的都是向量，以 ViT-B/16 为例，每个 token 向量长度为 768。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121101761.png"/></div>
+
+<p>对于图像数据而言，其数据格式为[H, W, C]是三维矩阵明显不是 Transformer 想要的。所以需要先通过一个 Embedding 层来对数据做个变换。如下图所示，首先将一张图片按给定大小分成一堆 Patches。以 ViT-B/16 为例，将输入图片(224x224)按照 16x16 大小的 Patch 进行划分，划分后会得到<span class="math-inline">(224/16)^2=196</span>  Patches。接着通过线性映射将每个 Patch 映射到一维向量中，以 ViT-B/16 为例，每个 Patche 数据 shape 为[16, 16, 3]通过映射得到一个长度为 768 的向量（后面都直接称为 token）。<code>[16, 16, 3] -&gt; [768]</code></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141442669.png"/></div>
+
+<p><strong>在代码实现中，直接通过一个卷积层来实现</strong>。 以 ViT-B/16 为例，直接使用一个卷积核大小为 16x16，步距为 16，卷积核个数为 768 的卷积来实现。通过卷积<code>[224, 224, 3] -&gt; [14, 14, 768]</code>，然后把 H 以及 W 两个维度展平即可<code>[14, 14, 768] -&gt; [196, 768]</code>，此时正好变成了一个二维矩阵，正是 Transformer 想要的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141444086.png"/></div>
+
+<p><strong>在输入 Transformer Encoder 之前注意需要加上[class]token 以及 Position Embedding</strong>。 在原论文中，作者说参考 BERT，在刚刚得到的一堆 tokens 中插入一个专门用于分类的[class]token，这个[class]token 是一个可训练的参数，数据格式和其他 token 一样都是一个向量，以 ViT-B/16 为例，就是一个长度为 768 的向量，与之前从图片中生成的 tokens 拼接在一起，<code>Cat([1, 768], [196, 768]) -&gt; [197, 768]</code>。然后关于 Position Embedding 就是之前 Transformer 中讲到的 Positional Encoding，这里的 Position Embedding 采用的是一个可训练的参数（<code>1D Pos. Emb.</code>），是直接叠加在 tokens 上的（add），所以 shape 要一样。以 ViT-B/16 为例，刚刚拼接[class]token 后 shape 是<code>[197, 768]</code>，那么这里的 Position Embedding 的 shape 也是<code>[197, 768]</code>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121126617.png"/></div>
+
+<p>在 Bert（及其它 NLP 任务中）：</p>
+<p>输入 = <strong>token_embedding</strong>(将单个词转变为词向量) +<strong>position_embedding</strong>(位置编码，用于表示 token 在输入序列中的位置) + <strong>segment_emebdding</strong>(非必须，在 bert 中用于表示每个词属于哪个句子)。</p>
+<p><strong>在 ViT 中，同样存在 token_embedding 和 postion_emebedding</strong>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141659539.png"/></div>
+
+<h4 id="211-token-emebdding">2.1.1 Token Emebdding<a class="anchor-link" href="#211-token-emebdding" title="Permanent link">&para;</a></h4>
+<p>我们记 token emebdding 为<span class="math-inline">E</span>，则<span class="math-inline">E</span> 一个形状为<code>(768, 768)</code>的矩阵。</p>
+<p>由前文知经过 patch 处理后输入<span class="math-inline">X</span> 形状为<code>(196, 768)</code>，则输入<span class="math-inline">X</span>  toke*embedding 后的结果为：</p>
+<p><div class="math-display">X_{TE}=X_E=(196,768)_(768,768)=(196,768)</div></p>
+<p><strong>你可能想问，输入 <span class="math-inline">X</span> 本来就是一个</strong><code>(196，768)</code><strong>的矩阵啊，我为什么还要过一次 embedding 呢？</strong></p>
+<p><strong>这个问题的关键不在于数据的维度，而在于 embedding 的含义</strong>。原始的<span class="math-inline">X</span> 是由数据预处理而来，和主体模型毫无关系。而 token_embedding 却参与了主体模型训练中的梯度更新，在使用它之后，能更好地表示出 token 向量。更进一步，<span class="math-inline">E</span> 维度可以表示成(768, x)的形式，也就是第二维不一定要是 768，你可以自由设定词向量的维度。</p>
+<h4 id="212-position-embedding位置向量">2.1.2 Position Embedding（位置向量）<a class="anchor-link" href="#212-position-embedding位置向量" title="Permanent link">&para;</a></h4>
+<p>记位置向量为<span class="math-inline">E_{pos}</span>，则它是一个形状为<code>(196，768)</code>的矩阵，表示 196 个维度为 768 的向量，<strong>每个向量表示对应 token 的位置信息</strong>。</p>
+<p>构造位置向量的方法有很多种，在 ViT 中，作者做了不同的消融实验，来验证不同方案的效果（论文附录 D.4）部分。在源码中默认使用的是<code>1D Pos. Emb.</code>，对比不使用Position Embedding准确率提升了大概3个点，和<code>2D Pos. Emb.</code>比起来没太大差别。</p>
+<p><strong>方案一：不添加任何位置信息</strong></p>
+<p>将输入视为一堆无序的 patch，不往其中添加任何位置向量。</p>
+<p><strong>方案二：使用 1-D 绝对位置编码</strong></p>
+<p>也就是我们在上文介绍的方案，这也是 ViT 最终选定的方案。1-D 绝对位置编码又分为<strong>函数式</strong>（Transformer 的三角函数编码，详情可参见<a href="https://zhuanlan.zhihu.com/p/454482273">这篇文章</a>）和<strong>可学习式</strong>（Bert 采用编码方式），ViT 采用的是后者。之所以被称为“绝对位置编码”，是因为位置向量代表的是 token 的绝对位置信息（例如第 1 个 token，第 2 个 token 之类）。</p>
+<p><strong>方案三：使用 2-D 绝对位置编码</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141635379.png"/></div>
+
+<p>如图所示，因为图像数据的特殊性，在 2-D 位置编码中，认为按全局绝对位置信息来表示一个 patch 是不足够的（如左侧所示），一个 patch 在 x 轴和 y 轴上具有不同含义的位置信息（如右侧所示）。因此，2-D 位置编码将原来的 PE 向量拆成两部分来分别训练。</p>
+<p><strong>方案四：相对位置编码（relative positional embeddings）</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141635383.png"/></div>
+
+<p>相对位置编码（RPE）的设计思想是<strong>：我们不应该只关注patch的绝对位置信息，更应该关注patch间的相对位置信息</strong>。如图所示，对于token4，它和其余每一个token间都存在相对位置关系，我们分别用 <span class="math-inline">w_{-3}, w_{-2}, ... w_{1}</span> 这5个向量来表示这种位置关系。</p>
+<p>那么接下来，<strong>只要在正常计算attention的过程中，将这5个向量当作bias添加到计算过程中（如图公式所示），我们就可以正常训练这些相对位置向量了</strong>。为了减少训练时的参数量，我们还可以做<strong>clip操作</strong>，在制定clip的步数<span class="math-inline">k</span> 后，在<span class="math-inline">k</span> 围之外的<span class="math-inline">w</span> 们都用固定的<span class="math-inline">w</span> 示。例如图中当<span class="math-inline">k=2</span> ，向token4的前方找，我们发现 <span class="math-inline">w_{-3}</span> 已经在<span class="math-inline">k=2</span> 之外了，因此就可以用 <span class="math-inline">w_{-2}</span> 来替代 <span class="math-inline">w_{-3}</span> ，如果token1之前还有token，那么它们的w都可用 <span class="math-inline">w_{-2}</span> 替代。向token4的后方找，发现大家都在<span class="math-inline">k=2</span> 之内，因此无需做任何替换操作。</p>
+<p>关于相对位置编码的更多信息，可以阅读<a href="https://arxiv.org/pdf/1803.02155.pdf">原始论文</a></p>
+<h5 id="实验结果">实验结果<a class="anchor-link" href="#实验结果" title="Permanent link">&para;</a></h5>
+<p>这四种位置编码方案的实验结果如下：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141635451.png"/></div>
+
+<p>可以发现除了“不加任何位置编码”的效果显著低之外，其余三种方案的结果都差不多。所以作者们当然选择最快捷省力的 1-D 位置编码方案啦。当你在阅读 ViT 的论文中，会发现大量的消融实验细节（例如分类头<code>&lt;cls&gt;</code>要怎么加），<strong>作者这样做的目的也很明确：“我们的方案是在诸多可行的方法中，逐一做实验比对出来的，是全面考虑后的结果</strong>。”这也是我一直觉得这篇论文在技术之外值得借鉴和反复读的地方。</p>
+<h3 id="22-为什么要处理成-patch">2.2 为什么要处理成 patch<a class="anchor-link" href="#22-为什么要处理成-patch" title="Permanent link">&para;</a></h3>
+<p><strong>第一个原因，是为了减少模型计算量。</strong><br />
+在Transformer中，假设输入的序列长度为<span class="math-inline">N</span>，那么经过attention时，计算复杂度就为 <span class="math-inline">O(N^{2})</span> ，因为注意力机制下，每个token都要和包括自己在内的所有token做一次attention score计算。<br />
+在ViT中， <span class="math-inline">O(N^{2})</span> ，当patch尺寸<span class="math-inline">P</span> 小时，<span class="math-inline">N</span> 大，此时模型的计算量也就越大。因此，我们需要找到一个合适的<span class="math-inline">P</span> ，来减少计算压力。</p>
+<p><strong>第二个原因，是图像数据带有较多的冗余信息。</strong><br />
+和语言数据中蕴含的丰富语义不同，像素本身含有大量的冗余信息。比如，相邻的两个像素格子间的取值往往是相似的。因此我们并不需要特别精准的计算粒度（比如把<span class="math-inline">P</span> 为1）。这个特性也是之后MAE，MoCo之类的像素级预测模型能够成功的原因之一。</p>
+<h3 id="23-transformer-encoder-详解">2.3 Transformer Encoder 详解<a class="anchor-link" href="#23-transformer-encoder-详解" title="Permanent link">&para;</a></h3>
+<p>Transformer Encoder 其实就是重复堆叠 Encoder Block <span class="math-inline">L</span> 次，主要由以下几部分组成：</p>
+<ul>
+<li><strong>Layer Norm</strong>，这种 Normalization 方法主要是针对 NLP 领域提出的，这里是对每个 token 进行 Norm 处理，之前也有讲过 Layer Norm 不懂的可以参考<a href="https://blog.csdn.net/qq_37541097/article/details/117653177">链接</a></li>
+<li><strong>Multi-Head Attention</strong>，这个结构之前在讲 Transformer 中很详细的讲过，不在赘述，不了解的可以参考<a href="https://blog.csdn.net/qq_37541097/article/details/117691873">链接</a></li>
+<li><strong>Dropout/DropPath</strong>，在原论文的代码中是直接使用的 Dropout 层，但在<code>rwightman</code>实现的代码中使用的是 DropPath（stochastic depth），可能后者会更好一点。</li>
+<li><strong>MLP Block</strong>，如图右侧所示，就是全连接+GELU 激活函数+Dropout 组成也非常简单，需要注意的是第一个全连接层会把输入节点个数翻 4 倍<code>[197, 768] -&gt; [197, 3072]</code>，第二个全连接层会还原回原节点个数<code>[197, 3072] -&gt; [197, 768]</code></li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121056396.png"/></div>
+
+<h3 id="24-mlp-head-详解">2.4 MLP Head 详解<a class="anchor-link" href="#24-mlp-head-详解" title="Permanent link">&para;</a></h3>
+<p>上面通过 Transformer Encoder 后输出的 shape 和输入的 shape 是保持不变的，以 ViT-B/16 为例，输入的是<code>[197, 768]</code>输出的还是<code>[197, 768]</code>。注意，在 Transformer Encoder 后其实还有一个 Layer Norm 没有画出来，后面有我自己画的 ViT 的模型可以看到详细结构。这里我们只是需要分类的信息，所以我们只需要提取出[class]token 生成的对应结果就行，即<code>[197, 768]</code>中抽取出[class]token 对应的<code>[1, 768]</code>。接着我们通过 MLP Head 得到我们最终的分类结果。MLP Head 原论文中说在训练 ImageNet21K 时是由<code>Linear</code>+<code>tanh激活函数</code>+<code>Linear</code>组成。但是迁移到 ImageNet1K 上或者你自己的数据上时，只用一个<code>Linear</code>即可。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121056600.png" alt="mlp head" style="zoom:67%;" /></div>
+
+<p><strong>网络结构详细图(以 ViT-B/16 为例)</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121128006.png"/></div>
+
+<blockquote>
+<p>算法结构图左侧 Patch Embedding 的 shape 是 196*768</p>
+</blockquote>
+<h2 id="三-hybrid-模型详解">三 Hybrid 模型详解<a class="anchor-link" href="#三-hybrid-模型详解" title="Permanent link">&para;</a></h2>
+<p>在论文 4.1 章节的<code>Model Variants</code>中有比较详细的讲到 Hybrid 混合模型，就是将传统 CNN 特征提取和 Transformer 进行结合。下图绘制的是以 ResNet50 作为特征提取器的混合模型，但这里的 Resnet 与之前讲的 Resnet 有些不同。首先这里的 R50 的卷积层采用的 StdConv2d 不是传统的 Conv2d，然后将所有的 BatchNorm 层替换成 GroupNorm 层。在原 Resnet50 网络中，stage1 重复堆叠 3 次，stage2 重复堆叠 4 次，stage3 重复堆叠 6 次，stage4 重复堆叠 3 次，但在这里的 R50 中，把 stage4 中的 3 个 Block 移至 stage3 中，所以 stage3 中共重复堆叠 9 次。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241221153222.png" style="zoom: 80%;" /></div>
+
+<p>通过 R50 Backbone 进行特征提取后，得到的特征矩阵 shape 是<code>[14, 14, 1024]</code>，接着再输入 Patch Embedding 层，注意 Patch Embedding 中卷积层 Conv2d 的 kernel_size 和 stride 都变成了 1，只是用来调整 channel。后面的部分和前面 ViT 中讲的完全一样，就不在赘述。</p>
+<p>下表是论文用来对比 ViT，Resnet（和刚刚讲的一样，使用的卷积层和 Norm 层都进行了修改）以及 Hybrid 模型的效果。通过对比发现，在训练 epoch 较少时 Hybrid 优于 ViT，但当 epoch 增大后 ViT 优于 Hybrid。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202306121056812.png"/></div>
+
+<h2 id="四-模型架构的数学表达">四 模型架构的数学表达<a class="anchor-link" href="#四-模型架构的数学表达" title="Permanent link">&para;</a></h2>
+<p>训练中的计算过程：</p>
+<p><div class="math-display"><br />
+\begin{align}<br />
+z_0 &amp;= \begin{bmatrix}<br />
+x_{\text{class}}; x_p^1 \mathbf{E}; x_p^2 \mathbf{E}; \cdots; x_p^N \mathbf{E}<br />
+\end{bmatrix} + \mathbf{E}<em>{\text{pos}}, \mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}, \quad \mathbf{E}</em>{\text{pos}} \in \mathbb{R}^{(N+1) \times D}, \tag{1} \<br />
+z_\ell' &amp;= \text{MSA}(\text{LN}(z_{\ell-1})) + z_{\ell-1}, \quad \ell = 1 \ldots L, \tag{2} \<br />
+z_\ell &amp;= \text{MLP}(\text{LN}(z_\ell')) + z_\ell', \quad \ell = 1 \ldots L, \tag{3} \<br />
+y &amp;= \text{LN}(z_L^0). \tag{4}<br />
+\end{align}<br />
+</div></p>
+<ul>
+<li><span class="math-inline">x_p^i</span>：第 i 块 patch</li>
+<li><span class="math-inline">E,E_{pos}</span>：Token Embedding，1-D Positional Embedding</li>
+<li><span class="math-inline">x_{class}</span>：和 Bert 类似，是额外加的一个分类头</li>
+<li><span class="math-inline">z_0</span>：最终 ViT 的输入</li>
+</ul>
+<p>(1)即是我们说的图像预处理过程,(2)即是计算 multi-head attention 的过程，(3)是计算 MLP 的过程。(4)是最终分类任务，LN 表示是一个简单的线性分类模型，<span class="math-inline">z_0</span> 是<code>&lt;cls&gt;</code>对应的向量。</p>
+<h2 id="五-vit-效果">五 ViT 效果<a class="anchor-link" href="#五-vit-效果" title="Permanent link">&para;</a></h2>
+<h3 id="51-不同-vit-模型的表示符号">5.1 不同 ViT 模型的表示符号<a class="anchor-link" href="#51-不同-vit-模型的表示符号" title="Permanent link">&para;</a></h3>
+<h3 id="52-vit-vs-卷积神经网络">5.2 ViT VS 卷积神经网络<a class="anchor-link" href="#52-vit-vs-卷积神经网络" title="Permanent link">&para;</a></h3>
+<p>既然 ViT 的目的是替换卷积神经网络，那么当然要比较一下它和目前 SOTA 的卷积网络间的性能了。</p>
+<p>作者选取了 ResNet 和 Noisy Student 这两种经典高性能的卷积神经网络与 ViT 进行比较，比较内容为<strong>预测图片类别的准确性</strong>与<strong>训练时长</strong>，结果如下：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141709960.png"/></div>
+
+<p>前三列 Ours-JFT(ViT-H/14)，Ours-JFT(ViT-L/16)，Ours-I12K(ViT-L/16)表示三个 ViT 预训练模型，它们分别在不同规模和不同数据集（JFT, I12K）上预训练而来。后两列表示两个卷积神经网络模型。</p>
+<p>纵向的 ImageNet，ImageNet Real 等表示不同的图像数据集，当我们的 ViT 模型和卷积模型预训练好后，我们就可以借助这些 pretrain 模型，在图像数据集上做 fine-tune，而表格里给出的就是 fine-tune 后的准确率。</p>
+<p>观察表格，我们发现一个有趣的现象<strong>：ViT 和卷积神经网络相比，表现基本一致</strong>。关于这一点，我们会在下文详细分析。虽然准确率没有突出表现，但是训练时间上 ViT 的还是有亮点的，表格最后一行表示，假设用单块 TPU 训练模型，所需要的天数。我们发现 ViT 最高也只需要 2500 核-天（当然其实这个值也不小啦），卷积网络要花至 9900 核-天以上。所以 ViT 的一个优势在于，训练没那么贵了。关于这点，我的猜想是基于 Transformer 架构的 ViT，和卷积神经网络相比，更适合做<strong>切分均匀</strong>的矩阵计算，这样我们就能把参数均匀切到不同卡上做分布式训练，更好利用 GPU 算力，平衡整个训练系统了。</p>
+<p>现在，我们回到刚才的问题，<strong>为什么 ViT 相比卷积网络，在准确率上没有突出优势？</strong>为了解答这个问题，我们先来看卷积神经网络的<strong>归纳偏置（inductive biases）</strong></p>
+<h4 id="521-卷积神经网络的归纳偏置">5.2.1 卷积神经网络的归纳偏置<a class="anchor-link" href="#521-卷积神经网络的归纳偏置" title="Permanent link">&para;</a></h4>
+<p><strong>归纳偏置用大白话来说，就是一种假设，或者说一种先验知识。有了这种先验，我们就能知道哪一种方法更适合解决哪一类任务。所以归纳偏置是一种统称，不同的任务其归纳偏置下包含的具体内容不一样。</strong><br />
+对图像任务来说，它的归纳偏置有以下两点：  </p>
+<ul>
+<li><strong>空间局部性（locality）</strong>：假设一张图片中，相邻的区域是有相关特征的。比如太阳和天空就经常一起出现。</li>
+<li><strong>平移等边性（translation equivariance）</strong>： <span class="math-inline">f(g(x)) = g(f(x)), f=卷积, g=平</span> 。假设一张图中，左上角有一个太阳，你对这张图正常做卷积得到特征图，则左上角的卷积可表示为 <span class="math-inline">f(x)</span> ，做完卷积后，你想把左上角的特征图移动到右上角去，则你这一顿操作可以用 <span class="math-inline">g(f(x))</span> 来表示。这一系列操作等同于，你先把左上角的太阳移动到右上角去( <span class="math-inline">g(x)</span> )，然后再做卷积 <span class="math-inline">f(g(x))</span> ，这就是图像的平移等边性。不论物体移动到哪里，只要给卷积核的输入不变，那么输出也是一致的。</li>
+</ul>
+<p>在这两种先验假设下，CNN成为了图像任务最佳的方案之一。<strong>卷积核能最大程度保持空间局部性（保存相关物体的位置信息）和平移等边性</strong>，使得在训练过程中，最大限度学习和保留原始图片信息。  </p>
+<p>好，那么现在，如果说ViT相比于卷积，在图像任务上没有显著优势，那大概率ViT对这两种先验的维护没有CNN做的好，具体来看：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141709957.png"/></div>
+
+<p>图中箭头所指的两部分都属于同一栋建筑。在卷积中，我们可以用大小适当的卷积核将它们圈在一起。但是在ViT中，它们之间的位置却拉远了，如果我把patch再切分细一些，它们的距离就更远了。虽然attention可以学习到向量间的想关系，但是ViT在<strong>空间局部性</strong>的维护上，确实没有卷积做的好。而在<strong>平移等边性</strong>上，由于ViT需要对patch的位置进行学习，所以对于一个patch，当它位置变幻时，它的输出结果也是不一样的。<strong>所以，ViT的架构没有很好维护图像问题中的归纳偏置假设</strong>。  </p>
+<p>但是，这就意味着ViT没有翻盘的一天了吗？当然不是，<strong>不要忘了，Transformer架构的模型都有一个广为人知的特性：大力出奇迹</strong>。只要它见过的数据够多，它就能更好地学习像素块之间的关联性，当然也能抹去归纳偏置的问题。</p>
+<h4 id="522-vit大力出奇迹">5.2.2 ViT：大力出奇迹<a class="anchor-link" href="#522-vit大力出奇迹" title="Permanent link">&para;</a></h4>
+<p>作者当然也考虑到了这点，所以采用了不同数量的数据集，对 ViT 进行训练，效果如下：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141709961.png"/></div>
+
+<p>如图，横轴表示不同量级的数据集（越往右数据集越大），纵轴表示准确率。图中灰色阴影部分表示在相应数据集下，不同架构的卷积神经网络的准确率范围。<strong>可以发现，当数据集较小时，ViT表现明显弱于卷积网络。但当数据量级大于21k时，ViT的能力就上来了</strong>。</p>
+<h3 id="53-vit-的-attention-到底看到了什么">5.3 ViT 的 Attention 到底看到了什么<a class="anchor-link" href="#53-vit-的-attention-到底看到了什么" title="Permanent link">&para;</a></h3>
+<p>讲完了 ViT 的整体效果，我们来探究下 ViT 具体学到了什么，才能帮助它达到这样的效果。我们首先来看 attention 层。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141709934.png"/></div>
+
+<p>这张实验图刻画了ViT的16个multi-head attention学到的像素距离信息。横轴表示网络的深度，纵轴表示“平均注意力距离”，我们设第<span class="math-inline">i</span> 和第<span class="math-inline">j</span> 像素的平均注意力距离为 <span class="math-inline">d_{ij}</span> ，真实像素距离为 <span class="math-inline">d_{ij}^{\prime}</span> ，这两个像素所在patch某一个head上的attention score为 <span class="math-inline">a_{ij}</span> ，则有： <span class="math-inline">d_{ij} = a_{ij} * d_{ij}^{\prime}</span> 。当 <span class="math-inline">d_{ij}</span> 越大时，说明ViT的attention机制能让它关注到距离较远的两个像素，类似于CNN中的“扩大感受野”。  </p>
+<p>图中每一列上，都有16个彩色原点，它们分别表示16个head观测到的平均像素距离。由图可知，在浅层网络中，ViT还只能关注到距离较近的像素点，<strong>随着网络加深，ViT逐渐学会去更远的像素点中寻找相关信息了。这个过程就和用在CNN中用卷积逐层去扩大感受野非常相似</strong>。  </p>
+<p>下图的左侧表示原始的输入图片，右侧表示ViT最后一层看到的图片信息，可以清楚看见，ViT在最后一层已经学到了将注意力放到关键的物体上了，这是非常有趣的结论：  </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141709564.png"/></div>
+
+<h3 id="54-vit-的位置编码学到了什么">5.4 ViT 的位置编码学到了什么<a class="anchor-link" href="#54-vit-的位置编码学到了什么" title="Permanent link">&para;</a></h3>
+<p>我们在上文讨论过图像的<strong>空间局部性（locality）</strong>，即有相关性的物体（例如太阳和天空）经常一起出现。CNN采用卷积框取特征的方式，极大程度上维护了这种特性。<strong>其实，ViT也有维护这种特性的方法，上面所说的attention是一种，位置编码也是一种。</strong>  </p>
+<p>我们来看看ViT的位置编码学到了什么信息：  </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202310141709547.png"/></div>
+
+<p>上图是<code>ViT-L/32</code>模型下的位置编码信息，图中每一个方框表示一个patch，图中共有7*7个patch。而每个方框内，也有一个7*7的矩阵，这个矩阵中的每一个值，表示当前patch的position embedding和其余对应位置的position embedding的余弦相似度。<strong>颜色越黄，表示越相似，也即patch和对应位置间的patch密切相关</strong>。</p>
+<p>注意到每个方框中，最黄的点总是当前patch所在位置，这个不难理解，因为自己和自己肯定是最相似的。除此以外<strong>颜色较黄的部分都是当前patch所属的行和列，以及以当前patch为中心往外扩散的一小圈。这就说明ViT通过位置编码，已经学到了一定的空间局部性</strong>。</p>
+<h2 id="六-总结vit-的意义何在">六 总结：ViT 的意义何在<a class="anchor-link" href="#六-总结vit-的意义何在" title="Permanent link">&para;</a></h2>
+<p>到此为止，关于 ViT 模型，我们就介绍完毕了。一顿读下来，你可能有个印象：如果训练数据量不够多的话，看起来 ViT 也没比 CNN 好多少呀，ViT 的意义是什么呢？</p>
+<p><strong>这是个很好的问题**</strong>，因为在工业界，人们的标注数据量和算力都是有限的**，因此 CNN 可能还是首要选择。</p>
+<p>但是，ViT 的出现，不仅是用模型效果来考量这么简单，今天再来看这个模型，发现它的意义在于：</p>
+<ul>
+<li>证明了一个统一框架在不同模态任务上的表现能力。在 ViT 之前，NLP 的 SOTA 范式被认为是 Transformer，而图像的 SOTA 范式依然是 CNN。ViT 出现后，证明了用 NLP 领域的 SOTA 模型一样能解图像领域的问题，同时在论文中<strong>通过丰富的实验，证明了 ViT 对 CNN 的替代能力，同时也论证了大规模+大模型在图像领域的涌现能力</strong>（论文中没有明确指出这是涌现能力，但通过实验展现了这种趋势）。这也为后续两年多模态任务的发展奠定了基石。</li>
+<li>虽然 ViT 只是一个分类任务，但在它提出的几个月之后，立刻就有了用 Transformer 架构做检测（detection）和分割（segmentation）的模型。而不久之后，GPT 式的无监督学习，也在 CV 届开始火热起来。</li>
+<li>工业界上，对大部分企业来说，受到训练数据和算力的影响，预训练和微调一个 ViT 都是困难的，但是这不妨碍直接拿大厂训好的 ViT 特征做下游任务。同时，低成本的微调方案研究，在今天也层出不穷。</li>
+</ul>
+<h2 id="七-vit改进">七 ViT改进<a class="anchor-link" href="#七-vit改进" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="https://arxiv.org/abs/2203.09795">Three things everyone should know about Vision Transformers</a></li>
+</ol>
+<blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/488574791">关于ViT，你必须要知道的三点改进</a></p>
+</blockquote>
+<p>在迁移学习方面，即先在ImageNet上预训练，然后在其它分类数据集上finetune，这里测试了6个数据集，结果如下表所示，其中在较小的数据集上（CARS和Flowers，训练数据较少，类别少），只finetune attention层效果比finetune全部层要好一点。但是在其它较大一点的数据集上（INAT-18，INAT-19和CIFAR-100），只finetune attention层和finetune全部层存在较大的性能gap，而且也差于只finetune FFN层。这主要是因为这些数据集存在较多的ImageNet1K没有的新类别，需要更多的参数来学习，而attention层的参数只占整个模型的1/3；对于较大的模型如ViT-L，其性能gap就较小一点，因为此时attention层参数也达到了finetune所需。</p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://blog.csdn.net/qq_37541097/article/details/118242600?spm=1001.2014.3001.5501">Vision Transformer 详解</a></li>
+<li>https://arxiv.org/pdf/2010.11929.pdf</li>
+<li>https://www.bilibili.com/video/BV15P4y137jb/?spm_id_from=333.337.search-card.all.click</li>
+<li>https://arxiv.org/pdf/1803.02155.pdf</li>
+<li>https://blog.csdn.net/qq_44166630/article/details/127429697</li>
+<li><a href="https://mp.weixin.qq.com/s/XyUIAyO6OokK1lm4YByCLA">再读 ViT，还有多少细节是你不知道的</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

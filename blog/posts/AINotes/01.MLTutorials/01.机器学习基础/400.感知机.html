@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#导读">导读</a></li>
+<li><a href="#三要素">三要素</a><ul>
+<li><a href="#模型">模型</a></li>
+<li><a href="#策略">策略</a><ul>
+<li><a href="#损失函数选择">损失函数选择</a></li>
+</ul>
+</li>
+<li><a href="#算法">算法</a><ul>
+<li><a href="#原始形式">原始形式</a></li>
+<li><a href="#对偶形式">对偶形式</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#例子">例子</a><ul>
+<li><a href="#例21">例2.1</a></li>
+<li><a href="#例22">例2.2</a></li>
+<li><a href="#logic_01">Logic_01</a></li>
+<li><a href="#logic_02">Logic_02</a></li>
+<li><a href="#mnist_01">MNIST_01</a></li>
+</ul>
+</li>
+<li><a href="#问题">问题</a><ul>
+<li><a href="#损失函数">损失函数</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h3 id="导读">导读<a class="anchor-link" href="#导读" title="Permanent link">&para;</a></h3>
+<p>感知机是二类分类的<strong>线性分类模型</strong>，输入为实例的特征向量，输出为实例的类别。感知机对应于输入空间（特征空间）中将实例划分为正负两类的分离超平面，属于判别模型。</p>
+<ul>
+<li>损失函数<span class="math-inline">L(w,b)</span> 经验风险最小化</li>
+<li>本章中涉及到向量内积，有超平面的概念，也有线性可分数据集的说明，在策略部分有说明损关于失函数的选择的考虑，可以和<a href="../CH07/README.md">CH07</a>一起看。另外， 感知机和SVM的更多联系源自margin的思想， 实际上在本章的介绍中并没有体现margin的思想，参考文献中有给出对应的文献。</li>
+<li>本章涉及的两个例子，思考一下为什么<span class="math-inline">\eta=1</span>，进而思考一下参数空间，这两个例子设计了相应的测试案例实现， 在后面的内容中也有展示。</li>
+<li>在<strong>收敛性证明</strong>那部分提到了偏置合并到权重向量的技巧，合并后的权重向量叫做扩充权重向量，这点在LR和SVM中都有应用，但是这种技巧在书中的表示方式是不一样的，采用的不是统一的符号体系，或者说不是统一的。本书三个章节讨论过算法的收敛性，感知机， AdaBoost，EM算法。</li>
+<li>第一次涉及Gram Matrix <span class="math-inline">G=[x_i\cdot x_j]_{N\times N}</span></li>
+<li>感知机的激活函数是符号函数。</li>
+<li>感知机是神经网络和支持向量机的基础。</li>
+<li>当我们讨论<strong>决策边界</strong>的时候, 实际上是在考虑算法的<strong>几何解释</strong>。</li>
+<li>关于感知机为什么不能处理异或问题, 可以借助下图理解。</li>
+</ul>
+<p><img alt="" src="assets/XOR_3D.gif" /></p>
+<p>上面紫色和橙色为两类点, 线性的分割超平面应该要垂直于那些红粉和紫色的线.</p>
+<ul>
+<li>提出感知机算法的大参考文献是本文第一篇文献， 这个文章发表在Psycological Review上。不过这个文章，真的不咋好看。</li>
+<li>书中有提到函数间隔，几何间隔，这里间隔就是margin</li>
+<li>在<a href="../CH07/README.md">CH07</a>中有说明， <code>分离超平面将特征空间划分为两个部分，一部分是正类， 一部分是负类。法向量指向的一侧为正类，另一侧为负类。</code></li>
+<li>感知机损失函数<span class="math-inline">L=\max(0, -y_i(w\cdot x_i+b))</span>，这个在<a href="../CH07/README.md">CH07</a>中将hinge loss的时候有说明。</li>
+</ul>
+<h2 id="三要素">三要素<a class="anchor-link" href="#三要素" title="Permanent link">&para;</a></h2>
+<h3 id="模型">模型<a class="anchor-link" href="#模型" title="Permanent link">&para;</a></h3>
+<p>输入空间：<span class="math-inline">\mathcal X\sube \bf R^n</span></p>
+<p>输出空间：<span class="math-inline">\mathcal Y={+1,-1}</span></p>
+<blockquote>
+<p>决策函数：<span class="math-inline">f(x)=sign (w\cdot x+b)</span></p>
+</blockquote>
+<h3 id="策略">策略<a class="anchor-link" href="#策略" title="Permanent link">&para;</a></h3>
+<p>确定学习策略就是定义<strong>(经验)</strong>损失函数并将损失函数最小化。</p>
+<p>注意这里提到了<strong>经验</strong>，所以学习是base在<strong>训练数据集</strong>上的操作</p>
+<h4 id="损失函数选择">损失函数选择<a class="anchor-link" href="#损失函数选择" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>损失函数的一个自然选择是误分类点的总数，但是，这样的损失函数<strong>不是参数<span class="math-inline">w,b</span> 连续可导函数，不易优化</strong></p>
+<p>损失函数的另一个选择是误分类点到超平面<span class="math-inline">S</span> 总距离，这是感知机所采用的</p>
+</blockquote>
+<p>感知机学习的经验风险函数(损失函数)<br />
+<div class="math-display"><br />
+L(w,b)=-\sum_{x_i\in M}y_i(w\cdot x_i+b)<br />
+</div><br />
+其中<span class="math-inline">M</span> 误分类点的集合</p>
+<p>给定训练数据集<span class="math-inline">T</span>，损失函数<span class="math-inline">L(w,b)</span> <span class="math-inline">w</span> <span class="math-inline">b</span> 连续可导函数</p>
+<h3 id="算法">算法<a class="anchor-link" href="#算法" title="Permanent link">&para;</a></h3>
+<h4 id="原始形式">原始形式<a class="anchor-link" href="#原始形式" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>输入：<span class="math-inline">T={(x_1,y_1),(x_2,y_2),\dots,(x_N,y_N)}\ x_i\in \cal X=\bf R^n\mit , y_i\in \cal Y\it ={-1,+1}, i=1,2,\dots,N; \ \ 0&lt;\eta\leqslant 1</span></p>
+<p>输出：<span class="math-inline">w,b;f(x)=sign(w\cdot x+b)</span></p>
+<ol>
+<li>
+<p>选取初值<span class="math-inline">w_0,b_0</span></p>
+</li>
+<li>
+<p>训练集中选取数据<span class="math-inline">(x_i,y_i)</span></p>
+</li>
+<li>
+<p>如果<span class="math-inline">y_i(w\cdot x_i+b)\leqslant 0</span><br />
+   <div class="math-display"><br />
+   w\leftarrow w+\eta y_ix_i \nonumber\<br />
+   b\leftarrow b+\eta y_i<br />
+   </div></p>
+</li>
+<li>转至(2)，直至训练集中没有误分类点</li>
+</ol>
+</blockquote>
+<p>注意这个原始形式中的迭代公式，可以对<span class="math-inline">x</span> 1，将<span class="math-inline">w</span> <span class="math-inline">b</span> 并在一起，合在一起的这个叫做扩充权重向量，书上有提到。</p>
+<h4 id="对偶形式">对偶形式<a class="anchor-link" href="#对偶形式" title="Permanent link">&para;</a></h4>
+<p>对偶形式的基本思想是将<span class="math-inline">w</span> <span class="math-inline">b</span> 示为实例<span class="math-inline">x_i</span> 标记<span class="math-inline">y_i</span> 线性组合的形式，通过求解其系数而求得<span class="math-inline">w</span> <span class="math-inline">b</span>。</p>
+<blockquote>
+<p>输入：<span class="math-inline">T={(x_1,y_1),(x_2,y_2),\dots,(x_N,y_N)}\ x_i\in \cal{X}=\bf{R}^n , y_i\in \cal{Y} ={-1,+1}, i=1,2,\dots, N; 0&lt; \eta \leqslant 1</span></p>
+<p>输出：<br />
+<div class="math-display"><br />
+\alpha ,b; f(x)=sign\left(\sum_{j=1}^N\alpha_jy_jx_j\cdot x+b\right)\nonumber\<br />
+\alpha=(\alpha_1,\alpha_2,\cdots,\alpha_N)^T<br />
+</div></p>
+<ol>
+<li>
+<p><span class="math-inline">\alpha \leftarrow 0,b\leftarrow 0</span></p>
+</li>
+<li>
+<p>训练集中选取数据<span class="math-inline">(x_i,y_i)</span></p>
+</li>
+<li>
+<p>如果<span class="math-inline">y_i\left(\sum_{j=1}^N\alpha_jy_jx_j\cdot x+b\right) \leqslant 0</span><br />
+<div class="math-display"><br />
+\alpha_i\leftarrow \alpha_i+\eta \nonumber\<br />
+b\leftarrow b+\eta y_i<br />
+</div></p>
+</li>
+<li>
+<p>转至(2)，直至训练集中没有误分类点</p>
+</li>
+</ol>
+</blockquote>
+<p><strong>Gram matrix</strong></p>
+<p>对偶形式中，训练实例仅以内积的形式出现。</p>
+<p>为了方便可预先将训练集中的实例间的内积计算出来并以矩阵的形式存储，这个矩阵就是所谓的Gram矩阵<br />
+<div class="math-display"><br />
+G=[x_i\cdot x_j]_{N\times N} \nonumber<br />
+</div></p>
+<h2 id="例子">例子<a class="anchor-link" href="#例子" title="Permanent link">&para;</a></h2>
+<h3 id="例21">例2.1<a class="anchor-link" href="#例21" title="Permanent link">&para;</a></h3>
+<p>这个例子里面<span class="math-inline">\eta = 1</span></p>
+<blockquote>
+<p>感知机学习算法由于采用不同的初值或选取不同的误分类点，解可以不同。</p>
+</blockquote>
+<p>另外，在这个例子之后，证明算法收敛性的部分，有一段<strong>为了便于叙述与推导</strong>的描述，提到了将偏置并入权重向量的方法，这个在涉及到内积计算的时候可能都可以用到，可以扩展阅读<a href="../CH06/README.md">CH06</a>，<a href="../CH07/README.md">CH07</a>部分的内容描述。</p>
+<h3 id="例22">例2.2<a class="anchor-link" href="#例22" title="Permanent link">&para;</a></h3>
+<p>这个例子也简单，注意两点</p>
+<ol>
+<li><span class="math-inline">\eta=1</span></li>
+<li><span class="math-inline">\alpha_i\leftarrow \alpha_i+1, b\leftarrow b+y_i</span></li>
+</ol>
+<p>以上：</p>
+<ol>
+<li>为什么<span class="math-inline">\eta</span> 了1，这样得到的值数量级是1</li>
+<li>这个表达式中用到了上面的<span class="math-inline">\eta=1</span> 个结果，已经做了简化</li>
+</ol>
+<p>所以，这里可以体会下，调整学习率<span class="math-inline">\eta </span> 作用。学习率决定了参数空间。</p>
+<h3 id="logic_01">Logic_01<a class="anchor-link" href="#logic_01" title="Permanent link">&para;</a></h3>
+<p>经常被举例子的<strong>异或</strong>问题[^1]，用感知机不能实现，因为对应的数据非线性可分。但是可以用感知机实现其他逻辑运算，也就是提供对应的逻辑运算的数据，然后学习模型。</p>
+<p>这个例子的数据是二元的，其中NOT运算只针对输入向量的第一个维度</p>
+<h3 id="logic_02">Logic_02<a class="anchor-link" href="#logic_02" title="Permanent link">&para;</a></h3>
+<p>这个例子的数据是三元的</p>
+<h3 id="mnist_01">MNIST_01<a class="anchor-link" href="#mnist_01" title="Permanent link">&para;</a></h3>
+<p>这个选择两类数据进行区分，不同的选择应该得到的结果会有一定差异，数据不上传了，在sklearn里面有相应的数据，直接引用了，注意测试案例里面用的是01，相对来讲好区分一些。</p>
+<h2 id="问题">问题<a class="anchor-link" href="#问题" title="Permanent link">&para;</a></h2>
+<h3 id="损失函数">损失函数<a class="anchor-link" href="#损失函数" title="Permanent link">&para;</a></h3>
+<p>知乎上有个问题</p>
+<pre><code>感知机中的损失函数中的分母为什么可以不考虑？
+有些人解释是正数，不影响，但是分母中含有 w，而其也是未知数，在考虑损失函数的最值时候会不影响么？想不通
+</code></pre>
+<p>这个对应了书中<span class="math-inline">P_{27}</span> <code>不考虑1/||w||，就得到感知机学习的损失函数</code></p>
+<p>题中问考虑损失函数最值的时候，不会有影响么？</p>
+<ol>
+<li>
+<p>感知机处理线性可分数据集，二分类，<span class="math-inline">\cal Y={+1,-1}</span> ，所以涉及到的乘以 <img alt="y_i" src="https://www.zhihu.com/equation?tex=y_i" />  的操作实际贡献的是符号；</p>
+</li>
+<li>
+<p>损失函数 <span class="math-inline">L(w,b)=-\sum_{x_i\in M}y_i(w\cdot x_i+b)</span>,其中 <span class="math-inline">M</span> 是错分的点集合，线性可分的数据集肯定能找到超平面 <span class="math-inline">S</span>， 所以这个损失函数最值是0。</p>
+</li>
+<li>
+<p>如果正确分类， <span class="math-inline">y_i(w\cdot x_i+b)=|w\cdot x_i+b|</span>  ，错误分类的话，为了保证正数就加个负号，这就是损失函数里面那个负号，这个就是函数间隔；</p>
+</li>
+<li>
+<p><span class="math-inline">\frac{1}{||w||}</span>  用来归一化超平面法向量，得到几何间隔，也就是点到超平面的距离， 函数间隔和几何间隔的差异在于同一个超平面 <span class="math-inline">(w,b)</span>  参数等比例放大成 <span class="math-inline">(kw,kb)</span>  之后，虽然表示的同一个超平面，但是点到超平面的函数间隔也放大了，但是几何间隔是不变的；</p>
+</li>
+<li>
+<p>具体算法实现的时候， <span class="math-inline">w</span> 初始化，然后每次迭代针对错分点进行调整，既然要初始化，那如果初始化个 <span class="math-inline">||w||=1</span> 的情况也就不用纠结了，和不考虑 <span class="math-inline">\frac{1}{||w||}</span>  是一样的了；</p>
+</li>
+<li>
+<p>针对错分点是这么调整的</p>
+</li>
+</ol>
+<p><span class="math-inline">\begin{aligned} w&amp;\leftarrow w+\eta y_ix_i\ b&amp;\leftarrow b+\eta y_i \end{aligned}</span></p>
+<p>前面说了 <span class="math-inline">y_i</span>  就是个符号，那么感知机就可以解释为针对误分类点，通过调整 <span class="math-inline">w,b</span>  使得超平面向该误分类点一侧移动，迭代这个过程最后全分类正确；</p>
+<ol>
+<li>
+<p>感知机的解不唯一，和初值有关系，和误分类点调整顺序也有关系；</p>
+</li>
+<li>
+<p>这么调整就能找到感知机的解？能，Novikoff还证明了，通过有限次搜索能找到将训练数据完全正确分开的分离超平面。</p>
+</li>
+</ol>
+<p>所以，</p>
+<p>如果只考虑损失函数的最值，那没啥影响，线性可分数据集，最后这个损失就是0； 那个分母用来归一化法向量，不归一化也一样用，感知机的解不唯一；说正数不影响的应该考虑的是不影响超平面调整方向吧</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文生图模型之Stable Diffusion</title>
+    <meta name="description" content="文生图模型之Stable Diffusion - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#variational-autoencoder-vae">Variational AutoEncoder (VAE)</a><ul>
+<li><a href="#到底什么是生成模型">到底什么是生成模型？</a></li>
+<li><a href="#vae的核心">VAE的核心</a></li>
+<li><a href="#vae的variational到底是个啥">VAE的Variational到底是个啥</a></li>
+<li><a href="#vae的本质">VAE的本质</a></li>
+</ul>
+</li>
+<li><a href="#diffusion-model扩散模型dm">Diffusion Model（扩散模型，DM）</a><ul>
+<li><a href="#diffusion的核心">Diffusion的核心</a></li>
+<li><a href="#diffusion-model的diffusion到底是个啥">Diffusion Model的Diffusion到底是个啥</a></li>
+<li><a href="#diffusion的本质">Diffusion的本质</a></li>
+</ul>
+</li>
+<li><a href="#想要更深入的理解">想要更深入的理解？</a></li>
+<li><a href="#参考资料">参考资料</a></li>
+<li><a href="#sd模型原理">SD模型原理</a><ul>
+<li><a href="#autoencoder">autoencoder</a></li>
+<li><a href="#clip-text-encoder">CLIP text encoder</a></li>
+<li><a href="#unet">UNet</a></li>
+<li><a href="#训练细节">训练细节</a></li>
+<li><a href="#模型评测">模型评测</a></li>
+</ul>
+</li>
+<li><a href="#sd的主要应用">SD的主要应用</a><ul>
+<li><a href="#文生图">文生图</a></li>
+<li><a href="#图生图">图生图</a></li>
+<li><a href="#图像inpainting">图像inpainting</a></li>
+</ul>
+</li>
+<li><a href="#sd-20">SD 2.0</a><ul>
+<li><a href="#sd-20_1">SD 2.0</a></li>
+<li><a href="#sd-21">SD 2.1</a></li>
+<li><a href="#sd-unclip">SD unclip</a></li>
+</ul>
+</li>
+<li><a href="#sd的其它特色应用">SD的其它特色应用</a><ul>
+<li><a href="#个性化生成">个性化生成</a></li>
+<li><a href="#风格化finetune模型">风格化finetune模型</a></li>
+<li><a href="#图像编辑">图像编辑</a></li>
+<li><a href="#可控生成">可控生成</a></li>
+<li><a href="#stable-diffusion-webui">stable-diffusion-webui</a></li>
+</ul>
+</li>
+<li><a href="#后话">后话</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>文生图模型之Stable Diffusion</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/06.扩散模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><strong>Author:</strong> [Hao Bai]</p>
+<p><strong>Link:</strong> [https://www.zhihu.com/question/536012286/answer/2671001607]</p>
+<p><strong><em>泻药。实验室最近人人都在做扩散，从连续到离散，从CV到NLP，基本上都被diffusion洗了一遍。但是观察发现，里面的数学基础并不是模型应用的必须。其实大部分的研究者都不需要理解扩散模型的数学本质，更需要的是对扩散模型的原理的经验化理解，从而应用到research里面去。笔者做VAE和diffussion也有一段时间了，就在这里通俗地解释一下diffusion的来龙去脉。</em></strong></p>
+<hr />
+<h2 id="variational-autoencoder-vae">Variational AutoEncoder (VAE)<a class="anchor-link" href="#variational-autoencoder-vae" title="Permanent link">&para;</a></h2>
+<p>要讲扩散模型，不得不提VAE。VAE和GAN一样，都是从隐变量 <span class="math-inline">Z</span> 生成目标数据 <span class="math-inline">X</span> 。它们假设隐变量服从某种常见的概率分布（比如正态分布），然后希望训练一个模型 <span class="math-inline">X=g(Z)</span> ，这个模型将原来的概率分布映射到训练集的概率分布，也就是分布的变换。注意，<strong>VAE和GAN的本质都是概率分布的映射</strong>。大致思路如下图所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051103161.jpg" />  <a href=""></a></p>
+<p>图片来源：https://zhuanlan.zhihu.com/p/34998569</p>
+<p>换句话说，大致意思就是先用某种分布随机生成一组隐变量，然后这个隐变量会经过一个生成器生成一组目标数据。VAE和GAN都希望这组数据的分布 <span class="math-inline">\hat{X}</span> 和目标分布 <span class="math-inline">X</span> 尽量接近。</p>
+<p>是不是听上去很work？但是这种方法本质上是难以work的，因为“<strong>尽量接近</strong>”并没有一个确定的关于 <span class="math-inline">X</span> 和 <span class="math-inline">\hat{X}</span> 的相似度的评判标准。换句话说，这种方法的难度就在于，必须去猜测“它们的分布相等吗”这个问题，而缺少真正interpretable的价值判断。有聪明的同学会问，KL散度不就够了吗？不行，因为KL散度是针对两个已知的概率分布求相似度的，而 <span class="math-inline">\hat{X}</span> 和 <span class="math-inline">X</span> 的概率分布目前都是未知。</p>
+<p>GAN的做法就是直接把这个度量标准也学过来就行，相当生猛。但是这样做的问题在于依然不interpretable，非常不优雅。VAE的做法就优雅很多了，我们先来看VAE是怎么做的，理解了VAE以后再去理解Diffussion就很自然了。</p>
+<h3 id="到底什么是生成模型">到底什么是生成模型？<a class="anchor-link" href="#到底什么是生成模型" title="Permanent link">&para;</a></h3>
+<p>我们看回生成模型到底是个啥。我们拿到一批sample（称为 <span class="math-inline">X</span> ），想要用 <span class="math-inline">X</span> 学到它的分布 <span class="math-inline">p(X)</span> ，这样就能同时学到没被sample到的数据了，用这个分布 <span class="math-inline">p(X)</span> 就能随意采样，然后获得生成结果。但是这个分布九曲回肠，根本不可能直接获得。所以绕个弯，整一个隐变量 <span class="math-inline">Z</span> ，这东西可以生成 <span class="math-inline">X</span> 。不妨假设 <span class="math-inline">Z</span> 满足正态分布，那就可以先从正态分布里面随便取一个 <span class="math-inline">Z</span> ，然后用 <span class="math-inline">Z</span> 和 <span class="math-inline">X</span> 的关系算出 <span class="math-inline">p(X)</span> 。这里不得不用一下数学公式，因为后面一直要用到（其实也很简单，学过概率学基础一下就看得懂）：</p>
+<p><span class="math-inline">p(X)=\sum_Z{p(X|Z)p(Z)}</span> </p>
+<p>换句话说，就是不直接求 <span class="math-inline">p(X)</span> ，而是造一个别的变量（好听的名字叫“隐变量”），获得这个隐变量和我要搞的 <span class="math-inline">X</span> 的关系，也能搞到 <span class="math-inline">p(X)</span> 。注意，上式中，<span class="math-inline">p(X|Z)</span> <strong>称为后验分布，</strong> <span class="math-inline">p(Z)</span> <strong>称为先验分布。</strong></p>
+<h3 id="vae的核心">VAE的核心<a class="anchor-link" href="#vae的核心" title="Permanent link">&para;</a></h3>
+<p><strong>VAE的核心就是，我们不仅假设</strong> <span class="math-inline">p(Z)</span> <strong>是正态分布，而且假设每个</strong> <span class="math-inline">p(X_k|Z)</span> <strong>也是正态分布。</strong>什么意思呢？因为 <span class="math-inline">X</span> 是一组采样，其实可以表示成 <span class="math-inline">X={X_1,...,X_k}</span> ，而我们想要针对每个 <span class="math-inline">X_k</span> 获得一个<strong>专属于</strong>它和 <span class="math-inline">Z</span> 的一个正态分布。换句话说，有 <span class="math-inline">k</span> 个 <span class="math-inline">X</span> sample，就有 <span class="math-inline">k</span> 个正态分布 <span class="math-inline">p(X_k|Z)</span> 。其实也很好理解，每一个采样点当然都需要一个相对 <span class="math-inline">Z</span> 的分布，因为没有任何两个采样点是完全一致的。</p>
+<p>那现在就要想方设法获得这 <span class="math-inline">k</span> 个正态分布了。怎么搞？学！拟合！但是要注意，这里的拟合与GAN不同，本质上是在学习 <span class="math-inline">X_k</span> 和 <span class="math-inline">Z</span> 的关系，而非学习比较 <span class="math-inline">X</span> 与 <span class="math-inline">\hat{X}</span> 的标准。</p>
+<p>OK，现在问一个小学二年级就知道的问题，已知是正态分布，学什么才能确定这个正态分布？没错，均值和方差。怎么学？有数据啊！ <span class="math-inline">Z</span> 不是你自己假设的吗， <span class="math-inline">X_k</span> 是已知的啊，那你就用这俩去学个均值和方差。</p>
+<p>好，现在我们已经学到了这 <span class="math-inline">k</span> 个正态分布。那就好说了，直接从 <span class="math-inline">p(Z|X_k)</span> 里面采样一个 <span class="math-inline">Z_k</span> ，学一个generator，就能获得 <span class="math-inline">X_k=g(Z_k)</span> 了。那接下来只需要最小化方差 <span class="math-inline">D^2(\hat{X}_k,X_k)</span> 就行。来看看下面的图，仔细理解一下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104471.jpg" /><br />
+仔细理解的时候有没有发现一个问题？为什么在文章最开头，我们强调了没法直接比较 <span class="math-inline">X</span> 和 <span class="math-inline">\hat{X}</span> 的分布，而在这里，我们认为可以直接比较这俩？<strong>注意，这里的</strong> <span class="math-inline">Z_k</span> 是<strong>专属于（针对于）</strong> <span class="math-inline">X_k</span> <strong>的隐变量，那么和</strong> <span class="math-inline">\hat{X}_k</span> <strong>本身就有对应关系，因此右边的蓝色方框内的“生成器”，是一一对应的生成。</strong></p>
+<p>另外，大家可以看到，均值和方差的计算本质上都是encoder。也就是说，VAE其实利用了两个encoder去分别学习均值和方差。</p>
+<h3 id="vae的variational到底是个啥">VAE的Variational到底是个啥<a class="anchor-link" href="#vae的variational到底是个啥" title="Permanent link">&para;</a></h3>
+<p>这里还有一个<strong>非常重要</strong>的问题（对于初学者而言可能会比较困难，需要反复思考）：由于我们通过最小化 <span class="math-inline">D^2(X_k|\hat{X}_k)</span> 来训练右边的生成器，最终模型会逐渐使得 <span class="math-inline">X_k</span> 和 <span class="math-inline">\hat{X}_k</span> 趋于一致。但是注意，因为 <span class="math-inline">Z_k</span> 是重新随机采样过的，而不是直接通过均值和方差encoder学出来的，这个生成器的输入 <span class="math-inline">Z</span> 是有噪声的。但是仔细思考一下，这个噪声的大小其实就用方差来度量。为了使得分布的学习尽量接近，我们希望噪声越小越好，所以我们会尽量使得方差趋于 0。</p>
+<p>但是方差不能为 0，因为我们还想要给模型一些训练难度。如果方差为 0，模型永远只需要学习高斯分布的均值，这样就丢失了随机性，VAE就变成AE了……<strong>这就是为什么VAE要在AE前面加一个Variational：我们希望方差能够持续存在，从而带来噪声！</strong>那如何解决这个问题呢？其实保证有方差就行，但是VAE给出了一个优雅的答案：不仅需要保证有方差，还要让所有 <span class="math-inline">p(Z|X)</span> 趋于标准正态分布 <span class="math-inline">N(0,I)</span> ！为什么要这么做呢？这里又需要一个小小的数学推导：</p>
+<p><span class="math-inline">p(Z)=\sum_X{p(Z|X)p(X)}=N(0,I)p(x)=N(0,I)\sum_Xp(X)=N(0,I)</span> </p>
+<p>这条式子大家想必都看得懂，看不懂也没事……关键是结论：如果所有 <span class="math-inline">p(Z|X)</span> 都趋于 <span class="math-inline">N(0,I)</span> ，那么我们可以保证 <span class="math-inline">p(Z)</span> 也趋于 <span class="math-inline">N(0,I)</span> ，从而实现先验的假设，这样就形成了一个闭环！太优雅了！那怎么让所有 <span class="math-inline">p(Z|X)</span> 趋于 <span class="math-inline">N(0,I)</span> 呢？加loss被，具体的loss推导这里就不做深入了，用到了很多数学知识，又要被公式淹没了。到此为止，我们可以把VAE进一步画成：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104472.jpg" />  </p>
+<h3 id="vae的本质">VAE的本质<a class="anchor-link" href="#vae的本质" title="Permanent link">&para;</a></h3>
+<p>现在我们来回顾一下VAE到底做了啥。VAE在AE的基础上对均值的encoder添加高斯噪声（正态分布的随机采样），使得decoder（就是右边那个生成器）有噪声鲁棒性；为了防止噪声消失，将所有 <span class="math-inline">p(Z|X)</span> 趋近于标准正态分布，将encoder的均值尽量降为 0，而将方差尽量保持住。这样一来，当decoder训练的不好的时候，整个体系就可以降低噪声；当decoder逐渐拟合的时候，就会增加噪声。</p>
+<p>本质上，是不是和GAN很像？！要我命名，我也可以叫VAE是生成对抗encoder（手动滑稽</p>
+<h2 id="diffusion-model扩散模型dm">Diffusion Model（扩散模型，DM）<a class="anchor-link" href="#diffusion-model扩散模型dm" title="Permanent link">&para;</a></h2>
+<p>好了，到此为止，你已经理解了扩散模型的所有基础。现在我们来站在VAE的基础上讲讲扩散模型。目前的教程实在是太数学了，其实可以用更加通俗的语言讲清楚。从本质上说，Diffusion就是VAE的升级版。</p>
+<p>VAE有一个做了好几年的核心问题。大家思考一下，上面的VAE中，<strong>变分后验</strong> <span class="math-inline">p(X|Z)</span> 是怎么获得的？是学出来的！用 <span class="math-inline">D^2(X_k|\hat{X}_k)</span> 当loss，去学这个 <span class="math-inline">p(X|Z)</span> 。学这个变分后验就有五花八门的方法了，除了上面说的拟合法，还有用纯数学来做的，甚至有用BERT这种PLM来做的。但是无论如何都逃不出这个VAE的框架：必须想办法设计一个生成器 <span class="math-inline">g(Z)=X</span> ，使得变分后验分布 <span class="math-inline">p(X|Z)</span> 尽量真实。<strong>这种方法的问题在于，这个变分后验</strong> <span class="math-inline">p(X|Z)</span> <strong>的表达能力与计算代价是不可兼得的。</strong>换句话说，简单的变分后验表达并不丰富（例如数学公式法），而复杂的变分后验计算过于复杂（例如PLM法）。</p>
+<p>现在回国头来看看GAN做了啥。前面也提到过，GAN其实就是简单粗暴，没有任何encoder，直接训练生成器，唯一的难度在于判别器（就是下图这个“它们的分布相等吗”的东西）不好做。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104473.jpg" /><br />
+好了，聪明的你也已经知道我要说什么了。Diffusion本质就是借鉴了GAN这种训练目标单一的思路和VAE这种不需要判别器的隐变量变分的思路，糅合一下，发现还真work了……下面让我们来看看到底是怎么糅合的。为什么我们糅合甚至还没传统方法好，大佬糅合揉出个diffusion？</p>
+<h3 id="diffusion的核心">Diffusion的核心<a class="anchor-link" href="#diffusion的核心" title="Permanent link">&para;</a></h3>
+<p>知道你们都懒得划上去，我再放一下VAE的图。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104472.jpg" /><br />
+前面也已经提到，VAE的最大问题是这个变分后验。在VAE中，我们先定义了右边蓝色的生成器 <span class="math-inline">X=g(Z)</span> ，再学一个变分后验 <span class="math-inline">p(X|Z)</span> 来适配这个生成器。能不能反一下，先定义一个变分后验再学一个生成器呢？</p>
+<p>如果你仔细看了上面的VAE部分，我相信你已经有思路了。VAE的生成器，是将标准高斯映射到数据样本（自己定义的）。VAE的后验分布，是将数据样本映射到标准高斯（学出来的）。那反过来，我想要设计一种方法A，使得A用一种简单的“变分后验”将数据样本映射到标准高斯（自己定义的），并且使得A的生成器，将标准高斯映射到数据样本（学出来的）。注意，因为生成器的搜索空间大于变分后验，VAE的效率远不及A方法：因为A方法是学一个生成器（搜索空间大），所以可以直接模仿这个“变分后验”的<strong>每一小步</strong>！</p>
+<p>好，现在我告诉你，这个A方法就是扩散模型（Diffusion Model）的核心思路：定义一个类似于“变分后验”的从数据样本到高斯分布的映射，然后学一个生成器，这个生成器模仿我们定义的这个映射的<strong>每一小步</strong>。</p>
+<h3 id="diffusion-model的diffusion到底是个啥">Diffusion Model的Diffusion到底是个啥<a class="anchor-link" href="#diffusion-model的diffusion到底是个啥" title="Permanent link">&para;</a></h3>
+<p>接触diffusion的你肯定知道马尔可夫链！这东西不仅diffusion里面有，各种怪异的算法里面也都出现了。为什么用它？因为它的一个关键性质：平稳性。一个概率分布如果随时间变化，那么在马尔可夫链的作用下，它一定会趋于某种平稳分布（例如高斯分布）。只要终止时间足够长，概率分布就会趋近于这个平稳分布。</p>
+<p>这个逐渐逼近的过程被作者称为前向过程（forward process）。<strong>注意，这个过程的本质还是加噪声！</strong>试想一下为什么……其实和VAE非常相似，都是在随机采样！马尔可夫链每一步的转移概率，本质上都是在加噪声。这就是扩散模型中“扩散”的由来：噪声在马尔可夫链演化的过程中，逐渐进入diffusion体系。随着时间的推移，加入的噪声（加入的溶质）越来越少，而体系中的噪声（这个时刻前的所有溶质）逐渐在diffussion体系中扩散，直至均匀。看看下面的图，你应该就恍然大悟了：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104474.jpg" /><br />
+现在想想，为什么要用马尔可夫链。我们把问题详细地重述一下：为什么我们创造一个稳定分布为高斯分布的马尔可夫链，对于生成器模仿我们定义的某个映射的<strong>每一小步</strong>有帮助呢？这里你肯定想不出来，不然你也能发明diffusion model ——答案是，<strong>基于马尔可夫链的前向过程，其每一个epoch的逆过程都可以近似为高斯分布。</strong></p>
+<p>懵了吧，我也懵了。真正的推导发了好几篇paper，都是些数学巨佬的工作，不得不感叹基础科学的力量……相关工作主要用的是SDE（随机微分方程），我们在这里不做深入，但是需要理解大致的思路，如下图所示。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104475.jpg" />  </p>
+<p>图源：https://www.zhihu.com/question/536012286/answer/2533146567</p>
+<p>下面的是前向过程，上面的是反向过程。前向过程通过马尔可夫链的转移概率不断加入噪音，从右边的采样数据到左边的标准高斯；反向过程通过SDE来“抄袭”对应正向过程的那一个epoch的行为（其实每一步都不过是一个高斯分布），从而逐渐学习到对抗噪声的能力。高斯分布是一种很简单的分布，运算量小，这一点是diffusion快的最重要原因。</p>
+<h3 id="diffusion的本质">Diffusion的本质<a class="anchor-link" href="#diffusion的本质" title="Permanent link">&para;</a></h3>
+<p>现在回头看看diffusion到底做了个啥工作。我们着重看一下下图的VAE和diffussion的区别：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410051104476.jpg" />  </p>
+<p>图源：https://zhuanlan.zhihu.com/p/525106459</p>
+<p>可以很清晰的认识到，VAE本质是一个基于梯度的encoder-decoder架构，encoder用来学高斯分布的均值和方差，decoder用变分后验来学习生成能力，而将标准高斯映射到数据样本是自己定义的。而扩散模型本质是一个SDE/Markov架构，虽然也借鉴了神经网络的前向传播/反向传播概念，但是并不基于可微的梯度，属于数学层面上的创新。两者都定义了高斯分布 <span class="math-inline">Z</span> 作为隐变量，但是VAE将 <span class="math-inline">Z</span> 作为先验条件（变分先验），而diffusion将 <span class="math-inline">Z</span> 作为类似于变分后验的马尔可夫链的平稳分布。</p>
+<h2 id="想要更深入的理解">想要更深入的理解？<a class="anchor-link" href="#想要更深入的理解" title="Permanent link">&para;</a></h2>
+<p>如评论区指出的，文章的定位本身就是让读者读懂diffusion而非对diffusion框架本身进行数学创新，是应用向而非结构向的，大佬们如果希望看到更深入的分析可以追更和评论区催更～</p>
+<h2 id="参考资料">参考资料<a class="anchor-link" href="#参考资料" title="Permanent link">&para;</a></h2>
+<p><a href="https://zhuanlan.zhihu.com/p/34998569">PaperWeekly：变分自编码器VAE：原来是这么一回事 | 附开源代码</a><a href="https://www.zhihu.com/question/536012286/answer/2533146567">diffusion model最近在图像生成领域大红大紫，如何看待它的风头开始超过GAN？</a><a href="https://zhuanlan.zhihu.com/p/525106459">ewrfcas：由浅入深了解Diffusion Model</a></p>
+<hr />
+<h1 id="文生图模型之stable-diffusion">文生图模型之Stable Diffusion<a class="anchor-link" href="#文生图模型之stable-diffusion" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [小小将]</p>
+<p><strong>Link:</strong> [https://zhuanlan.zhihu.com/p/617134893]</p>
+<blockquote>
+<p>通向AGI之路</p>
+</blockquote>
+<p>码字真心不易，求点赞！</p>
+<hr />
+<p><a href="https://zhuanlan.zhihu.com/p/642496862">https://zhuanlan.zhihu.com/p/642496862</a>2022年可谓是<strong>AIGC（AI Generated Content）元年</strong>，上半年有文生图大模型<strong>DALL-E2</strong>和<strong>Stable Diffusion</strong>，下半年有OpenAI的文本对话大模型<strong>ChatGPT</strong>问世，这让冷却的AI又沸腾起来了，因为AIGC能让更多的人真真切切感受到AI的力量。这篇文章将介绍比较火的文生图模型<strong>Stable Diffusion（简称SD）</strong>，Stable Diffusion不仅是一个完全开源的模型（代码，数据，模型全部开源），而且是它的参数量只有1B左右，大部分人可以在普通的显卡上进行推理甚至精调模型。毫不夸张的说，Stable Diffusion的出现和开源对AIGC的火热和发展是有巨大推动作用的，因为它让更多的人能快地上手AI作画。这里将基于Hugging Face的<a href="https://github.com/huggingface/diffusers">https://github.com/huggingface/diffusers</a>库深入讲解SD的技术原理以及部分的实现细节，然后也会介绍SD的常用功能，注意本文主要以<a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">https://huggingface.co/runwayml/stable-diffusion-v1-5</a>版本为例，在最后也会简单介绍 SD 2.0版本以及基于SD的扩展应用。</p>
+<h2 id="sd模型原理">SD模型原理<a class="anchor-link" href="#sd模型原理" title="Permanent link">&para;</a></h2>
+<p>SD是<a href="https://github.com/CompVis">https://github.com/CompVis</a>、<a href="https://stability.ai/">https://stability.ai/</a>和<a href="https://laion.ai/">https://laion.ai/</a>等公司研发的一个文生图模型，它的模型和代码是开源的，而且训练数据<a href="https://laion.ai/blog/laion-5b/">https://laion.ai/blog/laion-5b/</a>也是开源的。SD在开源90天github仓库就收获了<strong>33K的stars</strong>，可见这个模型是多受欢迎。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027631.jpg" /><br />
+SD是一个<strong>基于latent的扩散模型</strong>，它在UNet中引入text condition来实现基于文本生成图像。SD的核心来源于<a href="https://arxiv.org/abs/2112.10752">https://arxiv.org/abs/2112.10752</a>这个工作，常规的扩散模型是基于pixel的生成模型，而Latent Diffusion是基于latent的生成模型，它先采用一个autoencoder将图像压缩到latent空间，然后用扩散模型来生成图像的latents，最后送入autoencoder的decoder模块就可以得到生成的图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027632.jpg" /><br />
+<strong>基于latent的扩散模型的优势在于计算效率更高效，因为图像的latent空间要比图像pixel空间要小，这也是SD的核心优势</strong>。文生图模型往往参数量比较大，基于pixel的方法往往限于算力只生成64x64大小的图像，比如OpenAI的DALL-E2和谷歌的Imagen，然后再通过超分辨模型将图像分辨率提升至256x256和1024x1024；而基于latent的SD是在latent空间操作的，它可以直接生成256x256和512x512甚至更高分辨率的图像。</p>
+<p>SD模型的主体结构如下图所示，主要包括三个模型：</p>
+<ul>
+<li><strong>autoencoder</strong>：encoder将图像压缩到latent空间，而decoder将latent解码为图像；</li>
+<li><strong>CLIP text encoder</strong>：提取输入text的text embeddings，通过cross attention方式送入扩散模型的UNet中作为condition；</li>
+<li><strong>UNet</strong>：扩散模型的主体，用来实现文本引导下的latent生成。</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027633.jpg" /><br />
+对于SD模型，其autoencoder模型参数大小为84M，CLIP text encoder模型大小为123M，而UNet参数大小为860M，所以<strong>SD模型的总参数量约为1B</strong>。</p>
+<h3 id="autoencoder">autoencoder<a class="anchor-link" href="#autoencoder" title="Permanent link">&para;</a></h3>
+<p>autoencoder是一个基于encoder-decoder架构的图像压缩模型，对于一个大小为<span class="math-inline">H\times W \times 3</span> 输入图像，encoder模块将其编码为一个大小为<span class="math-inline">h\times w \times c</span> latent，其中<span class="math-inline">f=H/h=W/w</span> 下采样率（downsampling factor）。在训练autoencoder过程中，除了采用<strong>L1重建损失</strong>外，还增加了<strong>感知损失</strong>（perceptual loss，即LPIPS，具体见论文<a href="https://richzhang.github.io/PerceptualSimilarity/">https://richzhang.github.io/PerceptualSimilarity/</a>）以及<strong>基于patch的对抗训练</strong>。辅助loss主要是为了确保重建的图像局部真实性以及避免模糊，具体损失函数见<a href="https://github.com/CompVis/latent-diffusion/tree/main/ldm/modules/losses">https://github.com/CompVis/latent-diffusion/tree/main/ldm/modules/losses</a>。同时为了防止得到的latent的标准差过大，采用了两种正则化方法：第一种是<strong>KL-reg</strong>，类似VAE增加一个latent和标准正态分布的KL loss，不过这里为了保证重建效果，采用比较小的权重（～10e-6）；第二种是<strong>VQ-reg</strong>，引入一个VQ （vector quantization）layer，此时的模型可以看成是一个VQ-GAN，不过VQ层是在decoder模块中，这里VQ的codebook采样较高的维度（8192）来降低正则化对重建效果的影响。 latent diffusion论文中实验了不同参数下的autoencoder模型，如下表所示，可以看到当<span class="math-inline">f</span> 小和<span class="math-inline">c</span> 大时，重建效果越好（PSNR越大），这也比较符合预期，毕竟此时压缩率小。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027634.jpg" /><br />
+论文进一步将不同<span class="math-inline">f</span> autoencoder在扩散模型上进行实验，在ImageNet数据集上训练同样的步数（2M steps），其训练过程的生成质量如下所示，可以看到过小的<span class="math-inline">f</span>（比如1和2）下收敛速度慢，此时图像的感知压缩率较小，扩散模型需要较长的学习；而过大的<span class="math-inline">f</span> 生成质量较差，此时压缩损失过大。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027635.jpg" /><br />
+当<span class="math-inline">f</span> 4～16时，可以取得相对好的效果。SD采用基于KL-reg的autoencoder，其中下采样率<span class="math-inline">f=8</span>，特征维度为<span class="math-inline">c=4</span>，当输入图像为512x512大小时将得到64x64x4大小的latent。 autoencoder模型时在OpenImages数据集上基于256x256大小训练的，但是由于autoencoder的模型是全卷积结构的（基于ResnetBlock，只有模型的中间存在两个self attention层），所以它可以扩展应用在尺寸&gt;256的图像上。下面我们给出使用diffusers库来加载autoencoder模型，并使用autoencoder来实现图像的压缩和重建，代码如下所示：</p>
+<pre><code>import torch
+from diffusers import AutoencoderKL
+import numpy as np
+from PIL import Image
+
+#加载模型: autoencoder可以通过SD权重指定subfolder来单独加载
+autoencoder = AutoencoderKL.from_pretrained(&quot;runwayml/stable-diffusion-v1-5&quot;, subfolder=&quot;vae&quot;)
+autoencoder.to(&quot;cuda&quot;, dtype=torch.float16)
+
+# 读取图像并预处理
+raw_image = Image.open(&quot;boy.png&quot;).convert(&quot;RGB&quot;).resize((256, 256))
+image = np.array(raw_image).astype(np.float32) / 127.5 - 1.0
+image = image[None].transpose(0, 3, 1, 2)
+image = torch.from_numpy(image)
+
+# 压缩图像为latent并重建
+with torch.inference_mode():
+    latent = autoencoder.encode(image.to(&quot;cuda&quot;, dtype=torch.float16)).latent_dist.sample()
+    rec_image = autoencoder.decode(latent).sample
+    rec_image = (rec_image / 2 + 0.5).clamp(0, 1)
+    rec_image = rec_image.cpu().permute(0, 2, 3, 1).numpy()
+    rec_image = (rec_image * 255).round().astype(&quot;uint8&quot;)
+    rec_image = Image.fromarray(rec_image[0])
+rec_image
+</code></pre>
+<p>这里我们给出了两张图片在256x256和512x512下的重建效果对比，如下所示，第一列为原始图片，第二列为512x512尺寸下的重建图，第三列为256x256尺寸下的重建图。对比可以看出，autoencoder将图片压缩到latent后再重建其实是有损的，比如会出现文字和人脸的畸变，在256x256分辨率下是比较明显的，512x512下效果会好很多。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027636.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027637.jpg" /><br />
+这种有损压缩肯定是对SD的生成图像质量是有一定影响的，不过好在SD模型基本上是在512x512以上分辨率下使用的。为了改善这种畸变，stabilityai在发布SD 2.0时同时发布了两个在LAION子数据集上<a href="https://huggingface.co/stabilityai/sd-vae-ft-mse-original">https://huggingface.co/stabilityai/sd-vae-ft-mse-original</a>，注意这里只精调autoencoder的decoder部分，SD的UNet在训练过程只需要encoder部分，所以这样精调后的autoencoder可以直接用在先前训练好的UNet上（这种技巧还是比较通用的，比如谷歌的<a href="https://arxiv.org/abs/2206.10789">https://arxiv.org/abs/2206.10789</a>也是在训练好后自回归生成模型后，扩大并精调ViT-VQGAN的decoder模块来提升生成质量）。我们也可以直接在diffusers中使用这些autoencoder，比如mse版本（采用mse损失来finetune的模型）：</p>
+<pre><code>autoencoder = AutoencoderKL.from_pretrained(&quot;stabilityai/sd-vae-ft-mse/&quot;)
+</code></pre>
+<p>对于同样的两张图，这个mse版本的重建效果如下所示，可以看到相比原始版本的autoencoder，畸变是有一定改善的。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027638.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027639.jpg" /><br />
+由于SD采用的autoencoder是基于KL-reg的，所以这个autoencoder在编码图像时其实得到的是一个高斯分布<a href="https://github.com/huggingface/diffusers/blob/bbab8553224d12f7fd58b0e65b0daf899769ef0b/src/diffusers/models/vae.py#L312">https://github.com/huggingface/diffusers/blob/bbab8553224d12f7fd58b0e65b0daf899769ef0b/src/diffusers/models/vae.py#L312</a>（分布的均值和标准差），然后通过调用sample方法来采样一个具体的latent（调用mode方法可以得到均值）。由于KL-reg的权重系数非常小，实际得到latent的标准差还是比较大的，latent diffusion论文中提出了一种rescaling方法：首先计算出第一个batch数据中的latent的标准差<span class="math-inline">\hat \sigma</span>，然后采用<span class="math-inline">1/\hat \sigma</span> 系数来rescale latent，这样就尽量保证latent的标准差接近1（防止扩散过程的SNR较高，影响生成效果，具体见latent diffusion论文的D1部分讨论），然后扩散模型也是应用在rescaling的latent上，在解码时只需要将生成的latent除以<span class="math-inline">1/\hat \sigma</span>，然后再送入autoencoder的decoder即可。对于SD所使用的autoencoder，这个rescaling系数为0.18215。</p>
+<h3 id="clip-text-encoder">CLIP text encoder<a class="anchor-link" href="#clip-text-encoder" title="Permanent link">&para;</a></h3>
+<p>SD<strong>采用CLIP text encoder来对输入text提取text embeddings</strong>，具体的是采用目前OpenAI所开源的最大CLIP模型：<a href="https://huggingface.co/openai/clip-vit-large-patch14">https://huggingface.co/openai/clip-vit-large-patch14</a>，这个CLIP的text encoder是一个transformer模型（只有encoder模块）：层数为12，特征维度为768，模型参数大小是123M。对于输入text，送入CLIP text encoder后得到最后的hidden states（即最后一个transformer block得到的特征），其特征维度大小为77x768（77是token的数量），<strong>这个细粒度的text embeddings将以cross attention的方式送入UNet中</strong>。在transofmers库中，可以如下使用CLIP text encoder：</p>
+<pre><code>from transformers import CLIPTextModel, CLIPTokenizer
+
+text_encoder = CLIPTextModel.from_pretrained(&quot;runwayml/stable-diffusion-v1-5&quot;, subfolder=&quot;text_encoder&quot;).to(&quot;cuda&quot;)
+# text_encoder = CLIPTextModel.from_pretrained(&quot;openai/clip-vit-large-patch14&quot;).to(&quot;cuda&quot;)
+tokenizer = CLIPTokenizer.from_pretrained(&quot;runwayml/stable-diffusion-v1-5&quot;, subfolder=&quot;tokenizer&quot;)
+# tokenizer = CLIPTokenizer.from_pretrained(&quot;openai/clip-vit-large-patch14&quot;)
+
+# 对输入的text进行tokenize，得到对应的token ids
+prompt = &quot;a photograph of an astronaut riding a horse&quot;
+text_input_ids = text_tokenizer(
+    prompt,
+    padding=&quot;max_length&quot;,
+    max_length=tokenizer.model_max_length,
+    truncation=True,
+    return_tensors=&quot;pt&quot;
+).input_ids
+
+# 将token ids送入text model得到77x768的特征
+text_embeddings = text_encoder(text_input_ids.to(&quot;cuda&quot;))[0]
+</code></pre>
+<p>值得注意的是，这里的tokenizer最大长度为77（CLIP训练时所采用的设置），当输入text的tokens数量超过77后，将进行截断，如果不足则进行paddings，这样将保证无论输入任何长度的文本（甚至是空文本）都得到77x768大小的特征。 在训练SD的过程中，<strong>CLIP text encoder模型是冻结的</strong>。在早期的工作中，比如OpenAI的<a href="https://arxiv.org/abs/2112.10741">https://arxiv.org/abs/2112.10741</a>和latent diffusion中的LDM均采用一个随机初始化的tranformer模型来提取text的特征，但是最新的工作都是采用预训练好的text model。比如谷歌的Imagen采用纯文本模型T5 encoder来提出文本特征，而SD则采用CLIP text encoder，预训练好的模型往往已经在大规模数据集上进行了训练，它们要比直接采用一个从零训练好的模型要好。</p>
+<h3 id="unet">UNet<a class="anchor-link" href="#unet" title="Permanent link">&para;</a></h3>
+<p>SD的扩散模型是一个860M的UNet，其主要结构如下图所示（这里以输入的latent为64x64x4维度为例），其中encoder部分包括3个CrossAttnDownBlock2D模块和1个DownBlock2D模块，而decoder部分包括1个UpBlock2D模块和3个CrossAttnUpBlock2D模块，中间还有一个UNetMidBlock2DCrossAttn模块。encoder和decoder两个部分是完全对应的，中间存在skip connection。注意3个CrossAttnDownBlock2D模块最后均有一个2x的downsample操作，而DownBlock2D模块是不包含下采样的。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027640.jpg" /><br />
+其中CrossAttnDownBlock2D模块的主要结构如下图所示，text condition将通过CrossAttention模块嵌入进来，此时Attention的query是UNet的中间特征，而key和value则是text embeddings。 CrossAttnUpBlock2D模块和CrossAttnDownBlock2D模块是一致的，但是就是总层数为3。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027641.jpg" /><br />
+SD和DDPM一样采用预测noise的方法来训练UNet，其训练损失也和DDPM一样： <span class="math-inline">L^{\text{simple}}=\mathbb{E}<em>{\mathbf{x}</em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I}), t}\Big[ | \mathbf{\epsilon}- \mathbf{\epsilon}_\theta\big(\sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1 - \bar{\alpha}_t}\mathbf{\epsilon}, t, \mathbf{c}\big)|^2\Big]</span> 这里的<span class="math-inline">\mathbf{c}</span> text embeddings，此时的模型是一个条件扩散模型。基于diffusers库，我们可以很快实现SD的训练，其核心代码如下所示（这里参考diffusers库下examples中的<a href="https://github.com/huggingface/diffusers/blob/main/examples/text_to_image/train_text_to_image.py">https://github.com/huggingface/diffusers/blob/main/examples/text_to_image/train_text_to_image.py</a>）：</p>
+<pre><code>import torch
+from diffusers import AutoencoderKL, UNet2DConditionModel, DDPMScheduler
+from transformers import CLIPTextModel, CLIPTokenizer
+import torch.nn.functional as F
+
+# 加载autoencoder
+vae = AutoencoderKL.from_pretrained(&quot;runwayml/stable-diffusion-v1-5&quot;, subfolder=&quot;vae&quot;)
+# 加载text encoder
+text_encoder = CLIPTextModel.from_pretrained(&quot;runwayml/stable-diffusion-v1-5&quot;, subfolder=&quot;text_encoder&quot;)
+tokenizer = CLIPTokenizer.from_pretrained(&quot;runwayml/stable-diffusion-v1-5&quot;, subfolder=&quot;tokenizer&quot;)
+# 初始化UNet
+unet = UNet2DConditionModel(**model_config) # model_config为模型参数配置
+# 定义scheduler
+noise_scheduler = DDPMScheduler(
+    beta_start=0.00085, beta_end=0.012, beta_schedule=&quot;scaled_linear&quot;, num_train_timesteps=1000
+)
+
+# 冻结vae和text_encoder
+vae.requires_grad_(False)
+text_encoder.requires_grad_(False)
+
+opt = torch.optim.AdamW(unet.parameters(), lr=1e-4)
+
+for step, batch in enumerate(train_dataloader):
+    with torch.no_grad():
+        # 将image转到latent空间
+        latents = vae.encode(batch[&quot;image&quot;]).latent_dist.sample()
+        latents = latents * vae.config.scaling_factor # rescaling latents
+        # 提取text embeddings
+        text_input_ids = text_tokenizer(
+            batch[&quot;text&quot;],
+            padding=&quot;max_length&quot;,
+            max_length=tokenizer.model_max_length,
+            truncation=True,
+            return_tensors=&quot;pt&quot;
+  ).input_ids
+  text_embeddings = text_encoder(text_input_ids)[0]
+
+    # 随机采样噪音
+    noise = torch.randn_like(latents)
+    bsz = latents.shape[0]
+    # 随机采样timestep
+    timesteps = torch.randint(0, noise_scheduler.num_train_timesteps, (bsz,), device=latents.device)
+    timesteps = timesteps.long()
+
+    # 将noise添加到latent上，即扩散过程
+    noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
+
+    # 预测noise并计算loss
+    model_pred = unet(noisy_latents, timesteps, encoder_hidden_states=text_embeddings).sample
+    loss = F.mse_loss(model_pred.float(), noise.float(), reduction=&quot;mean&quot;)
+
+ opt.step()
+    opt.zero_grad()
+</code></pre>
+<p>注意的是SD的noise scheduler虽然也是采用一个1000步长的scheduler，但是不是linear的，而是scaled linear，具体的计算如下所示：</p>
+<pre><code>betas = torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+</code></pre>
+<p>在训练条件扩散模型时，往往会采用<strong>Classifier-Free Guidance</strong>（这里简称为CFG），所谓的CFG简单来说就是在训练条件扩散模型的同时也训练一个无条件的扩散模型，同时在采样阶段将条件控制下预测的噪音和无条件下的预测噪音组合在一起来确定最终的噪音，具体的计算公式如下所示：</p>
+<p><span class="math-inline">\begin{aligned}\text{pred_noise} &amp;= w \cdot \text{cond_pred_noise} + (1-w) \cdot \text{uncond_pred_noise} \ &amp;= w\mathbf{\epsilon}<em>\theta\big(\mathbf{x}_t, t, \mathbf{c}\big)+(1-w)\mathbf{\epsilon}</em>\theta\big(\mathbf{x}_t, t\big) \end{aligned}\</span></p>
+<p>这里的<span class="math-inline">w</span> <strong>guidance scale</strong>，当<span class="math-inline">w</span> 大时，condition起的作用越大，即生成的图像其更和输入文本一致。CFG的具体实现非常简单，在训练过程中，我们只需要<strong>以一定的概率（比如10%）随机drop掉text</strong>即可，这里我们可以将text置为空字符串（前面说过此时依然能够提取text embeddings）。这里并没有介绍CLF背后的技术原理，感兴趣的可以阅读CFG的论文<a href="https://arxiv.org/abs/2207.12598">https://arxiv.org/abs/2207.12598</a>以及guided diffusion的论文<a href="https://arxiv.org/abs/2105.05233">https://arxiv.org/abs/2105.05233</a>。<strong>CFG对于提升条件扩散模型的图像生成效果是至关重要的</strong>。</p>
+<h3 id="训练细节">训练细节<a class="anchor-link" href="#训练细节" title="Permanent link">&para;</a></h3>
+<p>前面我们介绍了SD的模型结构，这里我们也简单介绍一下SD的训练细节，主要包括训练数据和训练资源，这方面也是在SD的<a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">https://huggingface.co/runwayml/stable-diffusion-v1-5</a>上有说明。 首先是训练数据，SD在<a href="https://huggingface.co/datasets/laion/laion2B-en">https://huggingface.co/datasets/laion/laion2B-en</a><strong>数据集</strong>上训练的，它是<a href="https://laion.ai/blog/laion-5b/">https://laion.ai/blog/laion-5b/</a><strong>数据集</strong>的一个子集，更具体的说它是laion-5b中的英文（文本为英文）数据集。laion-5b数据集是从网页数据Common Crawl中筛选出来的图像-文本对数据集，它包含5.85B的图像-文本对，其中文本为英文的数据量为2.32B，这就是laion2B-en数据集。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027642.jpg" /><br />
+下面是laion2B-en数据集的元信息（图片width和height，以及文本长度）统计分析：其中图片的width和height均在256以上的样本量为1324M，在512以上的样本量为488M，而在1024以上的样本为76M；文本的平均长度为67。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027643.jpg" /><br />
+ laion数据集中除了图片（下载URL，图像width和height）和文本（描述文本）的元信息外，还包含以下信息：</p>
+<ul>
+<li>similarity：使用CLIP ViT-B/32计算出来的图像和文本余弦相似度；</li>
+<li>pwatermark：使用一个图片<a href="https://github.com/LAION-AI/LAION-5B-WatermarkDetection">https://github.com/LAION-AI/LAION-5B-WatermarkDetection</a>检测的概率值，表示图片含有水印的概率；</li>
+<li>punsafe：图片是否安全，或者图片是不是NSFW，使用<a href="https://github.com/LAION-AI/CLIP-based-NSFW-Detector">https://github.com/LAION-AI/CLIP-based-NSFW-Detector</a>来估计；</li>
+<li>AESTHETIC_SCORE：图片的美学评分（1-10），这个是后来追加的，首先选择一小部分图片数据集让人对图片的美学打分，然后基于这个标注数据集来训练一个<a href="https://laion.ai/blog/laion-aesthetics/">https://laion.ai/blog/laion-aesthetics/</a>，并对所有样本计算估计的美学评分。</li>
+</ul>
+<p>上面是laion数据集的情况，下面我们来介绍SD训练数据集的具体情况，<strong>SD的训练是多阶段的</strong>（先在256x256尺寸上预训练，然后在512x512尺寸上精调），不同的阶段产生了不同的版本：</p>
+<ul>
+<li>SD v1.1：在laion2B-en数据集上以256x256大小训练237,000步，上面我们已经说了，laion2B-en数据集中256以上的样本量共1324M；然后在laion5B的<a href="https://huggingface.co/datasets/laion/laion-high-resolution">https://huggingface.co/datasets/laion/laion-high-resolution</a>以512x512尺寸训练194,000步，这里的高分辨率数据集是图像尺寸在1024x1024以上，共170M样本。</li>
+<li>SD v1.2：以SD v1.1为初始权重，在<a href="https://huggingface.co/datasets/ChristophSchuhmann/improved_aesthetics_5plus">https://huggingface.co/datasets/ChristophSchuhmann/improved_aesthetics_5plus</a>数据集上以512x512尺寸训练515,000步数，这个improved_aesthetics_5plus数据集上laion2B-en数据集中美学评分在5分以上的子集（共约600M样本），注意这里过滤了含有水印的图片（pwatermark&gt;0.5)以及图片尺寸在512x512以下的样本。</li>
+<li>SD v1.3：以SD v1.2为初始权重，在improved_aesthetics_5plus数据集上继续以512x512尺寸训练195,000步数，不过这里采用了CFG（以10%的概率随机drop掉text）。</li>
+<li>SD v1.4：以SD v1.2为初始权重，在improved_aesthetics_5plus数据集上采用CFG以512x512尺寸训练225,000步数。</li>
+<li>SD v1.5：以SD v1.2为初始权重，在improved_aesthetics_5plus数据集上采用CFG以512x512尺寸训练595,000步数。</li>
+</ul>
+<p>其实可以看到SD v1.3、SD v1.4和SD v1.5其实是以SD v1.2为起点在improved_aesthetics_5plus数据集上采用CFG训练过程中的不同checkpoints，<strong>目前最常用的版本是SD v1.4和SD v1.5</strong>。 SD的训练是<strong>采用了32台8卡的A100机器</strong>（32 x 8 x A100_40GB GPUs），所需要的训练硬件还是比较多的，但是相比语言大模型还好。单卡的训练batch size为2，并采用gradient accumulation，其中gradient accumulation steps=2，那么训练的<strong>总batch size就是32x8x2x2=2048</strong>。训练<strong>优化器采用AdamW</strong>，训练采用warmup，在初始10,000步后<strong>学习速率升到0.0001</strong>，后面保持不变。至于训练时间，文档上只说了用了150,000小时，这个应该是A100卡时，如果按照256卡A100来算的话，那么大约<strong>需要训练25天左右</strong>。</p>
+<h3 id="模型评测">模型评测<a class="anchor-link" href="#模型评测" title="Permanent link">&para;</a></h3>
+<p>上面介绍了模型训练细节，那么最后的问题就是模型评测了。对于文生图模型，目前常采用的定量指标是<strong>FID</strong>（Fréchet inception distance）和CLIP score，其中FID可以衡量生成图像的逼真度（image fidelity），而CLIP score评测的是生成的图像与输入文本的一致性，其中FID越低越好，而CLIP score是越大越好。当CFG的gudiance scale参数设置不同时，FID和CLIP score会发生变化，下图为不同的gudiance scale参数下，SD模型在COCO2017验证集上的评测结果，注意这里是zero-shot评测，即SD模型并没有在COCO训练数据集上精调。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027644.jpg" /><br />
+ 可以看到当gudiance scale=3时，FID最低；而当gudiance scale越大时，CLIP score越大，但是FID同时也变大。在实际应用时，往往会采用较大的gudiance scale，比如SD模型默认采用7.5，此时生成的图像和文本有较好的一致性。从不同版本的对比曲线上看，SD的采用CFG训练后三个版本其实差别并没有那么大，其中SD v1.5相对好一点，但是明显要未采用CFG训练的版本要好的多，这说明CFG训练是比较关键的。 目前在模型对比上，大家往往是比较不同模型在COCO验证集上的zero-shot FID-30K（选择30K的样本），大家往往就选择模型所能得到的最小FID来比较，下面为eDiff和GigaGAN两篇论文所报道的不同文生图模型的FID对比（由于SD并没有给出FID-30K，所以大家应该都是自己用开源SD的模型计算的，由于选择样本不同，可能结果存在差异）： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027645.jpg" /><br />
+ 可以看到SD虽然FID不是最好的，但是也能达到比较低的FID（大约在8～9之间）。不过虽然学术界常采用FID来定量比较模型，但是FID有很大的局限性，它并不能很好地衡量生成图像的质量，也是因为这个原因，谷歌的Imagen引入了人工评价，先建立一个评测数据集DrawBench（包含200个不同类型的text），然后用不同的模型来生成图像，让人去评价同一个text下不同模型生成的图像，这种评测方式比较直接，但是可能也受一些主观因素的影响。总而言之，目前的评价方式都有一定的局限性，最好还是直接上手使用来比较不同的模型。</p>
+<h2 id="sd的主要应用">SD的主要应用<a class="anchor-link" href="#sd的主要应用" title="Permanent link">&para;</a></h2>
+<p>下面来介绍SD的主要应用，这包括<strong>文生图</strong>，<strong>图生图</strong>以及<strong>图像inpainting</strong>。其中文生图是SD的基础功能：根据输入文本生成相应的图像，而图生图和图像inpainting是在文生图的基础上延伸出来的两个功能。</p>
+<h3 id="文生图">文生图<a class="anchor-link" href="#文生图" title="Permanent link">&para;</a></h3>
+<p>根据文本生成图像这是文生图的最核心的功能，下图为SD的文生图的推理流程图：首先根据输入text用text encoder提取text embeddings，同时初始化一个随机噪音noise（latent上的，512x512图像对应的noise维度为64x64x4），然后将text embeddings和noise送入扩散模型UNet中生成去噪后的latent，最后送入autoencoder的decoder模块得到生成的图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027646.jpg" /><br />
+ 使用diffusers库，我们可以直接调用<code>StableDiffusionPipeline</code>来实现文生图，具体代码如下所示：</p>
+<pre><code>import torch
+from diffusers import StableDiffusionPipeline
+from PIL import Image
+
+# 组合图像，生成grid
+def image_grid(imgs, rows, cols):
+    assert len(imgs) == rows*cols
+
+    w, h = imgs[0].size
+    grid = Image.new('RGB', size=(cols*w, rows*h))
+    grid_w, grid_h = grid.size
+
+    for i, img in enumerate(imgs):
+        grid.paste(img, box=(i%cols*w, i//cols*h))
+    return grid
+
+# 加载文生图pipeline
+pipe = StableDiffusionPipeline.from_pretrained(
+    &quot;runwayml/stable-diffusion-v1-5&quot;, # 或者使用 SD v1.4: &quot;CompVis/stable-diffusion-v1-4&quot;
+    torch_dtype=torch.float16
+).to(&quot;cuda&quot;)
+
+# 输入text，这里text又称为prompt
+prompts = [
+    &quot;a photograph of an astronaut riding a horse&quot;,
+    &quot;A cute otter in a rainbow whirlpool holding shells, watercolor&quot;,
+    &quot;An avocado armchair&quot;,
+    &quot;A white dog wearing sunglasses&quot;
+]
+
+generator = torch.Generator(&quot;cuda&quot;).manual_seed(42) # 定义随机seed，保证可重复性
+
+# 执行推理
+images = pipe(
+    prompts,
+    height=512,
+    width=512,
+    num_inference_steps=50,
+    guidance_scale=7.5,
+    negative_prompt=None,
+    num_images_per_prompt=1,
+    generator=generator
+).images
+
+grid = image_grid(images, rows=1, cols=4)
+grid
+</code></pre>
+<p>生成的图像效果如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027647.jpg" /><br />
+这里可以通过指定width和height来决定生成图像的大小，前面说过SD最后是在512x512尺度上训练的，所以生成512x512尺寸效果是最好的，但是实际上SD可以生成任意尺寸的图片：一方面autoencoder支持任意尺寸的图片的编码和解码，另外一方面扩散模型UNet也是支持任意尺寸的latents生成的（UNet是卷积+attention的混合结构）。然而，生成512x512以外的图片会存在一些问题，比如生成低分辨率图像时，图像的质量大幅度下降，下图为同样的文本在256x256尺寸下的生成效果： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027648.jpg" /><br />
+如果是生成512x512以上分辨率的图像，图像质量虽然没问题，但是可能会出现重复物体以及物体被拉长的情况，下图为分别为768x512和512x768尺寸下的生成效果，可以看到部分图像存在一定的问题： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027649.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027650.jpg" /><br />
+所以虽然SD的架构上支持任意尺寸的图像生成，但训练是在固定尺寸上（512x512），生成其它尺寸图像还是会存在一定的问题。解决这个问题的办法就相对比较简单，就是采用多尺度策略训练，比如NovelAI提出采用<a href="https://github.com/NovelAI/novelai-aspect-ratio-bucketing">https://github.com/NovelAI/novelai-aspect-ratio-bucketing</a>策略来在二次元数据集上精调模型，这样得到的模型就很大程度上避免SD的这个问题，目前大部分开源的基于SD的精调模型往往都采用类似的多尺度策略来精调。比如我们采用开源的<a href="https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0">https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0</a>模型（基于SD v1.5精调的），其生成的图像效果在变尺寸上就好很多： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027651.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027652.jpg" /><br />
+另外一个参数是<code>num_inference_steps</code>，它是指<strong>推理过程中的去噪步数或者采样步数</strong>。SD在训练过程采用的是步数为1000的noise scheduler，但是在推理时往往采用速度更快的scheduler：只需要少量的采样步数就能生成不错的图像，比如SD默认采用<a href="https://arxiv.org/abs/2202.09778">https://arxiv.org/abs/2202.09778</a>，它只需要采样50步就可以出图。当然我们也可以换用其它类型的scheduler，比如<a href="https://arxiv.org/abs/2010.02502">https://arxiv.org/abs/2010.02502</a>和<a href="https://arxiv.org/abs/2206.00927">https://arxiv.org/abs/2206.00927</a>。我们可以在diffusers中直接替换scheduler，比如我们想使用DDIM：</p>
+<pre><code>from diffusers import DDIMScheduler
+
+# 注意这里的clip_sample要关闭，否则生成图像存在问题，因为不能对latent进行clip
+pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config, clip_sample=False)
+</code></pre>
+<p>换成DDIM后，同样的采样步数生成的图像如下所示，在部分细节上和PNDM有差异： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027653.jpg" /><br />
+当然<strong>采样步数越大，生成的图像质量越好，但是相应的推理时间也更久</strong>。这里我们可以试验一下不同采样步数下的生成效果，以宇航员骑马为例，下图展示了采样步数为10，20，30，50，70和100时的生成图像，可以看到采样步数增加后，图像生成质量是有一定的提升的，当采样步数为30时就能生成相对稳定的图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027654.jpg" /><br />
+我们要讨论的第三个参数是<code>guidance_scale</code>，前面说过当CFG的<code>guidance_scale</code>越大时，生成的图像应该会和输入文本更一致，这里我们同样以宇航员骑马为例来测试不同guidance_scale下的图像生成效果。下图为guidance_scale为1，3，5，7，9和11下生成的图像对比，可以看到当guidance_scale较低时生成的图像效果是比较差的，<strong>当guidance_scale在7～9时，生成的图像效果是可以的</strong>，当采用更大的guidance_scale比如11，图像的色彩过饱和而看起来不自然，所以SD<strong>默认采用的guidance_scale为7.5</strong>。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027655.jpg" /><br />
+过大的guidance_scale之所以出现问题，主要是由于训练和测试的不一致，过大的guidance_scale会导致生成的样本超出范围。谷歌的Imagen论文提出一种dynamic thresholding策略来解决这个问题，所谓的dynamic thresholding是相对于原来的static thresholding，static thresholding策略是直接将生成的样本clip到[-1, 1]范围内（Imagen是基于pixel的扩散模型，这里是将图像像素值归一化到-1到1之间），但是会在过大的guidance_scale时产生很多的饱含像素点。而dynamic thresholding策略是先计算样本在某个百分位下（比如99%）的像素绝对值<span class="math-inline">s</span>，然后如果它超过1时就采用<span class="math-inline">s</span> 进行clip，这样就可以大大减少过饱和的像素。两种策略的具体实现代码如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027656.jpg" /><br />
+dynamic thresholding策略对于Imagen是比较关键的，它使得Imagen可以采用较大的guidance_scale来生成更自然的图像。下图为两种thresholding策略下生成图像的对比： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027657.jpg" /><br />
+虽然SD是基于latent的扩散模型，但依然可以采用类似的dynamic thresholding策略，感兴趣的可以参考目前的一个开源实现：<a href="https://github.com/mcmonkeyprojects/sd-dynamic-thresholding">https://github.com/mcmonkeyprojects/sd-dynamic-thresholding</a>，使用dynamic thresholding策略后，SD可以在较大的guidance_scale下生成相对自然的图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027658.jpg" /><br />
+另外一个比较容易忽略的参数是<code>negative_prompt</code>，这个参数和CFG有关，前面说过，SD采用了CFG来提升生成图像的质量。使用CFG，去噪过程的噪音预测不仅仅依赖条件扩散模型，也依赖无条件扩散模型： <span class="math-inline">\text{pred_noise}=w\mathbf{\epsilon}<em>\theta\big(\mathbf{x}_t, t, \mathbf{c}\big)+(1-w)\mathbf{\epsilon}</em>\theta\big(\mathbf{x}<em>t, t\big)=\mathbf{\epsilon}</em>\theta\big(\mathbf{x}<em>t, t\big)+w(\mathbf{\epsilon}</em>\theta\big(\mathbf{x}<em>t, t, \mathbf{c}\big)-\mathbf{\epsilon}</em>\theta\big(\mathbf{x}_t, t\big))</span> 这里的<code>negative_prompt</code>便是无条件扩散模型的text输入，前面说过训练过程中我们将text置为空字符串来实现无条件扩散模型，所以这里：<code>negative_prompt = None = ""</code>。但是有时候我们可以<strong>使用不为空的negative_prompt来避免模型生成的图像包含不想要的东西</strong>，因为从上述公式可以看到这里的无条件扩散模型是我们想远离的部分。下面我们来举几个具体的例子，首先来看生成人物图像的一个例子，这里的输入文本为"a portrait of a beautiful blonde woman"，其生成的图像如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027659.jpg" /><br />
+可以看到生成的图像效果并不好，比如出现一些脸部的畸变，但是我们可以设置negative_prompt来提升生成效果，这里我们将negative_prompt设置为"cropped, lowres, poorly drawn face, out of frame, poorly drawn hands, blurry"，这些描述都是负面的。改变negative_prompt后，生成的图像效果有一个明显的提升： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027660.jpg" /><br />
+第二个例子是一个建筑物，这里的输入文本为"A Hyperrealistic photograph of German architectural modern home"，默认图像生成效果如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027661.jpg" /><br />
+虽然生成的图像效果不错，但是如果只想要一个干净的建筑物，而不想背景中含有树木和草地等，此时我们可以通过设置negative prompt来达到这种效果。这里将negative prompt设为"trees, bushes, leaves, greenery"，其生成的建筑物就干净了很多： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027662.jpg" /><br />
+可以看到合理使用negative prompt能够帮助我们去除不想要的东西来提升图像生成效果。 一般情况下，输入的text或者prompt我们称之为“<strong>正向提示词</strong>”，而negative prompt称之为“<strong>反向提示词</strong>”，想要生成的好的图像，不仅要选择好的正向提示词，也需要好的反向提示词，这和文本生成模型也比较类似：都需要好的prompt。这里也举一个对正向prompt优化的例子（这个例子来源于微软的工作<a href="https://arxiv.org/abs/2212.09611">https://arxiv.org/abs/2212.09611</a>），这里的原始prompt为"A rabbit is wearing a space suit"，可以看到直接生成的效果其实是不尽人意的： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027663.jpg" /><br />
+但是如果我们将prompt改为"A rabbit is wearing a space suit, digital Art, Greg rutkowski, Trending cinematographic artstation"，其生成的效果就大大提升： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027664.jpg" /><br />
+这里我们其实只是在原有的prompt基础加上了一些描述词，有时候我们称之为“<strong>魔咒</strong>”，不同的模型可能会有不同的魔咒。 上述我们讨论了SD的文生图的主要参数，这里简单总结一下：</p>
+<ul>
+<li>SD默认生成512x512大小的图像，但实际上可以生成其它分辨率的图像，但是可能会出现不协调，如果采用多尺度策略训练，会改善这种情况；</li>
+<li>采用快速的noise scheduler，SD在去噪步数为30～50步时就能生成稳定的图像；</li>
+<li>SD的guidance_scale设置为7～9是比较稳定的，过小和过大都会出现图像质量下降，实际使用中可以根据具体情况灵活调节；</li>
+<li>可以使用negative prompt来去除不想要的东西来改善图像生成效果；</li>
+<li>好的prompt对图像生成效果是至关重要的。</li>
+</ul>
+<p>上边我们介绍了如何使用SD进行文生图以及一些主要参数，在最后我们也给出文生图这个pipeline的内部流程代码，如下所示：</p>
+<pre><code>import torch
+from diffusers import AutoencoderKL, UNet2DConditionModel, DDIMScheduler
+from transformers import CLIPTextModel, CLIPTokenizer
+from tqdm.auto import tqdm
+
+
+model_id = &quot;runwayml/stable-diffusion-v1-5&quot;
+# 1. 加载autoencoder
+vae = AutoencoderKL.from_pretrained(model_id, subfolder=&quot;vae&quot;)
+# 2. 加载tokenizer和text encoder 
+tokenizer = CLIPTokenizer.from_pretrained(model_id, subfolder=&quot;tokenizer&quot;)
+text_encoder = CLIPTextModel.from_pretrained(model_id, subfolder=&quot;text_encoder&quot;)
+# 3. 加载扩散模型UNet
+unet = UNet2DConditionModel.from_pretrained(model_id, subfolder=&quot;unet&quot;)
+# 4. 定义noise scheduler
+noise_scheduler = DDIMScheduler(
+    num_train_timesteps=1000,
+    beta_start=0.00085,
+    beta_end=0.012,
+    beta_schedule=&quot;scaled_linear&quot;,
+    clip_sample=False, # don't clip sample, the x0 in stable diffusion not in range [-1, 1]
+    set_alpha_to_one=False,
+)
+
+# 将模型复制到GPU上
+device = &quot;cuda&quot;
+vae.to(device, dtype=torch.float16)
+text_encoder.to(device, dtype=torch.float16)
+unet = unet.to(device, dtype=torch.float16)
+
+# 定义参数
+prompt = [
+    &quot;A dragon fruit wearing karate belt in the snow&quot;,
+    &quot;A small cactus wearing a straw hat and neon sunglasses in the Sahara desert&quot;,
+    &quot;A photo of a raccoon wearing an astronaut helmet, looking out of the window at night&quot;,
+    &quot;A cute otter in a rainbow whirlpool holding shells, watercolor&quot;
+]
+height = 512
+width = 512
+num_inference_steps = 50
+guidance_scale = 7.5
+negative_prompt = &quot;&quot;
+batch_size = len(prompt)
+# 随机种子
+generator = torch.Generator(device).manual_seed(2023)
+
+
+with torch.no_grad():
+ # 获取text_embeddings
+ text_input = tokenizer(prompt, padding=&quot;max_length&quot;, max_length=tokenizer.model_max_length, truncation=True, return_tensors=&quot;pt&quot;)
+    text_embeddings = text_encoder(text_input.input_ids.to(device))[0]
+ # 获取unconditional text embeddings
+ max_length = text_input.input_ids.shape[-1]
+ uncond_input = tokenizer(
+     [negative_prompt] * batch_size, padding=&quot;max_length&quot;, max_length=max_length, return_tensors=&quot;pt&quot;
+ )
+      uncond_embeddings = text_encoder(uncond_input.input_ids.to(device))[0]
+ # 拼接为batch，方便并行计算
+ text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
+
+ # 生成latents的初始噪音
+ latents = torch.randn(
+     (batch_size, unet.in_channels, height // 8, width // 8),
+     generator=generator, device=device
+ )
+ latents = latents.to(device, dtype=torch.float16)
+
+ # 设置采样步数
+ noise_scheduler.set_timesteps(num_inference_steps, device=device)
+
+ # scale the initial noise by the standard deviation required by the scheduler
+ latents = latents * noise_scheduler.init_noise_sigma # for DDIM, init_noise_sigma = 1.0
+
+ timesteps_tensor = noise_scheduler.timesteps
+
+ # Do denoise steps
+ for t in tqdm(timesteps_tensor):
+     # 这里latens扩展2份，是为了同时计算unconditional prediction
+     latent_model_input = torch.cat([latents] * 2)
+     latent_model_input = noise_scheduler.scale_model_input(latent_model_input, t) # for DDIM, do nothing
+
+     # 使用UNet预测噪音
+        noise_pred = unet(latent_model_input, t, encoder_hidden_states=text_embeddings).sample
+
+     # 执行CFG
+     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+     noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+
+     # 计算上一步的noisy latents：x_t -&gt; x_t-1
+     latents = noise_scheduler.step(noise_pred, t, latents).prev_sample
+
+ # 注意要对latents进行scale
+ latents = 1 / 0.18215 * latents
+ # 使用vae解码得到图像
+    image = vae.decode(latents).sample
+</code></pre>
+<h3 id="图生图">图生图<a class="anchor-link" href="#图生图" title="Permanent link">&para;</a></h3>
+<p><strong>图生图（image2image）是对文生图功能的一个扩展</strong>，这个功能来源于<a href="https://arxiv.org/abs/2108.01073">https://arxiv.org/abs/2108.01073</a>这个工作，其核心思路也非常简单：给定一个笔画的色块图像，可以先给它加一定的高斯噪音（执行扩散过程）得到噪音图像，然后基于扩散模型对这个噪音图像进行去噪，就可以生成新的图像，但是这个图像在结构和布局和输入图像基本一致。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027665.jpg" /><br />
+对于SD来说，图生图的流程图如下所示，相比文生图流程来说，这里的初始latent不再是一个随机噪音，而是由初始图像经过autoencoder编码之后的latent加高斯噪音得到，这里的加噪过程就是扩散过程。要注意的是，去噪过程的步数要和加噪过程的步数一致，就是说你加了多少噪音，就应该去掉多少噪音，这样才能生成想要的无噪音图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027666.jpg" /><br />
+ 在diffusers中，我们可以使用<code>StableDiffusionImg2ImgPipeline</code>来实现文生图，具体代码如下所示：</p>
+<pre><code>import torch
+from diffusers import StableDiffusionImg2ImgPipeline
+from PIL import Image
+
+# 加载图生图pipeline
+model_id = &quot;runwayml/stable-diffusion-v1-5&quot;
+pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id, torch_dtype=torch.float16).to(&quot;cuda&quot;)
+
+# 读取初始图片
+init_image = Image.open(&quot;init_image.png&quot;).convert(&quot;RGB&quot;)
+
+# 推理
+prompt = &quot;A fantasy landscape, trending on artstation&quot;
+generator = torch.Generator(device=&quot;cuda&quot;).manual_seed(2023)
+
+image = pipe(
+    prompt=prompt,
+    image=init_image,
+    strength=0.8,
+    guidance_scale=7.5,
+    generator=generator
+).images[0]
+image
+</code></pre>
+<p>相比文生图的pipeline，图生图的pipeline还多了一个参数<code>strength</code>，这个参数介于0-1之间，表示对输入图片加噪音的程度，这个值越大加的噪音越多，对原始图片的破坏也就越大，当strength=1时，其实就变成了一个随机噪音，此时就相当于纯粹的文生图pipeline了。下面展示了一个具体的实例，这里的第一张图为输入的初始图片，它是一个笔画的色块，我们可以通过图生图将它生成一幅具体的图像，其中第2张图和第3张图的strength分别是0.5和0.8，可以看到当strength=0.5时，生成的图像和原图比较一致，但是就比较简单了，当strength=0.8时，生成的图像偏离原图更多，但是图像的质感有一个明显的提升。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027667.jpg" /><br />
+图生图这个功能一个更广泛的应用是在风格转换上，比如给定一张人像，想生成动漫风格的图像。这里我们可以使用动漫风格的开源模型<a href="https://huggingface.co/andite/anything-v4.0">https://huggingface.co/andite/anything-v4.0</a>，它是基于SD v1.5在动漫风格数据集上finetune的，使用它可以更好地利用图生图将人物动漫化。下面的第1张为输入人物图像，采用的prompt为"masterpiece, best quality, 1girl, red hair, medium hair, green eyes"，后面的图像是strength分别为0.3-0.9下生成的图像。可以看到在不同的strength下图像有不同的生成效果，其中strength=0.6时我觉得效果是最好的。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027668.jpg" /><br />
+总结来看，<strong>图生图其实核心也是依赖了文生图的能力，其中strength这个参数需要灵活调节来得到满意的图像</strong>。在最后，我们也给出图生图pipeline的内部主要代码，如下所示：</p>
+<pre><code>import PIL
+import numpy as np
+import torch
+from diffusers import AutoencoderKL, UNet2DConditionModel, DDIMScheduler
+from transformers import CLIPTextModel, CLIPTokenizer
+from tqdm.auto import tqdm
+
+
+model_id = &quot;runwayml/stable-diffusion-v1-5&quot;
+# 1. 加载autoencoder
+vae = AutoencoderKL.from_pretrained(model_id, subfolder=&quot;vae&quot;)
+# 2. 加载tokenizer和text encoder 
+tokenizer = CLIPTokenizer.from_pretrained(model_id, subfolder=&quot;tokenizer&quot;)
+text_encoder = CLIPTextModel.from_pretrained(model_id, subfolder=&quot;text_encoder&quot;)
+# 3. 加载扩散模型UNet
+unet = UNet2DConditionModel.from_pretrained(model_id, subfolder=&quot;unet&quot;)
+# 4. 定义noise scheduler
+noise_scheduler = DDIMScheduler(
+    num_train_timesteps=1000,
+    beta_start=0.00085,
+    beta_end=0.012,
+    beta_schedule=&quot;scaled_linear&quot;,
+    clip_sample=False, # don't clip sample, the x0 in stable diffusion not in range [-1, 1]
+    set_alpha_to_one=False,
+)
+
+# 将模型复制到GPU上
+device = &quot;cuda&quot;
+vae.to(device, dtype=torch.float16)
+text_encoder.to(device, dtype=torch.float16)
+unet = unet.to(device, dtype=torch.float16)
+
+# 预处理init_image
+def preprocess(image):
+    w, h = image.size
+    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    image = image.resize((w, h), resample=PIL.Image.LANCZOS)
+    image = np.array(image).astype(np.float32) / 255.0
+    image = image[None].transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image)
+    return 2.0 * image - 1.0
+
+# 参数设置
+prompt = [&quot;A fantasy landscape, trending on artstation&quot;]
+num_inference_steps = 50
+guidance_scale = 7.5
+strength = 0.8
+batch_size = 1
+negative_prompt = &quot;&quot;
+generator = torch.Generator(device).manual_seed(2023)
+
+init_image = PIL.Image.open(&quot;init_image.png&quot;).convert(&quot;RGB&quot;)
+
+with torch.no_grad():
+ # 获取prompt的text_embeddings
+ text_input = tokenizer(prompt, padding=&quot;max_length&quot;, max_length=tokenizer.model_max_length, truncation=True, return_tensors=&quot;pt&quot;)
+    text_embeddings = text_encoder(text_input.input_ids.to(device))[0]
+ # 获取unconditional text embeddings
+ max_length = text_input.input_ids.shape[-1]
+ uncond_input = tokenizer(
+     [negative_prompt] * batch_size, padding=&quot;max_length&quot;, max_length=max_length, return_tensors=&quot;pt&quot;
+ )
+      uncond_embeddings = text_encoder(uncond_input.input_ids.to(device))[0]
+ # 拼接batch
+ text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
+
+ # 设置采样步数
+ noise_scheduler.set_timesteps(num_inference_steps, device=device)
+ # 根据strength计算timesteps
+ init_timestep = min(int(num_inference_steps * strength), num_inference_steps)
+ t_start = max(num_inference_steps - init_timestep, 0)
+ timesteps = noise_scheduler.timesteps[t_start:]
+
+
+ # 预处理init_image
+ init_input = preprocess(init_image)
+    init_latents = vae.encode(init_input.to(device, dtype=torch.float16)).latent_dist.sample(generator)
+    init_latents = 0.18215 * init_latents
+
+ # 给init_latents加噪音
+ noise = torch.randn(init_latents.shape, generator=generator, device=device, dtype=init_latents.dtype)
+ init_latents = noise_scheduler.add_noise(init_latents, noise, timesteps[:1])
+ latents = init_latents # 作为初始latents
+
+
+ # Do denoise steps
+ for t in tqdm(timesteps):
+     # 这里latens扩展2份，是为了同时计算unconditional prediction
+     latent_model_input = torch.cat([latents] * 2)
+     latent_model_input = noise_scheduler.scale_model_input(latent_model_input, t) # for DDIM, do nothing
+
+     # 预测噪音
+        noise_pred = unet(latent_model_input, t, encoder_hidden_states=text_embeddings).sample
+
+     # CFG
+     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+     noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+
+     # 计算上一步的noisy latents：x_t -&gt; x_t-1
+     latents = noise_scheduler.step(noise_pred, t, latents).prev_sample
+
+ # 注意要对latents进行scale
+ latents = 1 / 0.18215 * latents
+    # 解码
+    image = vae.decode(latents).sample
+</code></pre>
+<h3 id="图像inpainting">图像inpainting<a class="anchor-link" href="#图像inpainting" title="Permanent link">&para;</a></h3>
+<p>最后我们要介绍的一项功能是图像inpainting，它和图生图一样也是文生图功能的一个扩展。SD的图像inpainting不是用在图像修复上，而是主要用在<strong>图像编辑</strong>上：给定一个输入图像和想要编辑的区域mask，我们想通过文生图来编辑mask区域的内容。SD的图像inpainting原理可以参考论文<a href="https://arxiv.org/abs/2206.02779">https://arxiv.org/abs/2206.02779</a>，其主要原理图如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027669.jpg" /><br />
+它和图生图一样：首先将输入图像通过autoencoder编码为latent，然后加入一定的高斯噪音生成noisy latent，再进行去噪生成图像，但是这里为了保证mask以外的区域不发生变化，在去噪过程的每一步，都将扩散模型预测的noisy latent用真实图像同level的nosiy latent替换。 在diffusers中，使用<code>StableDiffusionInpaintPipelineLegacy</code>可以实现文本引导下的图像inpainting，具体代码如下所示：</p>
+<pre><code>import torch
+from diffusers import StableDiffusionInpaintPipelineLegacy
+from PIL import Image
+
+# 加载inpainting pipeline
+model_id = &quot;runwayml/stable-diffusion-v1-5&quot;
+pipe = StableDiffusionInpaintPipelineLegacy.from_pretrained(model_id, torch_dtype=torch.float16).to(&quot;cuda&quot;)
+
+# 读取输入图像和输入mask
+input_image = Image.open(&quot;overture-creations-5sI6fQgYIuo.png&quot;).resize((512, 512))
+input_mask = Image.open(&quot;overture-creations-5sI6fQgYIuo_mask.png&quot;).resize((512, 512))
+
+# 执行推理
+prompt = [&quot;a mecha robot sitting on a bench&quot;, &quot;a cat sitting on a bench&quot;]
+generator = torch.Generator(&quot;cuda&quot;).manual_seed(0)
+
+with torch.autocast(&quot;cuda&quot;):
+    images = pipe(
+        prompt=prompt,
+        image=input_image,
+        mask_image=input_mask,
+        num_inference_steps=50,
+        strength=0.75,
+        guidance_scale=7.5,
+        num_images_per_prompt=1,
+        generator=generator,
+    ).images
+</code></pre>
+<p>下面是一个具体的生成效果，这里我们将输入图像的dog换成了mecha robot或者cat，从而实现了图像编辑。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027671.jpg" /><br />
+要注意的是这里的参数guidance_scale也和图生图一样比较重要，要生成好的图像，需要选择合适的guidance_scale。如果guidance_scale=0.5时，生成的图像由于过于受到原图干扰而产生一些不协调，如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027672.jpg" /><br />
+合适的prompt也比较重要，比如如果我们去掉prompt中的"sitting on a bench"，那么编辑的图像效果也会出现不协调： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027673.jpg" /><br />
+无论是上面的图生图还是这里的图像inpainting，我们其实并没有去finetune SD模型，只是扩展了它的能力，但是这两样功能就需要精确调整参数才能得到满意的生成效果。 这里，我们也给出<code>StableDiffusionInpaintPipelineLegacy</code>这个pipeline内部的核心代码：</p>
+<pre><code>import PIL
+import numpy as np
+import torch
+from diffusers import AutoencoderKL, UNet2DConditionModel, DDIMScheduler
+from transformers import CLIPTextModel, CLIPTokenizer
+from tqdm.auto import tqdm
+
+def preprocess_mask(mask):
+    mask = mask.convert(&quot;L&quot;)
+    w, h = mask.size
+    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    mask = mask.resize((w // 8, h // 8), resample=PIL.Image.NEAREST)
+    mask = np.array(mask).astype(np.float32) / 255.0
+    mask = np.tile(mask, (4, 1, 1))
+    mask = mask[None].transpose(0, 1, 2, 3)  # what does this step do?
+    mask = 1 - mask  # repaint white, keep black
+    mask = torch.from_numpy(mask)
+    return mask
+
+def preprocess(image):
+    w, h = image.size
+    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    image = image.resize((w, h), resample=PIL.Image.LANCZOS)
+    image = np.array(image).astype(np.float32) / 255.0
+    image = image[None].transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image)
+    return 2.0 * image - 1.0
+
+model_id = &quot;runwayml/stable-diffusion-v1-5&quot;
+# 1. 加载autoencoder
+vae = AutoencoderKL.from_pretrained(model_id, subfolder=&quot;vae&quot;)
+# 2. 加载tokenizer和text encoder 
+tokenizer = CLIPTokenizer.from_pretrained(model_id, subfolder=&quot;tokenizer&quot;)
+text_encoder = CLIPTextModel.from_pretrained(model_id, subfolder=&quot;text_encoder&quot;)
+# 3. 加载扩散模型UNet
+unet = UNet2DConditionModel.from_pretrained(model_id, subfolder=&quot;unet&quot;)
+# 4. 定义noise scheduler
+noise_scheduler = DDIMScheduler(
+    num_train_timesteps=1000,
+    beta_start=0.00085,
+    beta_end=0.012,
+    beta_schedule=&quot;scaled_linear&quot;,
+    clip_sample=False, # don't clip sample, the x0 in stable diffusion not in range [-1, 1]
+    set_alpha_to_one=False,
+)
+
+# 将模型复制到GPU上
+device = &quot;cuda&quot;
+vae.to(device, dtype=torch.float16)
+text_encoder.to(device, dtype=torch.float16)
+unet = unet.to(device, dtype=torch.float16)
+
+prompt = &quot;a mecha robot sitting on a bench&quot;
+strength = 0.75
+guidance_scale = 7.5
+batch_size = 1
+num_inference_steps = 50
+negative_prompt = &quot;&quot;
+generator = torch.Generator(device).manual_seed(0)
+
+with torch.no_grad():
+    # 获取prompt的text_embeddings
+    text_input = tokenizer(prompt, padding=&quot;max_length&quot;, max_length=tokenizer.model_max_length, truncation=True, return_tensors=&quot;pt&quot;)
+    text_embeddings = text_encoder(text_input.input_ids.to(device))[0]
+    # 获取unconditional text embeddings
+    max_length = text_input.input_ids.shape[-1]
+    uncond_input = tokenizer(
+        [negative_prompt] * batch_size, padding=&quot;max_length&quot;, max_length=max_length, return_tensors=&quot;pt&quot;
+    )
+    uncond_embeddings = text_encoder(uncond_input.input_ids.to(device))[0]
+    # 拼接batch
+    text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
+
+    # 设置采样步数
+    noise_scheduler.set_timesteps(num_inference_steps, device=device)
+    # 根据strength计算timesteps
+    init_timestep = min(int(num_inference_steps * strength), num_inference_steps)
+    t_start = max(num_inference_steps - init_timestep, 0)
+    timesteps = noise_scheduler.timesteps[t_start:]
+
+
+    # 预处理init_image
+    init_input = preprocess(input_image)
+    init_latents = vae.encode(init_input.to(device, dtype=torch.float16)).latent_dist.sample(generator)
+    init_latents = 0.18215 * init_latents
+    init_latents = torch.cat([init_latents] * batch_size, dim=0)
+    init_latents_orig = init_latents
+    # 处理mask
+    mask_image = preprocess_mask(input_mask)
+    mask_image = mask_image.to(device=device, dtype=init_latents.dtype)
+    mask = torch.cat([mask_image] * batch_size)
+
+    # 给init_latents加噪音
+    noise = torch.randn(init_latents.shape, generator=generator, device=device, dtype=init_latents.dtype)
+    init_latents = noise_scheduler.add_noise(init_latents, noise, timesteps[:1])
+    latents = init_latents # 作为初始latents
+
+
+    # Do denoise steps
+    for t in tqdm(timesteps):
+        # 这里latens扩展2份，是为了同时计算unconditional prediction
+        latent_model_input = torch.cat([latents] * 2)
+        latent_model_input = noise_scheduler.scale_model_input(latent_model_input, t) # for DDIM, do nothing
+
+        # 预测噪音
+        noise_pred = unet(latent_model_input, t, encoder_hidden_states=text_embeddings).sample
+
+        # CFG
+        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+        noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+
+        # 计算上一步的noisy latents：x_t -&gt; x_t-1
+        latents = noise_scheduler.step(noise_pred, t, latents).prev_sample
+
+        # 将unmask区域替换原始图像的nosiy latents
+        init_latents_proper = noise_scheduler.add_noise(init_latents_orig, noise, torch.tensor([t]))
+        latents = (init_latents_proper * mask) + (latents * (1 - mask))
+
+    # 注意要对latents进行scale
+    latents = 1 / 0.18215 * latents
+    image = vae.decode(latents).sample
+</code></pre>
+<p>另外，runwayml在发布SD 1.5版本的同时还发布了一个inpainting模型：<a href="https://huggingface.co/runwayml/stable-diffusion-inpainting">https://huggingface.co/runwayml/stable-diffusion-inpainting</a>，与前面所讲不同的是，这是一个<strong>在SD 1.2上finetune的模型</strong>。原来SD的UNet的输入是64x64x4，为了实现inpainting，现在给UNet的第一个卷机层增加5个channels，分别为masked图像的latents（经过autoencoder编码，64x64x4）和mask图像（直接下采样8x，64x64x1），增加的权重填零初始化。在diffusers中，可以使用<code>StableDiffusionInpaintPipeline</code>来调用这个模型，具体代码如下：</p>
+<pre><code>import torch
+from diffusers import StableDiffusionInpaintPipeline
+from PIL import Image
+from tqdm.auto import tqdm
+import PIL
+
+# Load pipeline
+model_id = &quot;runwayml/stable-diffusion-inpainting/&quot;
+pipe = StableDiffusionInpaintPipeline.from_pretrained(model_id, torch_dtype=torch.float16).to(&quot;cuda&quot;)
+
+prompt = [&quot;a mecha robot sitting on a bench&quot;, &quot;a dog sitting on a bench&quot;, &quot;a bench&quot;]
+
+generator = torch.Generator(&quot;cuda&quot;).manual_seed(2023)
+
+input_image = Image.open(&quot;overture-creations-5sI6fQgYIuo.png&quot;).resize((512, 512))
+input_mask = Image.open(&quot;overture-creations-5sI6fQgYIuo_mask.png&quot;).resize((512, 512))
+
+images = pipe(
+    prompt=prompt,
+    image=input_image,
+    mask_image=input_mask,
+    num_inference_steps=50,
+    generator=generator,
+    ).images
+</code></pre>
+<p>其生成的效果图如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027674.jpg" /><br />
+经过finetune的inpainting在生成细节上可能会更好，但是有可能会丧失部分文生图的能力，而且也比较难迁移其它finetune的SD模型。</p>
+<h2 id="sd-20">SD 2.0<a class="anchor-link" href="#sd-20" title="Permanent link">&para;</a></h2>
+<h3 id="sd-20_1">SD 2.0<a class="anchor-link" href="#sd-20_1" title="Permanent link">&para;</a></h3>
+<p>Stability AI公司在2022年11月（<a href="https://stability.ai/blog/stable-diffusion-v2-release">https://stability.ai/blog/stable-diffusion-v2-release</a>）放出了<a href="https://huggingface.co/stabilityai/stable-diffusion-2-base">https://huggingface.co/stabilityai/stable-diffusion-2-base</a>，这里我们也简单介绍一下相比SD 1.x版本SD 2.0的具体改进点。SD 2.0相比SD 1.x版本的主要变动在于<strong>模型结构</strong>和<strong>训练数据</strong>两个部分。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027675.jpg" /><br />
+首先是模型结构方面，SD 1.x版本的text encoder采用的是OpenAI的CLIP ViT-L/14模型，其模型参数量为123.65M；而SD 2.0采用了更大的text encoder：基于OpenCLIP在laion-2b数据集上训练的<a href="https://huggingface.co/laion/CLIP-ViT-H-14-laion2B-s32B-b79K">https://huggingface.co/laion/CLIP-ViT-H-14-laion2B-s32B-b79K</a>模型，其参数量为354.03M，相比原来的text encoder模型大了约3倍。两个CLIP模型的对比如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027676.jpg" /><br />
+可以看到CLIP ViT-H/14模型相比原来的OpenAI的L/14模型，在imagenet1K上分类准确率和mscoco多模态检索任务上均有明显的提升，这也意味着对应的text encoder更强，能够抓住更准确的文本语义信息。另外是一个小细节是SD 2.0提取的是text encoder倒数第二层的特征，而SD 1.x提取的是倒数第一层的特征。由于倒数第一层的特征之后就是CLIP的对比学习任务，所以倒数第一层的特征可能部分丢失细粒度语义信息，Imagen论文（见论文D.1部分）和novelai（见<a href="https://blog.novelai.net/novelai-improvements-on-stable-diffusion-e10d38db82ac">https://blog.novelai.net/novelai-improvements-on-stable-diffusion-e10d38db82ac</a>）均采用了倒数第二层特征。对于UNet模型，SD 2.0相比SD 1.x几乎没有改变，就是由于换了CLIP模型，cross attention dimension从原来的768变成了1024，这个导致参数量有轻微变化。另外一个小的变动是：SD 2.0不同stage的attention模块是固定attention head dim为64，而SD 1.0则是不同stage的attention模块采用固定attention head数量，明显SD 2.0的这种设定更常用，但是这个变动不会影响模型参数。 然后是训练数据，前面说过SD 1.x版本其实最后主要采用laion-2B中美学评分为5以上的子集来训练，而SD 2.0版本采用评分在4.5以上的子集，相当于扩大了训练数据集，具体的训练细节见<a href="https://huggingface.co/stabilityai/stable-diffusion-2">https://huggingface.co/stabilityai/stable-diffusion-2</a>。 另外SD 2.0除了512x512版本的模型，还包括768x768版本的模型（<a href="https://huggingface.co/stabilityai/stable-diffusion-2">https://huggingface.co/stabilityai/stable-diffusion-2</a>），所谓的768x768模型是在512x512模型基础上用图像分辨率大于768x768的子集继续训练的，不过优化目标不再是noise_prediction，而是采用<a href="https://arxiv.org/abs/2202.00512">https://arxiv.org/abs/2202.00512</a>论文中所提出的 v-objective。 下图为SD 2.0和SD 1.x版本在COCO2017验证集上评测的对比，可以看到2.0相比1.5，CLIP score有一个明显的提升，同时FID也有一定的提升。但是正如前面所讨论的，FID和CLIP score这两个指标均有一定的局限性，所以具体效果还是上手使用来对比。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027677.jpg" /><br />
+Stability AI在发布SD 2.0的同时，还发布了另外3个模型：<a href="https://huggingface.co/stabilityai/stable-diffusion-x4-upscaler">https://huggingface.co/stabilityai/stable-diffusion-x4-upscaler</a>，<a href="https://huggingface.co/stabilityai/stable-diffusion-2-inpainting">https://huggingface.co/stabilityai/stable-diffusion-2-inpainting</a>和<a href="https://huggingface.co/stabilityai/stable-diffusion-2-depth">https://huggingface.co/stabilityai/stable-diffusion-2-depth</a>。 <a href="https://huggingface.co/stabilityai/stable-diffusion-x4-upscaler">https://huggingface.co/stabilityai/stable-diffusion-x4-upscaler</a>是一个基于扩散模型的4x超分模型，它也是基于latent diffusion，不过这里采用的autoencoder是基于VQ-reg的，下采样率为<span class="math-inline">f=4</span>。在实现上，它是将低分辨率图像直接和noisy latent拼接在一起送入UNet，因为autoencoder将高分辨率图像压缩为原来的1/4，而低分辨率图像也为高分辨率图像的1/4，所以低分辨率图像的空间维度和latent是一致的。另外，这个超分模型也采用了<a href="https://arxiv.org/abs/2106.15282">https://arxiv.org/abs/2106.15282</a>所提出的noise conditioning augmentation，简单来说就是在训练过程中给低分辨率图像加上高斯噪音，可以通过扩散过程来实现，注意这里的扩散过程的scheduler与主扩散模型的scheduler可以不一样，同时也将对应的noise_level（对应扩散模型的time step）通过class labels的方式送入UNet，让UNet知道加入噪音的程度。stable-diffusion-x4-upscaler是使用LAION中&gt;2048x2048大小的子集（10M）训练的，训练过程中采用512x512的crops来训练（降低显存消耗）。SD模型可以用来生成512x512图像，加上这个超分模型，就可以得到2048x2048大小的图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027678.jpg" /><br />
+ 在diffusers库中，可以如下使用这个超分模型（这里的noise level是指推理时对低分辨率图像加入噪音的程度）：</p>
+<pre><code>import requests
+from PIL import Image
+from io import BytesIO
+from diffusers import StableDiffusionUpscalePipeline
+import torch
+
+# load model and scheduler
+model_id = &quot;stabilityai/stable-diffusion-x4-upscaler&quot;
+pipeline = StableDiffusionUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipeline = pipeline.to(&quot;cuda&quot;)
+
+# let's download an  image
+url = &quot;https://huggingface.co/datasets/hf-internal-testing/diffusers-images/resolve/main/sd2-upscale/low_res_cat.png&quot;
+response = requests.get(url)
+low_res_img = Image.open(BytesIO(response.content)).convert(&quot;RGB&quot;)
+low_res_img = low_res_img.resize((128, 128))
+
+prompt = &quot;a white cat&quot;
+
+upscaled_image = pipeline(prompt=prompt, image=low_res_img, noise_level=20).images[0]
+upscaled_image.save(&quot;upsampled_cat.png&quot;)
+</code></pre>
+<p><a href="https://huggingface.co/stabilityai/stable-diffusion-2-inpainting">https://huggingface.co/stabilityai/stable-diffusion-2-inpainting</a>是图像inpainting模型，和前面所说的<a href="https://huggingface.co/runwayml/stable-diffusion-inpainting">https://huggingface.co/runwayml/stable-diffusion-inpainting</a>基本一样，不过它是在SD 2.0的512x512版本上finetune的。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027679.jpg" /><br />
+<a href="https://huggingface.co/stabilityai/stable-diffusion-2-depth">https://huggingface.co/stabilityai/stable-diffusion-2-depth</a>是也是在SD 2.0的512x512版本上finetune的模型，它是额外增加了图像的深度图作为condition，这里是直接将深度图下采样8x，然后和nosiy latent拼接在一起送入UNet模型中。深度图可以作为一种结构控制，下图展示了加入深度图后生成的图像效果： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027680.png" /><br />
+ 你可以调用diffusers库中的<code>StableDiffusionDepth2ImgPipeline</code>来实现基于深度图控制的文生图：</p>
+<pre><code>import torch
+import requests
+from PIL import Image
+from diffusers import StableDiffusionDepth2ImgPipeline
+
+pipe = StableDiffusionDepth2ImgPipeline.from_pretrained(
+   &quot;stabilityai/stable-diffusion-2-depth&quot;,
+   torch_dtype=torch.float16,
+).to(&quot;cuda&quot;)
+
+url = &quot;http://images.cocodataset.org/val2017/000000039769.jpg&quot;
+init_image = Image.open(requests.get(url, stream=True).raw)
+
+prompt = &quot;two tigers&quot;
+n_propmt = &quot;bad, deformed, ugly, bad anotomy&quot;
+image = pipe(prompt=prompt, image=init_image, negative_prompt=n_propmt, strength=0.7).images[0]
+</code></pre>
+<p>除此之外，Stability AI公司还开源了两个加强版的autoencoder：<a href="https://huggingface.co/stabilityai/sd-vae-ft-mse-original">https://huggingface.co/stabilityai/sd-vae-ft-mse-original</a>（前者使用L1 loss后者使用MSE loss），前面已经说过，它们是在LAION数据集继续finetune decoder来增强重建效果。</p>
+<h3 id="sd-21">SD 2.1<a class="anchor-link" href="#sd-21" title="Permanent link">&para;</a></h3>
+<p>在SD 2.0版本发布几周后，Stability AI又发布了<a href="https://stability.ai/blog/stablediffusion2-1-release7-dec-2022">https://stability.ai/blog/stablediffusion2-1-release7-dec-2022</a>。SD 2.0在训练过程中采用NSFW检测器过滤掉了可能包含色情的图像（punsafe=0.1），但是也同时过滤了很多人像图片，这导致SD 2.0在人像生成上效果可能较差，所以SD 2.1是在SD 2.0的基础上放开了限制（punsafe=0.98）继续finetune，所以增强了人像的生成效果。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027681.jpg" /><br />
+和SD 2.0一样，SD 2.1也包含两个版本：<a href="https://huggingface.co/stabilityai/stable-diffusion-2-1-base">https://huggingface.co/stabilityai/stable-diffusion-2-1-base</a>和<a href="https://huggingface.co/stabilityai/stable-diffusion-2-1">https://huggingface.co/stabilityai/stable-diffusion-2-1</a>。</p>
+<h3 id="sd-unclip">SD unclip<a class="anchor-link" href="#sd-unclip" title="Permanent link">&para;</a></h3>
+<p>Stability AI在2023年3月份，又放出了基于SD的另外一个模型：<a href="https://stability.ai/blog/stable-diffusion-reimagine">https://stability.ai/blog/stable-diffusion-reimagine</a>，它可以实现单个图像的变换，即image variations，目前该模型已经在在huggingface上开源：<a href="https://huggingface.co/stabilityai/stable-diffusion-2-1-unclip">https://huggingface.co/stabilityai/stable-diffusion-2-1-unclip</a>。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027682.jpg" /><br />
+这个模型是借鉴了OpenAI的DALLE2（又称unCLIP)，unCLIP是基于CLIP的image encoder提取的image embeddings作为condition来实现图像的生成。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027683.jpg" /><br />
+SD unCLIP是在原来的SD模型的基础上增加了CLIP的image encoder的nosiy image embeddings作为condition。具体来说，它在训练过程中是对提取的image embeddings施加一定的高斯噪音（也是通过扩散过程），然后将noise level对应的time embeddings和image embeddings拼接在一起，最后再以class labels的方式送入UNet。在diffusers中，你可以调用<code>StableUnCLIPImg2ImgPipeline</code>来实现图像的变换：</p>
+<pre><code>import requests
+import torch
+from PIL import Image
+from io import BytesIO
+
+from diffusers import StableUnCLIPImg2ImgPipeline
+
+#Start the StableUnCLIP Image variations pipeline
+pipe = StableUnCLIPImg2ImgPipeline.from_pretrained(
+    &quot;stabilityai/stable-diffusion-2-1-unclip&quot;, torch_dtype=torch.float16, variation=&quot;fp16&quot;
+)
+pipe = pipe.to(&quot;cuda&quot;)
+
+#Get image from URL
+url = &quot;https://huggingface.co/datasets/hf-internal-testing/diffusers-images/resolve/main/stable_unclip/tarsila_do_amaral.png&quot;
+response = requests.get(url)
+init_image = Image.open(BytesIO(response.content)).convert(&quot;RGB&quot;)
+
+#Pipe to make the variation
+images = pipe(init_image).images
+images[0].save(&quot;tarsila_variation.png&quot;)
+</code></pre>
+<p>其实在SD unCLIP之前，已经有<a href="https://lambdalabs.com/">https://lambdalabs.com/</a>开源的<a href="https://lambdalabs.com/">https://lambdalabs.com/</a>，它是在SD 1.4的基础上finetune的模型，不过实现方式是直接将text embeddings替换为image embeddings，这样也同样可以实现图像的变换。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027684.jpg" /><br />
+这里SD unCLIP有两个版本：sd21-unclip-l和sd21-unclip-h，两者分别是采用OpenAI CLIP-L和OpenCLIP-H模型的image embeddings作为condition。如果要实现文生图，还需要像DALLE2那样训练一个prior模型，它可以实现基于文本来预测对应的image embeddings，我们将prior模型和SD unCLIP接在一起就可以实现文生图了。<a href="https://kakaobrain.com/">https://kakaobrain.com/</a>这个公司已经开源了一个DALLE2的复现版本：<a href="https://github.com/kakaobrain/karlo">https://github.com/kakaobrain/karlo</a>，它是基于OpenAI CLIP-L来实现的，你可以基于这个模型中prior模块加上sd21-unclip-l来实现文本到图像的生成，目前这个已经集成了在<a href="https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_unclip.py">https://github.com/huggingface/diffusers/blob/main/src/diffusers/pipelines/stable_diffusion/pipeline_stable_unclip.py</a>中，或者基于<a href="https://github.com/Stability-AI/stablediffusion/blob/main/scripts/streamlit/stableunclip.py">https://github.com/Stability-AI/stablediffusion/blob/main/scripts/streamlit/stableunclip.py</a>来实现。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027685.jpg" />  </p>
+<h2 id="sd的其它特色应用">SD的其它特色应用<a class="anchor-link" href="#sd的其它特色应用" title="Permanent link">&para;</a></h2>
+<p>在SD模型开源之后，社区和研究机构也基于SD实现了形式多样的特色应用，这里我们也选择一些比较火的应用来介绍一下。</p>
+<h3 id="个性化生成">个性化生成<a class="anchor-link" href="#个性化生成" title="Permanent link">&para;</a></h3>
+<p>个性化生成是指的生成特定的角色或者风格，比如给定自己几张肖像来利用SD来生成个性化头像。在个性化生成方面，比较重要的两个工作是英伟达的<a href="https://arxiv.org/abs/2208.01618">https://arxiv.org/abs/2208.01618</a>和谷歌的<a href="https://arxiv.org/abs/2208.12242">https://arxiv.org/abs/2208.12242</a>。 <strong>Textual Inversion</strong>这个工作的核心思路是基于用户提供的3～5张特定概念（物体或者风格）的图像来学习一个特定的text embeddings，实际上只用一个word embedding就足够了。<strong>Textual Inversion</strong>不需要finetune UNet，而且由于text embeddings较小，存储成本很低。目前diffusers库已经支持<a href="https://github.com/huggingface/diffusers/tree/main/examples/textual_inversion">https://github.com/huggingface/diffusers/tree/main/examples/textual_inversion</a>。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027686.jpg" /><br />
+<strong>DreamBooth</strong>原本是谷歌提出的应用在Imagen上的个性化生成，但是它实际上也可以扩展到SD上（更新版论文已经增加了SD）。DreamBooth首先为特定的概念寻找一个特定的描述词[V]，这个特定的描述词只要是稀有的就可以，然后与Textual Inversion不同的是DreamBooth需要finetune UNet，这里为了防止过拟合，增加了一个class-specific prior preservation loss（基于SD生成同class图像加入batch里面训练）来进行正则化。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027687.jpg" /><br />
+由于finetune了UNet，DreamBooth往往比Textual Inversion要表现的要好，但是DreamBooth的存储成本较高。目前diffusers库已经支持<a href="https://github.com/huggingface/diffusers/tree/main/examples/dreambooth">https://github.com/huggingface/diffusers/tree/main/examples/dreambooth</a>，你也可以在<a href="https://huggingface.co/sd-dreambooth-library">https://huggingface.co/sd-dreambooth-library</a>中找到其他人上传的模型。 DreamBooth和Textual Inversion是最常用的个性化生成方法，但其实除了这两种，还有很多其它的研究工作，比如Adobe提出的<a href="https://arxiv.org/abs/2212.04488">https://arxiv.org/abs/2212.04488</a>，相比DreamBooth，它只finetune了UNet的attention模块的KV权重矩阵，同时优化一个新概念的token。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027688.jpg" />  </p>
+<h3 id="风格化finetune模型">风格化finetune模型<a class="anchor-link" href="#风格化finetune模型" title="Permanent link">&para;</a></h3>
+<p>SD的另外一大应用是采用特定风格的数据集进行finetune，这使得<strong>模型“过拟合”在特定的风格上</strong>。之前比较火的novelai就是基于二次元数据在SD上finetune的模型，虽然它失去了生成其它风格图像的能力，但是它在二次元图像的生成效果上比原来的SD要好很多。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027689.jpg" /><br />
+ 目前已经有很多风格化的模型在huggingface上开源，这里也列出一些：</p>
+<ul>
+<li><a href="https://huggingface.co/andite/anything-v4.0">https://huggingface.co/andite/anything-v4.0</a>：二次元或者动漫风格图像</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027690.jpg" />  </p>
+<p>grid-0018.png</p>
+<ul>
+<li><a href="https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0">https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0</a>：艺术风格图像</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027691.jpg" />  </p>
+<p>image.png</p>
+<ul>
+<li><a href="https://huggingface.co/prompthero/openjourney">https://huggingface.co/prompthero/openjourney</a>：mdjrny-v4风格图像</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027692.jpg" /><br />
+更多的模型可以直接在<a href="https://huggingface.co/models?pipeline_tag=text-to-image&amp;sort=downloads">https://huggingface.co/models?pipeline_tag=text-to-image&amp;sort=downloads</a>上找到。此外，很多基于SD进行finetune的模型开源在<a href="https://civitai.com/">https://civitai.com/</a>上，你也可以在这个网站上找到更多风格的模型。 值得说明的一点是，目前finetune SD模型的方法主要有两种：一种是直接finetune了UNet，但是容易过拟合，而且存储成本；另外一种低成本的方法是基于微软的<a href="https://arxiv.org/abs/2106.09685">https://arxiv.org/abs/2106.09685</a>，LoRA本来是用于finetune语言模型的，但是现在已经可以用来finetune SD模型了，具体可以见博客<a href="https://huggingface.co/blog/lora">https://huggingface.co/blog/lora</a>。</p>
+<h3 id="图像编辑">图像编辑<a class="anchor-link" href="#图像编辑" title="Permanent link">&para;</a></h3>
+<p>图像编辑也是SD比较火的应用方向，这里所说的图像编辑是指的是使用SD来实现对图片的局部编辑。这里列举两个比较好的工作：谷歌的<a href="https://prompt-to-prompt.github.io/">https://prompt-to-prompt.github.io/</a>和加州伯克利的<a href="https://www.timothybrooks.com/instruct-pix2pix">https://www.timothybrooks.com/instruct-pix2pix</a>。 谷歌的<strong>prompt-to-prompt</strong>的核心是基于UNet的cross attention maps来实现对图像的编辑，它的好处是不需要finetune模型，但是主要用在编辑用SD生成的图像。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027693.jpg" /><br />
+谷歌后面的工作<a href="https://null-text-inversion.github.io/">https://null-text-inversion.github.io/</a>有进一步实现了对真实图片的编辑： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027694.jpg" /><br />
+<strong>instruct-pix2pix</strong>这个工作基于GPT-3和prompt-to-prompt构建了pair的数据集，然后在SD上进行finetune，它可以输入text instruct对图像进行编辑： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027695.jpg" />  </p>
+<h3 id="可控生成">可控生成<a class="anchor-link" href="#可控生成" title="Permanent link">&para;</a></h3>
+<p>可控生成是SD最近比较火的应用，这主要归功于<a href="https://github.com/lllyasviel/ControlNet">https://github.com/lllyasviel/ControlNet</a>，基于ControlNet可以实现对很多种类的可控生成，比如边缘，人体关键点，草图和深度图等等。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027696.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027697.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027698.jpg" /><br />
+其实在ControlNet之前，也有一些可控生成的工作，比如<a href="https://huggingface.co/stabilityai/stable-diffusion-2-depth">https://huggingface.co/stabilityai/stable-diffusion-2-depth</a>也属于可控生成，但是都没有太火。我觉得ControlNet之所以火，是因为这个工作直接实现了各种各种的可控生成，而且训练的ControlNet可以迁移到其它基于SD finetune的模型上（见<a href="https://github.com/lllyasviel/ControlNet/discussions/12">https://github.com/lllyasviel/ControlNet/discussions/12</a>）： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027699.jpg" /><br />
+与ControlNet同期的工作还有腾讯的<a href="https://github.com/TencentARC/T2I-Adapter">https://github.com/TencentARC/T2I-Adapter</a>以及阿里的<a href="https://damo-vilab.github.io/composer-page/">https://damo-vilab.github.io/composer-page/</a>： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027700.jpg" />  </p>
+<h3 id="stable-diffusion-webui">stable-diffusion-webui<a class="anchor-link" href="#stable-diffusion-webui" title="Permanent link">&para;</a></h3>
+<p>最后要介绍的一个比较火的应用<a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">https://github.com/AUTOMATIC1111/stable-diffusion-webui</a>其实是用来支持SD出图的一个web工具，它算是基于<a href="https://gradio.app/">https://gradio.app/</a>框架实现了SD的快速部署，不仅支持SD的最基础的文生图、图生图以及图像inpainting功能，还支持SD的其它拓展功能，很多基于SD的拓展应用可以用插件的方式安装在webui上。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411032027701.jpg" />  </p>
+<h2 id="后话">后话<a class="anchor-link" href="#后话" title="Permanent link">&para;</a></h2>
+<p>在OpenAI最早放出DALLE2的时候，我曾被它生成的图像所惊艳到，但是我从来没有想到图像生成的AIGC会如此火爆，技术的发展太快了，这得益于互联网独有的开源精神。我想，没有SD的开源，估计这个方向可能还会沉寂一段时间。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2112.10752">https://arxiv.org/abs/2112.10752</a></li>
+<li><a href="https://huggingface.co/CompVis/stable-diffusion-v1-4">https://huggingface.co/CompVis/stable-diffusion-v1-4</a></li>
+<li><a href="https://huggingface.co/runwayml/stable-diffusion-v1-5">https://huggingface.co/runwayml/stable-diffusion-v1-5</a></li>
+<li><a href="https://github.com/huggingface/diffusers">https://github.com/huggingface/diffusers</a></li>
+<li><a href="https://huggingface.co/blog/stable_diffusion">https://huggingface.co/blog/stable_diffusion</a></li>
+<li><a href="https://github.com/CompVis/latent-diffusion">https://github.com/CompVis/latent-diffusion</a></li>
+<li><a href="https://laion.ai/blog/laion-5b/">https://laion.ai/blog/laion-5b/</a></li>
+<li><a href="https://arxiv.org/abs/2303.05511">https://arxiv.org/abs/2303.05511</a></li>
+<li><a href="https://arxiv.org/abs/2211.01324">https://arxiv.org/abs/2211.01324</a></li>
+<li><a href="https://arxiv.org/abs/2205.11487">https://arxiv.org/abs/2205.11487</a></li>
+<li><a href="https://keras.io/guides/keras_cv/generate_images_with_stable_diffusion/">https://keras.io/guides/keras_cv/generate_images_with_stable_diffusion/</a></li>
+<li><a href="https://stability.ai/blog/stablediffusion2-1-release7-dec-2022">https://stability.ai/blog/stablediffusion2-1-release7-dec-2022</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

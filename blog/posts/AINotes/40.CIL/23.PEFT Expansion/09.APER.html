@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#revisiting-class-incremental-learning-with-pre-trained-models-generalizability-and-adaptivity-are-all-you-need">Revisiting Class-Incremental Learning with Pre-Trained Models Generalizability and Adaptivity are All You Need</a></li>
+<li><a href="#摘要">摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#类增量学习cil">类增量学习（CIL）</a></li>
+<li><a href="#基于ptm的cil">基于PTM的CIL</a></li>
+<li><a href="#参数高效的ptm调优">参数高效的PTM调优</a></li>
+</ul>
+</li>
+<li><a href="#3-从旧类到新类">3. 从旧类到新类</a><ul>
+<li><a href="#31-类增量学习">3.1 类增量学习</a></li>
+<li><a href="#32-cil中的适应性和普适性">3.2 CIL中的适应性和普适性</a><ul>
+<li><a href="#cil中的适应性">CIL中的适应性</a></li>
+<li><a href="#cil中的普适性">CIL中的普适性</a></li>
+<li><a href="#普适性-vs-适应性">普适性 vs. 适应性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-adam-用于cil的适应和合并ptm">4. ADAM: 用于CIL的适应和合并PTM</a><ul>
+<li><a href="#41-adam的训练过程">4.1 ADAM的训练过程</a></li>
+<li><a href="#42-调优ptm">4.2 调优PTM</a><ul>
+<li><a href="#完全微调">完全微调</a></li>
+<li><a href="#视觉提示调优vpt">视觉提示调优（VPT）</a></li>
+<li><a href="#缩放和偏移ssf">缩放和偏移（SSF）</a></li>
+<li><a href="#适配器">适配器</a></li>
+<li><a href="#批归一化调优">批归一化调优</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实现细节">5.1 实现细节</a></li>
+<li><a href="#52-基准比较">5.2 基准比较</a></li>
+<li><a href="#53-消融研究">5.3 消融研究</a><ul>
+<li><a href="#降维特征">降维特征</a></li>
+<li><a href="#子模块">子模块</a></li>
+<li><a href="#不同ptm">不同PTM</a></li>
+</ul>
+</li>
+<li><a href="#54-增量阶段的可视化">5.4 增量阶段的可视化</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a><ul>
+<li><a href="#局限性">局限性</a></li>
+</ul>
+</li>
+<li><a href="#参考文献">参考文献</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="revisiting-class-incremental-learning-with-pre-trained-models-generalizability-and-adaptivity-are-all-you-need">Revisiting Class-Incremental Learning with Pre-Trained Models Generalizability and Adaptivity are All You Need<a class="anchor-link" href="#revisiting-class-incremental-learning-with-pre-trained-models-generalizability-and-adaptivity-are-all-you-need" title="Permanent link">&para;</a></h2>
+<h2 id="摘要">摘要<a class="anchor-link" href="#摘要" title="Permanent link">&para;</a></h2>
+<p>类增量学习（CIL）旨在适应新出现的类而不遗忘旧类。传统的CIL模型从零开始训练，以不断获取知识。最近，预训练取得了显著进展，使得大量预训练模型（PTM）可用于CIL。与传统方法相反，PTM具有通用的嵌入，可以轻松转移到CIL。在这项工作中，我们重新审视了使用PTM的CIL，并提出CIL的核心因素是模型更新的适应性和知识转移的普适性。1）我们首先揭示了冻结的PTM已经可以为CIL提供通用嵌入。令人惊讶的是，一个简单的基线（SimpleCIL），不断将PTM的分类器设置为原型特征，即使不在下游任务上训练，也可以超过最先进的方法。2）由于预训练和下游数据集之间的分布差距，通过模型适应性，PTM可以进一步培养适应性。我们提出了ADapt And Merge（ADAM），该方法聚合了PTM和适应模型的嵌入来构建分类器。ADAM是一个通用框架，可以与任何参数高效的调优方法正交结合，具有PTM的通用性和适应模型的适应性优势。3）此外，我们发现以前的基准在PTM时代不再适用，因为数据重叠问题，我们提出了四个新的基准用于评估，即ImageNet-A、ObjectNet、OmniBenchmark和VTAB。大量实验验证了ADAM在一个统一而简洁的框架中的有效性。代码可在以下网址获取：<a href="https://github.com/zhoudw-zdw/RevisitingCIL">GitHub 链接</a></p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>随着深度学习的进步，深度模型在许多领域取得了令人印象深刻的成就。然而，大多数研究集中在静态环境中识别有限数量的类。在现实世界中，应用程序通常处理包含新类的流数据。为了解决这个问题，提出了类增量学习（CIL），允许模型从不断变化的数据中学习并持续构建统一的分类模型。然而，当新类依次添加时，会出现著名的灾难性遗忘问题，即以前学到的知识被抹去。许多先前的工作旨在不断构建一个整体嵌入而不遗忘。</p>
+<p>虽然典型方法假设模型从零开始训练，但最近在预训练方面的进展使得预训练模型（PTM）在下游任务中设计模型时更加可用。这些PTM通常在庞大的语料库或无数图像上训练，使用手工设计的技巧，从而具有强大的普适性。因此，一些方法提出利用PTM来实现更好的增量学习。</p>
+<p>强大的PTM减轻了学习过程的负担，显著超过了基于非PTM方法的性能上限。然而，在重新审视CIL目标时，我们发现这些协议之间存在本质差异。没有PTM的情况下，CIL模型旨在不断获取新类的知识并构建统一的嵌入空间，这需要适应性来进行顺序更新。相反，PTM在大规模数据集上训练，使其更容易实现具有强普适性的理想知识和嵌入空间。用人类学习类比，非PTM方法旨在教婴儿通过大学逐渐获取知识，而基于PTM的方法依赖教授完成同样的事情，这非常容易。</p>
+<p>为了评估PTM的普适性，我们使用VTAB数据集制定了一个CIL任务，并测试了基于预训练ViT-B/16-IN1K的最先进PTM方法。作为对比，我们提出了一个简单的基线SimpleCIL来评估预训练特征的质量。在整个学习过程中冻结预训练嵌入函数，SimpleCIL将每个新类的平均嵌入设置为分类器权重。如果PTM已经具有普适特征，直接将平均模式匹配到每个查询实例也可以实现竞争性结果。令我们惊讶的是，我们发现SimpleCIL在这些下游任务中即使没有任何调优也超过了当前的SOTA，验证了其在知识转移中的强大普适性。</p>
+<p>尽管PTM在CIL中具有普适性，但预训练和增量数据集之间可能仍然存在域差距。例如，ImageNet预训练模型可能在分布外或专门任务中表现不佳。在这种情况下，冻结嵌入以进行知识转移不是“万灵药”。因此，适应性变得至关重要，使模型能够掌握任务特定特征。然而，顺序调优PTM会损害结构信息，削弱普适性，导致先前学到知识的不可逆遗忘。有没有一种方法可以统一PTM的普适性和适应性？</p>
+<p>在本文中，我们提出了ADapt And Merge（ADAM），该方法在统一框架中利用PTM增强普适性和适应性。为了提高适应性，我们在第一个增量阶段通过参数高效的调优调整PTM。调整模型有助于获取任务特定特征并填补PTM和增量数据之间的域差距。然后，我们将适应模型与PTM连接起来提取平均嵌入作为分类器，从而保持普适性。ADAM在第一个阶段限制模型调优，在适应性和普适性之间取得平衡。此外，典型的CIL基准，如ImageNet100/1000，不适合评估，因为预训练和下游任务之间存在重叠。因此，我们使用四个具有大域差距的新数据集作为基准。各种设置下的大量实验验证了ADAM的有效性。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="类增量学习cil">类增量学习（CIL）<a class="anchor-link" href="#类增量学习cil" title="Permanent link">&para;</a></h3>
+<p>类增量学习使学习系统能够不断整合新概念而不遗忘旧概念。典型的CIL方法大致分为四类。第一组保存并重播旧类的实例，以恢复以前的知识。第二组利用知识蒸馏对齐新旧模型的输出，从而维护旧概念的知识。第三组通过归一化和对数/特征调整来校正增量模型中的归纳偏差。最后，其他工作在需要时扩展网络以增强表示能力。网络扩展技术进一步分为神经元级、骨干网络级和令牌级。</p>
+<h3 id="基于ptm的cil">基于PTM的CIL<a class="anchor-link" href="#基于ptm的cil" title="Permanent link">&para;</a></h3>
+<p>随着PTM的普及，基于PTM的CIL成为一个热门话题。目的是顺序调整PTM以处理包含新类的流数据。L2P在预训练的Vision Transformer基础上应用视觉提示调优并学习提示池以选择实例特定的提示。DualPrompt在L2P的基础上扩展了两种提示，即通用提示和专家提示。与L2P中的键值搜索不同，CODA-Prompt通过注意力机制改进了提示选择过程。还有研究探索了基于锚点的能量自正则化策略，以聚合多个预训练分类器。当将ViT换成CLIP时，研究通过学习文本和图像模式的提示扩展了L2P。</p>
+<h3 id="参数高效的ptm调优">参数高效的PTM调优<a class="anchor-link" href="#参数高效的ptm调优" title="Permanent link">&para;</a></h3>
+<p>参数高效的PTM调优旨在通过调优少量（额外）参数将PTM适应下游任务。与完全微调相比，参数高效调优以较低成本获得了竞争甚至更好的性能。VPT在输入或隐藏层之前添加可学习的前缀令牌。LoRA学习低秩矩阵来近似参数更新。其他研究通过学习额外的适配器模块进行下投影和上投影。还有研究通过融合模块合并学习的适配器。SSF通过缩放和偏移操作进行模型调优。除了网络中的附加模块，研究提出在输入空间中学习可调参数。最后，有研究将这些工作统一在一个框架中，并搜索下游任务的提示模块的最佳设计。</p>
+<h2 id="3-从旧类到新类">3. 从旧类到新类<a class="anchor-link" href="#3-从旧类到新类" title="Permanent link">&para;</a></h2>
+<h3 id="31-类增量学习">3.1 类增量学习<a class="anchor-link" href="#31-类增量学习" title="Permanent link">&para;</a></h3>
+<p>类增量学习旨在从不断变化的数据流中学习新类，以构建一个统一的分类器。给定一系列B个训练任务，其中第b个增量步骤包含nb个实例。在第b个训练阶段，我们只能访问Db中的数据进行模型更新。本文重点关注无实例的CIL设置，即不获取历史数据进行</p>
+<p>排练。CIL的目标是逐步构建一个针对所有已见类的统一模型，即获取新类的知识，同时保留以前的知识。模型的能力通过每个增量任务后针对所有已见类进行评估。</p>
+<h3 id="32-cil中的适应性和普适性">3.2 CIL中的适应性和普适性<a class="anchor-link" href="#32-cil中的适应性和普适性" title="Permanent link">&para;</a></h3>
+<h4 id="cil中的适应性">CIL中的适应性<a class="anchor-link" href="#cil中的适应性" title="Permanent link">&para;</a></h4>
+<p>在将PTM引入CIL之前，模型从零开始训练以逐步获取新类的知识。一个简单的想法是使用交叉熵损失更新增量模型，从而赋予模型适应新任务的适应性。</p>
+<pre><code class="language-latex">L = \sum_{(xi, yi) ∈ Db} ` (f (xi) , yi) + Lreg
+</code></pre>
+<p>其中Lreg代表正则化项以抵抗遗忘，例如知识蒸馏。</p>
+<h4 id="cil中的普适性">CIL中的普适性<a class="anchor-link" href="#cil中的普适性" title="Permanent link">&para;</a></h4>
+<p>PTM天生具有普适性，可以转移到下游任务。具体来说，我们定义了一个简单的基线SimpleCIL，以将PTM转移到增量任务。在整个学习过程中冻结嵌入函数，我们提取每个类的平均嵌入（即原型）：</p>
+<pre><code class="language-latex">pi = \frac{1}{K} \sum_{|Db|}{j=1} I(yj = i)φ(xj)
+</code></pre>
+<p>平均嵌入代表相应类的最常见模式。我们将原型设置为分类器，即wi = pi，以直接调整PTM进行CIL。SimpleCIL在图1中展示了竞争性能，验证了PTM的强大普适性。</p>
+<h4 id="普适性-vs-适应性">普适性 vs. 适应性<a class="anchor-link" href="#普适性-vs-适应性" title="Permanent link">&para;</a></h4>
+<p>公式2和公式3解决了CIL模型的不同方面。前者旨在通过逐渐调整模型来增强适应性。相反，后者通过在整个学习过程中冻结模型来突出其普适性。为了理解它们在CIL中的作用，我们在CIFAR100上进行了20个增量任务的实验，比较了微调和SimpleCIL的性能。这些方法基于预训练的ViT-B/16-IN21K，我们分别报告了新类和旧类的性能。具体来说，SimpleCIL依赖于PTM的普适性，即使不在目标数据集上训练也能竞争。然而，可以进一步通过抓住任务特定特征来改进，微调在新类上显示出更好的性能，但由于特征不断变化，旧类遭受灾难性遗忘。总结，这些特性是CIL的两个核心方面——适应性使模型能够弥合域差距，而普适性鼓励知识转移。因此，两者都应在CIL中培养。</p>
+<h2 id="4-adam-用于cil的适应和合并ptm">4. ADAM: 用于CIL的适应和合并PTM<a class="anchor-link" href="#4-adam-用于cil的适应和合并ptm" title="Permanent link">&para;</a></h2>
+<p>受到增强普适性和适应性的潜力的启发，我们能否在统一框架中实现这些特性？具体来说，我们旨在从两个方面实现这一目标。一方面，为了弥合PTM和下游数据集之间的域差距，模型适应性至关重要。另一方面，由于适应模型可能失去高层特征的普适性，我们尝试将适应模型和PTM合并到一个统一的网络中，以便未来任务。合并的嵌入函数在整个增量学习过程中保持冻结，将模型集的普适性嵌入转移到新类中。通过这种方式，在统一框架中实现了普适性和适应性。</p>
+<p>首先介绍ADAM的一般框架，然后讨论具体的模型适应技术。</p>
+<h3 id="41-adam的训练过程">4.1 ADAM的训练过程<a class="anchor-link" href="#41-adam的训练过程" title="Permanent link">&para;</a></h3>
+<p>虽然PTM具有区分特征，但预训练数据集和增量数据之间可能存在显著的域差距。例如，PTM被优化以捕捉ImageNet中类的特征，而增量数据流可能对应于需要领域知识或与ImageNet有广泛概念漂移的专门数据。为了弥合这种差距，可以开发一个适应过程：</p>
+<pre><code class="language-latex">f∗(x) = F(f(x),D,Θ)
+</code></pre>
+<p>其中，适应算法F将当前模型f(x)和数据集D作为输入，优化参数集Θ，生成适应模型f∗(x)，在相应数据集中获取领域特定知识。我们在4.2节中介绍F的变体。如果我们可以一次获得所有增量训练集，通过F(f(x),D1 ∪ D2 · · · ∪ DB ,Θ)适应模型可以将知识从PTM转移到增量数据集，并掌握任务特定特征以获得更好的性能。</p>
+<p>然而，由于CIL中的数据是顺序到达的，我们无法一次持有训练集。不断适应模型将导致灾难性遗忘。因此，一个简单的解决方案是仅在第一个增量阶段适应模型：</p>
+<pre><code class="language-latex">f∗(x) = F(f(x),D1,Θ)
+</code></pre>
+<p>由于D1是增量数据流的子集，它也具有领域特定知识，可以促进模型适应。调优过程增强了CIL模型的适应性，下一个问题是确保普适性。由于公式5强迫原始的普适特征变得更专用于下游任务，与D1无关的高层特征将被覆盖和遗忘。因此，一个更好的解决方案是连接PTM和适应模型提取的特征，即[φ∗(x), φ(x)]，其中φ∗(x)和φ(x)分别表示适应和预训练的嵌入函数。</p>
+<p>为了保持普适性，我们在适应后冻结连接的嵌入函数[φ∗(·), φ(·)]，并为后续类提取原型：</p>
+<pre><code class="language-latex">pi = \frac{1}{K} \sum_{|Db|}{j=1} I(yj = i)[φ∗(xj), φ(xj)]
+</code></pre>
+<p>与公式3相比，公式6包含了适应模型的额外信息，整合了领域特定特征以便更好的识别。这些原型揭示了适应和预训练模型中的最常见模式，确保了普适性和适应性。我们直接采用类原型作为分类器权重，即wi = pi，并利用余弦分类器进行分类：f(x) =</p>
+<pre><code class="language-latex">(W ‖W‖2 )&gt;( [φ∗(x),φ(x)] ‖[φ∗(x),φ(x)]‖2 )
+</code></pre>
+<p>基于实例嵌入和类原型之间的相似性，它将更高的概率分配给具有更相似原型的类。 </p>
+<p>适应和合并的效果：我们在图3（左）中展示了ADAM的可视化。虽然D1是整个训练集的子集，但通过它进行适应仍有助于将PTM从上游数据集转移到下游任务。适应过程可以看作是进一步的预训练过程，将PTM适应增量数据集并弥合域差距。通过合并PTM和适应模型的嵌入函数，提取的特征比任何单一特征更具代表性。此外，由于模型仅在第一个增量任务中可训练，ADAM的效率与不需要顺序调优的SimpleCIL相当。另一方面，由于模型在后续任务中被冻结，它不会遗忘先前的概念。我们在算法1中给出了ADAM的伪代码。在极端情况下，如果第1行中的适应过程对PTM没有任何作用，ADAM将退化为SimpleCIL，保证性能下限。</p>
+<h3 id="42-调优ptm">4.2 调优PTM<a class="anchor-link" href="#42-调优ptm" title="Permanent link">&para;</a></h3>
+<p>为了弥合预训练和增量数据集之间的分布差距，ADAM的性能取决于有效的适应算法F。在本节中，我们讨论六种在ADAM中处理不同类型PTM的专门化。</p>
+<h4 id="完全微调">完全微调<a class="anchor-link" href="#完全微调" title="Permanent link">&para;</a></h4>
+<p>这是将模型转移到下游任务时的一个简单想法。它在适应过程中调整所有参数，即Θ = θφ ∪ θW ，并最小化模型输出与真实标签之间的差异：</p>
+<pre><code class="language-latex">minθφ∪θW ∑(xj ,yj)∈D1 ` (f (xj) , yj)
+</code></pre>
+<p>然而，对于大规模PTM（如ViT），调优成本可能相对较高。因此，一些参数高效的调优技术可以减轻调优成本。</p>
+<h4 id="视觉提示调优vpt">视觉提示调优（VPT）<a class="anchor-link" href="#视觉提示调优vpt" title="Permanent link">&para;</a></h4>
+<p>这是适应ViT的一种轻量级调优技术，它在输入图像的编码特征前面添加一些可学习的提示P ∈ Rp×d ，形成扩展特征[P,xe]。扩展特征然后输入ViT的后续层以计算最终嵌入。VPT有两个变体：VPT-Deep，在每个注意力层添加提示，和VPT-Shallow，仅在第一层添加提示。在优化过程中，它冻结嵌入函数中的预训练权重，并优化这些提示和分类头，即Θ = θP ∪ θW。</p>
+<h4 id="缩放和偏移ssf">缩放和偏移（SSF）<a class="anchor-link" href="#缩放和偏移ssf" title="Permanent link">&para;</a></h4>
+<p>旨在通过缩放和偏移调整特征激活。它在每个</p>
+<p>操作层（即MSA和MLP）之后附加一个额外的SSF层，并调整这些操作的输出。给定输入xi ∈ RL×d，输出xo ∈ RL×d 公式化为：</p>
+<pre><code class="language-latex">xo = γ ⊗ xi + β
+</code></pre>
+<p>其中γ ∈ Rd和β ∈ Rd分别是缩放和偏移因子。⊗是Hadamard积（元素级乘法）。模型优化SSF层和分类器，即Θ = θSSF ∪ θW ，以跟踪新任务的特征。</p>
+<h4 id="适配器">适配器<a class="anchor-link" href="#适配器" title="Permanent link">&para;</a></h4>
+<p>这是一个瓶颈模块，包含一个用于降低特征维度的下投影Wdown ∈ Rd×r，一个非线性激活函数和一个用于投影回原始维度的上投影Wup ∈ Rr×d。我们遵循研究将原始MLP结构中的适配器装备到ViT中。将MLP层的输入记为x`，AdaptMLP的输出格式化为：</p>
+<pre><code class="language-latex">MLP(x`) + ReLU(x`Wdown)Wup
+</code></pre>
+<p>在冻结预训练权重的情况下，它优化适配器和分类头，即Θ = θWdown ∪ θWup ∪ θW。</p>
+<h4 id="批归一化调优">批归一化调优<a class="anchor-link" href="#批归一化调优" title="Permanent link">&para;</a></h4>
+<p>如果PTM是残差网络，我们可以调整BN参数。由于BN中的运行均值和方差与上游数据分布兼容，它们可能对下游任务不稳定。因此，我们可以在前向传播过程中将BN中的运行统计数据归零并适应当前数据。无需反向传播。</p>
+<p>讨论：我们在图3中可视化了ADAM的适应过程。与完全微调相比，参数高效调优将PTM调整到下游任务，并保持其普适性。适应模型可以捕获增量数据中的专门特征，导致更好的适应性。由于L2P和DualPrompt基于预训练的ViT，它们不能与CNN一起部署。相反，ADAM是一个通用框架，能够有效处理不同的结构。具体来说，ADAM可以与ViT的VPT/SSF/适配器和CNN的SSF/BN调优结合。由于ADAM采用基于原型的分类器，线性分类器W在适应后将被丢弃。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们在基准数据集上比较了ADAM和最先进方法的性能，展示其优越性。由于预训练数据集和传统CIL基准之间存在重叠问题，我们还提出了四个新基准用于评估基于PTM的方法。消融实验和可视化验证了ADAM在新类上的有效性。我们还探索了不同PTM在CIL中的性能。更多细节和额外结果见补充材料。</p>
+<h3 id="51-实现细节">5.1 实现细节<a class="anchor-link" href="#51-实现细节" title="Permanent link">&para;</a></h3>
+<p>数据集：我们遵循评估CIFAR100、CUB200和ImageNet-R的性能。由于PTM通常在ImageNet21K上训练，使用ImageNet评估PTM方法没有意义。因此，我们提出了四个与ImageNet有大域差距的新数据集，即ImageNet-A、ObjectNet、Omnibenchmark和VTAB。ImageNet-A和ObjectNet包含ImageNet预训练模型无法处理的挑战样本，而Omnibenchmark和VTAB包含来自多个复杂领域的多样类。为了构建CIL任务，我们从ObjectNet和ImageNet-A中采样200个类，从Omnibenchmark中采样300个类。我们从VTAB中采样5个数据集，每个包含10个类，以构建跨领域的CIL设置。更多细节见补充材料。</p>
+<p>数据集划分：我们采用两种类型的数据集划分，即从一半类开始训练和从零开始训练。我们统一它们为“B/Base-m, Inc-n”，表示第一个增量数据集包含m个类，每个后续数据集包含n个类。m = 0表示将所有类均分为每个任务。所有类在划分前随机打乱以保证公平比较。测试集与原始数据集相同，以全面评估模型。</p>
+<p>比较方法：我们首先与最先进的基于PTM的CIL方法L2P和DualPrompt进行比较。我们还修改了经典的CIL方法LwF、DER、FOSTER、MEMO、FACT，使其利用相同的PTM初始化。除了SimpleCIL，我们还报告了基线，即顺序调优模型，称为Finetune。所有方法均以相同的PTM初始化。</p>
+<p>训练细节：我们使用PyTorch在Tesla V100上部署所有模型，采用相同的网络骨干。由于有多种PTM公开可用，我们选择了最具代表性的，即ViT-B/16-IN1K和ViT-B/16-IN21K。两者都在ImageNet21K上预训练，而前者还在ImageNet1K上微调。在适应过程中，我们使用48批大小进行训练，20个epoch，使用带动量的SGD进行优化。学习率从0.01开始，余弦退火。提示长度p为5，适配器的投影维度r为16。源码将在接受后公开。</p>
+<p>评估协议：我们将第b阶段后的Top-1准确率表示为Ab。我们使用AB（最后阶段后的性能）和Ā = 1/B ∑Bb=1Ab（增量阶段的平均性能）作为度量标准。</p>
+<h3 id="52-基准比较">5.2 基准比较<a class="anchor-link" href="#52-基准比较" title="Permanent link">&para;</a></h3>
+<p>我们在表1中报告了针对最先进方法的增量性能，所有方法基于预训练的ViT-B/16-IN21K。我们还用预训练的ViT-B/16-IN1K训练这些模型，并在图4(a)∼4(f)中显示增量趋势。这些数据划分包括大和小基类设置，以全面评估。</p>
+<p>首先，我们可以推断出PTM的嵌入具有普适性，可以直接应用于CIL，超越SOTA。具体来说，基线SimpleCIL在CUB上比DualPrompt高出20%，在ImageNet-A上高出8% 。然而，如果PTM通过ADAM进行适应，强大的PTM可以进一步改进，因为下游任务与预训练数据集之间有很大域差距。具体来说，我们发现ADAM在七个基准数据集中始终优于SimpleCIL。相比之下，顺序微调模型遭受严重遗忘，验证了适应和合并协议的有效性。由于ADAM仅在第一个阶段需要调优PTM，它比L2P和DualPrompt需要更少的训练时间和额外参数，如图1所示。在适应技术的变体中，SSF和适配器比VPT更高效。我们还比较了最先进的传统CIL方法，并将它们的骨干修改为预训练的ViT，以进行公平比较。然而，我们从表2中可以推断出这些方法在没有实例的情况下无法竞争。</p>
+<p>除了ViT，ADAM在预训练的CNN中也表现良好。我们采用预训练的ResNet18进行评估，并在图4(g), 4(h)中绘制增量性能。结果表明，ADAM始终提升了预训练的ViT和CNN的性能。</p>
+<p>最后，如表1所示，由于典型基准与ImageNet之间的域差距较小，其性能趋于饱和。相反，由于我们新建立的基准与ImageNet之间的域差距较大，仍有改进空间，表明这些新基准的有效性和必要性。</p>
+<h3 id="53-消融研究">5.3 消融研究<a class="anchor-link" href="#53-消融研究" title="Permanent link">&para;</a></h3>
+<h4 id="降维特征">降维特征<a class="anchor-link" href="#降维特征" title="Permanent link">&para;</a></h4>
+<p>由于ADAM的特征与PTM和适应模型聚合，维度是PTM的两倍。我们在CIFAR100 Base50 Inc5上进行了消融研究，以显示这些特征对CIL是否重要。具体来说，我们在第一个增量阶段训练PCA模型，以减少后续阶段的嵌入维度。将目标维度表示为k，我们训练PCA模型PCA([φ∗(x), φ(x)])：Rd → Rk，并将其附加到特征提取器。特征和原型投影到k维度。我们在图5(a)中绘制了k变化的性能。具体来说，即使特征投影到50维，ADAM也能获得与DualPrompt（768维）相当的性能。我们还通过随机采样k个特征进行实验，并在图5(b)中报告结果。结论与前者一致，表明随机采样200维的ADAM可以达到与DualPrompt相同的性能规模。图5(c)显示了准确率-维度曲线。</p>
+<h4 id="子模块">子模块<a class="anchor-link" href="#子模块" title="Permanent link">&para;</a></h4>
+<p>由于ADAM与PTM和适应模型连接，我们在ImageNet-A Base100 Inc5上进行消融研究，比较ADAM w/ Finetune及其子模块。具体来说，我们分别构建了基于φ(·)和φ∗(·)的SimpleCIL，称为SimpleCIL-PTM和SimpleCIL-Adapted。前者代表PTM的能力，而后者代表适应模型的</p>
+<p>能力。两者都是ADAM的组成模块。此外，我们基于连接的预训练ViT-B/16-IN21K和ViT-B/16-IN1K构建SimpleCIL，称为SimpleCIL-21K+1K。它利用了两个嵌入函数的聚合特征，具有与ADAM相同的维度。如图5(d)所示，SimpleCIL-Adapted优于SimpleCIL-PTM，表明模型适应的重要性。然而，适应模型也会覆盖高层特征，降低模型的普适性。适应模型遭受比简单SimpleCIL更大的性能下降，表明普适性在抵抗遗忘中的作用。最后，ADAM在统一适应性和普适性的帮助下优于任何这些子模块。</p>
+<h4 id="不同ptm">不同PTM<a class="anchor-link" href="#不同ptm" title="Permanent link">&para;</a></h4>
+<p>观察到ViT-B/16-IN21K和ViT-B/16-IN1K之间的性能差距，我们在ImageNet-R Base0 Inc20上探索了不同类型的PTM。我们选择了公开可用的PTM，即ResNet18/50/152、ViT-B/16-IN1K/21K、ViT-L/16-IN1K、ViT-B/16-DINO、ViT-B/16-SAM、ViT-B/16-MAE、ViT-B/16-CLIP（图像编码器）进行全面评估，并在图6中报告结果。我们可以得出三个主要结论。1）预训练的ViT比ResNet具有更好的普适性。2）较大的ViT比小的更具普适性，使用监督损失训练的ViT表现优于无监督的。3）由于大规模的训练语料库和对比损失，CLIP比ImageNet21K预训练的ViT表现更好。最后，我们发现ADAM w/ Finetune始终提高了任何PTM的SimpleCIL性能，从而验证了其有效性。</p>
+<h3 id="54-增量阶段的可视化">5.4 增量阶段的可视化<a class="anchor-link" href="#54-增量阶段的可视化" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们在CIFAR100数据集上使用t-SNE可视化了两个增量阶段之间的决策边界，如图7(a), 7(b)所示。我们用彩色点和三角形可视化了第一个和第二个增量任务的类。相应地，用方块表示类原型。从这些图中我们可以推断出，PTM竞争性地工作，能够很好地将实例分类到相应的类中。类原型位于每个类的中心，验证了它们在识别中的代表性。从第一阶段扩展到第二阶段时，我们发现ADAM在新旧类上表现良好。可视化验证了ADAM的普适性和适应性。</p>
+<p>我们还基于预训练的ResNet18在OmniBenchmark数据集上可视化了Grad-CAM结果。Grad-CAM用于突出图像中预测相应概念的重要区域。结果如图7（底部）所示，表明ADAM比原始PTM更关注任务特定特征。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>增量类学习在现实世界应用中非常重要，需要适应性来更新和普适性来进行知识转移。在本文中，我们系统地重新审视了PTM的CIL，并得出了三个结论。首先，冻结的PTM可以为CIL提供普适嵌入，使基于原型的分类器超过当前最先进的方法。其次，由于预训练和下游数据集之间的分布差距，PTM可以进一步增强其适应性。为此，我们提出了ADAM，可以与任何参数高效的调优方法正交结合，以统一CIL的普适性和适应性。最后，由于数据重叠，传统的基于ImageNet的基准在PTM时代不再适用。因此，我们提出了四个新的基准用于评估基于PTM的CIL方法。大量实验验证了ADAM的最先进性能。未来的工作包括探索任务特定的调优方法和结构。</p>
+<h3 id="局限性">局限性<a class="anchor-link" href="#局限性" title="Permanent link">&para;</a></h3>
+<p>可能的局限性包括实例的限制。如果有足够的旧类实例，它将变成基于实例的CIL，其中适应性可以通过实例重放进一步解决。</p>
+<h2 id="参考文献">参考文献<a class="anchor-link" href="#参考文献" title="Permanent link">&para;</a></h2>
+<p>[1] Amit Alfassy, Assaf Arbelle, Oshri Halimi, Sivan Harary, Roei Herzig, Eli Schwartz, Rameswar Panda, Michele Dolfi, Christoph Auer, Kate Saenko, et al. Feta: Towards specializing foundation models for expert task applications. arXiv preprint arXiv:2209.03648, 2022.<br />
+[2] Rahaf Aljundi, Min Lin, Baptiste Goujaud, and Yoshua Bengio. Gradient based sample selection for online continual learning. In NeurIPS, pages 11816–11825, 2019.<br />
+[3] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint arXiv:1607.06450, 2016.<br />
+[4] Hyojin Bahng, Ali Jahanian, Swami Sankaranarayanan, and Phillip Isola. Visual prompting: Modifying pixel space to adapt pre-trained models. arXiv preprint arXiv:2203.17274, 2022.<br />
+[5] Andrei Barbu, David Mayo, Julian Alverio, William Luo, Christopher Wang, Dan Gutfreund, Josh Tenenbaum, and Boris Katz. Objectnet: A large-scale bias-controlled dataset for pushing the limits of object recognition models. NeurIPS, 32, 2019.<br />
+[6] Eden Belouadah and Adrian Popescu. Il2m: Class incremental learning with dual memory. In ICCV, pages 583–592, 2019.<br />
+[7] Mathilde Caron, Hugo Touvron, Ishan Misra, Hervé Jégou, Julien Mairal, Piotr Bojanowski, and Armand Joulin. Emerging properties in self-supervised vision transformers. In ICCV, pages 9650–9660, 2021.<br />
+[8] Ar</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

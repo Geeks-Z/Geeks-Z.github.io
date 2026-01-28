@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul></ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/25327755">机器学习算法集锦：从贝叶斯到深度学习及各自优缺点</a></p>
+<p><em>在我们日常生活中所用到的推荐系统、智能图片美化应用和聊天机器人等应用中，各种各样的机器学习和数据处理算法正尽职尽责地发挥着自己的功效。本文筛选并简单介绍了一些最常见算法类别，还为每一个类别列出了一些实际的算法并简单介绍了它们的优缺点。</em></p>
+</blockquote>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-7c6c25406abcba766ed618c226a49f92_1440w.png" />  </p>
+<p><a href="https://static.coggle.it/diagram/WHeBqDIrJRk-kDDY"><span class="invisible">https://</span></a></p>
+<p>目录</p>
+<ul>
+<li>正则化算法（Regularization Algorithms）</li>
+<li>集成算法（Ensemble Algorithms）</li>
+<li>决策树算法（Decision Tree Algorithm）</li>
+<li>回归（Regression）</li>
+<li>人工神经网络（Artificial Neural Network）</li>
+<li>深度学习（Deep Learning）</li>
+<li>支持向量机（Support Vector Machine）</li>
+<li>降维算法（Dimensionality Reduction Algorithms）</li>
+<li>聚类算法（Clustering Algorithms）</li>
+<li>基于实例的算法（Instance-based Algorithms）</li>
+<li>贝叶斯算法（Bayesian Algorithms）</li>
+<li>关联规则学习算法（Association Rule Learning Algorithms）</li>
+<li>图模型（Graphical Models）</li>
+</ul>
+<p><strong>正则化算法（Regularization Algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-5262baa79289a5586495b332acb8b3b2_1440w.png" />  </p>
+<p>它是另一种方法（通常是回归方法）的拓展，这种方法会基于模型复杂性对其进行惩罚，它喜欢相对简单能够更好的泛化的模型。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>岭回归（Ridge Regression）</li>
+<li>最小绝对收缩与选择算子（LASSO）</li>
+<li>GLASSO</li>
+<li>弹性网络（Elastic Net）</li>
+<li>最小角回归（Least-Angle Regression）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>其惩罚会减少过拟合</li>
+<li>总会有解决方法</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>惩罚会造成欠拟合</li>
+<li>很难校准</li>
+</ul>
+<p><strong>集成算法（Ensemble algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-2a081ed7fa4f74fa305aa37cac983164_1440w.png" />  </p>
+<p>集成方法是由多个较弱的模型集成模型组，其中的模型可以单独进行训练，并且它们的预测能以某种方式结合起来去做出一个总体预测。</p>
+<p>该算法主要的问题是要找出哪些较弱的模型可以结合起来，以及结合的方法。这是一个非常强大的技术集，因此广受欢迎。</p>
+<ul>
+<li>Boosting</li>
+<li>Bootstrapped Aggregation（Bagging）</li>
+<li>AdaBoost</li>
+<li>层叠泛化（Stacked Generalization）（blending）</li>
+<li>梯度推进机（Gradient Boosting Machines，GBM）</li>
+<li>梯度提升回归树（Gradient Boosted Regression Trees，GBRT）</li>
+<li>随机森林（Random Forest）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>当先最先进的预测几乎都使用了算法集成。它比使用单个模型预测出来的结果要精确的多</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>需要大量的维护工作</li>
+</ul>
+<p><strong>决策树算法（Decision Tree Algorithm）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-1c3e835f10e86c70373eff2b91975d23_1440w.png" />  </p>
+<p>决策树学习使用一个决策树作为一个预测模型，它将对一个 item（表征在分支上）观察所得映射成关于该 item 的目标值的结论（表征在叶子中）。</p>
+<p>树模型中的目标是可变的，可以采一组有限值，被称为分类树；在这些树结构中，叶子表示类标签，分支表示表征这些类标签的连接的特征。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>分类和回归树（Classification and Regression Tree，CART）</li>
+<li>Iterative Dichotomiser 3（ID3）</li>
+<li>C4.5 和 C5.0（一种强大方法的两个不同版本）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>容易解释</li>
+<li>非参数型</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>趋向过拟合</li>
+<li>可能或陷于局部最小值中</li>
+<li>没有在线学习</li>
+</ul>
+<p><strong>回归（Regression）算法</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-161db14670eb6525a534b4fe74961475_1440w.png" />  </p>
+<p>回归是用于估计两种变量之间关系的统计过程。当用于分析因变量和一个 多个自变量之间的关系时，该算法能提供很多建模和分析多个变量的技巧。具体一点说，回归分析可以帮助我们理解当任意一个自变量变化，另一个自变量不变时，因变量变化的典型值。最常见的是，回归分析能在给定自变量的条件下估计出因变量的条件期望。</p>
+<p>回归算法是统计学中的主要算法，它已被纳入统计机器学习。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>普通最小二乘回归（Ordinary Least Squares Regression，OLSR）</li>
+<li>线性回归（Linear Regression）</li>
+<li>逻辑回归（Logistic Regression）</li>
+<li>逐步回归（Stepwise Regression）</li>
+<li>多元自适应回归样条（Multivariate Adaptive Regression Splines，MARS）</li>
+<li>本地散点平滑估计（Locally Estimated Scatterplot Smoothing，LOESS）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>直接、快速</li>
+<li>知名度高</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>要求严格的假设</li>
+<li>需要处理异常值</li>
+</ul>
+<p><strong>人工神经网络</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-91537c1910440135f8a4ab4ff00b16db_1440w.png" />  </p>
+<p>人工神经网络是受生物神经网络启发而构建的算法模型。</p>
+<p>它是一种模式匹配，常被用于回归和分类问题，但拥有庞大的子域，由数百种算法和各类问题的变体组成。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>感知器</li>
+<li>反向传播</li>
+<li>Hopfield 网络</li>
+<li>径向基函数网络（Radial Basis Function Network，RBFN）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>在语音、语义、视觉、各类游戏（如围棋）的任务中表现极好。</li>
+<li>算法可以快速调整，适应新的问题。</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<p>需要大量数据进行训练</p>
+<p>训练要求很高的硬件配置</p>
+<p>模型处于「黑箱状态」，难以理解内部机制</p>
+<p>元参数（Metaparameter）与网络拓扑选择困难。</p>
+<p><strong>深度学习（Deep Learning）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-2158dacd56df1df4e3ecca4bac8e8b10_1440w.png" />  </p>
+<p>深度学习是人工神经网络的最新分支，它受益于当代硬件的快速发展。</p>
+<p>众多研究者目前的方向主要集中于构建更大、更复杂的神经网络，目前有许多方法正在聚焦半监督学习问题，其中用于训练的大数据集只包含很少的标记。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>深玻耳兹曼机（Deep Boltzmann Machine，DBM）</li>
+<li>Deep Belief Networks（DBN）</li>
+<li>卷积神经网络（CNN）</li>
+<li>Stacked Auto-Encoders</li>
+</ul>
+<p><strong>优点/缺点</strong>：见神经网络</p>
+<p><strong>支持向量机（Support Vector Machines）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-c9abeb277deab695af7cb4ddbb11ca4e_1440w.png" />  </p>
+<p>给定一组训练事例，其中每个事例都属于两个类别中的一个，支持向量机（SVM）训练算法可以在被输入新的事例后将其分类到两个类别中的一个，使自身成为非概率二进制线性分类器。</p>
+<p>SVM 模型将训练事例表示为空间中的点，它们被映射到一幅图中，由一条明确的、尽可能宽的间隔分开以区分两个类别。</p>
+<p>随后，新的示例会被映射到同一空间中，并基于它们落在间隔的哪一侧来预测它属于的类别。</p>
+<p><strong>优点：</strong></p>
+<p>在非线性可分问题上表现优秀</p>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>非常难以训练</li>
+<li>很难解释</li>
+</ul>
+<p><strong>降维算法（Dimensionality Reduction Algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-29114e6b93d4ac1862e1c3bd18bff0d9_1440w.png" />  </p>
+<p>和集簇方法类似，降维追求并利用数据的内在结构，目的在于使用较少的信息总结或描述数据。</p>
+<p>这一算法可用于可视化高维数据或简化接下来可用于监督学习中的数据。许多这样的方法可针对分类和回归的使用进行调整。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>主成分分析（Principal Component Analysis (PCA)）</li>
+<li>主成分回归（Principal Component Regression (PCR)）</li>
+<li>偏最小二乘回归（Partial Least Squares Regression (PLSR)）</li>
+<li>Sammon 映射（Sammon Mapping）</li>
+<li>多维尺度变换（Multidimensional Scaling (MDS)）</li>
+<li>投影寻踪（Projection Pursuit）</li>
+<li>线性判别分析（Linear Discriminant Analysis (LDA)）</li>
+<li>混合判别分析（Mixture Discriminant Analysis (MDA)）</li>
+<li>二次判别分析（Quadratic Discriminant Analysis (QDA)）</li>
+<li>灵活判别分析（Flexible Discriminant Analysis (FDA)）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>可处理大规模数据集</li>
+<li>无需在数据上进行假设</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>难以搞定非线性数据</li>
+<li>难以理解结果的意义</li>
+</ul>
+<p><strong>聚类算法（Clustering Algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-3be3129d8ce4217ec08567607e0ccdac_1440w.png" />  </p>
+<p>聚类算法是指对一组目标进行分类，属于同一组（亦即一个类，cluster）的目标被划分在一组中，与其他组目标相比，同一组目标更加彼此相似（在某种意义上）。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>K-均值（k-Means）</li>
+<li>k-Medians 算法</li>
+<li>Expectation Maximi 封层 ation (EM)</li>
+<li>最大期望算法（EM）</li>
+<li>分层集群（Hierarchical Clstering）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>让数据变得有意义</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>结果难以解读，针对不寻常的数据组，结果可能无用。</li>
+</ul>
+<p><strong>基于实例的算法（Instance-based Algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-9fe2126ad4beaafa3f739b9f5b9b4b8a_1440w.png" />  </p>
+<p>基于实例的算法（有时也称为基于记忆的学习）是这样学 习算法，不是明确归纳，而是将新的问题例子与训练过程中见过的例子进行对比，这些见过的例子就在存储器中。</p>
+<p>之所以叫基于实例的算法是因为它直接从训练实例中建构出假设。这意味这，假设的复杂度能随着数据的增长而变化：最糟的情况是，假设是一个训练项目列表，分类一个单独新实例计算复杂度为 O（n）</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>K 最近邻（k-Nearest Neighbor (kNN)）</li>
+<li>学习向量量化（Learning Vector Quantization (LVQ)）</li>
+<li>自组织映射（Self-Organizing Map (SOM)）</li>
+<li>局部加权学习（Locally Weighted Learning (LWL)）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>算法简单、结果易于解读</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>内存使用非常高</li>
+<li>计算成本高</li>
+<li>不可能用于高维特征空间</li>
+</ul>
+<p><strong>贝叶斯算法（Bayesian Algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-5869f7fa022e5d055f6fd435de62e25c_1440w.png" />  </p>
+<p>贝叶斯方法是指明确应用了贝叶斯定理来解决如分类和回归等问题的方法。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>朴素贝叶斯（Naive Bayes）</li>
+<li>高斯朴素贝叶斯（Gaussian Naive Bayes）</li>
+<li>多项式朴素贝叶斯（Multinomial Naive Bayes）</li>
+<li>平均一致依赖估计器（Averaged One-Dependence Estimators (AODE)）</li>
+<li>贝叶斯信念网络（Bayesian Belief Network (BBN)）</li>
+<li>贝叶斯网络（Bayesian Network (BN)）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<p>快速、易于训练、给出了它们所需的资源能带来良好的表现</p>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>如果输入变量是相关的，则会出现问题</li>
+</ul>
+<p><strong>关联规则学习算法（Association Rule Learning Algorithms）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-978b11e3871b00ed9dc3baf0f974ab73_1440w.png" />  </p>
+<p>关联规则学习方法能够提取出对数据中的变量之间的关系的最佳解释。比如说一家超市的销售数据中存在规则 {洋葱，土豆}=&gt; {汉堡}，那说明当一位客户同时购买了洋葱和土豆的时候，他很有可能还会购买汉堡肉。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>Apriori 算法（Apriori algorithm）</li>
+<li>Eclat 算法（Eclat algorithm）</li>
+<li>FP-growth</li>
+</ul>
+<p><strong>图模型（Graphical Models）</strong></p>
+<p><img alt="" src="(20170220)机器学习算法集锦从贝叶斯到深度学习及各自优缺点_机器之心/v2-83300d03abcfb6a2a676ea6e1c9f0d7e_1440w.png" />  </p>
+<p>图模型或概率图模型（PGM/probabilistic graphical model）是一种概率模型，一个图（graph）可以通过其表示随机变量之间的条件依赖结构（conditional dependence structure）。</p>
+<p><strong>例子：</strong></p>
+<ul>
+<li>贝叶斯网络（Bayesian network）</li>
+<li>马尔可夫随机域（Markov random field）</li>
+<li>链图（Chain Graphs）</li>
+<li>祖先图（Ancestral graph）</li>
+</ul>
+<p><strong>优点：</strong></p>
+<ul>
+<li>模型清晰，能被直观地理解</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>确定其依赖的拓扑很困难，有时候也很模糊</li>
+</ul>
+<p>选自<a href="https://static.coggle.it/diagram/WHeBqDIrJRk-kDDY">Coggle</a><strong>机器之心编译</strong></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

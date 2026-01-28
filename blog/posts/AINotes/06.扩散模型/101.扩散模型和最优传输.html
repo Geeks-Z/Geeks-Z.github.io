@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#references">References</a></li>
+<li><a href="#1-最优传输">1. 最优传输</a></li>
+<li><a href="#2-扩散模型">2. 扩散模型</a></li>
+<li><a href="#3-扩散模型与最优传输的联系">3. 扩散模型与最优传输的联系</a><ul>
+<li><a href="#1-论文一扩散过程可以被理解为最优传输中-wasserstein-流的近似">(1) 论文一：扩散过程可以被理解为最优传输中 Wasserstein 流的近似</a></li>
+<li><a href="#2-论文二在某些情况下流模型并不能实现最优传输">(2) 论文二：在某些情况下，流模型并不能实现最优传输</a></li>
+<li><a href="#3-论文三扩散模型不能定义最优传输映射">(3) 论文三：扩散模型不能定义最优传输映射</a></li>
+<li><a href="#4-总结扩散模型与最优传输间关系">4. 总结：扩散模型与最优传输间关系</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/06.扩散模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><a href="https://zhuanlan.zhihu.com/p/11439249557">扩散模型 vs. 最优传输</a></p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<p>《Understanding DDPM Latent Codes Through Optimal Transport》</p>
+<p>《 THE FLOW MAP OF THE FOKKER-PLANCK EQUATION DOES NOT PROVIDE OPTIMAL TRANSPORT 》</p>
+<p>《A generalization of Caffarelli’s contraction theorem via (reverse) heat flow》</p>
+<p>《 Diffusion models and Optimal Transport 》</p>
+<h2 id="1-最优传输">1. 最优传输<a class="anchor-link" href="#1-最优传输" title="Permanent link">&para;</a></h2>
+<p>最优传输（Optimal Transport, OT）是数学和计算机科学中的一个经典问题，研究如何以最小代价将一个分布（或质量分布）转移到另一个分布上。这个问题起源于18世纪法国数学家莫尼格（Gaspard Monge）提出的运输问题，其目标是找到一种从一个源分布到目标分布的映射，使得代价函数最小化。</p>
+<p><strong>目标函数</strong>：最优传输问题的目标是通过一个映射 <span class="math-inline">T</span> 或联合分布 <span class="math-inline"> \pi(x, y)</span> ，最小化一个代价函数，例如：</p>
+<p><div class="math-display"><br />
+\min_{\pi \in \Pi(p, q)} \int c(x, y) \, \mathrm{d}\pi(x, y),<br />
+</div></p>
+<p>其中 <span class="math-inline">c(x, y)</span> 表示从 <span class="math-inline">x</span> 移动到 <span class="math-inline">y</span> 的代价， <span class="math-inline">\Pi(p, q)</span> 表示边缘分布分别为 <span class="math-inline">p</span> 和 <span class="math-inline">q</span> 的联合分布集。</p>
+<p><strong>Wasserstein距离</strong>：最优传输代价的一种特殊形式，使用欧几里得距离作为代价函数，得到 Wasserstein距离，用于衡量概率分布之间的“距离”。【Wasserstein距离可以看作是在将一个分布“移动”到另一个分布所需的最小代价。代价取决于“质量”的分布和“距离”的权重】，这个度量的函数为：</p>
+<p>设 <span class="math-inline">\mu</span> 和 <span class="math-inline">\nu</span> 是定义在度量空间 <span class="math-inline">(\mathcal{X}, d)</span> 上的两个概率分布。Wasserstein距离（通常表示为 <span class="math-inline">W_p</span> ）的第 <span class="math-inline">p</span> 阶定义为：</p>
+<p><span class="math-inline">W_p(\mu, \nu) = \left( \inf_{\gamma \in \Gamma(\mu, \nu)} \int_{\mathcal{X} \times \mathcal{X}} d(x, y)^p \, \mathrm{d}\gamma(x, y) \right)^{1/p}, </span> </p>
+<p>其中：</p>
+<ul>
+<li><span class="math-inline">d(x, y)</span> 是点 <span class="math-inline">x, y \in \mathcal{X}</span> 之间的距离；</li>
+<li><span class="math-inline">\Gamma(\mu, \nu) </span> 是所有联合分布的集合，满足边缘分布为 <span class="math-inline">\mu</span> 和 <span class="math-inline">\nu</span> ： <span class="math-inline">\Gamma(\mu, \nu) = \left{ \gamma \in \mathcal{P}(\mathcal{X} \times \mathcal{X}) \,|\, \gamma(A \times \mathcal{X}) = \mu(A), \gamma(\mathcal{X} \times B) = \nu(B), \forall A, B \subseteq \mathcal{X} \right}. </span></li>
+</ul>
+<p>最优传输（OT）是一种理论框架，用来研究如何最优地将一个概率分布 <span class="math-inline">\alpha</span> 转换到另一个概率分布 <span class="math-inline">\beta</span>。</p>
+<ul>
+<li><strong>两种主要形式</strong>：</li>
+</ul>
+<ol>
+<li><strong>Monge 问题</strong>（确定性映射）：寻找一个映射 <span class="math-inline">T</span> ，使得 <span class="math-inline">T_#\alpha = \beta</span> 。</li>
+<li><strong>Kantorovich 问题</strong>（松弛形式）：寻找一个联合分布 <span class="math-inline"> \pi(x, y)</span> ，它的边缘分布分别是 <span class="math-inline">\alpha</span> 和 <span class="math-inline">\beta</span> ，并最小化总成本： <span class="math-inline"> \inf_{\pi} \int_{\mathbb{R}^d \times \mathbb{R}^d} c(x, y) \, \mathrm{d}\pi(x, y)</span> .</li>
+</ol>
+<p><strong>重要性质</strong></p>
+<ul>
+<li>OT 可以度量概率分布之间的“距离”，例如 Wasserstein 距离： <span class="math-inline">W_2(\alpha, \beta) = \left(\inf_{T} \int_{\mathbb{R}^d} |x - T(x)|^2 \, \mathrm{d}\alpha(x)\right)^{1/2}.</span></li>
+</ul>
+<p><strong>应用</strong></p>
+<ul>
+<li>数据科学（生成模型、数据匹配）</li>
+<li>机器学习（分布对齐、域适配）</li>
+<li>流体力学与物理（质量守恒问题）</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241217210637.png" style="zoom: 80%;" /></div>
+
+<h2 id="2-扩散模型">2. 扩散模型<a class="anchor-link" href="#2-扩散模型" title="Permanent link">&para;</a></h2>
+<p>扩散模型是一种生成模型，通过逐步添加噪声破坏数据分布（正向过程），然后训练一个模型去学习反向过程，即逐步去噪，生成新的样本。其关键思想包括：</p>
+<ul>
+<li><strong>正向扩散过程</strong>：通过定义一个时间序列，将数据逐步转化为白噪声。例如，给定初始数据分布 <span class="math-inline">p_0(x)</span> ，通过高斯噪声生成一系列分布 <span class="math-inline">p_t(x)</span> ，直至 <span class="math-inline">t = T</span> 时为均匀噪声。</li>
+<li><strong>反向去噪过程</strong>：学习从噪声数据恢复原始数据分布的过程，通常通过一个神经网络 <span class="math-inline">s_\theta(x_t, t)</span> 近似后验分布 <span class="math-inline">p_{t-1}(x_{t-1} | x_t)</span> 。</li>
+<li><strong>训练目标</strong>：最常用的是变分下界或去噪得分匹配。</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241217210854.png" style="zoom: 80%;" /></div>
+
+<h2 id="3-扩散模型与最优传输的联系">3. 扩散模型与最优传输的联系<a class="anchor-link" href="#3-扩散模型与最优传输的联系" title="Permanent link">&para;</a></h2>
+<p>这个并不清楚，但是：在相似的数据集上训练的不同扩散模型倾向于恢复出相似的映射关系。</p>
+<p>这就提出一个问题<strong>：如果这些映射关系不是最优传输（OT，Optimal Transport ）映射，那么它们到底在什么意义上是最优呢？</strong> </p>
+<p>扩散模型与最优传输之间的联系探讨：</p>
+<h3 id="1-论文一扩散过程可以被理解为最优传输中-wasserstein-流的近似">(1) 论文一：扩散过程可以被理解为最优传输中 Wasserstein 流的近似<a class="anchor-link" href="#1-论文一扩散过程可以被理解为最优传输中-wasserstein-流的近似" title="Permanent link">&para;</a></h3>
+<p><strong>《Understanding DDPM Latent Codes Through Optimal Transport》</strong></p>
+<p>扩散模型可以看作概率密度流的一个特例，而最优传输则研究从一个分布到另一个分布的最优路径。在理论上，扩散过程可以被理解为最优传输中 Wasserstein 流的近似：</p>
+<ul>
+<li>扩散模型通过一系列的微分方程（Fokker-Planck 方程）来描述从初始分布到目标分布的变化，这与最优传输中的连续路径方法（如流体动力学公式）类似。</li>
+<li>如果在扩散过程中引入特定的优化目标（如 Wasserstein 距离），可以直接将扩散过程视为最优传输中的一种实现。</li>
+</ul>
+<h3 id="2-论文二在某些情况下流模型并不能实现最优传输">(2) 论文二：在某些情况下，流模型并不能实现最优传输<a class="anchor-link" href="#2-论文二在某些情况下流模型并不能实现最优传输" title="Permanent link">&para;</a></h3>
+<p><strong>《 THE FLOW MAP OF THE FOKKER-PLANCK EQUATION DOES NOT PROVIDE OPTIMAL TRANSPORT 》</strong></p>
+<p><strong>《A generalization of Caffarelli’s contraction theorem via (reverse) heat flow》</strong></p>
+<p><strong>【其关键就是标题，即流模型不能实现最优传输，详见下述论文（三）】</strong></p>
+<h3 id="3-论文三扩散模型不能定义最优传输映射">(3) 论文三：扩散模型不能定义最优传输映射<a class="anchor-link" href="#3-论文三扩散模型不能定义最优传输映射" title="Permanent link">&para;</a></h3>
+<p><strong>《 Diffusion models and Optimal Transport 》</strong></p>
+<p>这篇文章的核心目的是说明扩散模型（Diffusion Model）在理论上不能定义最优传输映射（Optimal Transport Map）。以下是该说明的简要过程和关键结论的逻辑链条：</p>
+<p><strong>4.1 问题背景</strong></p>
+<p>生成模型的目标是找到从参考分布 <span class="math-inline">\alpha</span> （通常是高斯分布）到数据分布 <span class="math-inline">\beta </span> 的映射 <span class="math-inline">T</span> ，使得 <span class="math-inline">T#\alpha = \beta</span> 。理论上，这种映射总是存在的，但明确构造它的方法是一个挑战。</p>
+<ul>
+<li>
+<p><strong>方法1：最优传输（Optimal Transport, OT）</strong></p>
+</li>
+<li>
+<p>最优传输映射 T 可以通过解决 Monge 问题得到。根据 Brenier 定理，这种映射是唯一的，并且是一个凸函数的梯度。</p>
+</li>
+<li>
+<p><strong>方法2：逆向流映射（Reverse Flow Map）</strong></p>
+</li>
+<li>
+<p>在扩散模型中，数据分布 <span class="math-inline">\beta_0 = \beta </span> 被逐步演化到参考分布 <span class="math-inline"> \beta_\infty = \alpha</span> 。这个演化过程通过一个时间演化的向量场 <span class="math-inline">v</span> 来定义，产生了一个从 <span class="math-inline">\beta_0</span> 到 <span class="math-inline">\beta_t</span> 的流映射 <span class="math-inline">S_t</span> 。</p>
+</li>
+</ul>
+<blockquote>
+<p>以下是对 <strong>Monge 问题</strong>、<strong>Brenier 定理</strong>以及其他相关概念的进一步介绍：  </p>
+<p><strong>1. Monge 问题</strong><br />
+Monge 问题由法国数学家 Gaspard Monge 在 1781 年提出，目的是研究如何以最低的成本将一种分布（初始质量分布）运输到另一种分布（目标质量分布）。<strong>形式化定义</strong>：<br />
+（1）给定两个概率分布 <span class="math-inline"> \alpha</span> 和 <span class="math-inline">\beta</span> ，寻找一个映射 <span class="math-inline">T</span> ，使得 <span class="math-inline">\beta</span> 是由 <span class="math-inline">\alpha</span> 通过 <span class="math-inline">T</span> 推送而来的： <span class="math-inline">T_#\alpha = \beta</span> . <br />
+（2）同时最小化总的运输成本： <span class="math-inline">\inf_{T} \int_{\mathbb{R}^d} c(x, T(x)) \, \mathrm{d}\alpha(x)</span> , 其中 <span class="math-inline">c(x, T(x))</span> 是点 <span class="math-inline">x</span> 被运输到点 <span class="math-inline">T(x)</span> 的代价函数，常用的代价是欧几里得距离的平方： <span class="math-inline">c(x, T(x)) = |x - T(x)|^2</span> . <br />
+Monge 问题的核心是 <strong>寻找一个确定性的最优传输映射 T</strong>。<br />
+它被应用在多个领域，如经济学（资源分配）、流体力学（质量守恒）以及图像处理（直方图匹配）。  </p>
+<p><strong>2. Brenier 定理</strong><br />
+1991年，数学家 Yann Brenier 提出了一个重要结果，解决了 Monge 问题在欧几里得距离平方成本下的特定情况：<br />
+如果 <span class="math-inline">\alpha</span> 和 <span class="math-inline">\beta</span> 是定义在 <span class="math-inline">\mathbb{R}^d </span> 上的概率分布，并且 <span class="math-inline">\alpha</span> 是绝对连续的（即其分布函数可导），那么存在唯一的最优传输映射 <span class="math-inline">T</span> ，使得： <span class="math-inline">T = \nabla \phi</span> , 其中 <span class="math-inline">\phi </span> 是一个 <strong>凸函数</strong>。<br />
+换句话说，最优传输映射 <span class="math-inline">T</span> 可以表示为一个凸函数的梯度。<br />
+<strong>几何解释</strong><br />
+Brenier 定理表明，最优传输映射 <span class="math-inline">T</span> 本质上是一个梯度流，它从参考分布 <span class="math-inline">\alpha</span> 平滑地映射到目标分布 <span class="math-inline">\beta</span> 。<br />
+<strong>与 Monge-Ampère 方程的关系</strong><br />
+Brenier 定理的一个重要结果是，最优传输映射 <span class="math-inline">T</span> 满足 Monge-Ampère 方程： <span class="math-inline">\det \left(\nabla^2 \phi(x)\right) \cdot \alpha(x) = \beta(T(x))</span> , 其中：<br />
+<span class="math-inline">\nabla^2 \phi(x)</span> 是函数 <span class="math-inline">\phi(x)</span> 的 Hessian 矩阵。<br />
+这个方程描述了最优传输的几何结构。</p>
+</blockquote>
+<p><strong>4.2 关键问题</strong></p>
+<p><strong>逆向流映射是否等价于最优传输映射？</strong></p>
+<ul>
+<li>在一维情况下： <span class="math-inline">S_t</span> 是一个单调的微分同胚，因此可以被视为凸函数的梯度，是最优传输。</li>
+<li>在多维情况下：Lavenant 和 Santambrogio 的研究表明，逆向流映射在一般情况下并不是最优传输。他们通过反证法证明存在一些 <span class="math-inline"> t \geq 0</span> ，使得从 <span class="math-inline">\alpha </span> 到 <span class="math-inline">\beta_t</span> 的逆向流映射 <span class="math-inline">T_t</span> 不是最优传输。</li>
+</ul>
+<p>这里可能大家会有一些关于扩散和逆向流映射的概念上的困扰，进行一些澄清：</p>
+<p>扩散模型是一种生成模型，通过逐步添加噪声将数据分布 <span class="math-inline">\beta</span> 转换为参考分布（如高斯分布 <span class="math-inline">\alpha</span> ），然后通过逆向过程从 <span class="math-inline">\alpha</span> 生成数据。</p>
+<ul>
+<li>
+<p><strong>逆向流映射</strong> <span class="math-inline">S_t</span> ：</p>
+</li>
+<li>
+<p>表示从 <span class="math-inline">\beta_t</span> 演化到 <span class="math-inline"> \beta_0 = \beta</span> 的时间流映射。</p>
+</li>
+<li>是通过方程的逆向积分定义的，并与向量场 <span class="math-inline">v(x, t)</span> 紧密相关。</li>
+</ul>
+<p><strong>逆向流映射与最优传输的区别</strong><br />
+尽管逆向流映射在某些情况下（如一维高斯分布）可以是最优传输，但多维情况下并不总是满足最优传输的要求。具体而言：</p>
+<ul>
+<li>
+<p>扩散过程中的流映射 <span class="math-inline">S_t</span> 并不总是凸函数的梯度（违反 Brenier 定理）。</p>
+</li>
+<li>
+<p>它们的动力学特性和最优传输的几何特性有本质不同。</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>Monge 问题</strong>：研究如何以最低成本将分布 <span class="math-inline">\alpha</span> 映射到分布 <span class="math-inline"> \beta</span> 。<br />
+<strong>Brenier 定理</strong>：最优传输映射是一个凸函数的梯度。<br />
+<strong>扩散模型的局限性</strong>：逆向流映射 <span class="math-inline"> S_t</span> 在多维情况下无法满足最优传输的凸性要求，表明扩散模型不能定义最优传输映射。</p>
+</blockquote>
+<p>这些理论概念共同为生成模型、概率分布映射和优化提供了坚实的数学基础。</p>
+<p><strong>4.3 矛盾的构造</strong></p>
+<p>通过构造特定的条件和假设，证明逆向流映射 <span class="math-inline"> T_t</span> 在某些 <span class="math-inline">t &gt; 0</span> 时不满足最优传输的性质：</p>
+<p><strong>假设条件</strong>：</p>
+<ul>
+<li>数据分布 <span class="math-inline">\beta</span> 非常接近参考分布 <span class="math-inline">\alpha</span> 。</li>
+<li>特定的二阶和四阶对数密度导数为 0。</li>
+</ul>
+<p><strong>计算细节</strong>：</p>
+<ul>
+<li>使用 Brenier 定理， <span class="math-inline">T_t</span> 是最优传输的充分条件是它是一个凸函数的梯度，这等价于 Monge-Ampère方程成立。</li>
+<li>通过对扩散过程的ODE和流映射方程进行微分，在 <span class="math-inline">t=0</span> 处展开泰勒级数。</li>
+</ul>
+<p><strong>矛盾的来源</strong>：</p>
+<ul>
+<li>
+<p>通过构造特定的 <span class="math-inline">h(y)</span> （例如一个四次多项式）来证明在 0 附近 <span class="math-inline"> T_t </span> 和 <span class="math-inline">S_t</span> 的某些属性不满足可交换性。</p>
+</li>
+<li>
+<p>这与 <span class="math-inline">T_t</span> 是最优传输映射的必要条件矛盾。</p>
+</li>
+</ul>
+<p><strong>4.3 结论</strong></p>
+<ul>
+<li>
+<p><strong>理论结论</strong>：</p>
+</li>
+<li>
+<p>扩散模型中的逆向流映射 <span class="math-inline">T_t</span> 不是最优传输映射。即便在高斯分布的特殊情况下，多维扩散模型的性质依然不满足最优传输的要求。</p>
+</li>
+<li>
+<p><strong>本质原因</strong>：</p>
+</li>
+<li>
+<p>扩散模型的逆向流映射定义了一个从数据分布到参考分布的演化过程，但这个过程无法完全满足最优传输映射所需的凸性与梯度性质。</p>
+</li>
+</ul>
+<p>通过这篇文章的推导，作者揭示了扩散模型的局限性，即它在理论上无法提供最优传输映射。这一结论为研究生成模型和最优传输之间的关系提供了新的思考方向。</p>
+<h3 id="4-总结扩散模型与最优传输间关系">4. 总结：扩散模型与最优传输间关系<a class="anchor-link" href="#4-总结扩散模型与最优传输间关系" title="Permanent link">&para;</a></h3>
+<p>扩散模型的逆向流映射（flow map）<strong>不满足凸性和梯度性质</strong>，主要与其生成过程的动力学特性以及最优传输的几何要求之间的差异有关。以下是具体原因的详细分析：</p>
+<p><strong>1. 最优传输的凸性和梯度性质</strong></p>
+<p>在最优传输问题中，根据 <strong>Brenier 定理</strong>，最优传输映射 T 必须满足以下两个关键性质：</p>
+<ul>
+<li><strong>凸性</strong>：T 是某个凸函数 <span class="math-inline">\phi </span> 的梯度，即 <span class="math-inline">T = \nabla \phi</span> 。</li>
+<li><strong>梯度结构</strong>：这意味着 T 的 Jacobian 矩阵是对称的，因为它是由凸函数的 Hessian 推导而来。</li>
+</ul>
+<p>这些性质源于最优传输的基本构造，它需要从几何上满足“质量守恒”和“运输成本最小化”的要求，并且需要解决 Monge-Ampère 方程的约束。</p>
+<ul>
+<li>
+<p><strong>最优传输的梯度映射定义</strong> 最优传输映射 <span class="math-inline">T</span> 通常由一个凸函数 <span class="math-inline">\phi</span> 的梯度定义，即： <span class="math-inline">T(x) = \nabla \phi(x)</span> , 这里 <span class="math-inline">\phi</span> 是一个凸函数。凸函数的梯度映射是广义单调的，并且能确保传输映射 T 满足推送条件（即将一个分布推送到另一个分布）。</p>
+</li>
+<li>
+<p><strong>Hessian 矩阵的对称性</strong> 对于凸函数 <span class="math-inline">\phi</span> ，它的 Hessian 矩阵 <span class="math-inline">\nabla^2 \phi(x)</span> 是对称的。这是因为二阶偏导数的混合项（例如 <span class="math-inline"> \frac{\partial^2 \phi}{\partial x_i \partial x_j} 和 \frac{\partial^2 \phi}{\partial x_j \partial x_i}</span> ）满足 Schwarz 对称性条件： <span class="math-inline">\frac{\partial^2 \phi}{\partial x_i \partial x_j} = \frac{\partial^2 \phi}{\partial x_j \partial x_i}</span> . 因此，最优传输映射 <span class="math-inline">T(x)</span> 的 Jacobian 矩阵 <span class="math-inline">\nabla T(x) = \nabla^2 \phi(x)</span> 也是对称的。</p>
+</li>
+<li>
+<p><strong>几何性质：映射的单调性和对称性</strong> 对称的 Jacobian 矩阵保证了映射的单调性（或者说广义单调性）。单调性是最优传输问题的关键性质，它确保传输路径是“最短”的，同时满足成本函数的优化要求。例如，在二次成本情况下（欧几里得距离平方），单调性和凸性共同确保了传输映射的唯一性。</p>
+</li>
+<li>
+<p><strong>物理解释</strong> 在实际应用中，最优传输映射 <span class="math-inline">T(x)</span> 可以理解为一种"势场"的梯度流动，其中势函数 <span class="math-inline"> \phi</span> 描述了传输的潜在能量。凸性的要求保证了这种势场的物理合理性（例如无环路径），而梯度的对称性则确保了传输方向是合理的。</p>
+</li>
+</ul>
+<p><strong>2. 扩散模型的逆向流映射</strong></p>
+<p>扩散模型通过逐步添加噪声将数据分布 <span class="math-inline">\beta_0 = \beta</span> 转化为参考分布 <span class="math-inline">\beta_\infty = \alpha</span> （通常是高斯分布），然后通过逆向过程生成数据。这个逆向过程是通过 <strong>向量场</strong>  <span class="math-inline">v(x, t)</span> 的动力学演化描述的：</p>
+<p><span class="math-inline"> \frac{\mathrm{d}x}{\mathrm{d}t} = v(x, t), </span></p>
+<p>其中 <span class="math-inline">v(x, t)</span> 是当前状态的速度场。</p>
+<p>逆向流映射 <span class="math-inline">S_t</span> 表示从数据分布 <span class="math-inline">\beta_t </span> 到参考分布 <span class="math-inline">\beta_0 = \beta</span> 的流动。然而，它<strong>不满足最优传输所要求的凸性和梯度性质</strong>，原因如下：</p>
+<p><strong>3. 为什么扩散不满足凸性和梯度性质？</strong></p>
+<p><strong>(1) 扩散模型的动力学不具有凸性要求</strong></p>
+<p>扩散模型的逆向过程是由向量场 <span class="math-inline">v(x, t) </span> 定义的，而 <span class="math-inline">v(x, t)</span> 通常并不直接来源于一个凸函数的梯度。换句话说：</p>
+<ul>
+<li><span class="math-inline">v(x, t)</span> 是基于当前状态和噪声的统计特性动态演化的，它的本质是一个概率流，而非一个由凸性约束的映射。</li>
+<li><span class="math-inline">S_t</span> 是通过 <span class="math-inline">v(x, t)</span> 的累积积分构造的，它无法保证生成的映射在几何上满足凸性条件。</li>
+</ul>
+<p><strong>(2) 逆向流映射的局部结构可能违反对称性</strong></p>
+<p>最优传输的 Brenier 定理要求传输映射的 Jacobian 矩阵是对称的（梯度场的性质）。然而，扩散模型的向量场 <span class="math-inline">v(x, t)</span> 和对应的流映射 <span class="math-inline">S_t</span> 在多维情况下并不保证这个性质：</p>
+<ul>
+<li>扩散过程会引入随机性和非对称性，例如，在不同维度之间的交互中，可能出现方向依赖的偏差。</li>
+<li>这种非对称性破坏了扩散流映射作为最优传输映射的几何要求。</li>
+</ul>
+<p><strong>(3) 扩散的生成目标不同于最优传输</strong></p>
+<p>扩散模型的目标是生成高质量样本，而不是最小化从数据分布到参考分布之间的运输成本。因此：</p>
+<ul>
+<li>它的生成过程更关注如何逐步逼近数据分布，而非严格构造符合最优传输特性的映射。</li>
+<li>逆向扩散过程通过插值和随机性实现数据的重构，可能无法保持最优传输中的梯度流特性。</li>
+</ul>
+<p><strong>(4) 二阶和高阶导数约束的失败</strong></p>
+<p>根据文中提到的 Lavenant 和 Santambrogio 的结果，扩散映射 <span class="math-inline">S_t</span> 在某些情况下（例如数据分布 <span class="math-inline">\beta</span> 与参考分布 <span class="math-inline">\alpha</span> 接近时）可能会违反二阶或高阶导数的性质：</p>
+<ul>
+<li>
+<p>当 <span class="math-inline"> T_t</span> 被要求满足凸性时，需要保证 Hessian 矩阵的正定性，这对向量场 <span class="math-inline">v(x, t)</span> 的构造施加了很强的限制。</p>
+</li>
+<li>
+<p>如果这些约束条件不满足（例如出现高阶导数的反对称性问题），扩散流映射就不能是最优传输。</p>
+</li>
+</ul>
+<p><strong>4. 具体例子：二维高斯分布中的反例</strong></p>
+<p>文中提到的 Lavenant 和 Santambrogio 的证明提供了一个关键反例：</p>
+<ul>
+<li>
+<p>他们构造了一个接近各向同性高斯分布 <span class="math-inline">\alpha</span> 的数据分布 <span class="math-inline">\beta</span> ，并证明在某些 <span class="math-inline"> t &gt; 0</span> 时，逆向流映射 <span class="math-inline">T_t</span> 不是最优传输。</p>
+</li>
+<li>
+<p>核心问题在于：在高斯分布附近，扩散映射的梯度结构可能会由于非对称性或其他几何特性而偏离最优传输映射。</p>
+</li>
+</ul>
+<p><strong>5. 总结：扩散模型为何不能定义最优传输映射</strong></p>
+<ul>
+<li><strong>动力学原因</strong>：扩散模型的逆向过程基于动态流场，而非凸函数的梯度，无法保证映射的凸性。</li>
+<li><strong>几何原因</strong>：逆向流映射可能违反梯度流的对称性，破坏最优传输的几何结构。</li>
+<li><strong>目标差异</strong>：扩散模型旨在生成数据分布，而非以最优成本匹配分布，生成过程会牺牲最优传输的特性。</li>
+<li><strong>反例证明</strong>：Lavenant 和 Santambrogio 通过具体构造证明了在某些情况下，扩散模型的流映射并不满足最优传输的要求。</li>
+</ul>
+<p>因此，扩散模型虽然是一种强大的生成方法，但从理论上讲，它无法用于定义全局的最优传输映射。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

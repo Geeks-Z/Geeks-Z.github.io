@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#信息量">信息量</a></li>
+<li><a href="#熵">熵</a></li>
+<li><a href="#互信息-mutual-information">互信息 (Mutual Information)</a></li>
+<li><a href="#kl-散度">KL 散度</a><ul>
+<li><a href="#某个随机变量的编码长度怎么算">某个随机变量的编码长度怎么算？</a></li>
+<li><a href="#平均编码长度怎么算">平均编码长度怎么算？</a></li>
+<li><a href="#kl散度怎么算">KL散度怎么算</a></li>
+<li><a href="#数学推导">数学推导</a></li>
+</ul>
+</li>
+<li><a href="#条件熵-conditional-entropy">条件熵 (Conditional Entropy)</a></li>
+<li><a href="#js-散度jensen-shannon">JS 散度(Jensen-Shannon)</a></li>
+<li><a href="#maximum-mean-discrepancy-mmd">Maximum Mean Discrepancy (MMD)</a></li>
+<li><a href="#correlation-alignment-coral">Correlation Alignment (CORAL)</a></li>
+<li><a href="#central-moment-discrepancy-cmd">Central Moment Discrepancy (CMD)</a></li>
+<li><a href="#maximum-density-divergence-mdd">Maximum Density Divergence (MDD)</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/05.分布</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="信息量">信息量<a class="anchor-link" href="#信息量" title="Permanent link">&para;</a></h2>
+<p>假设 <span class="math-inline">X</span>​ 是一个离散型随机变量，其取值集合为<span class="math-inline">\chi</span>​，概率分布函数为<span class="math-inline">p(x)=Pr(X=x),x∈\chi</span>​，我们定义事件<span class="math-inline">X=x_0</span>​ 的信息量为：</p>
+<p><div class="math-display"><br />
+I(x_0)=−log(p(x_0))<br />
+</div></p>
+<p>可以理解为，<strong>一个事件发生的概率越大，则它所携带的信息量就越小</strong>，而当<span class="math-inline">p(x_0)=1</span>​ 时，熵将等于 0，也就是说该事件的发生不会导致任何信息量的增加。</p>
+<p>举个例子，小明平时不爱学习，考试经常不及格，而小王是个勤奋学习的好学生，经常得满分，所以我们可以做如下假设：<br />
+事件 A：小明考试及格，对应的概率<span class="math-inline">P(x_A)=0.1</span>​，信息量为<span class="math-inline">I(x_A)=−log(0.1)=3.3219</span>​<br />
+事件 B：小王考试及格，对应的概率<span class="math-inline">P(x_B)=0.999</span>​​​，信息量为<span class="math-inline">I(x_B)=−log(0.999)=0.0014</span><br />
+​​​<br />
+可以看出，结果非常符合直观：小明及格的可能性很低(十次考试只有一次及格)，因此如果某次考试及格了（大家都会说：XXX 竟然及格了！），必然会引入较大的信息量，对应的<span class="math-inline">I</span> 也较高。而对于小王而言，考试及格是大概率事件，在事件 B 发生前，大家普遍认为事件 B 的发生几乎是确定的，因此当某次考试小王及格这个事件发生时并不会引入太多的信息量，相应的<span class="math-inline">I</span> 也非常的低。</p>
+<h2 id="熵">熵<a class="anchor-link" href="#熵" title="Permanent link">&para;</a></h2>
+<p>那么什么又是熵呢？还是通过上边的例子来说明，假设小明的考试结果是一个 0-1 分布。 <span class="math-inline">\chi_A</span> 只有两个取值{0：不及格，1：及格}，在某次考试结果公布前，小明的考试结果有多大的不确定度呢？你肯定会说：十有八九不及格！因为根据先验知识，小明及格的概率仅有 0.1,90%的可能都是不及格的。怎么来度量这个不确定度？求期望！不错，我们对所有可能结果带来的额外信息量求取均值（期望），其结果不就能够衡量出小明考试成绩的不确定度了吗。即：</p>
+<p><div class="math-display"><br />
+H_A(x)=−[p(x_A)log(p(x_A))+(1−p(x_A))log(1−p(x_A))]=0.4690<br />
+</div></p>
+<p>对应小王的熵：</p>
+<p><div class="math-display"><br />
+H_B(x)=−[p(x_B)log(p(x_B))+(1−p(x_B))log(1−p(x_B))]=0.0114<br />
+</div></p>
+<p>虽然小明考试结果的不确定性较低，毕竟十次有 9 次都不及格，但是也比不上小王（1000 次考试只有一次才可能不及格，结果相当的确定）。我们再假设一个成绩相对普通的学生小东，他及格的概率是<span class="math-inline">P(x_C)=0.5P(x_C)=0.5</span>,即及格与否的概率是一样的，对应的熵：</p>
+<p><div class="math-display"><br />
+H_C(x)=−[p(x_C)log(p(x_C))+(1−p(x_C))log(1−p(x_C))]=1<br />
+</div></p>
+<p>其熵为 1，他的不确定性比前边两位同学要高很多，在成绩公布之前，很难准确猜测出他的考试结果。</p>
+<p><strong>熵其实是信息量的期望值，它是一个随机变量的确定性的度量。熵越大，变量的取值越不确定，反之就越确定</strong>。</p>
+<p>对于一个随机变量<span class="math-inline">X</span> 言，它的<strong>所有可能取值的信息量的期望</strong><span class="math-inline">E[I(x)]</span> 称为<strong>熵</strong>。</p>
+<p><span class="math-inline">X</span> 熵定义为：</p>
+<p><div class="math-display"><br />
+H(X)=E_plog\frac{1}{p(x)}=−∑_{x∈X}p(x)logp(x)<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">p(x)</span> 的值在 0-1 之间，取对数后小于零</p>
+</blockquote>
+<p>如果<span class="math-inline">p(x)</span> 连续型随机变量的 pdf，则熵定义为：</p>
+<p><div class="math-display"><br />
+H(X)=−\int _{x∈X}p(x)logp(x)dx<br />
+</div></p>
+<p>为了保证有效性，这里约定当<span class="math-inline">p(x)\to0</span> ,有<span class="math-inline">p(x)logp(x)\to0</span></p>
+<p>当 <span class="math-inline">X</span> 为 0-1 分布时，熵与概率 <span class="math-inline">p</span> 的关系如下图：</p>
+<p><img alt="image-20210827104845876" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160948208.png" /></p>
+<p>可以看出，当两种取值的可能性相等时，不确定度最大（此时没有任何先验知识），这个结论可以推广到多种取值的情况。在图中也可以看出，当<span class="math-inline">p</span>=0 或 1 时，熵为 0，即此时 <span class="math-inline">X</span> 完全确定。<br />
+熵的单位随着公式中 log 运算的底数而变化，当底数为 2 时，单位为“比特”(bit)，底数为 e 时，单位为“奈特”。</p>
+<h2 id="互信息-mutual-information">互信息 (Mutual Information)<a class="anchor-link" href="#互信息-mutual-information" title="Permanent link">&para;</a></h2>
+<p>无监督学习中常用的损失函数，作用于标签时，最大化预测标签和真实标签的信息熵，可以促使预测标签 certain 且 diverse，</p>
+<p><div class="math-display"><br />
+\begin{align} I(X;Y)&amp;=\sum_{x,y}p(x,y)·\text{log}\ \frac {p(x, y)} {p(x),p(y)}\ &amp;=-\sum_y p(y)\log p(y) - \sum_xp(x)H(Y|X=x)\ &amp;=H(Y)-H(Y|X) \end{align}<br />
+</div></p>
+<p>直观地说，如果把熵 <span class="math-inline">H(Y)</span> 看作一个随机变量于不确定度的量度，那么 *<em><span class="math-inline">H(Y|X)</span> 就是 在已知 <span class="math-inline">X</span> 事件后 <span class="math-inline">Y</span> 事件会发生</em>的不确定度。互信息为 <span class="math-inline">Y</span> 的熵减去条件熵。</p>
+<h2 id="kl-散度">KL 散度<a class="anchor-link" href="#kl-散度" title="Permanent link">&para;</a></h2>
+<p><strong>相对熵</strong>(relative entropy)又称为 <strong>KL 散度</strong>（Kullback-Leibler divergence），KL 距离，是两个随机分布间距离的度量。记为<span class="math-inline">D_{KL}(p\parallel q)</span>​。它度量当真实分布为 <span class="math-inline">p</span> 时，假设分布 <span class="math-inline">q</span> 的无效性。</p>
+<h3 id="某个随机变量的编码长度怎么算">某个随机变量的编码长度怎么算？<a class="anchor-link" href="#某个随机变量的编码长度怎么算" title="Permanent link">&para;</a></h3>
+<p>首先要知道什么是编码长度，这个其实很简单的，比如我们有一个数字 <span class="math-inline">x</span> ，服从某个 <span class="math-inline">P</span> 的分布。如果使用霍夫曼编码，出现概率越低的数字需要的编码长度越长，概率越高的数字需要的编码长度越短。这个只要学过计算机的都懂，不提。霍夫曼树是二叉树，你就简单理解编码长度就是二叉树中某个节点的高度，概率越高越靠近根节点，所以编码长度是：</p>
+<p><div class="math-display">log(\frac{1}{P(x)})</div></p>
+<p>你看概率越大的 <span class="math-inline">x</span> 编码长度越短，概率越小的编码长度越长。</p>
+<h3 id="平均编码长度怎么算">平均编码长度怎么算？<a class="anchor-link" href="#平均编码长度怎么算" title="Permanent link">&para;</a></h3>
+<p>如果根据每个<span class="math-inline">x</span> 的概率把他们的编码长度平均一下，就得到了平均编码长度：</p>
+<p><div class="math-display">\sum{P(x)log(\frac{1}{P(x)})}</div></p>
+<p>如果我们搞错情况了，以为<span class="math-inline">x</span> 的分布是 <span class="math-inline">Q</span> ，那么使用霍夫曼编码的时候使用的编码长度就变成了：</p>
+<p><div class="math-display">log(\frac{1}{Q(x)})</div></p>
+<p>于是就会基于错误的分布 <span class="math-inline">Q</span> 对 <span class="math-inline">x</span> 进行霍夫曼编码，但他的真实分布却是 <span class="math-inline">P</span> ，那么这种情况的平均编码长度就变成了：</p>
+<p><div class="math-display">\sum{P(x)log(\frac{1}{Q(x)})}</div></p>
+<h3 id="kl散度怎么算">KL散度怎么算<a class="anchor-link" href="#kl散度怎么算" title="Permanent link">&para;</a></h3>
+<p>霍夫曼编码是最优编码，但如果你对 <span class="math-inline">x</span> 的分布估计错误，那就不优了，额外会浪费很多比特数用来编码，浪费的这些比特数直接用两个平均编码长度相减就有了：</p>
+<p><div class="math-display">\sum{P(x)log(\frac{1}{Q(x)})}-\sum{P(x)log(\frac{1}{P(x)})}</div></p>
+<p>也就是：</p>
+<p><div class="math-display">\sum{P(x)log(\frac{P(x)}{Q(x)})}</div></p>
+<p>这就是<strong>KL散度</strong></p>
+<p>所以KL散度其实是利用最优编码这个代理量去衡量两个分布之间有多大的区别。</p>
+<p>对了，为什么是比特数，因为霍夫曼是二叉树，左0右1，故为比特</p>
+<blockquote>
+<p>以上摘自 <a href="https://www.zhihu.com/question/345907033/answer/3072696582">KL散度衡量的是两个概率分布的距离吗？</a> 刘斯坦回答部分</p>
+</blockquote>
+<h3 id="数学推导">数学推导<a class="anchor-link" href="#数学推导" title="Permanent link">&para;</a></h3>
+<p><div class="math-display"><br />
+\begin{split}D_{KL}(p\parallel q)<br />
+&amp;=E_p[log\frac{p(x)}{q(x)}]\<br />
+&amp;=\sum_{x\in\chi}p(x)log\frac{p(x)}{q(x)}\<br />
+&amp;=\sum_{x\in\chi}[p(x)logp(x)-p(x)logq(x)]\<br />
+&amp;=\sum_{x\in\chi}p(x)logp(x)-\sum_{x\in\chi}p(x)logq(x)\<br />
+&amp;=-H(p)-\sum_{x\in\chi}p(x)logq(x)\<br />
+&amp;=-H(p)+E_p[-logq(x)]\<br />
+&amp;=H_p(q)-H(p)<br />
+\end{split}<br />
+</div></p>
+<p>并且为了保证连续性，做如下约定：</p>
+<p><span class="math-inline">0log\frac00=0</span>​，<span class="math-inline">0log\frac0q=0</span>​​，<span class="math-inline">plog\frac{p}{0}=\infty</span>​</p>
+<p>显然，当<span class="math-inline">p=q</span> ,两者之间的相对熵<span class="math-inline">D_{KL}(p\parallel q)=0</span>​</p>
+<p>上式最后的<span class="math-inline">H_p(q)</span> 示在 <span class="math-inline">p</span> 分布下，使用 <span class="math-inline">q</span> 进行编码需要的 bit 数，而<span class="math-inline">H(p)</span> 示对真实分布<span class="math-inline">p</span> 需要的最小编码 bit 数。</p>
+<p>基于此，相对熵的意义就很明确了：<span class="math-inline">D_{KL}(p||q)</span>​ 表示在真实分布为<span class="math-inline">p</span> 前提下，使用<span class="math-inline">q</span> 布进行编码相对于使用真实分布<span class="math-inline">p</span> 行编码（即最优编码）所多出来的 bit 数。</p>
+<p><strong>注意</strong>：</p>
+<ul>
+<li>如果继续用 2 为底的对数计算，则 KL 散度值表示信息损失的二进制位数。</li>
+<li>如果 <span class="math-inline">p</span> 和 <span class="math-inline">q</span> 是同分布的，则 KL 散度为 0。 </li>
+<li>KL散度不是距离，因为不符合对称性，所以用 KL 散度度量分布差异时需设计成对称的，<span class="math-inline">D_{KL}(p||q)+D_{KL}(q||p)</span><br />
+  Specializing to Gaussian measures <span class="math-inline">P\sim\mathcal{N}(\mu_1, \Sigma_1)</span> and <span class="math-inline">Q\sim\mathcal{N}(\mu_2, \Sigma_2)</span>, then the KL divergence is given by</li>
+</ul>
+<p><div class="math-display"><br />
+  \text{KL}(P||Q)=\frac 1 2 [(\mu_2-\mu_1)^{\top}\Sigma_2^{-1}(\mu_2-\mu_1)+\text{trace}(\Sigma_2^{-1}\Sigma_1)-\text{ln}(\frac {det(\Sigma_1)} {det(\Sigma_2)})-K]<br />
+  </div></p>
+<h2 id="条件熵-conditional-entropy">条件熵 (Conditional Entropy)<a class="anchor-link" href="#条件熵-conditional-entropy" title="Permanent link">&para;</a></h2>
+<p>条件熵是在已知随机变量 <span class="math-inline">X</span> 的条件下，<span class="math-inline">Y</span> 的条件概率分布的熵对随机变量 <span class="math-inline">X</span> 的数学期望</p>
+<p><div class="math-display"><br />
+\begin{align} H(Y|X) &amp;=\sum_{x\in\mathcal{X}} p(x) H(Y|X=x) \ &amp;=-\sum_{x\in\mathcal{X}} p(x) \sum_{y\in\mathcal{Y}} p(y|x) \log p(y|x)\ &amp;=-\sum_{x\in\mathcal{X}}\sum_{y\in\mathcal{Y}} p(x,y)\log p(y|x)\ &amp;=-\sum_{x\in\mathcal{X},y\in\mathcal{Y}}p(x,y)\log p(y|x)\ \end{align}<br />
+</div></p>
+<p>最小化条件熵让模型远离决策边界，可以应用在无监督数据上，以利用其数据分布信息。</p>
+<h2 id="js-散度jensen-shannon">JS 散度(Jensen-Shannon)<a class="anchor-link" href="#js-散度jensen-shannon" title="Permanent link">&para;</a></h2>
+<p>JS 散度度量了两个概率分布的相似度，基于 KL 散度的变体，解决了 KL 散度非对称的问题。一般地，JS 散度是对称的，其取值是 0 到 1 之间。定义如下：</p>
+<p><div class="math-display"><br />
+JS(p||q)=\frac 1 2 KL(p||\frac {p+q} 2)+\frac 1 2 KL(q||\frac {p+q} 2)<br />
+</div></p>
+<p>KL 散度和 JS 散度度量的时候有一个问题： 如果两个分布 p, q 离得很远，完全没有重叠的时候，那么 KL 散度值是没有意义的，而 JS 散度值是一个常数。这在学习算法中是比较致命的，这就意味这这一点的梯度为 0，梯度消失了。</p>
+<h2 id="maximum-mean-discrepancy-mmd">Maximum Mean Discrepancy (MMD)<a class="anchor-link" href="#maximum-mean-discrepancy-mmd" title="Permanent link">&para;</a></h2>
+<p><strong>定义和特点</strong>：<br />
+  MMD是通过比较两个分布的样本均值的差异来衡量它们之间的距离。具体地，它通过特征空间中的核函数来度量分布之间的差异，通常使用正定核如高斯核。</p>
+<p><strong>优点</strong>：</p>
+<p>简单直观，易于实现和计算。<br />
+  在一些实验中表现良好，特别是当分布差异较为显著时效果较好。</p>
+<p><strong>缺点</strong>：</p>
+<p>对于高维和复杂的数据分布，可能会出现较高的误差。<br />
+  对于较小的样本量可能表现不稳定。</p>
+<p><strong>适用条件</strong>：</p>
+<p>适合用于比较较为简单的数据分布和特征空间。<br />
+  在计算资源有限的情况下表现较为出色。</p>
+<p><strong>代码</strong></p>
+<p>MMD 是通过核方法来度量两个分布之间的距离，这里以高斯核为例实现 MMD 的计算：</p>
+<p>```python<br />
+  import numpy as np</p>
+<p>def gaussian_kernel(x, y, sigma=1.0):<br />
+      return np.exp(-np.linalg.norm(x - y)*<em>2 / (2 (sigma </em>2)))</p>
+<p>def mmd(X, Y, kernel=gaussian_kernel):<br />
+      m = len(X)<br />
+      n = len(Y)</p>
+<pre class="highlight"><code>  K_xx = np.zeros((m, m))
+  K_yy = np.zeros((n, n))
+  K_xy = np.zeros((m, n))
+
+  for i in range(m):
+      for j in range(m):
+          K_xx[i, j] = kernel(X[i], X[j])
+
+  for i in range(n):
+      for j in range(n):
+          K_yy[i, j] = kernel(Y[i], Y[j])
+
+  for i in range(m):
+      for j in range(n):
+          K_xy[i, j] = kernel(X[i], Y[j])
+
+  return np.mean(K_xx) + np.mean(K_yy) - 2 np.mean(K_xy)
+</code></pre>
+
+<p># Example usage:<br />
+  X = np.random.randn(100, 2)  # Sample from distribution X<br />
+  Y = np.random.randn(100, 2)  # Sample from distribution Y</p>
+<p>distance_mmd = mmd(X, Y)<br />
+  print(f"MMD distance between X and Y: {distance_mmd}")</p>
+<p>```</p>
+<h2 id="correlation-alignment-coral">Correlation Alignment (CORAL)<a class="anchor-link" href="#correlation-alignment-coral" title="Permanent link">&para;</a></h2>
+<p><strong>定义和特点</strong>：<br />
+  CORAL通过最小化两个分布之间的协方差矩阵的差异来进行域自适应。它试图通过特征之间的协方差来对齐两个域的特征分布。</p>
+<p><strong>优点</strong>：</p>
+<p>考虑了特征之间的相关性，能够更加准确地度量分布的差异。<br />
+  对于特征之间存在较强关联的数据集有较好的适应性。</p>
+<p><strong>缺点</strong>：</p>
+<p>受限于协方差矩阵的计算，当特征空间较大时可能计算代价较高。<br />
+  只考虑了二阶统计量，可能忽略了高阶的分布差异。</p>
+<p><strong>适用条件</strong>：</p>
+<p>适合于特征之间具有较强相关性的数据集。<br />
+  对于计算资源充足的情况下，可以有效地对齐分布。</p>
+<p><strong>代码</strong></p>
+<p>CORAL 通过最小化协方差矩阵的差异来进行域自适应：</p>
+<p>```python<br />
+  from sklearn.covariance import LedoitWolf</p>
+<p>def coral(X, Y):<br />
+      cov_X = LedoitWolf().fit(X).covariance_<br />
+      cov_Y = LedoitWolf().fit(Y).covariance_</p>
+<pre class="highlight"><code>  return np.linalg.norm(cov_X - cov_Y)
+</code></pre>
+
+<p># Example usage:<br />
+  X = np.random.randn(100, 2)  # Sample from distribution X<br />
+  Y = np.random.randn(100, 2)  # Sample from distribution Y</p>
+<p>distance_coral = coral(X, Y)<br />
+  print(f"CORAL distance between X and Y: {distance_coral}")</p>
+<p>```</p>
+<h2 id="central-moment-discrepancy-cmd">Central Moment Discrepancy (CMD)<a class="anchor-link" href="#central-moment-discrepancy-cmd" title="Permanent link">&para;</a></h2>
+<p><strong>定义和特点</strong>：  </p>
+<p>CMD通过比较高阶中心矩来度量两个分布之间的差异。它不仅考虑了均值和方差，还考虑了数据分布的更高阶统计信息。</p>
+<p><strong>优点</strong>：</p>
+<p>能够更全面地捕捉数据分布的差异，尤其是对于非高斯分布和高阶统计信息的敏感性较好。</p>
+<p><strong>缺点</strong>：</p>
+<p>需要计算和比较高阶统计量，计算复杂度可能较高。<br />
+  对于样本量较少时，估计高阶统计量的稳定性可能较差。</p>
+<p><strong>适用条件</strong>：</p>
+<p>适合用于捕捉高阶统计信息对分布差异影响显著的情况。<br />
+  当数据分布复杂且不服从正态分布时表现较为突出。</p>
+<p><strong>代码</strong></p>
+<p>CMD 通过比较高阶中心矩来度量两个分布之间的差异，这里演示计算方差和偏度的差异：</p>
+<p>```python<br />
+  from scipy.stats import moment</p>
+<p>def cmd(X, Y):<br />
+      var_X = np.var(X)<br />
+      var_Y = np.var(Y)</p>
+<pre class="highlight"><code>  skew_X = moment(X, moment=3)
+  skew_Y = moment(Y, moment=3)
+
+  return np.abs(var_X - var_Y) + np.abs(skew_X - skew_Y)
+</code></pre>
+
+<p># Example usage:<br />
+  X = np.random.randn(100)  # Sample from distribution X<br />
+  Y = np.random.randn(100)  # Sample from distribution Y</p>
+<p>distance_cmd = cmd(X, Y)<br />
+  print(f"CMD distance between X and Y: {distance_cmd}")</p>
+<p>```</p>
+<h2 id="maximum-density-divergence-mdd">Maximum Density Divergence (MDD)<a class="anchor-link" href="#maximum-density-divergence-mdd" title="Permanent link">&para;</a></h2>
+<p><strong>定义和特点</strong>：<br />
+  MDD通过比较两个分布的密度函数的差异来度量它们之间的距离。通常使用KL散度来作为分布差异的度量标准。</p>
+<p><strong>优点</strong>：</p>
+<p>直接基于密度函数比较，能够较为准确地捕捉分布之间的差异。<br />
+  在分布有明显差异时效果较好。</p>
+<p><strong>缺点</strong>：</p>
+<p>对于高维和复杂分布的密度估计可能存在困难。<br />
+  KL散度可能会受到样本稀疏性的影响。</p>
+<p><strong>适用条件</strong>：</p>
+<p>适合用于直接比较密度函数的场景。<br />
+  当能够准确估计密度函数时表现较为优越。</p>
+<p><strong>代码</strong></p>
+<p>MDD 通过比较两个分布的密度函数的差异来</p>
+<p>```python<br />
+  from scipy.stats import entropy<br />
+  from sklearn.neighbors import KernelDensity</p>
+<p>def mdd(X, Y):<br />
+      kde_X = KernelDensity(bandwidth=0.5).fit(X[:, np.newaxis])<br />
+      kde_Y = KernelDensity(bandwidth=0.5).fit(Y[:, np.newaxis])</p>
+<pre class="highlight"><code>  log_dens_X = kde_X.score_samples(X[:, np.newaxis])
+  log_dens_Y = kde_Y.score_samples(Y[:, np.newaxis])
+
+  return entropy(np.exp(log_dens_X), np.exp(log_dens_Y))
+</code></pre>
+
+<p># Example usage:<br />
+  X = np.random.randn(100)  # Sample from distribution X<br />
+  Y = np.random.randn(100)  # Sample from distribution Y</p>
+<p>distance_mdd = mdd(X, Y)<br />
+  print(f"MDD distance between X and Y: {distance_mdd}")<br />
+  ```</p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://blog.csdn.net/rtygbwwwerr/article/details/50778098">交叉熵（Cross-Entropy）_rtygbwwwerr 的专栏-CSDN 博客</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Cross_entropy">维基百科关于 cross-entropy 的解释</a></li>
+<li><a href="https://chamwen.github.io/2020/04/02/ML_note2/">机器学习中的分布差异度量方法</a></li>
+<li><a href="https://www.zhihu.com/question/658931869/answer/3535693466">域自适应方法中常用的分布差异度量方式(距离损失)有何异同？</a></li>
+<li><a href="https://www.zhihu.com/question/39872326/answer/118705625">分布的相似度（距离）用什么模型比较好？</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

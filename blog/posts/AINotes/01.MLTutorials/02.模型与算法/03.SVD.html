@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#svd性质">SVD性质</a></li>
+<li><a href="#svd具体介绍">SVD具体介绍</a><ul>
+<li><a href="#特征值特征向量特征值分解">特征值、特征向量、特征值分解</a><ul>
+<li><a href="#特征值特征向量">特征值、特征向量</a></li>
+<li><a href="#特征值与特征向量的几何意义">特征值与特征向量的几何意义</a></li>
+<li><a href="#特征值分解">特征值分解</a></li>
+<li><a href="#特征值分解的例子">特征值分解的例子</a></li>
+</ul>
+</li>
+<li><a href="#svd分解">SVD分解</a><ul>
+<li><a href="#特征值分解矩阵的缺点">特征值分解矩阵的缺点</a></li>
+<li><a href="#奇异值分解">奇异值分解</a></li>
+<li><a href="#svd计算举例">SVD计算举例</a></li>
+</ul>
+</li>
+<li><a href="#svd分解的应用">SVD分解的应用</a></li>
+</ul>
+</li>
+<li><a href="#紧奇异值分解与截断奇异值分解">紧奇异值分解与截断奇异值分解</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/02.模型与算法</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="svd性质">SVD性质<a class="anchor-link" href="#svd性质" title="Permanent link">&para;</a></h2>
+<ul>
+<li>矩阵的奇异值分解一定存在，但不唯一；</li>
+<li>奇异值唯一，但矩阵<span class="math-inline">U</span> <span class="math-inline">V</span> 不唯一；</li>
+<li>矩阵<span class="math-inline">A</span>  <span class="math-inline">\sum</span> 秩相等，等于正奇异值数量（包含重复的奇异值）；</li>
+</ul>
+<h2 id="svd具体介绍">SVD具体介绍<a class="anchor-link" href="#svd具体介绍" title="Permanent link">&para;</a></h2>
+<h3 id="特征值特征向量特征值分解">特征值、特征向量、特征值分解<a class="anchor-link" href="#特征值特征向量特征值分解" title="Permanent link">&para;</a></h3>
+<p>特征值分解和奇异值分解(<strong>S</strong>ingular <strong>V</strong>alue <strong>D</strong>ecomposition)在机器学习中都是很常见的矩阵分解算法。两者有着很紧密的关系，特征值分解和奇异值分解的目的都是一样，就是提取出一个矩阵最重要的特征。</p>
+<h4 id="特征值特征向量">特征值、特征向量<a class="anchor-link" href="#特征值特征向量" title="Permanent link">&para;</a></h4>
+<p>如果一个向量<span class="math-inline">v</span> 矩阵<span class="math-inline">A</span> 特征向量，将一定可以表示成下面的形式：<span class="math-inline">Av=\lambda v</span> 中，<span class="math-inline">\lambda</span> 特征向量<span class="math-inline">v</span> 应的特征值，一个矩阵的一组特征向量是一组正交向量。</p>
+<p><strong>思考</strong>：为什么一个向量和一个数相乘的效果与一个矩阵和一个向量相乘的效果是一样的呢？</p>
+<p>答案：矩阵<span class="math-inline">A</span> 向量<span class="math-inline">v</span> 乘，本质上是对向量<span class="math-inline">v</span> 行了一次线性变换（旋转或拉伸），而该变换的效果为常数<span class="math-inline">\lambda</span> 以向量<span class="math-inline">v</span>。当我们求特征值与特征向量的时候，就是为了<strong>求矩阵A能使哪些向量（特征向量）只发生伸缩变换</strong>，而变换的程度可以用特征值<span class="math-inline">\lambda</span> 示。</p>
+<h4 id="特征值与特征向量的几何意义">特征值与特征向量的几何意义<a class="anchor-link" href="#特征值与特征向量的几何意义" title="Permanent link">&para;</a></h4>
+<p>一个矩阵其实就是一个线性变换，因为一个矩阵乘以一个向量后得到的向量，其实就相当于将这个向量进行了线性变换。比如说下面的这个矩阵：<br />
+<div class="math-display"><br />
+M=<br />
+\begin{bmatrix}<br />
+3 &amp; 0\<br />
+0 &amp; 1<br />
+\end{bmatrix}<br />
+</div><br />
+它其实对应的线性变换如下图所示：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241106101530.png" style="zoom: 60%;" /></div>
+
+<p>因为这个矩阵M乘以一个向量<span class="math-inline">(x,y)</span> 结果是：</p>
+<p><div class="math-display"><br />
+\begin{bmatrix}<br />
+3 &amp; 0\<br />
+0 &amp; 1<br />
+\end{bmatrix}<br />
+\begin{bmatrix}<br />
+x\<br />
+y<br />
+\end{bmatrix}<br />
+=<br />
+\begin{bmatrix}<br />
+3x\<br />
+y<br />
+\end{bmatrix}<br />
+</div></p>
+<p>上面的矩阵是<strong>对称</strong>的，所以这个变换是一个对x、y轴的方向一个拉伸变换（每一个<strong>对角线上的元素</strong>将会对一个维度进行拉伸变换，当值大于1时是拉伸，当值小于1时是缩短），如图2所示。当矩阵不是对称的时候，假如说矩阵是下面的样子：</p>
+<p><div class="math-display"><br />
+M=<br />
+\begin{bmatrix}<br />
+1 &amp; 1\<br />
+0 &amp; 1<br />
+\end{bmatrix}<br />
+</div></p>
+<p>它所描述的变换是下面的样子：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241106101611.png" style="zoom: 60%;" /></div>
+
+<p>这其实是在平面上对一个轴进行的拉伸变换，如图3蓝色的箭头所示，蓝色的箭头是一个最主要的变换方向（变换的方向可能不止一个）。如果想要描述好一个变换，那我们就需要描述好这个变换主要的变化方向。</p>
+<h4 id="特征值分解">特征值分解<a class="anchor-link" href="#特征值分解" title="Permanent link">&para;</a></h4>
+<p>对于矩阵<span class="math-inline">A</span>，有一组特征向量<span class="math-inline">v</span>，将这组向量进行正交化单位化，就能得到一组正交单位向量。<strong>特征值分解</strong>，就是将矩阵<span class="math-inline">A</span> 解为如下式：<br />
+<div class="math-display"><br />
+A=Q\sum Q^{-1}<br />
+</div><br />
+其中，<span class="math-inline">Q</span> 矩阵<span class="math-inline">A</span> 特征向量组成的矩阵，<span class="math-inline">\sum</span> 是一个对角阵，对角线上的元素就是特征值。</p>
+<p>我们来分析一下特征值分解的式子，分解得到的<span class="math-inline">\sum</span> 阵是一个对角矩阵，里面的特征值是由大到小排列的，这些特征值所对应的特征向量就是描述这个矩阵变换方向（从主要的变化到次要的变化排列）。</p>
+<p>当矩阵是高维的情况下，那么这个矩阵就是高维空间下的一个线性变换，这个线性变换可能没法通过图片来表示，但是可以想象，这个变换也同样有很多的变化方向，我们通过特征值分解得到的前<span class="math-inline">N</span> 特征向量，就对应了这个矩阵最主要的<span class="math-inline">N</span> 变化方向。我们利用这前<span class="math-inline">N</span> 变化方向，就可以近似这个矩阵变换。也就是之前说的<strong>：提取这个矩阵最重要的特征。</strong></p>
+<p><strong>总结</strong>：特征值分解可以得到特征值与特征向量，特征值表示的是这个特征到底有多么重要，而特征向量表示这个特征是什么，可以将每一个特征向量理解为一个线性的子空间，我们可以利用这些线性的子空间干很多事情。不过，<strong>特征值分解也有很多的局限，比如说变换的矩阵必须是方阵。</strong></p>
+<h4 id="特征值分解的例子">特征值分解的例子<a class="anchor-link" href="#特征值分解的例子" title="Permanent link">&para;</a></h4>
+<p>这里我们用一个简单的方阵来说明特征值分解的步骤。我们的方阵<span class="math-inline">A</span> 义为：<br />
+<div class="math-display"><br />
+A=<br />
+\begin{bmatrix}<br />
+-1 &amp; 1 &amp; 0\<br />
+-4 &amp; 3 &amp; 0\<br />
+1 &amp; 0 &amp; 2<br />
+\end{bmatrix}<br />
+</div><br />
+首先，由方阵A的特征方程，求出特征值。<br />
+<div class="math-display"><br />
+\begin{vmatrix}<br />
+A-\lambda E<br />
+\end{vmatrix}<br />
+=<br />
+\begin{vmatrix}<br />
+-1-\lambda &amp; 1 &amp; 0\<br />
+-4 &amp; 3-\lambda  &amp; 0\<br />
+1 &amp; 0 &amp; 2-\lambda<br />
+\end{vmatrix}<br />
+=(2-\lambda)<br />
+\begin{vmatrix}<br />
+-1-\lambda &amp; 1 \<br />
+-4 &amp; 3-\lambda \<br />
+\end{vmatrix}<br />
+=(2-\lambda)(\lambda - 1)^2=0<br />
+</div><br />
+特征值为<span class="math-inline">\lambda = 2,1</span>（重数是2)。</p>
+<p>然后，把每个特征值<span class="math-inline">\lambda</span> 入线性方程组<span class="math-inline">(A-\lambda E)x = 0</span>，求出特征向量。</p>
+<p>当<span class="math-inline">\lambda = 2</span> ，解线性方程组<span class="math-inline">(A-2E)x = 0</span>。<br />
+<div class="math-display"><br />
+(A-2E)=<br />
+\begin{pmatrix}<br />
+-3 &amp; 1 &amp; 0\<br />
+-4 &amp; 1 &amp; 0\<br />
+1 &amp; 0 &amp;0<br />
+\end{pmatrix}<br />
+\to<br />
+\begin{pmatrix}<br />
+1 &amp; 0 &amp; 0\<br />
+0 &amp; 1 &amp; 0\<br />
+0 &amp; 0 &amp;0<br />
+\end{pmatrix}<br />
+</div><br />
+解得<span class="math-inline">x_1 = 0, x_2 = 0</span> 征向量为：<span class="math-inline">p_1 = \begin{pmatrix} 0 \0 \1\end{pmatrix}</span></p>
+<p>当<span class="math-inline">\lambda</span>=1时，解线性方程组<span class="math-inline">(A-E)x = 0</span> <br />
+<div class="math-display"><br />
+(A-E)=<br />
+\begin{pmatrix}<br />
+-2 &amp; 1 &amp; 0\<br />
+-4 &amp; 2 &amp; 0\<br />
+1 &amp; 0 &amp;1<br />
+\end{pmatrix}<br />
+\to<br />
+\begin{pmatrix}<br />
+1 &amp; 0 &amp; 1\<br />
+0 &amp; 1 &amp; 2\<br />
+0 &amp; 0 &amp;0<br />
+\end{pmatrix}<br />
+</div><br />
+<span class="math-inline">x_1 + x_2 = 0, x_2 + 2x_3 = 0</span>。特征向量为：<span class="math-inline">p_1 = \begin{pmatrix} -1 \-2 \1\end{pmatrix}</span>.</p>
+<p>最后，方阵<span class="math-inline">A</span> 特征值分解为：<br />
+<div class="math-display"><br />
+A=Q\sum Q^{-1}<br />
+\begin{pmatrix}<br />
+0 &amp; -1 &amp; -1\<br />
+0 &amp; -2 &amp; -2\<br />
+1 &amp; 1 &amp; 1<br />
+\end{pmatrix}<br />
+\begin{pmatrix}<br />
+2 &amp; 0 &amp; 0\<br />
+0 &amp; 1 &amp; 0\<br />
+0 &amp; 0 &amp;1<br />
+\end{pmatrix}<br />
+\begin{pmatrix}<br />
+0 &amp; -1 &amp; -1\<br />
+0 &amp; -2 &amp; -2\<br />
+1 &amp; 1 &amp;1<br />
+\end{pmatrix}^{-1}<br />
+</div></p>
+<h3 id="svd分解">SVD分解<a class="anchor-link" href="#svd分解" title="Permanent link">&para;</a></h3>
+<h4 id="特征值分解矩阵的缺点">特征值分解矩阵的缺点<a class="anchor-link" href="#特征值分解矩阵的缺点" title="Permanent link">&para;</a></h4>
+<p>我们前面讲了很多特征值、特征向量和特征值分解，而且基于我们以前学习的线性代数知识，利用特征值分解提取特征矩阵是一个容易理解且便于实现的方法。但是为什么还存在奇异值分解呢？特征值分解最大的问题是只能针对方阵，即<span class="math-inline">n*n</span> 矩阵。而在实际的应用中，我们分解的大部分都不是方阵。</p>
+<h4 id="奇异值分解">奇异值分解<a class="anchor-link" href="#奇异值分解" title="Permanent link">&para;</a></h4>
+<p>奇异值分解是一个能适用于任意矩阵的一种分解的方法，对于任意矩阵<span class="math-inline">A</span> 是存在一个奇异值分解：<span class="math-inline">A=U\sum V^T</span></p>
+<p>假设 <span class="math-inline">A</span> 是一个 <span class="math-inline">m<em>n</span> 的矩阵，那么得到的<span class="math-inline">U</span> 一个<span class="math-inline">m</em>m</span> 方阵，<span class="math-inline">U</span> 面的<strong>正交向量</strong>被称为左奇异向量。<span class="math-inline">\sum</span> 一个<span class="math-inline">m<em>n</span> 矩阵，<span class="math-inline">\sum</span> 了对角线其它元素都为0，对角线上的元素称为奇异值。<span class="math-inline">V^T</span> <span class="math-inline">V</span> 转置矩阵，是一个<span class="math-inline">n</em>n</span> 矩阵，它里面的正交向量被称为右奇异值向量。而且一般来讲，我们会将 <span class="math-inline">\sum</span> 上的值按从大到小的顺序排列。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241106101701.png" style="zoom: 60%;" /></div>
+
+<p><strong>思考</strong>：虽说上面奇异值分解等式成立，但是如何求得左奇异向量、右奇异向量和奇异值呢？</p>
+<p>答案：由上面的奇异值分解等式，我们是不知道如何拆分矩阵<span class="math-inline">A</span> 。我们可以把奇异值和特征值联系起来。</p>
+<p>首先，我们用矩阵<span class="math-inline">A</span> 转置乘以<span class="math-inline">A</span>，得到一个方阵，用这样的方阵进行特征分解，得到的特征值和特征向量满足下面的等式：<span class="math-inline">(A^TA)v_i = \lambda_iv_i</span>。这里的<span class="math-inline">v_i</span> 是我们要求的<strong>右奇异向量</strong>。</p>
+<p>其次，我们将<span class="math-inline">A</span> <span class="math-inline">A</span> 转置做矩阵的乘法，得到一个方阵，用这样的方阵进行特征分解，得到的特征和特征向量满足下面的等式：<span class="math-inline">(AA^T)u_i = \lambda_iu_i</span>。这里的<span class="math-inline">u_i</span> 是<strong>左奇异向量</strong>。</p>
+<p><strong>思考</strong>：上面我们说<span class="math-inline">A^TA</span> 的特征向量组成的矩阵就是我们SVD中的<span class="math-inline">V</span> 阵，而<span class="math-inline">AA^T</span> 特征向量组成的就是我们SVD中的<span class="math-inline">U</span> 阵，这有什么根据么?我们来证明一下，以<span class="math-inline">V</span> 阵的证明为例。<br />
+<div class="math-display"><br />
+A^TA=(U\sum V^T)^T(U\sum V^T)=V(\sum) ^TU^TU\sum V^T=V(\sum) ^2V^T=V(\sum) ^2V^{-1}<br />
+</div><br />
+因为<span class="math-inline">V</span> 标准正交基，所以<span class="math-inline">V^T = V^{-1}</span>，进而推得<span class="math-inline">A^TA = V(\sum) ^2V^{-1}</span>。上式证明中使用了<span class="math-inline">U^TU = I, \sum^T\sum = (\sum)^2</span>。而又有<span class="math-inline">A^TA</span> 一个对称的半正定矩阵,它可以通过特征值分解为（ <span class="math-inline">\Lambda</span> 对角化特征值， <span class="math-inline">Q</span> 特征向量）：<br />
+<div class="math-display"><br />
+A^TA=Q\Lambda Q^{-1}<br />
+</div><br />
+可以看到上下两个形式保持了一致，当限定了特征值的顺序后，这样的组合是唯一的，所以 <span class="math-inline">V</span> <span class="math-inline">A^TA</span> 特征向量，奇异值和特征值是平方关系<br />
+<div class="math-display"><br />
+V = Q\<br />
+\Lambda = (\sum)^2<br />
+</div><br />
+<strong>补充定义</strong>：<br />
+<div class="math-display"><br />
+U\in M_n(R)满足U^TU = I(单位矩阵),则U是实正交矩阵。<br />
+</div><br />
+此外，我们还可以得到奇异值，奇异值求法有两种：</p>
+<p><strong>a) 第一种</strong>：<br />
+<div class="math-display"><br />
+A = U \sum V^T \to AV = U\sum V^TV \to AV = U\sum \to Av_i = \sigma _i u_i \to\sigma_i = \frac{Av_i}{u_i}<br />
+</div><br />
+<strong>b)第二种</strong>：</p>
+<p>通过上面证明，我们还可以看出，特征值矩阵等于奇异值矩阵的平方，也就是说特征值和奇异值满足如下关系：<br />
+<div class="math-display"><br />
+\sigma_i = \sqrt{\lambda_i}<br />
+</div><br />
+这里的<span class="math-inline">\sigma_i</span> 是奇异值，奇异值<span class="math-inline">\sigma_i</span> 特征值类似，在矩阵<span class="math-inline">\sum</span> 也是从大到小排列。</p>
+<p><strong>思考</strong>：我们已经知道如何用奇异值分解任何矩阵了，那么问题又来了，一个<span class="math-inline">m<em>n</span> 矩阵<span class="math-inline">A</span>，你把它分解成<span class="math-inline">m</em>m</span> 矩阵<span class="math-inline">U</span>、<span class="math-inline">m<em>n</span> 矩阵<span class="math-inline">\sum</span> <span class="math-inline">n</em>n</span> 矩阵<span class="math-inline">V^T</span>。这三个矩阵中任何一个的维度似乎一点也不比<span class="math-inline">A</span> 维度小，而且还要做两次矩阵的乘法，并且我们知道矩阵乘法的时间复杂度为<span class="math-inline">O(n^3)</span>。那奇异值分解到底要怎么做呢？</p>
+<p><strong>答案</strong>：在奇异值分解矩阵中 <span class="math-inline">\sum</span> 里面的奇异值按从大到小的顺序排列，奇异值<span class="math-inline">\sigma_i</span> 大到小的顺序减小的特别快。<strong>在很多情况下，前10%甚至1%的奇异值的和就占了全部的奇异值之和的99%以上。也就是说，剩下的90%甚至99%的奇异值几乎没有什么作用</strong>。因此，我们可以用前面<span class="math-inline">r</span> 大的奇异值来近似描述矩阵，于是奇异值分解公式可以写成如下：<br />
+<div class="math-display"><br />
+A_{m<em>n}\approx U_{m</em>r}(\sum) _{r<em>r}V_{r</em>n}^T<br />
+</div><br />
+其中<span class="math-inline">r</span> 一个远远小于<span class="math-inline">m</span> <span class="math-inline">n</span> 数，右边的三个矩阵相乘的结果将会是一个接近<span class="math-inline">A</span> 矩阵。如果<span class="math-inline">r</span> 接近于<span class="math-inline">n</span>，则相乘的结果越接近于<span class="math-inline">A</span>。如果<span class="math-inline">r</span> 取值远远小于<span class="math-inline">n</span>，从计算机内存的角度来说，右边三个矩阵的存储内存要远远小于矩阵<span class="math-inline">A</span> 。<strong>所以在奇异值分解中 <span class="math-inline">r</span> 的取值很重要，就是在计算精度和时间空间之间做选择。</strong></p>
+<h4 id="svd计算举例">SVD计算举例<a class="anchor-link" href="#svd计算举例" title="Permanent link">&para;</a></h4>
+<p>这里我们用一个简单的矩阵来说明奇异值分解的步骤。我们的矩阵A定义为：<br />
+<div class="math-display"><br />
+A=<br />
+\begin{pmatrix}<br />
+0 &amp; 1 \<br />
+1 &amp; 1\<br />
+1 &amp; 0 <br />
+\end{pmatrix}<br />
+</div><br />
+首先，我们先求出<span class="math-inline">A^TA</span> <span class="math-inline">AA^T</span><br />
+<div class="math-display"><br />
+A^TA=<br />
+\begin{pmatrix}<br />
+0 &amp; 1 &amp; 1\<br />
+1 &amp; 1 &amp; 0\<br />
+\end{pmatrix}<br />
+\begin{pmatrix}<br />
+0 &amp; 1\<br />
+1 &amp; 1\<br />
+1 &amp; 0<br />
+\end{pmatrix}<br />
+=<br />
+\begin{pmatrix}<br />
+2 &amp; 1\<br />
+1 &amp; 2\<br />
+\end{pmatrix}\</p>
+<p>AA^T=<br />
+\begin{pmatrix}<br />
+0 &amp; 1\<br />
+1 &amp; 1\<br />
+1 &amp; 0<br />
+\end{pmatrix}<br />
+\begin{pmatrix}<br />
+0 &amp; 1 &amp; 1\<br />
+1 &amp; 1 &amp; 0\<br />
+\end{pmatrix}<br />
+=<br />
+\begin{pmatrix}<br />
+1 &amp; 1 &amp; 0\<br />
+1 &amp; 2 &amp; 1\<br />
+0 &amp; 1 &amp; 1<br />
+\end{pmatrix}<br />
+</div></p>
+<p>然后，求出  <span class="math-inline">A^{T} A</span>  和  <span class="math-inline">A A^{T}</span>  的特征值和特征向量： <span class="math-inline">A^{T} A</span> 的特征值和特征向量：</p>
+<p><div class="math-display"><br />
+\lambda_{1}=3 ; \quad v_{1}=\binom{\frac{1}{\sqrt{2}}}{\frac{1}{\sqrt{2}}} ; \quad \lambda_{2}=1 ; \quad v_{2}=\binom{\frac{-1}{\sqrt{2}}}{\frac{1}{\sqrt{2}}} ;<br />
+</div> </p>
+<p><span class="math-inline">A A^{T}</span>  的特征值和特征向量：<br />
+<div class="math-display"><br />
+\lambda_{1}=3 ; \quad u_{1}=\left(\begin{array}{c}\frac{1}{\sqrt{6}} \\frac{2}{\sqrt{6}} \\frac{1}{\sqrt{6}}\end{array}\right) ; \quad \lambda_{2}=1 ; \quad u_{2}=\left(\begin{array}{c}\frac{1}{\sqrt{2}} \0 \\frac{-1}{\sqrt{2}}\end{array}\right) ; \quad \lambda_{3}=0 ; \quad u_{3}=\left(\begin{array}{c}\frac{1}{\sqrt{3}} \\frac{-1}{\sqrt{3}} \\frac{1}{\sqrt{3}}\end{array}\right) ;<br />
+</div></p>
+<p>其次，我们利用  <span class="math-inline">A v_{i}=\sigma_{i} u_{i}, i=1,2</span> 求奇异值：<br />
+<div class="math-display"><br />
+\begin{array}{l}\left(\begin{array}{ll}0 &amp; 1 \1 &amp; 1 \1 &amp; 0\end{array}\right)\binom{\frac{1}{\sqrt{2}}}{\frac{1}{\sqrt{2}}}=\sigma_{1}\left(\begin{array}{c}\frac{1}{\sqrt{6}} \\frac{2}{\sqrt{6}} \\frac{1}{\sqrt{6}}\end{array}\right) \Rightarrow \sigma_{1}=\sqrt{3} \\left(\begin{array}{ll}0 &amp; 1 \1 &amp; 1 \1 &amp; 0\end{array}\right)\binom{\frac{-1}{\sqrt{2}}}{\frac{1}{\sqrt{2}}}=\sigma_{2}\left(\begin{array}{c}\frac{1}{\sqrt{2}} \0 \\frac{-1}{\sqrt{2}}\end{array}\right) \Rightarrow \sigma_{2}=1\end{array}<br />
+</div><br />
+当然，这一步也可以用  <span class="math-inline">\sigma_{i}=\sqrt{\lambda_{i}}</span>  直接求出奇异值为  <span class="math-inline">\sqrt{3}</span>  和1。<br />
+最后，我们得到 <span class="math-inline">A</span> 的奇异值分解为:</p>
+<p><div class="math-display"><br />
+A=U \Sigma V^{T}=\left(\begin{array}{ccc}\frac{1}{\sqrt{6}} &amp; \frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{3}} \\frac{2}{\sqrt{6}} &amp; 0 &amp; \frac{-1}{\sqrt{3}} \\frac{1}{\sqrt{6}} &amp; \frac{-1}{\sqrt{2}} &amp; \frac{1}{\sqrt{3}}\end{array}\right)\left(\begin{array}{cc}\sqrt{3} &amp; 0 \0 &amp; 1 \0 &amp; 0\end{array}\right)\left(\begin{array}{cc}\frac{1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}} \\frac{-1}{\sqrt{2}} &amp; \frac{1}{\sqrt{2}}\end{array}\right)<br />
+</div></p>
+<h3 id="svd分解的应用">SVD分解的应用<a class="anchor-link" href="#svd分解的应用" title="Permanent link">&para;</a></h3>
+<p>异值分解的应用有很多，比如：用SVD解PCA、潜在语言索引也依赖于SVD算法。可以说，SVD是矩阵分解、降维、压缩、特征学习的一个基础的工具，所以SVD在机器学习领域相当的重要。</p>
+<p><strong>降维</strong></p>
+<p>通过奇异值分解的公式，我们可以很容易看出来，原来矩阵A的特征有n维。经过SVD分解后，可以用前r个非零奇异值对应的奇异向量表示矩阵A的主要特征，这样就把矩阵A进行了降维。</p>
+<p><strong>压缩</strong></p>
+<p>通过奇异值分解的公式，我们可以看出来，矩阵A经过SVD分解后，要表示原来的大矩阵A，我们只需要存储<span class="math-inline">U</span>、<span class="math-inline">\sum</span>、<span class="math-inline">V</span> 个较小的矩阵即可。而这三个较小规模的矩阵占用内存上也是远远小于原有矩阵<span class="math-inline">A</span> ，这样SVD分解就起到了压缩的作用。</p>
+<h2 id="紧奇异值分解与截断奇异值分解">紧奇异值分解与截断奇异值分解<a class="anchor-link" href="#紧奇异值分解与截断奇异值分解" title="Permanent link">&para;</a></h2>
+<p>紧奇异值分解：与原始矩阵等秩的奇异值分解；</p>
+<p>截断奇异值分解：比原始矩阵低秩的奇异值分解；</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><a href="https://www.cnblogs.com/LeftNotEasy/archive/2011/01/19/svd-and-applications.html">机器学习中的数学(5)-强大的矩阵奇异值分解(SVD)及其应用 - LeftNotEasy - 博客园 (cnblogs.com)</a></p>
+</li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s/Dv51K8JETakIKe5dPBAPVg">机器学习中SVD总结 (qq.com)</a></p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/Dark_Scope/article/details/53150883">从PCA和SVD的关系拾遗_DarkScope从这里开始-CSDN博客</a></p>
+</li>
+<li>
+<p>李航《统计学习方法》</p>
+</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

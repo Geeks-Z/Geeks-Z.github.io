@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#正态分布">正态分布</a><ul>
+<li><a href="#概率密度">概率密度</a></li>
+<li><a href="#基本性质">基本性质</a></li>
+<li><a href="#高斯积分">高斯积分</a></li>
+</ul>
+</li>
+<li><a href="#线性代数">线性代数</a><ul>
+<li><a href="#内积范数">内积范数</a></li>
+<li><a href="#正定对称">正定对称</a></li>
+<li><a href="#矩阵求导">矩阵求导</a></li>
+</ul>
+</li>
+<li><a href="#kl散度">KL散度</a><ul>
+<li><a href="#计算结果">计算结果</a></li>
+<li><a href="#推导过程">推导过程</a></li>
+</ul>
+</li>
+<li><a href="#巴氏距离">巴氏距离</a><ul>
+<li><a href="#计算结果_1">计算结果</a></li>
+<li><a href="#推导过程_1">推导过程</a></li>
+</ul>
+</li>
+<li><a href="#w距离">W距离</a><ul>
+<li><a href="#计算结果_2">计算结果</a></li>
+<li><a href="#版本1">版本1</a></li>
+<li><a href="#版本2">版本2</a></li>
+<li><a href="#等价性">等价性</a></li>
+<li><a href="#特殊时">特殊时</a></li>
+<li><a href="#推导过程1">推导过程1</a></li>
+<li><a href="#去均值">去均值</a></li>
+<li><a href="#纯代数">纯代数</a></li>
+<li><a href="#舒尔补">舒尔补</a></li>
+<li><a href="#分参数">分参数</a></li>
+<li><a href="#乘子法">乘子法</a></li>
+<li><a href="#不等式">不等式</a></li>
+<li><a href="#推导过程2">推导过程2</a></li>
+<li><a href="#分块阵">分块阵</a></li>
+<li><a href="#乘子法_1">乘子法</a></li>
+</ul>
+</li>
+<li><a href="#文章小结">文章小结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/05.分布</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/387938179">两个多元正态分布的KL散度、巴氏距离和W距离</a></p>
+</blockquote>
+<p>最佳排版请看原链接：</p>
+<p><a href="https://kexue.fm/archives/8512">两个多元正态分布的KL散度、巴氏距离和W距离 - 科学空间|Scientific Spaces</a></p>
+<p>正态分布是最常见的连续型概率分布之一。它是给定均值和协方差后的最大熵分布（参考<strong><a href="https://kexue.fm/archives/3552">《“熵”不起：从熵、最大熵原理到最大熵模型（二）》</a></strong>），也可以看作任意连续型分布的二阶近似，它的地位就相当于一般函数的线性近似。从这个角度来看，正态分布算得上是最简单的连续型分布了。也正因为简单，所以对于很多估计量来说，它都能写出解析解来。</p>
+<p>本文主要来计算两个多元正态分布的几种度量，包括KL散度、巴氏距离和W距离，它们都有显式解析解。</p>
+<h2 id="正态分布">正态分布<a class="anchor-link" href="#正态分布" title="Permanent link">&para;</a></h2>
+<p>这里简单回顾一下正态分布的一些基础知识。注意，仅仅是回顾，这还不足以作为正态分布的入门教程。</p>
+<h3 id="概率密度">概率密度<a class="anchor-link" href="#概率密度" title="Permanent link">&para;</a></h3>
+<p>正态分布，也即高斯分布，是定义在<span class="math-inline">\mathbb{R}^n</span> 的连续型概率分布，其概率密度函数为</p>
+<p><div class="math-display">p(\boldsymbol{x})=\frac{1}{\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma})}}\exp\left{-\frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu})^{\top}\boldsymbol{\Sigma}^{-1}(\boldsymbol{x}-\boldsymbol{\mu})\right}\</div> 这里的<span class="math-inline">\boldsymbol{x},\boldsymbol{\mu}\in\mathbb{R}^n</span>，<span class="math-inline">\boldsymbol{\mu}</span> 均值向量（本文的向量默认情况下都为列向量），而<span class="math-inline">\boldsymbol{\Sigma}\in\mathbb{R}^{n\times n}</span> 为协方差矩阵，它要求是正定对称的。可以看到，正态分布由<span class="math-inline">\boldsymbol{\mu}</span> <span class="math-inline">\boldsymbol{\Sigma}</span> 一确定，因此不难想象它的统计量都是<span class="math-inline">\boldsymbol{\mu}</span> <span class="math-inline">\boldsymbol{\Sigma}</span> 函数。当<span class="math-inline">\boldsymbol{\mu}=\boldsymbol{0}, \boldsymbol{\Sigma}=\boldsymbol{I}</span> ，对应的分布称为“标准正态分布”。</p>
+<h3 id="基本性质">基本性质<a class="anchor-link" href="#基本性质" title="Permanent link">&para;</a></h3>
+<p>通常来说，基本的统计量就是均值和方差了，它们对应着正态分布的两个参数： <div class="math-display">\begin{aligned} \mathbb{E}<em>{\boldsymbol{x}}\left[\boldsymbol{x}\right]=&amp;\int p(\boldsymbol{x}) \boldsymbol{x} dx=\boldsymbol{\mu}\ \mathbb{E}</em>{\boldsymbol{x}}\left[(\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top}\right]=&amp;\int p(\boldsymbol{x}) (\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top} dx=\boldsymbol{\Sigma}\ \end{aligned}\</div></p>
+<p>由此也可以推出二阶矩的结果：</p>
+<p><div class="math-display">\mathbb{E}<em>{\boldsymbol{x}}\left[\boldsymbol{x}\boldsymbol{x}^{\top}\right]=\boldsymbol{\mu}\boldsymbol{\mu}^{\top} + \mathbb{E}</em>{\boldsymbol{x}}\left[(\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\top}\right]=\boldsymbol{\mu}\boldsymbol{\mu}^{\top} + \boldsymbol{\Sigma}\</div></p>
+<p>还有一个常用的统计量是它的熵：</p>
+<p><div class="math-display">\mathcal{H} = \mathbb{E}_{\boldsymbol{x}}\left[-\log p(\boldsymbol{x})\right]=\frac{n}{2}(1 + \log 2\pi) + \frac{1}{2}\log \det(\boldsymbol{\Sigma}) \</div></p>
+<p>其计算过程可以参考后面KL散度的推导。</p>
+<h3 id="高斯积分">高斯积分<a class="anchor-link" href="#高斯积分" title="Permanent link">&para;</a></h3>
+<p>概率密度函数意味着<span class="math-inline">\int p(\boldsymbol{x}) d\boldsymbol{x} = 1</span>，这就可以推出：</p>
+<p><div class="math-display">\begin{aligned} \sqrt{(2\pi)^n \det(\boldsymbol{\Sigma})} =&amp; \int\exp\left{-\frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu})^{\top}\boldsymbol{\Sigma}^{-1}(\boldsymbol{x}-\boldsymbol{\mu})\right}d\boldsymbol{x} \ =&amp; \int\exp\left{-\frac{1}{2}\boldsymbol{x}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{x}+\boldsymbol{\mu}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{x}-\frac{1}{2}\boldsymbol{\mu}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{\mu}\right}d\boldsymbol{x} \end{aligned}\</div></p>
+<p>设<span class="math-inline">\boldsymbol{\omega} = \boldsymbol{\Sigma}^{-1}\boldsymbol{\mu}</span>，那么得到高斯积分</p>
+<p><div class="math-display">\int\exp\left{-\frac{1}{2}\boldsymbol{x}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{x}+\boldsymbol{\omega}^{\top}\boldsymbol{x}\right}d\boldsymbol{x} = \sqrt{(2\pi)^n \det(\boldsymbol{\Sigma})}\exp\left{\frac{1}{2}\boldsymbol{\omega}^{\top}\boldsymbol{\Sigma}\boldsymbol{\omega}\right}\label{eq:g-int} \</div></p>
+<p>利用它我们可以算出正态分布的特征函数</p>
+<p><div class="math-display">\mathbb{E}_{\boldsymbol{x}}\left[\exp\left(\boldsymbol{\omega}^{\top}\boldsymbol{x}\right)\right]=\exp\left(\boldsymbol{\omega}^{\top}\boldsymbol{\mu}+\frac{1}{2}\boldsymbol{\omega}^{\top}\boldsymbol{\Sigma}\boldsymbol{\omega}\right)\ \</div></p>
+<p>特征函数可以用来算正态分布的各阶矩。</p>
+<h2 id="线性代数">线性代数<a class="anchor-link" href="#线性代数" title="Permanent link">&para;</a></h2>
+<p>这里补充一些线性代数基础，它们在后面的推导中会频繁用到。同样地，这仅仅是“回顾”，并不能作为线性代数教程。</p>
+<h3 id="内积范数">内积范数<a class="anchor-link" href="#内积范数" title="Permanent link">&para;</a></h3>
+<p>首先，我们来定义内积和范数。对于向量<span class="math-inline">\boldsymbol{x}=(x_1,\cdots,x_n)</span> <span class="math-inline">\boldsymbol{y}=(y_1,\cdots,y_n)</span>，内积按照</p>
+<p><div class="math-display">\langle\boldsymbol{x},\boldsymbol{y}\rangle = \sum_{i=1}^n x_i y_i \</div></p>
+<p>来定义，而模长定义为<span class="math-inline">\Vert \boldsymbol{x}\Vert = \sqrt{\langle\boldsymbol{x},\boldsymbol{y}\rangle}</span>。对于<span class="math-inline">m\times n</span> 矩阵<span class="math-inline">\boldsymbol{A}=(a_{i,j}),\boldsymbol{B}=(b_{i,j})</span>，我们按照类似的方式定义：</p>
+<p><div class="math-display">\langle\boldsymbol{A},\boldsymbol{B}\rangle_F = \sum_{i=1}^m\sum_{j=1}^n a_{i,j} b_{i,j} \</div></p>
+<p>这称为Frobenius内积，对应的<span class="math-inline">\Vert \boldsymbol{A}\Vert_F = \sqrt{\langle\boldsymbol{A},\boldsymbol{B}\rangle_F}</span> 为Frobenius范数。不难看到，Frobenius内积和范数，事实上就是把矩阵展平为向量后，当作常规的向量来运算。</p>
+<p>关于Frobenius内积，最关键的性质之一是成立恒等式</p>
+<p><div class="math-display">\langle\boldsymbol{A},\boldsymbol{B}\rangle_F = \text{Tr}\left(\boldsymbol{A}^{\top}\boldsymbol{B}\right) = \text{Tr}\left(\boldsymbol{B}\boldsymbol{A}^{\top}\right) = \text{Tr}\left(\boldsymbol{A}\boldsymbol{B}^{\top}\right) = \text{Tr}\left(\boldsymbol{B}^{\top}\boldsymbol{A}\right)  \</div></p>
+<p>也就是说，矩阵的Frobenius内积可以转化为矩阵乘法的迹，并且交换相乘顺序不改变结果（不改变迹的结果，但是矩阵乘法的整体结果会改变）。</p>
+<h3 id="正定对称">正定对称<a class="anchor-link" href="#正定对称" title="Permanent link">&para;</a></h3>
+<p>接着，来看正定对称矩阵的一些性质。<span class="math-inline">\boldsymbol{\Sigma}</span> 一个正定对称矩阵，对称说的是<span class="math-inline">\boldsymbol{\Sigma}^{\top}=\boldsymbol{\Sigma}</span>，正定说的是对于任意非零向量<span class="math-inline">\boldsymbol{\xi}\in\mathbb{R}^n</span>，都有<span class="math-inline">\boldsymbol{\xi}^{\top}\boldsymbol{\Sigma}\boldsymbol{\xi} &gt; 0</span>。可以证明，如果<span class="math-inline">\boldsymbol{\Sigma}_1,\boldsymbol{\Sigma}_2</span> 是正定对称矩阵，那么<span class="math-inline">\boldsymbol{\Sigma}_1^{-1},\boldsymbol{\Sigma}_2^{-1},\boldsymbol{\Sigma}_1+\boldsymbol{\Sigma}_2</span> 都是正定对称矩阵。如果<span class="math-inline">\boldsymbol{C} = \boldsymbol{B}^{\top}\boldsymbol{A}\boldsymbol{B}</span>，<span class="math-inline">\boldsymbol{B}</span> 可逆阵，那么<span class="math-inline">\boldsymbol{C}</span> 正定对称的当且仅当<span class="math-inline">\boldsymbol{A}</span> 正定对称的。</p>
+<p>此外还有半正定的概念，指对于任意非零向量<span class="math-inline">\boldsymbol{\xi}\in\mathbb{R}^n</span>，都有<span class="math-inline">\boldsymbol{\xi}^{\top}\boldsymbol{\Sigma}\boldsymbol{\xi} \geq 0</span>，也就是说可能存在非零向量<span class="math-inline">\boldsymbol{\xi}</span> 得<span class="math-inline">\boldsymbol{\xi}^{\top}\boldsymbol{\Sigma}\boldsymbol{\xi} = 0</span>。不过考虑到正定矩阵在半正定矩阵中稠密，所以我们不严格区分正定和半正定了，统一按照正定矩阵来处理。</p>
+<p>正定对称矩阵有一个重要的性质，那就是它的SVD分解跟特征值分解一致，即具有下述形式的分解</p>
+<p><div class="math-display">\boldsymbol{\Sigma} = \boldsymbol{U}\boldsymbol{\Lambda}\boldsymbol{U}^{\top} \</div></p>
+<p>其中<span class="math-inline">\boldsymbol{U}</span> 正交矩阵，而<span class="math-inline">\boldsymbol{\Lambda}</span> 对角阵，并且对角线上的元素都是正的。该结果的一个直接推论是：正定对称矩阵都可以“开平方”，其平方根为<span class="math-inline">\boldsymbol{\Sigma}^{1/2} = \boldsymbol{U}\boldsymbol{\Lambda}^{1/2}\boldsymbol{U}^{\top}</span>，其中<span class="math-inline">\boldsymbol{\Lambda}^{1/2}</span> 指将对角线上的元素都开平方，可以检验平方根矩阵也是正定对称的。反过来，可以开平方的对称矩阵，一定也是正定对称矩阵。</p>
+<h3 id="矩阵求导">矩阵求导<a class="anchor-link" href="#矩阵求导" title="Permanent link">&para;</a></h3>
+<p>最后，在求Wasserstein距离的时候，还需要用到一些矩阵求导公式，如果不了解的读者，可以直接参考维基百科的“<strong><a href="https://en.wikipedia.org/wiki/Matrix_calculus">Matrix Calculus</a></strong>”。当然，其实也不难，主要用到了</p>
+<p><div class="math-display">\frac{\partial\,\text{Tr}\left(\boldsymbol{X}\boldsymbol{A}\right)}{\partial \boldsymbol{X}} = \boldsymbol{A} \</div></p>
+<p>剩下的可以结合迹的运算公式来派生出来，比如</p>
+<p><div class="math-display">\frac{\partial\,\text{Tr}\left(\boldsymbol{A}\boldsymbol{X}\boldsymbol{B}\right)}{\partial \boldsymbol{X}} = \frac{\partial\,\text{Tr}\left(\boldsymbol{X}\boldsymbol{B}\boldsymbol{A}\right)}{\partial \boldsymbol{X}} = \boldsymbol{B}\boldsymbol{A} \</div></p>
+<h2 id="kl散度">KL散度<a class="anchor-link" href="#kl散度" title="Permanent link">&para;</a></h2>
+<p>作为第一个尝试，我们来算两个高斯分布的<strong><a href="https://en.wikipedia.org/wiki/Kullback–Leibler_divergence">KL散度（Kullback-​Leibler divergence）</a></strong>。KL散度算是最常用的分布度量之一了，因为它积分之前需要取对数，这对于指数簇分布来说通常能得到相对简单的结果。此外它还跟“熵”有着比较紧密的联系。</p>
+<h3 id="计算结果">计算结果<a class="anchor-link" href="#计算结果" title="Permanent link">&para;</a></h3>
+<p>两个概率分布的KL散度定义为</p>
+<p><div class="math-display">KL(p(\boldsymbol{x})\Vert q(\boldsymbol{x}))=\mathbb{E}<em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[\log \frac{p(\boldsymbol{x})}{q(\boldsymbol{x})}\right]=\mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[\log p(\boldsymbol{x})\right]+\mathbb{E}_{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[-\log q(\boldsymbol{x})\right] \</div></p>
+<p>对于两个正态分布来说，计算结果是</p>
+<p><div class="math-display">KL(p(\boldsymbol{x})\Vert q(\boldsymbol{x}))=\frac{1}{2}\left[(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)-\log \det(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p) + \text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p\right) - n\right] \</div></p>
+<p>特别地，当<span class="math-inline">q</span> 标准正态分布时，结果简化为</p>
+<p><div class="math-display">KL(p(\boldsymbol{x})\Vert q(\boldsymbol{x}))=\frac{1}{2}\left[\Vert\boldsymbol{\mu}_p\Vert^2-\log \det(\boldsymbol{\Sigma}_p) + \text{Tr}(\boldsymbol{\Sigma}_p) - n\right]\</div></p>
+<h3 id="推导过程">推导过程<a class="anchor-link" href="#推导过程" title="Permanent link">&para;</a></h3>
+<p>从KL散度的定义知道，我们主要把<span class="math-inline">\mathbb{E}_{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[-\log q(\boldsymbol{x})\right]</span> 出来就行了：</p>
+<p><div class="math-display">\begin{aligned} \mathbb{E}<em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[-\log q(\boldsymbol{x})\right] =&amp;\, \mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[\frac{n}{2}\log 2\pi + \frac{1}{2}\log \det(\Sigma_q) + \frac{1}{2}(\boldsymbol{x}-\boldsymbol{\mu}<em>q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_q)\right]\ =&amp;\,\frac{n}{2}\log 2\pi + \frac{1}{2}\log \det(\boldsymbol{\Sigma}_q) + \frac{1}{2}\mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[(\boldsymbol{x}-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_q)\right] \end{aligned}\</div></p>
+<p>现在，关于迹的恒等式就可以派上用场了：</p>
+<p><div class="math-display">\begin{aligned} \mathbb{E}<em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[(\boldsymbol{x}-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_q)\right]=&amp;\,\mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[\text{Tr}\left((\boldsymbol{x}-\boldsymbol{\mu}<em>q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_q\right)\right]\ =&amp;\,\mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[\text{Tr}\left(\boldsymbol{\Sigma}<em>q^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_q\right)(\boldsymbol{x}-\boldsymbol{\mu}_q)^{\top}\right]\ =&amp;\,\text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[(\boldsymbol{x}-\boldsymbol{\mu}<em>q)(\boldsymbol{x}-\boldsymbol{\mu}_q)^{\top}\right]\right)\ =&amp;\,\text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\mathbb{E}</em>{\boldsymbol{x}\sim p(\boldsymbol{x})}\left[\boldsymbol{x}\boldsymbol{x}^{\top}-\boldsymbol{\mu}_q\boldsymbol{x}^{\top} - \boldsymbol{x}\boldsymbol{\mu}_q^{\top} +  \boldsymbol{\mu}_q\boldsymbol{\mu}_q^{\top}\right]\right)\ =&amp;\,\text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\left(\boldsymbol{\Sigma}_p + \boldsymbol{\mu}_p\boldsymbol{\mu}_p^{\top}-\boldsymbol{\mu}_q\boldsymbol{\mu}_p^{\top} - \boldsymbol{\mu}_p\boldsymbol{\mu}_q^{\top} +  \boldsymbol{\mu}_q\boldsymbol{\mu}_q^{\top}\right)\right)\ =&amp;\,\text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p + \boldsymbol{\Sigma}_q^{-1}(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)^{\top}\right)\ =&amp;\,\text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p\right) + (\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)\ \end{aligned}\</div></p>
+<p>注意<span class="math-inline">\boldsymbol{\mu}_q=\boldsymbol{\mu}_p,\boldsymbol{\Sigma}_q=\boldsymbol{\Sigma}_p</span> ，上式就等于<span class="math-inline">n</span>，此时就对应正态分布的熵。所以最终得到</p>
+<p><div class="math-display">\begin{aligned} KL(p(\boldsymbol{x})\Vert q(\boldsymbol{x}))=&amp;\,\frac{1}{2}\left[n\log 2\pi + \log \det(\boldsymbol{\Sigma}_q) + \text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p\right) + (\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)\right] \ &amp;\,\qquad- \frac{1}{2}\left[n\log 2\pi + \log \det(\boldsymbol{\Sigma}_p) + n\right]\ =&amp;\,\frac{1}{2}\left[(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{\mu}_p-\boldsymbol{\mu}_q)-\log \det(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p) + \text{Tr}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Sigma}_p\right) - n\right] \end{aligned}\</div></p>
+<h2 id="巴氏距离">巴氏距离<a class="anchor-link" href="#巴氏距离" title="Permanent link">&para;</a></h2>
+<p>然后，我们来看看<strong><a href="https://en.wikipedia.org/wiki/Bhattacharyya_distance">巴氏距离（Bhattacharyya distance）</a></strong>，它定义为</p>
+<p><div class="math-display">BD(p(\boldsymbol{x}), q(\boldsymbol{x})) = -\log \int \sqrt{p(\boldsymbol{x}) q(\boldsymbol{x})} d\boldsymbol{x} \</div></p>
+<p>与之相关的还有一个叫做“<strong><a href="https://en.wikipedia.org/wiki/Hellinger_distance">Hellinger距离</a></strong>”的概念，它的平方定义为<span class="math-inline"> \frac{1}{2}\int\left(\sqrt{p(\boldsymbol{x})} - \sqrt{q(\boldsymbol{x})}\right)^2 d\boldsymbol{x}</span>，展开后就能发现跟巴氏距离本质是等价的。</p>
+<h3 id="计算结果_1">计算结果<a class="anchor-link" href="#计算结果_1" title="Permanent link">&para;</a></h3>
+<p>对于两个正态分布来说，它们的巴氏距离为</p>
+<p><div class="math-display">BD(p(\boldsymbol{x}), q(\boldsymbol{x})) = \frac{1}{2}\log \frac{\det(\boldsymbol{\Sigma})}{\sqrt{\det(\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q)}} + \frac{1}{8}(\boldsymbol{\mu}_p - \boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}^{-1}(\boldsymbol{\mu}_p - \boldsymbol{\mu}_q) \</div></p>
+<p>这里<span class="math-inline">\boldsymbol{\Sigma}=\frac{1}{2}(\boldsymbol{\Sigma}_p + \boldsymbol{\Sigma}_q)</span>。可以看到结果是对称的，这是因为巴氏距离的定义本身就是对称的。</p>
+<p>当两者之一为标准正态分布时，结果并没有明显简化，所以这里就不单独写出来了。</p>
+<h3 id="推导过程_1">推导过程<a class="anchor-link" href="#推导过程_1" title="Permanent link">&para;</a></h3>
+<p>按照定义，两个正态分布的巴氏距离，是下述积分的负对数： <div class="math-display">\begin{aligned} &amp;\qquad\int \sqrt{p(\boldsymbol{x}) q(\boldsymbol{x})} d\boldsymbol{x}=\frac{1}{\sqrt[4]{(2\pi)^{2n}\det(\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q)}}\times \ &amp;\int \exp\left{-\frac{1}{4}(\boldsymbol{x}-\boldsymbol{\mu}_p)^{\top}\boldsymbol{\Sigma}_p^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_p)-\frac{1}{4}(\boldsymbol{x}-\boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{x}-\boldsymbol{\mu}_q)\right}d\boldsymbol{x} \end{aligned}\</div> 记<span class="math-inline">\boldsymbol{y}=\boldsymbol{x}-\boldsymbol{\mu}_p, \boldsymbol{\Delta}=\boldsymbol{\mu}_p - \boldsymbol{\mu}_q</span>，积分部分可以换元为 <div class="math-display">\begin{aligned} &amp;\int \exp\left{-\frac{1}{4}\boldsymbol{y}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{y}-\frac{1}{4}(\boldsymbol{y}+\boldsymbol{\Delta})^{\top}\boldsymbol{\Sigma}_q^{-1}(\boldsymbol{y}+\boldsymbol{\Delta})\right}d\boldsymbol{y}\ =&amp;\int \exp\left{-\frac{1}{4}\boldsymbol{y}^{\top}\left(\boldsymbol{\Sigma}_p^{-1}+\boldsymbol{\Sigma}_q^{-1}\right)\boldsymbol{y}-\frac{1}{2}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}_q^{-1}\boldsymbol{y} - \frac{1}{4}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Delta}\right}d\boldsymbol{y}\ =&amp;\int \exp\left{-\frac{1}{2}\boldsymbol{y}^{\top}\left(\boldsymbol{\Sigma}_p^{-1}\boldsymbol{\Sigma}\boldsymbol{\Sigma}_q^{-1}\right)\boldsymbol{y}-\frac{1}{2}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}_q^{-1}\boldsymbol{y} - \frac{1}{4}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Delta}\right}d\boldsymbol{y}\end{aligned}\</div> 这里<span class="math-inline">\boldsymbol{\Sigma}=\frac{1}{2}(\boldsymbol{\Sigma}_p + \boldsymbol{\Sigma}_q)</span>。按照前面介绍的高斯积分公式<span class="math-inline">\eqref{eq:g-int}</span>，积分结果是 <div class="math-display">\begin{aligned} &amp;\,\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma}_p^{-1}\boldsymbol{\Sigma}\boldsymbol{\Sigma}_q^{-1})^{-1}}\exp\left{\frac{1}{8}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Delta}\right)^{\top}\left(\boldsymbol{\Sigma}_p^{-1}\boldsymbol{\Sigma}\boldsymbol{\Sigma}_q^{-1}\right)^{-1}\left(\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Delta}\right)-\frac{1}{4}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}_q^{-1}\boldsymbol{\Delta}\right}\ =&amp;\,\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}^{-1}\boldsymbol{\Sigma}_p)}\exp\left{\frac{1}{8}\boldsymbol{\Delta}^{\top}\left(\boldsymbol{\Sigma}^{-1}\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q^{-1} - 2\boldsymbol{\Sigma}_q^{-1}\right)\boldsymbol{\Delta}\right}\ =&amp;\,\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}^{-1}\boldsymbol{\Sigma}_p)}\exp\left{\frac{1}{8}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}^{-1}\left(\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q^{-1} - 2\boldsymbol{\Sigma}\boldsymbol{\Sigma}_q^{-1}\right)\boldsymbol{\Delta}\right}\ =&amp;\,\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}^{-1}\boldsymbol{\Sigma}_p)}\exp\left{-\frac{1}{8}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{\Delta}\right} \end{aligned}\</div> 所以最终 <div class="math-display">\begin{aligned} BD(p(\boldsymbol{x}), q(\boldsymbol{x})) =&amp;\, -\log \frac{\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}^{-1}\boldsymbol{\Sigma}_p)}}{\sqrt[4]{(2\pi)^{2n}\det(\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q)}}\exp\left{-\frac{1}{8}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{\Delta}\right} \ =&amp;\, -\log \frac{\sqrt[4]{\det(\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q)}}{\sqrt{\det\left(\boldsymbol{\Sigma}\right)}}\exp\left{-\frac{1}{8}\boldsymbol{\Delta}^{\top}\boldsymbol{\Sigma}^{-1}\boldsymbol{\Delta}\right}\ =&amp;\,\frac{1}{2}\log \frac{\det(\boldsymbol{\Sigma})}{\sqrt{\det(\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q)}} + \frac{1}{8}(\boldsymbol{\mu}_p - \boldsymbol{\mu}_q)^{\top}\boldsymbol{\Sigma}^{-1}(\boldsymbol{\mu}_p - \boldsymbol{\mu}_q) \end{aligned} \</div></p>
+<h2 id="w距离">W距离<a class="anchor-link" href="#w距离" title="Permanent link">&para;</a></h2>
+<p>如果读者还想看了解更多关于概率散度的内容，可以参考书籍<strong><a href="https://www.taylorfrancis.com/books/mono/10.1201/9781420034813/statistical-inference-based-divergence-measures-leandro-pardo">《Statistical Inference Based on Divergence Measures》</a></strong>。现在我们转向另一类概率度量——基于最优传输的W距离（Wasserstein距离）。</p>
+<p>沿用<strong><a href="https://kexue.fm/archives/6280">《从Wasserstein距离、对偶理论到WGAN》</a></strong>中的记号，W距离的定义如下：</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\inf_{\gamma\in \Pi[p,q]} \iint \gamma(\boldsymbol{x},\boldsymbol{y}) d(\boldsymbol{x},\boldsymbol{y}) d\boldsymbol{x}d\boldsymbol{y}=\inf_{\gamma\in \Pi[p,q]} \mathbb{E}_{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})} [d(\boldsymbol{x},\boldsymbol{y})] \</div></p>
+<p>不同的<span class="math-inline">d(\boldsymbol{x},\boldsymbol{y})</span> 得到不同的结果，为了得到较为简单的解，这里选择</p>
+<p><div class="math-display">d(\boldsymbol{x},\boldsymbol{y}) = \Vert \boldsymbol{x} - \boldsymbol{y}\Vert^2 \</div></p>
+<h3 id="计算结果_2">计算结果<a class="anchor-link" href="#计算结果_2" title="Permanent link">&para;</a></h3>
+<p>有意思的是，关于两个正态分布的W距离的结果，流传着两个不同的版本，这两个版本都有一定的认知度，但却没有看到有明确说两者等价的资料。两个版本出自不同的论文，还被冠以了不同的名字。</p>
+<h3 id="版本1">版本1<a class="anchor-link" href="#版本1" title="Permanent link">&para;</a></h3>
+<p>首先第一个流传相对较广的版本（很多文献包括维基百科也使用这个版本）：</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2 + \text{Tr}(\boldsymbol{\Sigma}_p) + \text{Tr}(\boldsymbol{\Sigma}_q) - 2\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2})\label{eq:w-v1}\</div> 于这个结果，有的读者可能困惑于“怎么关于<span class="math-inline">p,q</span> 是对称的”，事实上，它关于<span class="math-inline">p,q</span> 对称的，因为 <div class="math-display">\begin{aligned}\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2})=&amp;\,\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2}\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{\Sigma}_q^{-1/2}\boldsymbol{\Sigma}_q^{1/2}\boldsymbol{\Sigma}_p^{1/2})\ =&amp;\,\text{Tr}(\boldsymbol{\Sigma}_q^{1/2}\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2}\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{\Sigma}_q^{-1/2}) \end{aligned}\</div></p>
+<p>然后我们可以直接验证<span class="math-inline">(\boldsymbol{\Sigma}_q^{1/2}\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2}\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{\Sigma}_q^{-1/2})^2=\boldsymbol{\Sigma}_q^{1/2}\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q^{1/2}</span>，所以有<span class="math-inline">\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2})=\text{Tr}((\boldsymbol{\Sigma}_q^{1/2}\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q^{1/2})^{1/2})</span>。</p>
+<h3 id="版本2">版本2<a class="anchor-link" href="#版本2" title="Permanent link">&para;</a></h3>
+<p>第二个看起来稍微简单一些的版本，结果是：</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2 + \text{Tr}(\boldsymbol{\Sigma}_p) + \text{Tr}(\boldsymbol{\Sigma}_q) - 2\text{Tr}((\boldsymbol{\Sigma}_p\boldsymbol{\Sigma}_q)^{1/2})\label{eq:w-v2} \</div></p>
+<p>这个版本通常被称为“<strong><a href="https://en.wikipedia.org/wiki/Fréchet_distance">Fréchet距离</a></strong>”。GAN中经常使用的评价指标FID（<strong><a href="https://arxiv.org/abs/1706.08500">Frechet Inception Distance</a></strong>），就是基于这个公式进行计算的。可以模仿前面证明它关于<span class="math-inline">p,q</span> 对称性，当然也可以从下面的等价性讨论中直接得出。</p>
+<h3 id="等价性">等价性<a class="anchor-link" href="#等价性" title="Permanent link">&para;</a></h3>
+<p>事实上，证明两者的等价性并不难：</p>
+<p><div class="math-display">\begin{aligned}\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2})=&amp;\,\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2}\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{\Sigma}_p^{1/2})\ =&amp;\,\text{Tr}(\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2}\boldsymbol{\Sigma}_p^{-1/2}) \end{aligned}\</div></p>
+<p>然后直接验证<span class="math-inline">(\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2}\boldsymbol{\Sigma}_p^{-1/2})^2=\boldsymbol{\Sigma}_p \boldsymbol{\Sigma}_q</span> 可。</p>
+<h3 id="特殊时">特殊时<a class="anchor-link" href="#特殊时" title="Permanent link">&para;</a></h3>
+<p>特别地，如果<span class="math-inline">\boldsymbol{\Sigma}_p,\boldsymbol{\Sigma}_q</span> 乘法可以交换，那么将会简化为非常直观的形式：</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2 + \Vert \boldsymbol{\Sigma}_p^{1/2} - \boldsymbol{\Sigma}_q^{1/2}\Vert_F^2\label{eq:w-jiaohuan} \</div></p>
+<p>为什么说它非常直观呢？因为正态分布的参数为<span class="math-inline">\boldsymbol{\mu},\boldsymbol{\Sigma}</span>，所以比较正态分布的差异其实就是比较<span class="math-inline">\boldsymbol{\mu},\boldsymbol{\Sigma}</span> 差异，按照机器学习的习惯，一个很容易相当想到的指标是平方误差</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2 + \Vert \boldsymbol{\Sigma}_p - \boldsymbol{\Sigma}_q\Vert_F^2 \</div></p>
+<p>但从物理角度来看，这个指标是不妥的，因为如果将<span class="math-inline">\boldsymbol{\mu}</span> 成是长度量纲，那么<span class="math-inline">\boldsymbol{\Sigma}</span> 具有长度平方的量纲，所以<span class="math-inline">\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2</span> <span class="math-inline">\Vert \boldsymbol{\Sigma}_p - \boldsymbol{\Sigma}_q\Vert_F^2</span> 具有不同量纲的两个量，不能相加。而为了使得量纲一致，直观的想法就是把<span class="math-inline">\boldsymbol{\Sigma}</span>“开平方”后再算平方误差，这就得到了式<span class="math-inline">\eqref{eq:w-jiaohuan}</span>。</p>
+<p>特别地，当<span class="math-inline">q</span> 标准正态分布时，结果简化为</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\Vert \boldsymbol{\mu}_p\Vert^2 + \Vert \boldsymbol{\Sigma}_p^{1/2} - \boldsymbol{I}\Vert_F^2 \</div></p>
+<h3 id="推导过程1">推导过程1<a class="anchor-link" href="#推导过程1" title="Permanent link">&para;</a></h3>
+<p>现在介绍第一个证明，主要参考了论文<strong><a href="https://projecteuclid.org/journals/michigan-mathematical-journal/volume-31/issue-2/A-class-of-Wasserstein-metrics-for-probability-distributions/10.1307/mmj/1029003026.full">《A class of Wasserstein metrics for probability distributions》</a></strong>。另外<strong><a href="https://www.sciencedirect.com/science/article/pii/0024379582901124">《The distance between two random vectors with given dispersion matrices》</a></strong>也提供了一个类似的证明，也可以参考。</p>
+<p>下面的推导过程则是经过笔者简化的，相对原论文的证明来说简单一些，但依然不可避免地会涉及到较多的线性代数知识，我们将分几个部分介绍。</p>
+<h3 id="去均值">去均值<a class="anchor-link" href="#去均值" title="Permanent link">&para;</a></h3>
+<p>不失一般性，我们可以只考虑均值为0的分布<span class="math-inline">p,q</span>。因为如果<span class="math-inline">p,q</span> 均值不为0，那么设对应的均值为0的分布为<span class="math-inline">\tilde{p},\tilde{q}</span>，此时有</p>
+<p><div class="math-display">\begin{aligned} &amp;\,\mathbb{E}<em>{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})}\left[\Vert \boldsymbol{x} - \boldsymbol{y}\Vert^2\right] \ =&amp;\, \mathbb{E}</em>{(\boldsymbol{x},\boldsymbol{y})\sim\tilde{\gamma}(\boldsymbol{x},\boldsymbol{y})}\left[\Vert (\boldsymbol{x} + \boldsymbol{\mu}<em>p) - (\boldsymbol{y} +\boldsymbol{\mu}_q)\Vert^2  \right]\ =&amp;\,\mathbb{E}</em>{(\boldsymbol{x},\boldsymbol{y})\sim\tilde{\gamma}(\boldsymbol{x},\boldsymbol{y})}\left[\Vert \boldsymbol{x} - \boldsymbol{y}\Vert^2 + \Vert \boldsymbol{\mu}<em>p - \boldsymbol{\mu}_q\Vert^2 + 2\langle\boldsymbol{x} - \boldsymbol{y}, \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\rangle\right]\ =&amp;\,\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2 + \mathbb{E}</em>{(\boldsymbol{x},\boldsymbol{y})\sim\tilde{\gamma}(\boldsymbol{x},\boldsymbol{y})}\left[\Vert \boldsymbol{x} - \boldsymbol{y}\Vert^2  \right] \end{aligned}\</div></p>
+<p>该结果意味着</p>
+<p><div class="math-display">\mathcal{W}[p,q]=\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2 + \mathcal{W}[\tilde{p},\tilde{q}] \</div></p>
+<p>所以，只需要算出均值都为零时的Wasserstein距离，然后加上<span class="math-inline">\Vert \boldsymbol{\mu}_p - \boldsymbol{\mu}_q\Vert^2</span> 得到了一般情况的结果。</p>
+<h3 id="纯代数">纯代数<a class="anchor-link" href="#纯代数" title="Permanent link">&para;</a></h3>
+<p>现在我们假设<span class="math-inline">p,q</span> 均值均为0，然后计算</p>
+<p><div class="math-display">\begin{aligned} \mathbb{E}<em>{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})}\left[\Vert \boldsymbol{x} - \boldsymbol{y}\Vert^2\right] =&amp;\, \mathbb{E}</em>{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})}\left[\boldsymbol{x}^{\top} \boldsymbol{x} + \boldsymbol{y}^{\top} \boldsymbol{y} - 2\boldsymbol{y}^{\top} \boldsymbol{x}\right]\ =&amp;\, \mathbb{E}<em>{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})}\left[\text{Tr}\left(\boldsymbol{x} \boldsymbol{x}^{\top} + \boldsymbol{y} \boldsymbol{y}^{\top} - 2\boldsymbol{x}\boldsymbol{y}^{\top} \right)\right]\ =&amp;\, \text{Tr}\left(\mathbb{E}</em>{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})}\left[\boldsymbol{x} \boldsymbol{x}^{\top} + \boldsymbol{y} \boldsymbol{y}^{\top} - 2\boldsymbol{x}\boldsymbol{y}^{\top}\right]\right)\ =&amp;\, \text{Tr}(\boldsymbol{\Sigma}_p) + \text{Tr}(\boldsymbol{\Sigma}_q) - 2\text{Tr}(\boldsymbol{C}) \end{aligned}\</div></p>
+<p>其中</p>
+<p><div class="math-display">\boldsymbol{\Sigma}<em>{\gamma}= \begin{pmatrix} \boldsymbol{\Sigma}_p &amp; \boldsymbol{C}\ \boldsymbol{C}^{\top} &amp; \boldsymbol{\Sigma}_q\end{pmatrix}=\mathbb{E}</em>{(\boldsymbol{x},\boldsymbol{y})\sim\gamma(\boldsymbol{x},\boldsymbol{y})}\left[\begin{pmatrix}\boldsymbol{x} \ \boldsymbol{y}\end{pmatrix}\begin{pmatrix}\boldsymbol{x}^{\top} &amp; \boldsymbol{y}^{\top}\end{pmatrix}\right] \</div></p>
+<p>构成联合分布<span class="math-inline">\gamma</span> 协方差矩阵。我们知道协方差矩阵是正定对阵矩阵，所以从代数的角度看，问题变成了： 已知<span class="math-inline">\boldsymbol{\Sigma}_{\gamma}= \begin{pmatrix} \boldsymbol{\Sigma}_p &amp; \boldsymbol{C}\ \boldsymbol{C}^{\top} &amp; \boldsymbol{\Sigma}_q\end{pmatrix}</span> 正定对称矩阵，求<span class="math-inline">\text{Tr}(\boldsymbol{C})</span> 最大值。</p>
+<h3 id="舒尔补">舒尔补<a class="anchor-link" href="#舒尔补" title="Permanent link">&para;</a></h3>
+<p>为此，我们需要利用下述关于“舒尔补”的恒等式：</p>
+<p><div class="math-display">\begin{pmatrix} \boldsymbol{\Sigma}_p &amp; \boldsymbol{C}\ \boldsymbol{C}^{\top} &amp; \boldsymbol{\Sigma}_q\end{pmatrix} = \begin{pmatrix} \boldsymbol{I} &amp; \boldsymbol{0}\ \boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1} &amp; \boldsymbol{I}\end{pmatrix} \begin{pmatrix} \boldsymbol{\Sigma}_p &amp; \boldsymbol{0}\ \boldsymbol{0} &amp; \boldsymbol{\Sigma}_q - \boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{C}\end{pmatrix} \begin{pmatrix} \boldsymbol{I} &amp; \boldsymbol{\Sigma}_p^{-1}\boldsymbol{C} \ \boldsymbol{0} &amp; \boldsymbol{I}\end{pmatrix} \</div></p>
+<p>其中对称矩阵<span class="math-inline">\boldsymbol{S} = \boldsymbol{\Sigma}_q - \boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{C}</span> 为“<strong><a href="https://en.wikipedia.org/wiki/Schur_complement">舒尔补（Schur Complement）</a></strong>”，该分解具有<span class="math-inline">\boldsymbol{B}^{\top}\boldsymbol{A}\boldsymbol{B}</span> 形式，要想它是正定的，那么<span class="math-inline">\boldsymbol{A}</span> 是正定的，而<span class="math-inline">\boldsymbol{\Sigma}_p</span> 经是正定的，所以<span class="math-inline">\boldsymbol{S}</span> 要是正定的。</p>
+<h3 id="分参数">分参数<a class="anchor-link" href="#分参数" title="Permanent link">&para;</a></h3>
+<p>我们尝试分离参数，即从<span class="math-inline">\boldsymbol{S} = \boldsymbol{\Sigma}_q - \boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{C}</span> 把<span class="math-inline">\boldsymbol{C}</span> 出来。首先移项得到<span class="math-inline">\boldsymbol{\Sigma}_q - \boldsymbol{S} = \boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{C}</span>，由于<span class="math-inline">\boldsymbol{\Sigma}_p</span> 正定对称的，所以<span class="math-inline">\boldsymbol{\Sigma}_p^{-1}</span> 是，从而<span class="math-inline">\boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{C}</span> 是正定对称的，那么它具有正定对称的平方根，即存在正定对称矩阵<span class="math-inline">\boldsymbol{R}</span>，使得</p>
+<p><div class="math-display">\boldsymbol{C}^{\top}\boldsymbol{\Sigma}_p^{-1}\boldsymbol{C} = \boldsymbol{R}^2\quad\Leftrightarrow\quad \left(\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{C}\boldsymbol{R}^{-1}\right)^{\top}\left(\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{C}\boldsymbol{R}^{-1}\right)=\boldsymbol{I} \</div></p>
+<p>这说明<span class="math-inline">\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{C}\boldsymbol{R}^{-1}</span> 正交矩阵，记为<span class="math-inline">\boldsymbol{O}</span>，那么<span class="math-inline">\boldsymbol{C} = \boldsymbol{\Sigma}_p^{1/2}\boldsymbol{O}\boldsymbol{R}</span>。</p>
+<h3 id="乘子法">乘子法<a class="anchor-link" href="#乘子法" title="Permanent link">&para;</a></h3>
+<p>此时，变量分别是<span class="math-inline">\boldsymbol{O}</span> <span class="math-inline">\boldsymbol{R}</span>，求<span class="math-inline">\text{Tr}(\boldsymbol{C})=\text{Tr}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{O}\boldsymbol{R})</span> 最大值。我们先固定<span class="math-inline">\boldsymbol{R}</span>，求取最大值时的<span class="math-inline">\boldsymbol{O}</span>，此时相当于在<span class="math-inline">\boldsymbol{O}^{\top}\boldsymbol{O}=\boldsymbol{I}</span> 约束下，求<span class="math-inline">\text{Tr}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{O}\boldsymbol{R})</span> 最大值，我们用“<strong><a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">拉格朗日乘子法</a></strong>”：引入新参数矩阵<span class="math-inline">\boldsymbol{W}</span>，转化为下述无约束极值问题</p>
+<p><div class="math-display">F = \text{Tr}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{O}\boldsymbol{R}) - \text{Tr}(\boldsymbol{W}(\boldsymbol{O}^{\top}\boldsymbol{O} - \boldsymbol{I})) \</div></p>
+<p>求导：</p>
+<p><div class="math-display">\begin{aligned} &amp;\frac{\partial F}{\partial \boldsymbol{O}} = \boldsymbol{0} \quad \Rightarrow\quad \boldsymbol{R}\boldsymbol{\Sigma}_p^{1/2} = \boldsymbol{W}\boldsymbol{O}^{\top}\ &amp;\frac{\partial F}{\partial \boldsymbol{W}} = \boldsymbol{0} \quad \Rightarrow\quad \boldsymbol{O}^{\top}\boldsymbol{O} = \boldsymbol{I}\ \end{aligned}\</div></p>
+<p>首先留意到<span class="math-inline">\boldsymbol{O}^{\top}\boldsymbol{O} - \boldsymbol{I}</span> 对称的，因此对应的参数矩阵<span class="math-inline">\boldsymbol{W}</span> 是对称的，于是我们有：</p>
+<p><div class="math-display">\left(\boldsymbol{O}\boldsymbol{W}\boldsymbol{O}^{\top}\right)^2=\left(\boldsymbol{W}\boldsymbol{O}^{\top}\right)^{\top}\left(\boldsymbol{W}\boldsymbol{O}^{\top}\right)=\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{R}^2\boldsymbol{\Sigma}_p^{1/2} \</div></p>
+<p>即<span class="math-inline">\boldsymbol{O}\boldsymbol{W}\boldsymbol{O}^{\top}=(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{R}^2\boldsymbol{\Sigma}_p^{1/2})^{1/2}</span>，所以此时</p>
+<p><div class="math-display">\text{Tr}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{O}\boldsymbol{R})=\text{Tr}(\boldsymbol{O}\boldsymbol{R}\boldsymbol{\Sigma}_p^{1/2})=\text{Tr}(\boldsymbol{O}\boldsymbol{W}\boldsymbol{O}^{\top})=\text{Tr}((\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{R}^2\boldsymbol{\Sigma}_p^{1/2})^{1/2}) \</div></p>
+<h3 id="不等式">不等式<a class="anchor-link" href="#不等式" title="Permanent link">&para;</a></h3>
+<p>最后需要把<span class="math-inline">\boldsymbol{R}</span> 定下来。回顾<span class="math-inline">\boldsymbol{R}</span> 定义，我们有<span class="math-inline">\boldsymbol{R}^2=\boldsymbol{\Sigma}_q - \boldsymbol{S}</span>，其中<span class="math-inline">\boldsymbol{S}</span> 正定矩阵。直觉上<span class="math-inline">\boldsymbol{S}=\boldsymbol{0}</span> 取得最大值，事实上也确实如此，这算是“<strong><a href="https://en.wikipedia.org/wiki/Weyl's_inequality">Weyl不等式</a></strong>”的一个直接推论。</p>
+<p>根据Weyl不等式，如果矩阵<span class="math-inline">\boldsymbol{A},\boldsymbol{B},\boldsymbol{A}+\boldsymbol{B}</span> 是正定对称矩阵，它们的特征值从小到大排列分别为<span class="math-inline">0\leq\lambda_1^{(A)} \leq \dots \leq \lambda_n^{(A)}</span>、<span class="math-inline">\lambda_1^{(B)} \leq \dots \leq \lambda_n^{(B)}</span> <span class="math-inline">0\leq\lambda_1^{(A+B)} \leq \dots \leq \lambda_n^{(A+B)}</span>，那么对于任意<span class="math-inline">1\leq i \leq n</span>，都有<span class="math-inline">\lambda_i^{(A)}\leq \lambda_i^{(A+B)}</span> <span class="math-inline">\lambda_i^{(B)}\leq \lambda_i^{(A+B)}</span>，也就是说： 正定对称矩阵的和的特征值，一一对应地大于它们各自的特征值。</p>
+<p>有了这个结论，那就简单了，设<span class="math-inline">\left(\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_q - \boldsymbol{S})\boldsymbol{\Sigma}_p^{1/2}\right)^{1/2}</span> 特征值为<span class="math-inline">0 \leq \lambda_1 \leq \dots \leq \lambda_n</span>，那么它的迹就是<span class="math-inline">\lambda_1 + \dots + \lambda_n</span>，对应地，<span class="math-inline">\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_q - \boldsymbol{S})\boldsymbol{\Sigma}_p^{1/2}</span> 特征值为<span class="math-inline">0 \leq \lambda_1^2 \leq \dots \leq \lambda_n^2</span>，注意<span class="math-inline">\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_q - \boldsymbol{S})\boldsymbol{\Sigma}_p^{1/2}</span> 正定对称矩阵（对称是显然的，而因为它能开平方，所以正定），<span class="math-inline">\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{S}\boldsymbol{\Sigma}_p^{1/2}</span> 是正定对称的（因为<span class="math-inline">\boldsymbol{S}</span> 正定对称的），所以它们的特征值，都不超过它们的和——也就是<span class="math-inline">\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2}</span> 特征值，所以说，<span class="math-inline">\left(\boldsymbol{\Sigma}_p^{1/2}(\boldsymbol{\Sigma}_q - \boldsymbol{S})\boldsymbol{\Sigma}_p^{1/2}\right)^{1/2}</span> 个特征值的最大值（也就是迹的最大值），在<span class="math-inline">\boldsymbol{S}=\boldsymbol{0}</span> 取到。</p>
+<p>至于Weyl不等式的证明，主要利用到了<strong><a href="https://en.wikipedia.org/wiki/Rayleigh_quotient">Rayleigh quotient</a></strong>和<strong><a href="https://en.wikipedia.org/wiki/Min-max_theorem">Courant–Fischer定理</a></strong>，有兴趣了解的读者自行查阅这两部分资料后，再查阅Wely不等式的证明就好。事实上，熟悉这两部分内容后，Weyl不等式基本上就“水到渠成”了。</p>
+<h3 id="推导过程2">推导过程2<a class="anchor-link" href="#推导过程2" title="Permanent link">&para;</a></h3>
+<p>这里继续介绍另一个更为简单的证明，原始证明可以在<strong><a href="https://core.ac.uk/download/pdf/82269844.pdf">《The Fréchet distance between multivariate normal distributions》</a></strong>找到。相对而言该证明简单不少，尤其是不需要太多的纯线性代数知识。下面的推导过程依旧是经过笔者进一步简化的，比原始论文更好理解一些。</p>
+<p>在这个推导过程中，“去均值”、“纯代数”两个步骤跟“推导过程1”是一样的，不再重复。所以，此时问题已经被转化为 已知<span class="math-inline">\boldsymbol{\Sigma}_{\gamma}= \begin{pmatrix} \boldsymbol{\Sigma}_p &amp; \boldsymbol{C}\ \boldsymbol{C}^{\top} &amp; \boldsymbol{\Sigma}_q\end{pmatrix}</span> 正定对称矩阵，求<span class="math-inline">\text{Tr}(\boldsymbol{C})</span> 最大值。</p>
+<h3 id="分块阵">分块阵<a class="anchor-link" href="#分块阵" title="Permanent link">&para;</a></h3>
+<p>由于<span class="math-inline">\boldsymbol{\Sigma}_{\gamma}</span> 正定对称矩阵，所以它必然可以表达成<span class="math-inline">\boldsymbol{D}\boldsymbol{D}^{\top}</span> 形式，我们将<span class="math-inline">\boldsymbol{D}</span> 达为分块矩阵<span class="math-inline">\begin{pmatrix}\boldsymbol{A} \ \boldsymbol{B}\end{pmatrix}</span>，其中<span class="math-inline">\boldsymbol{A},\boldsymbol{B}\in \mathbb{R}^{n\times 2n}</span>，此时</p>
+<p><div class="math-display">\begin{pmatrix} \boldsymbol{\Sigma}_p &amp; \boldsymbol{C}\ \boldsymbol{C}^{\top} &amp; \boldsymbol{\Sigma}_q\end{pmatrix} = \begin{pmatrix}\boldsymbol{A} \ \boldsymbol{B}\end{pmatrix} \begin{pmatrix}\boldsymbol{A}^{\top} &amp; \boldsymbol{B}^{\top}\end{pmatrix} = \begin{pmatrix} \boldsymbol{A}\boldsymbol{A}^{\top} &amp; \boldsymbol{A}\boldsymbol{B}^{\top}\ \boldsymbol{B}\boldsymbol{A}^{\top} &amp; \boldsymbol{B}\boldsymbol{B}^{\top}\end{pmatrix} \</div></p>
+<p>对应地有<span class="math-inline">\boldsymbol{\Sigma}_p=\boldsymbol{A}\boldsymbol{A}^{\top}, \boldsymbol{\Sigma}_q=\boldsymbol{B}\boldsymbol{B}^{\top},\boldsymbol{C}=\boldsymbol{A}\boldsymbol{B}^{\top}</span>。</p>
+<h3 id="乘子法_1">乘子法<a class="anchor-link" href="#乘子法_1" title="Permanent link">&para;</a></h3>
+<p>在上述参数化之下，问题转化为： 已知<span class="math-inline">\boldsymbol{A}\boldsymbol{A}^{\top}=\boldsymbol{\Sigma}_p, \boldsymbol{B}\boldsymbol{B}^{\top}=\boldsymbol{\Sigma}_q</span>，求<span class="math-inline">\text{Tr}(\boldsymbol{A}\boldsymbol{B}^{\top})</span> 最大值。</p>
+<p>这是一个带约束的最大值问题，我们用“<strong><a href="https://en.wikipedia.org/wiki/Lagrange_multiplier">拉格朗日乘子法</a></strong>”：引入新参数矩阵<span class="math-inline">\boldsymbol{W}_p, \boldsymbol{W}_q</span>，转化为下述无约束极值问题</p>
+<p><div class="math-display">F = \text{Tr}(\boldsymbol{A}\boldsymbol{B}^{\top}) - \text{Tr}(\boldsymbol{W}_p(\boldsymbol{A}\boldsymbol{A}^{\top} - \boldsymbol{\Sigma}_p)) - \text{Tr}(\boldsymbol{W}_q(\boldsymbol{B}\boldsymbol{B}^{\top} - \boldsymbol{\Sigma}_q)) \</div></p>
+<p>求导：</p>
+<p><div class="math-display">\begin{aligned} &amp;\frac{\partial F}{\partial \boldsymbol{A}} = \boldsymbol{0} \quad \Rightarrow\quad \boldsymbol{B}^{\top} = \boldsymbol{A}^{\top}\boldsymbol{W}_p\ &amp;\frac{\partial F}{\partial \boldsymbol{B}} = \boldsymbol{0} \quad \Rightarrow\quad \boldsymbol{A}^{\top} = \boldsymbol{B}^{\top}\boldsymbol{W}_q\ &amp;\frac{\partial F}{\partial \boldsymbol{W}_p} = \boldsymbol{0} \quad \Rightarrow\quad \boldsymbol{A}\boldsymbol{A}^{\top} = \boldsymbol{\Sigma}_p\ &amp;\frac{\partial F}{\partial \boldsymbol{W}_q} = \boldsymbol{0} \quad \Rightarrow\quad \boldsymbol{B}\boldsymbol{B}^{\top} = \boldsymbol{\Sigma}_q\ \end{aligned}\</div></p>
+<p>注意到<span class="math-inline">\boldsymbol{A}\boldsymbol{A}^{\top} - \boldsymbol{\Sigma}_p</span> <span class="math-inline">\boldsymbol{B}\boldsymbol{B}^{\top} - \boldsymbol{\Sigma}_q</span> 是对称的，所以对应的参数矩阵<span class="math-inline">\boldsymbol{W}_p, \boldsymbol{W}_q</span> 是对称的，此时</p>
+<p><div class="math-display">\boldsymbol{\Sigma}_q = \boldsymbol{B}\boldsymbol{B}^{\top} = \left(\boldsymbol{A}^{\top}\boldsymbol{W}_p\right)^{\top}\left(\boldsymbol{A}^{\top}\boldsymbol{W}_p\right)=\boldsymbol{W}_p\boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{W}_p=\boldsymbol{W}_p\boldsymbol{\Sigma}_p\boldsymbol{W}_p\ \</div></p>
+<p>令<span class="math-inline">\boldsymbol{W}_p=\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{R}\boldsymbol{\Sigma}_p^{-1/2}</span>，代入上式得<span class="math-inline">\boldsymbol{\Sigma}_q=\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{R}^2\boldsymbol{\Sigma}_p^{-1/2}</span>，即</p>
+<p><div class="math-display">\boldsymbol{R} = (\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{\Sigma}_q\boldsymbol{\Sigma}_p^{1/2})^{1/2} \</div></p>
+<p>而</p>
+<p><div class="math-display">\begin{aligned} \text{Tr}(\boldsymbol{A}\boldsymbol{B}^{\top}) =&amp;\, \text{Tr}(\boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{W}_p)=\text{Tr}(\boldsymbol{\Sigma}_p\boldsymbol{W}_p)\ =&amp;\,\text{Tr}(\boldsymbol{\Sigma}_p^{1/2}\boldsymbol{R}\boldsymbol{\Sigma}_p^{-1/2}) = \text{Tr}(\boldsymbol{R}\boldsymbol{\Sigma}_p^{-1/2}\boldsymbol{\Sigma}_p^{1/2})\ =&amp;\,\text{Tr}(\boldsymbol{R}) \end{aligned}\</div></p>
+<h2 id="文章小结">文章小结<a class="anchor-link" href="#文章小结" title="Permanent link">&para;</a></h2>
+<p>本文详细计算了两个多元正态分布的KL散度、巴氏距离和W距离，给出了它们的显式解析解，这些结果在某些场景下可以作为隐变量的正则项使用，来规范隐变量的分布。此外，本文还可以作为比较有挑战性的线性代数练习题，供大家参考练习。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

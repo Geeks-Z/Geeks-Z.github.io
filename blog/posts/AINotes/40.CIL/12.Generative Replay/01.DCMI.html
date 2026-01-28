@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#dual-consistency-model-inversion-for-non-exemplar-class-incremental-learning">Dual-consistency Model Inversion for Non-exemplar Class Incremental Learning</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-类别增量学习">2.1. 类别增量学习</a></li>
+<li><a href="#22-模型反转">2.2. 模型反转</a></li>
+<li><a href="#23-知识蒸馏">2.3. 知识蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#3-动机">3. 动机</a></li>
+<li><a href="#4-提出的方法">4. 提出的方法</a><ul>
+<li><a href="#41-旧类别的双重一致性反转">4.1. 旧类别的双重一致性反转</a><ul>
+<li><a href="#411-语义一致性">4.1.1. 语义一致性</a></li>
+<li><a href="#412-域一致性">4.1.2. 域一致性</a></li>
+</ul>
+</li>
+<li><a href="#42-新类别的网络适应">4.2. 新类别的网络适应</a></li>
+<li><a href="#43-无偏预测的原型路由">4.3. 无偏预测的原型路由</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-数据集和设置">5.1. 数据集和设置</a></li>
+<li><a href="#52-消融研究和分析">5.2. 消融研究和分析</a></li>
+<li><a href="#53-比较结果">5.3. 比较结果</a></li>
+<li><a href="#54-可视化">5.4. 可视化</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/12.Generative Replay</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="dual-consistency-model-inversion-for-non-exemplar-class-incremental-learning">Dual-consistency Model Inversion for Non-exemplar Class Incremental Learning<a class="anchor-link" href="#dual-consistency-model-inversion-for-non-exemplar-class-incremental-learning" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://ieeexplore.ieee.org/document/10658123/?arnumber=10658123">Paper</a> | <a href="">Code</a> |  CVPR 2024</p>
+</blockquote>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>非范例类增量学习（NECIL）旨在在历史数据不可用的情况下，不断吸收新知识，同时不忘先前获得的知识。一种生成性 NECIL 方法是反转旧类别的图像进行联合训练。然而，这些合成图像与真实数据相比存在显著的域偏移，妨碍了对旧类别的识别。在本文中，我们提出了一种新的方法，称为双重一致性模型反转（DCMI），通过两个关键的一致性对齐来生成更好的旧类别合成样本：（1）合成图像与相应原型之间的语义一致性；以及（2）新类别合成和真实图像之间的域一致性。此外，我们引入了原型路由（PR），以提供任务先验信息并生成无偏见且准确的预测。我们在不同数据集上的综合实验一致地展示了我们方法相对于先前最先进方法的优越性。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>当将训练有素的深度神经分类网络应用于新类别时，通常的策略是对新图像进行微调，这往往会导致对旧类别的灾难性遗忘。类别增量学习（CIL）旨在不断适应新类别，同时不忘已学习的类别。基于范例的方法通过存储旧类别数据的子集作为范例，并在未来与新类别数据一起重新训练，显示出了希望。虽然有效，但在实践中存储范例可能存在挑战，因为担心数据隐私或存储空间有限。非范例类增量学习（NECIL），也称为无范例 CIL，最近受到了越来越多的关注。与基于范例的对应方法相比，它在训练和存储效率方面具有优势，并解决了与数据隐私和版权相关的担忧。与此同时，缺乏范例的情况下训练模型更具挑战性。现有的非范例方法主要采用知识蒸馏（KD）来防止更新模型，称为“新模型”，通过强制其输出与旧模型一致来忘记学到的知识。然而，仅使用新类别样本进行蒸馏会削弱 KD 的有效性，因为旧类别和新类别之间存在显著的分布差异，导致累积错误。为了解决这个问题，基于生成的方法尝试使用模型反转合成旧类别样本，然后使用真实和合成样本对新模型进行蒸馏。这些合成样本通过产生高置信度的分类概率从旧模型生成，类似于旧类别的语义分布。值得注意的是，与预先训练生成器的传统生成方法不同，反转方法不依赖于旧类别的历史数据，使它们在 NECIL 中更实用。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-类别增量学习">2.1. 类别增量学习<a class="anchor-link" href="#21-类别增量学习" title="Permanent link">&para;</a></h3>
+<p>基于范例的方法存储代表性数据作为范例以供将来训练。iCaRL 首先提出在 CIL 中保存范例，此后，复现策略成为后续工作的常见做法。知识蒸馏（KD）被广泛用于防止遗忘。UCIR 引入了对特征分布的 less-forget 约束，PODNet 使用 KD 进行中间特征蒸馏。ISM-Net 引入了模型队列蒸馏以增强长期性能。EEIL 提出了一个额外的平衡微调会话来解决 CIL 中的关键挑战，UCIR 用余弦归一化替换了 softmax 层。最近，一些工作通过模型扩展来提高 CIL 性能。尽管基于范例的方法只保存旧数据的子集，但关于隐私风险和存储需求的担忧仍然存在。非范例方法最近受到了关注。一些方法提出了参数重要性估计来防止关键参数的显著变化，而 LwF 引入了 KD 来约束输出 logits，其中先前的模型作为教师。ABD 引入了模型反转来提高 KD 的有效性，通过合成旧类别数据。PASS 在 CIL 中探索了自监督学习，并提出了原型增强以进行分类器学习。SSRE 引入了自我维持的扩展方案和原型选择。FeTrIL 提出了一种特征转换技术。</p>
+<h3 id="22-模型反转">2.2. 模型反转<a class="anchor-link" href="#22-模型反转" title="Permanent link">&para;</a></h3>
+<p>MI 是数据自由知识蒸馏（DFKD）的重要技术，将知识从训练有素的教师模型转移到紧凑的学生模型，当原始训练数据不可用时。DFKD 在解决模型压缩、迁移学习和增量学习等问题中找到了广泛应用。训练有素的模型封装了数据信息，允许通过噪声优化或生成器进行反向生成。Lopes 等人率先使用激活摘要进行 DFKD，而 Nayak 等人优化了 softmax 类输出计算的类别相似性噪声。Chen 等人集成了生成对抗网络以提高效率，Bhardwaj 等人将激活统计数据存储为元数据。DeepDream 引入了图像先验项，DeepInversion 专注于最小化特征图和批量归一化统计数据之间的距离。</p>
+<h3 id="23-知识蒸馏">2.3. 知识蒸馏<a class="anchor-link" href="#23-知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>KD 最初由 Hinton 等人提出，用于模型压缩和迁移学习。该技术涉及将知识从复杂的教师模型转移到轻量级学生模型，通过让学生模仿教师的输出来实现。知识蒸馏方法可以广泛地分为基于 logits 的蒸馏、基于特征的蒸馏和基于关系的蒸馏。基于 logits 的蒸馏旨在传达标签分布中隐含的信息，而基于特征的蒸馏寻求来自中间特征的指导以促进学生学习。基于关系的蒸馏在样本之间建立结构关系或上下文关系以指导学生网络。与我们工作最相关的是 ABD，它识别了使用合成图像时对性能产生不利影响的显著域偏移。他们通过引入局部 CE 损失和重要性加权特征蒸馏来解决这个问题。在我们的工作中，我们通过纳入新类别数据的认证来增强合成图像的域一致性，这是先前研究中忽视的一个维度。</p>
+<h2 id="3-动机">3. 动机<a class="anchor-link" href="#3-动机" title="Permanent link">&para;</a></h2>
+<p>在 CIL 中，训练数据以单独的任务流进行，每个任务都包含不相交的类别 <span class="math-inline">C_t</span>（<span class="math-inline">0 \leq t \leq N</span>）。CIL 的目标是学习一个模型，该模型对于新旧类别的假设（<span class="math-inline">h_n</span> 和 <span class="math-inline">h_o</span>）与标记函数（<span class="math-inline">f_n</span> 和 <span class="math-inline">f_o</span>）之间的不一致性较低：<br />
+<div class="math-display"><br />
+    \epsilon_{D_n}(h_n, f_n) + \epsilon_{D_o}(h_n, f_o) = \mathbb{E}<em>{x \sim D_n}[|h_n(x) - f_n(x)|] + \mathbb{E}</em>{x \sim D_o}[|h_n(x) - f_o(x)|]. \tag{1}<br />
+</div><br />
+新任务误差项 <span class="math-inline">\epsilon_{D_n}(h_n, f_n)</span> 可以通过使用新任务数据上的典型分类损失来最小化。然而，最小化 <span class="math-inline">\epsilon_{D_o}(h_n, f_o)</span> 是具有挑战性的，230因为在学习新类别时无法访问旧类别分布 <span class="math-inline">D_o</span> 以及旧类别标签 <span class="math-inline">f_o</span>。为了解决这个问222题，知识蒸馏（KD）通常在 CIL 中使用，它确保 <span class="math-inline">h_n</span> 在学习 <span class="math-inline">D_n</span> 的同时保持接近先前状态 <span class="math-inline">h_o</span>（即，<span class="math-inline">\epsilon_{D_o}(h_o, f_o)</span> 很小）。这里，我们通过推导新假设对旧类别的误差界限，全面理解在 CIL 中应用 KD，考虑旧假设对旧类别的误差、新假设对新类别的误差、新旧假设之间的差异以及蒸馏数据与旧类别数据之间的变分散度：<br />
+<div class="math-display"><br />
+    \epsilon_{D_n}(h_n, f_n) + \epsilon_{D_o}(h_n, f_o) \leq \epsilon_{D_n}(h_n, f_n) + \epsilon_{D_o}(h_o, f_o) + \epsilon_{\hat{D}_o}(h_n, h_o) + d_1(\hat{D}_o, D_o). \tag{2}<br />
+</div><br />
+证明见补充材料。</p>
+<p>在这个界限中，不等式右侧的第一项和第二项预期是很小的，通过经验风险最小化来实现。第三项描述了在蒸馏数据分布 <span class="math-inline">\hat{D}_o</span> 下 <span class="math-inline">h_n</span> 和 <span class="math-inline">h_o</span> 之间的差异，这由 KD 保证。最后一项是旧类别 <span class="math-inline">D_o</span> 和蒸馏数据 <span class="math-inline">\hat{D}_o</span> 之间的分布差异。这个界限揭示了通过设计更好的 KD 技术和使用类似于旧类别分布的蒸馏数据，可以实现更好的 CIL 性能。在缺乏旧类别数据的情况下，许多非范例方法求助于使用新类别数据 <span class="math-inline">D_n</span> 作为 <span class="math-inline">\hat{D}_o</span> 的替代品。然而，<span class="math-inline">D_n</span> 和 <span class="math-inline">D_o</span> 之间存在显著差异，这导致模型偏离其先前的最小值，并导致对旧类别的显著遗忘。其他一些方法通过引入类似于旧类别语义分布的合成样本来解决这个问题，这在一定程度上缓解了遗忘。然而，这些方法忽略了合成和真实分布之间的域差距，导致旧类别的合成和真实分布之间存在显著差异。在这项工作中，我们通过生成同时具有语义和域一致性的更好合成样本来解决这个问题。</p>
+<h2 id="4-提出的方法">4. 提出的方法<a class="anchor-link" href="#4-提出的方法" title="Permanent link">&para;</a></h2>
+<h3 id="41-旧类别的双重一致性反转">4.1. 旧类别的双重一致性反转<a class="anchor-link" href="#41-旧类别的双重一致性反转" title="Permanent link">&para;</a></h3>
+<p>最近的生成性 NECIL 方法利用模型反转来合成旧类别样本。然而，显著的域差距对 KD 的有效性产生了负面影响。以下，我们介绍了一种新颖的模型反转方法，用于旧类别合成，确保语义和域一致性。</p>
+<h4 id="411-语义一致性">4.1.1. 语义一致性<a class="anchor-link" href="#411-语义一致性" title="Permanent link">&para;</a></h4>
+<p>我们方法的概述如图 2 所示。为了分离类别，我们使用一个有条件的生成器 <span class="math-inline">G</span>，具有可学习的嵌入向量 <span class="math-inline">E = {e_i}<em>{i=1}^m</span>，其中 <span class="math-inline">m = \sum</em>{i=0}^{t-1}|C_i|</span> 是第 <span class="math-inline">t</span> 阶段的旧类别数量。嵌入空间被构建为嵌入向量 <span class="math-inline">E</span> 的线性跨度。对于每个旧类别 <span class="math-inline">k</span>（<span class="math-inline">1 \leq k \leq m</span>），生成器 <span class="math-inline">G</span> 的输入嵌入 <span class="math-inline">\hat{e}<em>k</span> 被计算为 <span class="math-inline">E</span> 的线性组合，权重为 <span class="math-inline">\alpha_k^i</span>：<br />
+<div class="math-display"><br />
+    \hat{e}_k = \sum</em>{i=1}^{m} \alpha_k^i e_i, \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">\alpha_k^i</span> 表示类别 <span class="math-inline">i</span> 和 <span class="math-inline">k</span> 之间的余弦相似度，随后是 softmax 层：<br />
+<div class="math-display"><br />
+    \alpha_k^i = \frac{\exp(\cos(\mathbf{p}<em>i, \mathbf{p}_k))}{\sum</em>{j=1}^{m} \exp(\cos(\mathbf{p}<em>j, \mathbf{p}_k))}, \tag{4}<br />
+</div><br />
+其中 <span class="math-inline">\mathbf{p}_i</span> 代表类别 <span class="math-inline">i</span> 的平均特征，称为类别原型，<span class="math-inline">\cos(\mathbf{p}_i, \mathbf{p}_k) = \frac{\mathbf{p}_i^T \mathbf{p}_k}{|\mathbf{p}_i| |\mathbf{p}_k|}</span>。然后，旧类别的合成样本如下生成：<br />
+<div class="math-display"><br />
+    \hat{x}_k = G(\hat{e}_k \oplus z), \quad z \sim \mathcal{N}(0, 1), \tag{5}<br />
+</div><br />
+其中 <span class="math-inline">\oplus</span> 表示维度连接。然后，合成样本被投影到旧模型 <span class="math-inline">\theta</em>{t-1}</span> 的深层特征空间。随后，计算 <span class="math-inline">\theta_{t-1}(\hat{x}<em>k)</span> 和原型之间的 softmax 相似度：<br />
+<div class="math-display"><br />
+    \hat{y}_i(\hat{x}_k) = \frac{\exp(\cos(\mathbf{p}_i, \theta</em>{t-1}(\hat{x}<em>k)))}{\sum</em>{j=1}^{m} \exp(\cos(\mathbf{p}<em>j, \theta</em>{t-1}(\hat{x}<em>k)))}. \tag{6}<br />
+</div><br />
+如果 <span class="math-inline">\theta</em>{t-1}(\hat{x}<em>k)</span> 捕获了类别 <span class="math-inline">k</span> 的语义，相似度 <span class="math-inline">\hat{y}_i(\hat{x}_k)</span> 应该与 <span class="math-inline">\alpha_k^i</span> 对齐。因此，我们最小化交叉熵损失以确保语义一致性：<br />
+<div class="math-display"><br />
+    L</em>{oSC}(\hat{x}<em>k) = -\sum</em>{i=1}^{m} \alpha_k^i \log \hat{y}<em>i(\hat{x}_k). \tag{7}<br />
+</div><br />
+类似地，新类别图像 <span class="math-inline">x_l</span>（<span class="math-inline">m &lt; l \leq n, n = \sum</em>{i=0}^{t}|C_i|</span>）被投影到特征空间以获得原型相似度：<br />
+<div class="math-display"><br />
+    \beta_{x_l}^i = \frac{\exp(\cos(\mathbf{p}<em>i, \theta</em>{t-1}(x_l)))}{\sum_{j=1}^{m} \exp(\cos(\mathbf{p}<em>j, \theta</em>{t-1}(x_l)))}. \tag{8}<br />
+</div><br />
+通过与权重 <span class="math-inline">\beta_{x_l}^i</span> 线性组合 <span class="math-inline">e_i</span>，可以获得新类别的叠加嵌入向量：<br />
+<div class="math-display"><br />
+    \hat{x}<em>l = \sum</em>{i=1}^{m} \beta_{x_l}^i e_i. \tag{9}<br />
+</div><br />
+为了进一步增强语义一致性，我们最小化新类别的交叉熵损失：<br />
+<div class="math-display"><br />
+    L_{nSC}(\hat{x}<em>l) = -\sum</em>{i=1}^{m} \beta_{x_l}^i \log \hat{y}(\hat{x}<em>l), \tag{10}<br />
+</div><br />
+其中 <span class="math-inline">\hat{x}_l = G(\hat{e}</em>{x_l} \oplus z)</span>。总体语义一致性损失写为：<br />
+<div class="math-display"><br />
+    \min_{G} L_{SC}(G) = \mathbb{E}<em>{\hat{x}_k \sim G(\hat{e}_k \oplus z)} [L</em>{oSC}(\hat{x}<em>k)] + \mathbb{E}</em>{\hat{x}<em>l \sim G(\hat{e}</em>{x_l} \oplus z)} [L_{nSC}(\hat{x}_l)]. \tag{11}<br />
+</div></p>
+<h4 id="412-域一致性">4.1.2. 域一致性<a class="anchor-link" href="#412-域一致性" title="Permanent link">&para;</a></h4>
+<p>为了解决域偏移问题，我们采用了对抗性学习框架来对齐合成数据 <span class="math-inline">\hat{x}<em>l</span> 与新类别真实数据 <span class="math-inline">x_l</span> 的分布：<br />
+<div class="math-display"><br />
+    \min</em>{G} \max_{D} L_{DC}(G, D) = \mathbb{E}<em>{x_l} [\log D(x_l)] + \mathbb{E}</em>{\hat{x}<em>l \sim G(\hat{x}_l \oplus z)}[\log(1 - D(\hat{x}_l))]. \tag{12}<br />
+</div><br />
+其中 <span class="math-inline">D</span> 是一个判别器，它区分 <span class="math-inline">\hat{x}_l</span> 和 <span class="math-inline">x_l</span> 的域，而 <span class="math-inline">G</span> 生成欺骗判别器 <span class="math-inline">D</span> 的域分布。方程 12 的目标相当于最小化分布 <span class="math-inline">P</em>{x_l}</span> 和 <span class="math-inline">P_{\hat{x}<em>l}</span> 之间的 Jensen-Shannon 散度。由于语义分布已经是一致的，<span class="math-inline">P</em>{x_l}</span> 的域分布被分离并学习。总之，总体优化目标以交替的最小 - 最大方式更新：<br />
+<div class="math-display"><br />
+    \min_{G} \max_{D} L_{Syn} = L_{SC}(G) + \lambda L_{DC}(G, D). \tag{13}<br />
+</div><br />
+我们经验性地设置 <span class="math-inline">\lambda = 0.5</span> 以平衡语义和域之间的一致性。</p>
+<h3 id="42-新类别的网络适应">4.2. 新类别的网络适应<a class="anchor-link" href="#42-新类别的网络适应" title="Permanent link">&para;</a></h3>
+<p>为了学习新类别 <span class="math-inline">X_t</span>，我们初始化一个新的分类器 <span class="math-inline">\phi_t</span>，继承自旧分类器的参数：<span class="math-inline">\phi_{1:m}^t = \phi_{1:m}^{t-1}</span>，其中上标表示类别索引。根据建议，为了防止过度拟合生成的样本，并可能造成错误的决策边界，我们采用局部交叉熵来学习新类别：<br />
+<div class="math-display"><br />
+    L_{LCE} = -\mathbb{E}<em>{t} \log \left( \sum</em>{i=m+1}^{n} P_{i}^{\theta_t, \phi_t}(X_t) \right), \tag{14}<br />
+</div><br />
+其中 <span class="math-inline">P_{m+1:n}^{\theta_t, \phi_t}</span> 表示在新类别中计算的 softmax 概率。使用旧类别的合成数据 <span class="math-inline">\hat{X}<em>t = {\hat{x}_i}</em>{i=1}^m</span>，由方程 5 生成，我们对倒数第二层特征和分类器输出 logits 应用知识蒸馏：<br />
+<div class="math-display"><br />
+    L_{KD} = \left( 1 - \cos \left( \theta_t(X_t \cup \hat{X}<em>t), \theta</em>{t-1}(X_t \cup \hat{X}<em>t) \right) \right) + \left| P</em>{1:m}^{\theta_t, \phi_t}(X_t \cup \hat{X}<em>t) - P</em>{1:m}^{\theta_{t-1}, \phi_{t-1}}(X_t \cup \hat{X}<em>t) \right|. \tag{15}<br />
+</div><br />
+第一项（称为 <span class="math-inline">L</em>{F KD}</span>）防止类别原型漂移并稳定特征分布。第二项（称为 <span class="math-inline">L_{CKD}</span>）保持分类器的区分能力。总体适应损失写为：<br />
+<div class="math-display"><br />
+    \min_{\theta_t, \phi_t} L_{Ad} = L_{LCE} + \gamma L_{KD}, \tag{16}<br />
+</div><br />
+其中 <span class="math-inline">\gamma</span> 经验性地设置为 10。值得注意的是，生成器 <span class="math-inline">G</span> 和嵌入 <span class="math-inline">E</span> 在适应过程后被丢弃。严格遵循 NECIL 设置，不为未来任务存储合成或真实数据。</p>
+<h3 id="43-无偏预测的原型路由">4.3. 无偏预测的原型路由<a class="anchor-link" href="#43-无偏预测的原型路由" title="Permanent link">&para;</a></h3>
+<p>分类器分别针对旧类别和新类别进行训练（参见 <span class="math-inline">L_{LCE}</span> 和 <span class="math-inline">L_{CKD}</span>），这阻止了建立联合预测空间。因此，跨任务的有偏预测发生，导致性能不佳。为了解决这个问题，我们提出了原型路由（PR）来消除预测中的偏差。具体来说，线性分类器 <span class="math-inline">\phi_t</span> 被划分为多个头，每个头对应特定任务，并且只负责该任务中的类别。为了获得无偏的任务先验，我们应用原型匹配：<br />
+<div class="math-display"><br />
+    \hat{u} = \arg \min_{T(i)} d(\theta_t(x), \mathbf{p}<em>i), \tag{17}<br />
+</div><br />
+其中 <span class="math-inline">d(\cdot)</span> 表示余弦距离，<span class="math-inline">T(\cdot)</span> 表示从类别到任务的映射。<span class="math-inline">\hat{u}</span> 是最具相似性的原型的任务标签，用作预测的任务先验。然后，通过任务先验 <span class="math-inline">\hat{u}</span> 激活相应的头，线性分类器输出任务后类别预测：<br />
+<div class="math-display"><br />
+    \hat{y} = \arg \min</em>{y} \phi_{T'(\hat{u}):T'(\hat{u}+1)}^t (\theta_t(x)). \tag{18}<br />
+</div><br />
+其中 <span class="math-inline">T'(\hat{u})</span> 表示任务 <span class="math-inline">\hat{u}</span> 的第一个类别索引。DCMI 在增量任务 <span class="math-inline">t</span>（<span class="math-inline">1 \leq t \leq N</span>）中的算法描述在算法 1 中：</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<h3 id="51-数据集和设置">5.1. 数据集和设置<a class="anchor-link" href="#51-数据集和设置" title="Permanent link">&para;</a></h3>
+<p>基准测试。为了进行全面研究，我们在 CIFAR-100、Tiny-ImageNet、ImageNet-Subset 和 ImageNet-Full 上进行了广泛的实验。协议与一致，其中一半的类别参与初始阶段（CIFAR100 和 ImageNet-Subset 20 阶段除外），其余类别在随后的增量阶段中均匀分布。类别顺序用随机种子 1993 打乱。我们报告标准指标来衡量 CIL 性能，包括平均准确率 <span class="math-inline">AN</span> 和平均遗忘率 <span class="math-inline">FN</span>。理想的 CIL 方法应该有效地学习新类别（高 <span class="math-inline">AN</span>），同时最小化对已学知识的遗忘（低 <span class="math-inline">FN</span>）。</p>
+<p>设置 <span class="math-inline">P=5</span> <span class="math-inline">P=10</span> <span class="math-inline">P=20</span><br />
+<div class="math-display"><br />
+    \begin{array}{|c|c|c|c|c|c|c|}<br />
+    \hline<br />
+    &amp; \multicolumn{3}{|c|}{\text{AN(↑)}} &amp; \multicolumn{3}{|c|}{\text{FN(↓)}} \<br />
+    \hline<br />
+    &amp; P=5 &amp; P=10 &amp; P=20 &amp; P=5 &amp; P=10 &amp; P=20 \<br />
+    \hline<br />
+    \text{Ablate PR} &amp; 58.1 &amp; 56.8 &amp; 49.5 &amp; 0.9 &amp; 0.9 &amp; 1.0 \<br />
+    \hline<br />
+    \text{Ablate SSL} &amp; 65.1 &amp; 64.5 &amp; 60.9 &amp; 7.7 &amp; 7.4 &amp; 8.6 \<br />
+    \hline<br />
+    \text{Ablate LCKD} &amp; 22.6 &amp; 10.0 &amp; 10.6 &amp; 73.8 &amp; 73.1 &amp; 72.5 \<br />
+    \hline<br />
+    \text{Ablate LF KD} &amp; 67.2 &amp; 65.1 &amp; 56.3 &amp; 9.0 &amp; 10.8 &amp; 24.7 \<br />
+    \hline<br />
+    \text{Full Method} &amp; 67.9 &amp; 66.8 &amp; 64.0 &amp; 7.8 &amp; 7.3 &amp; 9.8 \<br />
+    \hline<br />
+    \end{array}<br />
+</div><br />
+表 1. 在 CIFAR-100 数据集上消融组件的结果。PR 和 SSL 分别代表原型路由和自监督学习。</p>
+<h3 id="52-消融研究和分析">5.2. 消融研究和分析<a class="anchor-link" href="#52-消融研究和分析" title="Permanent link">&para;</a></h3>
+<p>原型路由。如表 1 所示，移除 PR 会导致明显的性能下降，主要归因于引入的任务最近偏差。这在图 6a 和 6b 中得到了说明，其中在没有 PR 的情况下观察到明显的偏差，导致基础类别之间的大量混淆。引入 PR 通过提供正确的任务先验有效地减轻了这种偏差。</p>
+<p>自监督学习。表 1 清楚地表明，将自监督学习（SSL）纳入初始任务显著提高了 CIL 性能。如所强调的，SSL 有助于获取更通用和可转移的特征，这对后续任务有利。我们评估了 CIFAR-100 和 Tiny-ImageNet 10 阶段上各种 SSL 方法的有效性。测试了三种常用的 SSL 方法：LabelAug、SupCon 和 SimSiam。图 3a 表明，在初始任务上应用 SSL 可以带来显著的改进，强调了 SSL 在 CIL 中的重要性。然而，SSL 方法的有效性因数据集而异。在 CIFAR-100 上，LabelAug 证明最有效的结果，比不使用 SSL 高出 2.3%。在 Tiny-ImageNet 上，SupCon 成为最有效的 SSL 方法，比不使用 SSL 提高了 1.7%。</p>
+<p>知识蒸馏。如表 1 所示，LCKD 和 LF KD 都是关键组件。去除 LCKD 会损害旧类别的决策边界，导致准确性大幅下降和极高的遗忘率。去除 LF KD 会导致输出特征分布的偏移，破坏类别原型的有效性。此外，我们探索了在 KD 期间合成数据的语义和域一致性的作用。如表 2 所示，仅依赖于语义或域一致性无法保证满意的性能。当合成数据同时展现语义和域一致性时，实现了更好的准确性和更低的遗忘。最佳结果出现在 KD 同时应用于新类别的真实数据和旧类别的合成数据时。此外，我们评估了将合成数据纳入 KD 对模型稳定性和可塑性的影响。实验结果在图 3b 中表明，用合成和真实数据的组合进行蒸馏，为基线和增量类别带来了更高的准确性，实现了稳定性和可塑性之间更有利的平衡。</p>
+<p>表 2. 在 CIFAR-100 数据集上消融 KD 数据的结果，其中（1）仅使用合成数据，（2）仅使用真实数据，（3）真实 + 合成数据。SC 和 DC 分别代表语义一致性和域一致性。</p>
+<p>表示距离。我们调查了旧类别的合成和真实样本之间的表示距离分数（MID）。如图 4 所示，我们将表 2 中的第 1 组设置作为基线 1〜3，从上到下。结果表明，基线 3 和完整方法实现了可比的较低 MID 分数，突出了双重一致性在生成与真实样本分布紧密相似的分布方面的重要性。相反，仅对齐语义或域被证明是不够的。</p>
+<h3 id="53-比较结果">5.3. 比较结果<a class="anchor-link" href="#53-比较结果" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们与以前的最先进 NECIL 方法和一些经典基于范例的方法进行了全面比较。表 4 表明，提出的方法在所有以前的非范例方法中表现优于所有以前的最先进方法。与此同时，与某些基于范例的方法相比，我们的方法甚至在不使用范例的情况下也表现出优越的性能，强调了它在保留旧知识方面的可靠性。具体来说，我们的方法在 CIFAR-100 上显著提高了最先进的结果，分别在 5、10 和 20 阶段超过了以前最好的结果 1.3%、1.0% 和 2.2%。在 Tiny-ImageNet 上，我们的方法超过了最新的最先进方法 SOPE，分别在 5、10 和 20 阶段提高了 1.1%、1.0% 和 0.6%。对于更大规模的数据集，我们的方法在 ImageNet-Subset 上获得了 70.5%、70.0% 和 65.5% 的平均准确率，在 ImageNet-Full 上获得了 61.9%。在图 5 中，我们展示了全面的分类准确率曲线，清楚地说明了我们的方法在各个阶段都优于竞争对手。为了估计模型的遗忘，我们比较了与以前方法的平均遗忘，如表 3 所示。我们的方法一致地实现了比以前方法显著更低的遗忘，证明了它在减轻灾难性遗忘方面的有效性。</p>
+<h3 id="54-可视化">5.4. 可视化<a class="anchor-link" href="#54-可视化" title="Permanent link">&para;</a></h3>
+<p>特征空间的可视化。我们使用 t-SNE 来可视化旧类别的合成和真实数据的特征分布。在图 7 的每个子图中，左半部分展示了在区分不同域方面表现出色的浅层特征，而右半部分显示了在语义上具有区分性深层特征。图 7a 揭示了合成数据与同一类别的真实数据形成了不同的簇，表明了高语义一致性。同时，合成数据与真实数据的域差异很小，证明了域一致性。相比之下，图 7b 未能与相应类别对齐，图 7c 主要突出了显著的域差异。</p>
+<p>类别间相似度的可视化。我们通过计算 CIFAR-100 上基础和增量类别的类原型之间的余弦相似度来评估相似度，如图 6c 所示。结果表明，基础和增量类别之间具有相对较高的相似度，表明通过旧类别概念的组合来表示新类别语义是可行的。</p>
+<p>合成样本的可视化。这里我们提供了来自 ImageNet 的合成样本的可视化。当同时应用语义和域约束时（参见图 8b），生成的样本与真实样本非常相似。然而，当仅应用域一致性时，观察不到可辨识的类别相关模式（见图 8c）。类似地，当仅应用语义一致性时，合成图像在视觉上与真实图像显著不同（见图 8d）。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>本文提出了一种新的生成性方法 DCMI，用于 NECIL。DCMI 能够合成在语义和域上都保持一致性的图像。将这些合成图像整合到知识蒸馏中，取得了显著改进的结果。此外，为了确保无偏预测，我们引入了原型路由，提供准确的任务先验以指导跨任务的预测。在 CIFAR100、Tiny-ImageNet、ImageNet-Subset 和 ImageNet-Full 上进行的广泛实验一致地证明了我们的方法与以前最先进的方法相比的优越性能。</p>
+<p>致谢 部分由国家科技重大项目（2021ZD0112001）、国家自然科学基金（No.62271119, U23A20286, 62071086, 和 08120002），以及民航飞行技术与飞行安全重点实验室独立研究项目（FZ2022ZZ06）支持。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

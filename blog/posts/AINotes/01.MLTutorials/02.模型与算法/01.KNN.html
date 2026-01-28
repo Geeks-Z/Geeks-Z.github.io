@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#knn-简介">KNN 简介</a><ul>
+<li><a href="#距离的计算">距离的计算</a></li>
+<li><a href="#k值的选择">k值的选择</a></li>
+<li><a href="#knn-损失函数">KNN 损失函数</a></li>
+</ul>
+</li>
+<li><a href="#k-个最近邻点的高阶搜索方法">k 个最近邻点的高阶搜索方法</a><ul>
+<li><a href="#kd-树的构建">kd 树的构建</a></li>
+<li><a href="#kd-树的搜索">kd 树的搜索</a></li>
+<li><a href="#最大方差法好在哪里">最大方差法好在哪里</a></li>
+<li><a href="#用大根堆找-k-个最近邻点">用大根堆找 k 个最近邻点</a></li>
+<li><a href="#球树的构造">球树的构造</a></li>
+<li><a href="#球树的搜索">球树的搜索</a></li>
+<li><a href="#球树搜索得到-k-个最近邻点">球树搜索得到 k 个最近邻点</a></li>
+<li><a href="#球树的改进">球树的改进</a></li>
+<li><a href="#求最小外接圆随机增量法">求最小外接圆（随机增量法）</a></li>
+<li><a href="#求最小外接圆凸集法">求最小外接圆（凸集法）</a></li>
+</ul>
+</li>
+<li><a href="#针对当样本数量太多knn计算效率下降的问题的解决方法">针对当样本数量太多KNN计算效率下降的问题的解决方法</a><ul>
+<li><a href="#剪辑法">剪辑法</a></li>
+<li><a href="#多重剪辑法">多重剪辑法</a></li>
+<li><a href="#压缩近邻法">压缩近邻法</a></li>
+</ul>
+</li>
+<li><a href="#利用-knn-解决样本不平衡问题">利用 KNN 解决样本不平衡问题</a><ul>
+<li><a href="#cnn">CNN</a></li>
+<li><a href="#gcnn">GCNN</a></li>
+<li><a href="#cnn-和-gcnn-比较">CNN 和 GCNN 比较</a></li>
+</ul>
+</li>
+<li><a href="#knn-填补缺失数据">KNN 填补缺失数据</a></li>
+<li><a href="#knn-用于回归">KNN 用于回归</a></li>
+<li><a href="#后续">后续</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/02.模型与算法</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="knn-简介">KNN 简介<a class="anchor-link" href="#knn-简介" title="Permanent link">&para;</a></h2>
+<p><strong>假定我们现在有一个训练集，和一个测试集，对于其中一个测试样本，在训练集中找到与该样本最邻近的 <span class="math-inline">k</span> 个样本，在这 <span class="math-inline">k</span> 个样本中，如果多数样本属于某个类，就把测试样本分为这个类。</strong></p>
+<p>更为具体地说，KNN 的步骤是这样的：</p>
+<ol>
+<li><strong>根据给定的距离度量，在训练集 <span class="math-inline">T</span> 中找出与测试样本 <span class="math-inline">x</span> 最邻近的<span class="math-inline">k</span> 点，涵盖这<span class="math-inline">k</span> 点的 <span class="math-inline">x</span> 的邻域记作 <span class="math-inline">N_k(x)</span>。</strong></li>
+<li><strong>在 <span class="math-inline">N_k(x)</span> 中根据分类决策规则（如多数表决）决定 <span class="math-inline">x</span> 的类别 <span class="math-inline">y</span>。</strong></li>
+</ol>
+<p>KNN 的数学表达：</p>
+<p><div class="math-display"><br />
+\y=\arg \max <em>{c j} \sum</em>{x_{i} \in N_{k}(x)} I\left(y_{i}=c_{j}\right)，  i=1， 2， \cdots，  N ； j=1， 2， \cdots， K <br />
+</div></p>
+<p>其中：</p>
+<ul>
+<li><span class="math-inline">I</span> 为指示函数，即当 <span class="math-inline">y_i=c_j</span> 时 <span class="math-inline">I</span> 为1，否则为0</li>
+<li><span class="math-inline">N</span> 是 <span class="math-inline">x</span> 的邻域中样本的数量</li>
+<li><span class="math-inline">c_j</span> 是某一类别</li>
+<li><span class="math-inline">K</span> 是种类的数量</li>
+</ul>
+<p>但是在找 <span class="math-inline">k</span> 近邻之前，需要计算样本点之间的距离，在 KNN 中，比较常见的有<strong>欧式距离和曼哈顿距离</strong>等。</p>
+<h3 id="距离的计算">距离的计算<a class="anchor-link" href="#距离的计算" title="Permanent link">&para;</a></h3>
+<p>k 近邻模型的特征空间一般是 n 维实数向量空间 Rn。使用的距离是欧氏距离，但也可以是其他距离，如更一般的L 距离或 Minkowski 距离。</p>
+<p><strong>对于两点 <span class="math-inline">x_i</span>，<span class="math-inline">x_j</span> 之间的距离的一般公式可以用 Lp 定义</strong>：<br />
+<div class="math-display"><br />
+L_{p}\left(x_{i}， x_{j}\right)=\left(\sum_{l=1}^{n}\left|x_{i}^{(l)}-x_{j}^{(l)}\right|^{p}\right)^{\frac{1}{p}}\ \x_{j}=\left(x_{j}^{(1)}， x_{j}^{(2)}， \cdots， x_{j}^{(n)}\right) \ \x_{j}=\left(x_{j}^{(1)}， x_{j}^{(2)}， \cdots， x_{j}^{(n)}\right)<br />
+</div><br />
+其中：</p>
+<ul>
+<li><span class="math-inline">p</span> 为距离公式的参数</li>
+<li><span class="math-inline">x_i</span>，<span class="math-inline">x_j</span> 都是 <span class="math-inline">n</span> 维特征空间中的向量</li>
+</ul>
+<p>举例来说，对于在二维特征空间中的两个实例 <span class="math-inline">x_1 = (3, 3)，x_2 = (4, 5)</span>：</p>
+<p><strong>当 p=2 时，称为欧氏距离</strong>：</p>
+<p><span class="math-inline">L_{2}\left(x_{1}， x_{2}\right)=\left(\sum_{l=1}^{2}\left|x_{1}^{(l)}-x_{2}^{(l)}\right|^{2}\right)^{\frac{1}{2}}=\left((3-4)^{2}+(3-5)^{2}\right)^{\frac{1}{2}}=\sqrt{5}</span> </p>
+<p><strong>当 p=1 时，称为曼哈顿距离</strong>：</p>
+<p><span class="math-inline">L_{1}\left(x_{1}， x_{2}\right)=\sum_{l=1}^{2}\left|x_{1}^{(l)}-x_{2}^{(l)}\right|=|3-4|+|3-5|=3</span> </p>
+<p><strong>当 p=∞ 时，它是各个坐标距离的最大值</strong>：</p>
+<p><span class="math-inline">L_{\infty}\left(x_{1}， x_{2}\right)=\max {|3-4|，|3-5|}=2</span> </p>
+<p>下图代表在二维空间中 <span class="math-inline">p</span> 取不同值时，与原点的 <span class="math-inline">L</span> 距离为1的点围成的图形。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241208160744.png" style="zoom: 80%;" /></div>
+
+<p>在k近邻算法中，通常都是采用欧氏距离。</p>
+<h3 id="k值的选择">k值的选择<a class="anchor-link" href="#k值的选择" title="Permanent link">&para;</a></h3>
+<p><span class="math-inline">k</span> 代表与测试样本距离最近的训练样本点的数量。</p>
+<p>如果选择较小的 <span class="math-inline">k</span> 值，就相当于用较小的邻域中的训练样本进行预测，“学习”的近似误差会减小，只有与测试样本较近的训练样本才会对预测结果起作用。但缺点是“学习”的估计误差会增大。预测结果会对近邻的样本点非常敏感，而远处的样本点则对此没有影响，如果邻近的样本点恰巧是噪声，预测就会出错。</p>
+<p><strong>k值的减小就意味着整体模型变得复杂，容易发生过拟合。</strong></p>
+<p>如果选择较大的 <span class="math-inline">k</span> 值，优点是可以减少学习的估计误差，但缺点是学习的近似误差会增大。这时与测试样本较远的训练样本也会对预测起作用，使预测发生错误。<strong><span class="math-inline">k</span> 值的增大就意味着整体的模型变得简单，容易发生欠拟合。</strong></p>
+<p><strong>在应用中，<span class="math-inline">k</span> 值一般取一个比较小的数值。通常采用交叉验证法来选取最优的 <span class="math-inline">k</span> 值。</strong></p>
+<h3 id="knn-损失函数">KNN 损失函数<a class="anchor-link" href="#knn-损失函数" title="Permanent link">&para;</a></h3>
+<p><strong>KNN 中的分类决策规则往往是多数表决，即由测试样本的<span class="math-inline">k</span> 邻近的训练样本中的多数类决定测试样本的类。</strong></p>
+<p>多数表决实际可以这样表示：如果分类的损失函数为0-1损失函数（即分类错误则为1，分类正确则为0，要极小化该损失函数，让分类错误的数量下降），分类函数为：</p>
+<p><span class="math-inline">f： \mathbf{R}^{n} \rightarrow\left{c_{1}，  c_{2}，  \cdots，c_{K}\right}</span> </p>
+<p>即共有 <span class="math-inline">K</span> 个类。</p>
+<p>那么，误分类的概率 =（1 - 正确分类的概率）：</p>
+<p><span class="math-inline">P(Y \neq f(X))=1-P(Y=f(X))</span> </p>
+<p><span class="math-inline">\frac{1}{k} \sum_{x_{i} \in N_{k}(x)} I\left(y_{i} \neq c_{j}\right)=1-\frac{1}{k} \sum_{x_{i} \in N_{k}(x)} I\left(y_{i}=c_{j}\right)</span> </p>
+<p>其中 <span class="math-inline">I</span> 是指示函数。</p>
+<p>要使误分类率最小即经验风险最小，就要使 <span class="math-inline">\sum_{x_{i} \in N_{k}(x)} I\left(y_{i}=c_{j}\right)</span> 最大，所以多数表决规则等价于经验风险最小化，因为多数表决使得正确分类的个数最大化，而经验风险最小化是使被误分类的个数最小化，两者等价。</p>
+<p>就像刚才说的，可以通过交叉验证法选择最合适的 <span class="math-inline">k</span> 值，具体就是对多个 <span class="math-inline">k</span> 值训练多个模型，然后通过交叉验证法找到经验风险最小的<span class="math-inline">k</span> ，就是最优<span class="math-inline">k</span> 。</p>
+<p><strong>在实际应用中，如果训练样本数量很多，我们需要计算每个测试样本与每个训练样本的距离，再选择其中与各个测试样本较近的 <span class="math-inline">k</span> 个训练样本，也就是所谓的线性扫描，进而确定测试样本的类，这种操作会消耗大量算力和时间。</strong></p>
+<h2 id="k-个最近邻点的高阶搜索方法">k 个最近邻点的高阶搜索方法<a class="anchor-link" href="#k-个最近邻点的高阶搜索方法" title="Permanent link">&para;</a></h2>
+<h3 id="kd-树的构建">kd 树的构建<a class="anchor-link" href="#kd-树的构建" title="Permanent link">&para;</a></h3>
+<p>kd 树搜索是一个比较基础的改进方法，分为构建和搜索两个部分。</p>
+<p>kd 树的构建又有两种基本方法，一是维度轮替法，二是最大方差法，首先说说维度轮替法。</p>
+<p><strong>按照维度顺序进行构建（维度轮替法）</strong></p>
+<p>我依次伸出三根手指头：维度轮替法可以分为三个步骤</p>
+<ol>
+<li><strong>构造根结点：在特征空间中选择一个维度，选择所有实例在该维度上的中位数作为切分点，如果中位数所在位置不存在样本，则随机选择中位数两边的样本中的一个，使用通过该样本垂直于该维度的线，将特征空间分割为两个部分。</strong></li>
+<li><strong>生成子结点：在分割出来的两个子空间中选择在当前维度小于切分点的子空间，并选择另一个维度，按照步骤1的方法确定切分点，将该子区域再次分割为两个部分，并将该切分点对应的实例特征存储在左子结点。如果选择当前维度大于切分点的子空间，则把新的切分点对应实例特征存储在右子结点。</strong></li>
+<li><strong>重复步骤2，直到特征空间中的子空间中不存在实例点。</strong></li>
+</ol>
+<p>此时大爷哆啦A梦似的从兜中掏出一个笔记本和一本书，我定睛一看，好家伙，原来是经典算法入门《统计学习方法》，他随手一翻，指着书中说道：你看，这书里已经有一个例子，你就按照这例子跟我讲讲。</p>
+<p>我伸手接过：没问题，就让我们<strong>对以下实例建立kd树</strong>：</p>
+<p><span class="math-inline">T=\left{(2，3)^{\mathrm{T}}，(5，4)^{\mathrm{T}}，(9，6)^{\mathrm{T}}，(4，7)^{\mathrm{T}}，(8，1)^{\mathrm{T}}，(7，2)^{\mathrm{T}}\right}</span> </p>
+<p>首先我们选择横轴作为切分轴，将所有实例的横轴坐标从小到大排列为(2, 4, 5, 7, 8, 9)，那么中位数应该是（5+7）/2 = 6，但因为没有实例点的横坐标为 6，而 kd 树中不能存在空结点，于是采用5或7为切分点，这里采用7为切分点，对应的根结点为（7，2）。</p>
+<p>下图中，红色点和线为选中的点和切分轴。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-0dbaedaf72389f4459bbd74333b61cd7_1440w.jpg" /><br />
+接着在切分的子空间中，都选择竖轴作为切分轴，左空间的中位数是4，右空间的中位数是6，因此根结点左边的子结点存储（5，4），右节点存储（9，6）。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-afc5aea9e40bf312157a766f8e7cd60d_1440w.jpg" /><br />
+最后，由于各个子空间中要么不存在样本，要么只存在一个样本，将剩余的样本按照左小右大的原则放入下一层的子结点中即可。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-8e2b29dc313732a6a5bf23366bc2db36_1440w.jpg" /><br />
+可以看到对于根节点而言，左子树高度为2，右子树高度也为2，高度差为0。对于（5，4）这个结点来说，左右高度差为0。对于（9，6）来说，左右高度差为1，不超过1。因此 kd 树是平衡树，即对于每一个节点，其子节点的高度差不超过1。</p>
+<p><strong>按最大方差法建立 kd 树</strong></p>
+<p>相比于维度轮替的方法构建 kd 树，<strong>最大方差法会首先计算各个维度的方差，并选择方差最大的维度进行切分，这种构建 kd 树的方式在训练集样本分布情况较为特殊时，预测的效率较高。</strong></p>
+<p>比如当训练集样本如下分布时，很显然竖轴方差较大，于是根节点选择竖轴来进行切分，这样在寻找最近邻点时，需要遍历另一边的子树节点的概率较小。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-aeab1dbdd71495b13fa5f968266333ec_1440w.jpg" /><br />
+大爷：为什么？</p>
+<p>我：kd 树建立完成后，在预测过程中我们需要对存储在树中的数据进行访问，接下来解释如何对 kd 树进行搜索，讲完这个，就知道最大方差法的好处了。</p>
+<h3 id="kd-树的搜索">kd 树的搜索<a class="anchor-link" href="#kd-树的搜索" title="Permanent link">&para;</a></h3>
+<p><strong>kd 树搜索的过程如下</strong>：</p>
+<ol>
+<li><strong>从根结点出发，递归地向下访问kd树。若预测样本 S 的坐标在当前维小于切分点，则向左访问，反之，向右访问，直到访问到叶节点，取该叶节点作为当前 S 的最近邻点。</strong></li>
+<li><strong>以 S 和当前最近邻点做圆。</strong></li>
+<li><strong>从当前叶节点回退父节点，并访问父节点的另一个分支，检查该节点或者子空间是否与圆相交</strong></li>
+<li><strong>若相交，则需要往下访问子节点，查找是否存在比当前最近邻点更近的节点</strong></li>
+<li><strong>若存在更近的样本，则更新最近邻点，并重复步骤2</strong></li>
+<li><strong>若不存在，则重复步骤3</strong></li>
+<li><strong>若不相交，则不需要访问这一分支，继续回退到上一层父节点，重复步骤3</strong></li>
+<li><strong>退回到根节点后结束搜索过程，并获得最近邻点。</strong></li>
+</ol>
+<p>用刚才构建完成的 kd 树进行举例：</p>
+<p>首先从根节点出发，由于预测点 S 的横坐标小于根节点横坐标，访问左子节点，由于 S 的纵坐标大于当前节点的纵坐标，访问右子节点，到达叶节点，停止向下访问，并以当前叶节点与 S 的距离为圆心画圆。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-8e0e5df46c28f0803f6975c9f917b2b4_1440w.jpg" /><br />
+接着开始回退其父节点，检查圆是否与另一个分支的空间相交，检查方法就是判断 S 的纵坐标和父节点的纵坐标之差是否小于圆半径，若小于半径，则有相交。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-97933686eedd8ab2e50e9a07c2b12aff_1440w.jpg" /><br />
+由于相交，则检查父节点的另一个子空间中的节点，是否比当前最近邻点与 S 更近，因为（2，3）与 S 更近，则更新最近邻点为（2， 3）</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-595b176d78cd97e174b19a6c88731d9d_1440w.jpg" /><br />
+接着回退到父节点（5，4），自然也要判断父节点与 S 的距离，由于距离较大，则不更新最近邻点。</p>
+<p>最后，再次回退到上一层父节点，此时达到根节点（7，2），判断根节点的另一个子空间是否与圆相交，因没有相交，因此可以不访问另一个分支的子节点，也可以不用计算根节点与 S 的距离。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-9f69f8e0180ff9777196bbe9d45f5189_1440w.jpg" /><br />
+如此找到最近邻点为（2，3）。</p>
+<h3 id="最大方差法好在哪里">最大方差法好在哪里<a class="anchor-link" href="#最大方差法好在哪里" title="Permanent link">&para;</a></h3>
+<p>让我们来看一下特殊分布的训练集样本，使用最大方差法好在哪里。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-8423b148224c8b033b185c96dd6a7cb0_1440w.jpg" />  </p>
+<p>维度轮替法（左），最大方差法（右）</p>
+<p><strong>上图中左边是按照维度轮替法进行切分，右边是按照最大方差法进行切分。由于训练集样本在横轴上方差较小，在纵轴上方差较大，我们有理由相信测试集样本的分布与训练集样本的分布相近，因此训练集样本也更有可能在横轴上较为接近，在纵轴上较为分散。</strong></p>
+<p><strong>那么以维度轮替法进行切分就会遇到一个问题，训练集样本很有可能需要对大量父节点，甚至根节点的另一个分支进行访问，而最大方差法则有较大可能不需要访问，正如上图右边的圆没有与任何一个其他子空间相交，因此最大方差法在这种情况下效率更高。</strong></p>
+<p>大爷：哦哦哦哦哦~原来如此，看来小伙子确实有点东西。</p>
+<p>我：但其实还没有解决我们的问题，<strong>KNN 要求找到 <span class="math-inline">k</span> 个最近邻点，如果 <span class="math-inline">k == 1</span> 还好说，如果 <span class="math-inline">k &gt; 1</span> 呢？应该如何找呢？其实解决方案很简单，利用大根堆的特性即可</strong></p>
+<h3 id="用大根堆找-k-个最近邻点">用大根堆找 k 个最近邻点<a class="anchor-link" href="#用大根堆找-k-个最近邻点" title="Permanent link">&para;</a></h3>
+<p>我：之前讨论的所有只是为了找出训练集样本的最近邻点，但 <strong>KNN 要求找出 <span class="math-inline">k</span> 个最近邻点，为了实现这个要求，我们需要维护一个大根堆，也就是每一个父节点大于等于它的两个子节点的树结构的优先队列。</strong></p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-7547cf7eb0574486fcaffc3de800445f_1440w.jpg" /><br />
+<strong>当出现一个距离更近的样本时，如果大根堆中的节点数量还不足 <span class="math-inline">k</span> 个，则增加一个节点并排序，如果大根堆已经有 <span class="math-inline">k</span> 个节点，则对比该样本的距离与大根堆中的根节点的距离，如果大于该距离，则不改变大根堆，如果小于该距离，则替换后再进行一次排序即可。</strong></p>
+<p>大爷：OK，kd 树讲的差不多了，但 kd 树有一些缺陷，比如当特征数量很多，即维度很大时，其搜索的效率其实是严重下降的，因此就诞生了更高级的球树搜索。</p>
+<p>我：我c！原来大爷您是扮猪吃老虎，装作不懂 kd 树，实际上埋伏了这么一手！</p>
+<p>大爷：跟我讲算法，小伙子你还嫩点，听好了，球树是这么一回事。</p>
+<h3 id="球树的构造">球树的构造<a class="anchor-link" href="#球树的构造" title="Permanent link">&para;</a></h3>
+<p><strong>kd 树是一个二叉树，每一个内部的节点都代表了一个超矩形空间，并且它的子树包含在这个超矩形空间内部的所有样本点。</strong></p>
+<p><strong>但是 kd 树对于一些样本分布情况而言效率并不高，比如当大量样本落在一个超矩形的角落的情况，此时使用球树的效率会更高</strong>（对 kd 树感兴趣可以参考我的另一篇文章：<a href="https://zhuanlan.zhihu.com/p/521545516">https://zhuanlan.zhihu.com/p/521545516</a>）。</p>
+<p>球树和 kd 树的构造在整体思路上差不多，细节上有些不同。</p>
+<p>球树的结构与 kd 树类似，同样是一个二叉树，<strong>根节点选择方式如下</strong>：</p>
+<p><strong>找到一个中心点，使所有样本点到这个中心点的距离最短。</strong></p>
+<p><strong>对于每一个节点的子节点的选择，方式如下</strong>：</p>
+<ol>
+<li><strong>选择当前超球体区域离中心最远的点作为左子节点</strong></li>
+<li><strong>选择距离左子节点距离最远的点作为右子节点</strong></li>
+<li><strong>对于其他的样本点，计算到左子节点和右子节点对应样本点的欧式距离，并分配到距离较近的那一个</strong></li>
+<li><strong>对所有子节点做相同的操作</strong></li>
+</ol>
+<p>让我们举一个具体的例子：</p>
+<p>对以下样本点构建球树：[1,2], [5,3], [7,9], [1,6], [9,2], [8,4], [4,4], [5,7]</p>
+<p>首先建立根节点，找到包含所有样本点的超球体，记录球心位置，作为根节点（超球体可以是最小外接超球体，也可以不是，只需要将符合要求的样本点包含进去即可，当然越小的超球体，在搜索过程中效率越高，最小外接超球体的拟合存在很多方法，可以拉到最后查看本文最后一章，现在假设已经找到最小外接超球体）。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-3245fc6e478e616ce3ace0b8454b0dd1_1440w.jpg" /><br />
+找到所有点中距离最远的两个点，并判断其他样本点与这两个点的距离，距离哪个点最近，则将该样本点划分到该点所在的圆内，并得到包含所有相同类别的点的圆的圆心坐标和半径，生成两个子节点。</p>
+<p>何时停止空间分割呢，可以设定一个阈值 r，当子节点中包含的样本点数量 &lt;= r 时，即可停止对这个子节点的分割。如果 r=4，此时我们的球树已经构建完毕。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-23bf510cfd20eecd2153710116a4ca35_1440w.jpg" /><br />
+当 r=3，或 r=2，我们还需要对两个子节点做同样的空间分割操作：</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-9f7961689f5c55130358de64fbe741c1_1440w.jpg" /><br />
+<strong>球树的每个节点中，需要包含的信息如下</strong>：</p>
+<ul>
+<li><strong>该节点包含的样本点的信息</strong></li>
+<li><strong>该节点超球体的圆心坐标</strong></li>
+<li><strong>该节点超球体的半径</strong></li>
+</ul>
+<h3 id="球树的搜索">球树的搜索<a class="anchor-link" href="#球树的搜索" title="Permanent link">&para;</a></h3>
+<p><strong>球树的搜索与 kd 树的过程类似，只是球树多了一个查找范围 R，即最近邻点需要在测试样本点周围半径为 R 的超球体内，在下图中就是黑色的超球体。</strong></p>
+<p>怎么搜索呢？<strong>我们可以根据测试样本点 Z，其坐标（x, y）与节点超球体 λ 圆心的距离（λx, λy），与查找范围 R 和节点超球体的半径 λr 之和进行对比</strong>：</p>
+<p><span class="math-inline">(x-\lambda_x)^2+(y-\lambda_y)^2&gt;R+\lambda_r, \quad 与超球体不相交\ (x-\lambda_x)^2+(y-\lambda_y)^2 \le R+\lambda_r, \quad 与超球体相交\</span> </p>
+<p>比如刚才的例子中，测试样本点与超球体 b 相交，则向下访问节点 b，继续往下搜索，发现与超球体 d 不相交，则搜索另一分支，与超球体 e 相交，则向下访问至 e。</p>
+<p>因 e 中存在两个训练样本点，计算两个样本点与 Z 之间的距离，得到当前最近邻点（5, 3）。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-47da0d5643da76b40ebed4305b21badf_1440w.jpg" /><br />
+接着回退父节点 b，不同于 kd 树，因为所有训练样本点都包含在叶节点中，即子节点包含的训练样本点为它们的父节点包含训练样本点的子集，因此回退到父节点后没有需要计算距离的样本，因此继续回退到根节点 a。</p>
+<p>回退到根节点 a 后，搜索另一个分支 c，由于与 c 相交，因此向下访问 c，继续搜索，与 f 相交，向下访问 f，计算叶节点 f 中包含的训练样本点与测试样本点之间的距离，更新当前最近邻点为（5, 7）。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-ca41f8cd10568148c8b20f7eb6c49144_1440w.jpg" /><br />
+叶节点 f 搜索完毕，回退父节点 c，搜索另一分支 g，发现不相交，回退到根节点 a，所有分支搜索完毕，得到最近邻点（5, 7）。</p>
+<h3 id="球树搜索得到-k-个最近邻点">球树搜索得到 k 个最近邻点<a class="anchor-link" href="#球树搜索得到-k-个最近邻点" title="Permanent link">&para;</a></h3>
+<p>我啪啪啪地鼓起了掌：大爷说的不错，但是你刚才说的搜索只是找到最近邻点，可 KNN 要求的是找到 <span class="math-inline">k</span> 个最近邻点，怎么实现呢？</p>
+<p>大爷：你傻逼吗？刚才不是已经说过了，维护一个大根堆就可以了。</p>
+<h3 id="球树的改进">球树的改进<a class="anchor-link" href="#球树的改进" title="Permanent link">&para;</a></h3>
+<p>被大爷骂傻逼，我脸上挂不住，想了想，说道：相对于 kd 树来说，球树虽然有所改进，对高维空间也有效，但依然具有一定的缺陷。</p>
+<p>我掏出一支笔，在墙上画了个超链接：<a href="https://arxiv.org/pdf/1511.00628.pdf">https://arxiv.org/pdf/1511.00628.pdf</a>，然后说道：这篇论文中提到球树的一个缺陷，<strong>空间分割的平衡性可能由于离群点的存在而被打破，导致搜索效率不高，比如在下图的情况下，第一次空间分割就导致了不平衡</strong>：</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-f151bede8ef1e34efb06060b67f5da62_1440w.jpg" /><br />
+<strong>而上图的图(b)则是论文作者提出的一种改进球树的空间分割方法，即在空间分割前对样本做一次一维的 PCA，得到主成分所在方向，在垂直于该方向做一个超平面，将样本分割为两个部分，再生成球树。</strong></p>
+<p>大爷点点头：嗯，这确实是一个改进方法，如果使用这种改进，将大大缩小球树的深度，你看</p>
+<p>大爷说着，我只觉得眼前一花，墙上多了一副图，我定睛一看，好家伙，原来大爷也看过这篇论文，连图都一模一样画下来了：</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-9852dfdb50b2593f8b29693a85fa1f87_1440w.jpg" /><br />
+大爷继续道：这篇论文还将 kd 树，球树和改进的球树进行了对比，可见在一些特殊分布情况下，改进球树的深度比普通球树的深度要低很多，这也就增加了搜索效率和存储空间。</p>
+<p>除此之外，球树还有一个重要问题，就是刚才提到的求多个点的最小外接圆算法，虽然不使用最小外接圆也能够跑通球树，但显然搜索效率会有所下降，因此这里简单提供两个最小外接圆的算法。</p>
+<h3 id="求最小外接圆随机增量法">求最小外接圆（随机增量法）<a class="anchor-link" href="#求最小外接圆随机增量法" title="Permanent link">&para;</a></h3>
+<p>对于一个已经将 i-1 个点包含在内的最小外接圆来说，我们增加一个点 i，如何找到所有点的最小外接圆呢？过程如下：</p>
+<ol>
+<li>如果点 i 在当前最小外接圆内，则不重新画圆。</li>
+<li>如果点 i 不在当前的最小外接圆内，则在点 [0, i-1] 中找一个在当前最小外接圆之外的点 j，以 i，j 两点为直径画圆。</li>
+<li>在点 [0, j-1] 中找一个在当前圆外的点 k，并以 i, j, k 三点画圆，则为最新的最小外接圆，如果找不到 k，则当前 i, j 为直径的圆就是最小外接圆。</li>
+</ol>
+<h3 id="求最小外接圆凸集法">求最小外接圆（凸集法）<a class="anchor-link" href="#求最小外接圆凸集法" title="Permanent link">&para;</a></h3>
+<ol>
+<li>将所有点两两连线。</li>
+<li>找到每一条所有点在线上或一侧的线，并记录这些线对应的所有点。</li>
+<li>遍历这些点画圆，找到包含所有点，并且半径最小的圆，即最小外接圆。</li>
+</ol>
+<p>我：大爷您学的还真是细，顺便还把最小外接圆算法给看了，不过刚才说的 kd 树，亦或是球树，解决的问题都是在测试时怎样尽快找到 <span class="math-inline">k</span> 个近邻点的问题，但是在生成 kd 树或球树时，当训练样本数量较多时，效率依然不高，因此，我们可以在根上解决，直接减少样本数量。</p>
+<h2 id="针对当样本数量太多knn计算效率下降的问题的解决方法">针对当样本数量太多KNN计算效率下降的问题的解决方法<a class="anchor-link" href="#针对当样本数量太多knn计算效率下降的问题的解决方法" title="Permanent link">&para;</a></h2>
+<p><strong>针对这个问题，提出了很多算法，这里提供几个跟 KNN 密切相关的：剪辑法，多重剪辑法，以及压缩近邻法</strong>。</p>
+<h3 id="剪辑法">剪辑法<a class="anchor-link" href="#剪辑法" title="Permanent link">&para;</a></h3>
+<p>我<strong>：当训练集数据中存在一部分不同类别数据的重叠时（在一部分程度上说明这部分数据的类别比较模糊），这部分数据会对模型造成一定的过拟合，那么一个简单的想法就是将这部分数据直接剔除掉即可，也就是剪辑法。</strong></p>
+<p><strong>剪辑法将训练集 D 随机分成两个部分，一部分作为新的训练集 Dtrain，一部分作为测试集 Dtest，然后基于 Dtrain，使用 KNN 的方法对 Dtest 进行分类，并将其中分类错误的样本从整体训练集 D 中剔除掉，得到 Dnew。</strong></p>
+<p><strong>由于对训练集 D 的划分是随机划分，难以保证数据重叠部分的样本在第一次剪辑时就被剔除，因此在得到 Dnew 后，可以对 Dnew 继续进行上述操作数次，这样可以得到一个比较清爽的类别分界。</strong></p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-ec4f37c68c2249e8d91569d5dcc9af78_1440w.jpg" /><br />
+以上使用了k=20的参数进行剪辑的结果，循环了10次，一般而言，k越大，被抛弃的样本会越多，因为被分类的错误的概率更大。</p>
+<p>剪辑法还有一个好处，一部分的 outliers 也会从中被剔除掉，当然只是一些穿越到了其他类另一边的 outliers，比如左下角的那个黄色的样本，但是如果与自身类簇比较接近的，则不一定会被剔除，比如最左侧的那个紫色的样本。</p>
+<p>剪辑法 code：</p>
+<pre><code>from sklearn import datasets
+import matplotlib.pyplot as plt 
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier as KNN
+import numpy as np
+
+data,target = datasets.make_classification(n_samples=1000,n_features=2,
+                                           n_informative=2,n_redundant=0,n_repeated=0,
+                                           n_classes=4,n_clusters_per_class=1)
+
+for i in range(10):
+    x_train,x_test,y_train,y_test=train_test_split(data, target, test_size=0.5)
+
+    k= 20
+    KNN_clf = KNN(n_neighbors=k)
+    KNN_clf.fit(x_train, y_train)
+    y_predict = KNN_clf.predict(x_test)
+
+    cond = y_predict == y_test
+    x_test = x_test[cond]
+    y_test = y_test[cond]
+
+    data = np.vstack([x_train, x_test])
+    target = np.hstack([y_train, y_test])
+</code></pre>
+<h3 id="多重剪辑法">多重剪辑法<a class="anchor-link" href="#多重剪辑法" title="Permanent link">&para;</a></h3>
+<p>理解了剪辑法，多重剪辑法实际很简单，就是<strong>在剪辑法的基础上做了一个修改，就是将 D 分为多个样本集，并互相作为新的训练集和测试集</strong>，逻辑上类似于交叉验证。</p>
+<p>这个方法就不多讲了，主要讲讲压缩近邻法。</p>
+<h3 id="压缩近邻法">压缩近邻法<a class="anchor-link" href="#压缩近邻法" title="Permanent link">&para;</a></h3>
+<p><strong>压缩近邻法的想法是认为同一类型的样本大量集中在类簇的中心，而这些集中在中心的样本对分类没有起到太大的作用，因此可以舍弃掉这些样本。</strong></p>
+<p><strong>其做法是将训练集随机分为两个部分，第一个部分为 store，占所有样本的 10% 左右，第二个部分为 grabbag，占所有样本的 90% 左右，然后将 store 作为训练集训练 KNN 模型，grabbag 作为测试集，将分类错误的样本从 grabbag 中移动到 store 里，然后继续用增加了样本的 store 和减少了样本的 grabbag 再次训练和测试 KNN 模型，直到 grabbag 中所有样本被分类正确，或者 grabbag 中样本数为0。</strong></p>
+<p><strong>在压缩结束之后，store 中存储的是初始化时随机选择的 10% 左右的样本，以及在之后每一次循环中被分类错误的样本，这些被分类错误的样本集中在类簇的边缘，认为是对分类作用较大的样本。</strong></p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-e3c62a90c9b708038dd283bfee9e54ab_1440w.jpg" />  </p>
+<p>压缩近邻法</p>
+<p>左边就是原始的样本分布，右边是经过了压缩近邻法后的样本分布，样本的数量明显下降了，当然，上图中显然存在一个缺陷，样本中存在一些 outlier，比如左下角的一个黄色的样本，和下方一个紫色的样本，都在绿色类簇的附近。</p>
+<p>这些样本为什么会被留下来，有两个原因，<strong>一是在初始化时随机选择出来的，二是在压缩过程中，这些 outliers 显然会被错误分类，因此会被认为处于类簇的边缘，有助于分类，于是被从 grabbag 中移到了 store 里。</strong></p>
+<p>因此我们完全<strong>可以选择先使用剪辑法，去除掉这些 outliers，然后再使用压缩近邻法，去除掉接近类簇中心的样本。</strong></p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-abba6ce33a7e4b8fe2f24f8f68eeb220_1440w.jpg" />  </p>
+<p>先使用剪辑法，再使用压缩近邻法</p>
+<p>可以看到我们的训练集的数量已经得到了明显的改善，并且也已经处理掉了所有的 outliers。</p>
+<p>压缩邻近法 code：</p>
+<pre><code class="language-python">while True:
+    k = 20
+    KNN_clf = KNN(n_neighbors=k)
+    KNN_clf.fit(x_train, y_train)
+    y_predict = KNN_clf.predict(x_test)
+
+    cond = y_predict != y_test
+    if ~cond.all():
+        break
+
+    x_train = np.vstack([x_train, x_test[~cond]])
+    y_train = np.hstack([y_train, y_test[~cond]])
+    x_test = x_test[cond]
+    y_test = y_test[cond]
+
+    if len(x_test) == 0:
+        break
+</code></pre>
+<p>大爷：KNN 除了作为分类模型，以及解决样本数量较多导致计算时间过长的问题，实际上还能利用它解决一些其他问题，比如样本不平衡，回归问题，填补缺失值等。  </p>
+<h2 id="利用-knn-解决样本不平衡问题">利用 KNN 解决样本不平衡问题<a class="anchor-link" href="#利用-knn-解决样本不平衡问题" title="Permanent link">&para;</a></h2>
+<p><strong>当样本不平衡时，训练的模型有可能更偏向于其中样本数量较多的类别，为了解决这个问题，我们可以剔除一些数样本，也可以生成一些样本，让各种类别的样本保持平衡，而通过 KNN 剔除冗余样本的方式，也可以得到相对平衡的训练样本。</strong></p>
+<h3 id="cnn">CNN<a class="anchor-link" href="#cnn" title="Permanent link">&para;</a></h3>
+<p>CNN 的想法十分简单，首先我们在训练集中随机选择一个样本 <span class="math-inline">x</span>，找到距离这个样本 <span class="math-inline">x</span> 最近的同类样本 <span class="math-inline">p</span> 和非同类样本 <span class="math-inline">q</span>，然后计算 <span class="math-inline">x</span> 与 <span class="math-inline">p</span> 的距离和 <span class="math-inline">x</span> 与 <span class="math-inline">q</span> 的距离，如果符合：</p>
+<p><span class="math-inline">||x-q||-||x-p||&gt;0\</span> </p>
+<p>那么我们认为这个样本是我们所需要的用于训练模型的样本。</p>
+<p>如果不符合上式，则将这样的样本剔除掉。</p>
+<p>当然，CNN 中用于判断样本是否应该保存的条件可以依据实际情况进行改动，比如在 <span class="math-inline">k</span> 个最近邻样本中超过80%样本与 <span class="math-inline">x</span> 是同类样本，即可剔除 <span class="math-inline">x</span>。</p>
+<p>也可以确定一个半径为 <span class="math-inline">r</span> 的超球体，在这个球体内的所有样本中，超过80%为 <span class="math-inline">x</span> 的同类样本，则可剔除 <span class="math-inline">x</span>。</p>
+<h3 id="gcnn">GCNN<a class="anchor-link" href="#gcnn" title="Permanent link">&para;</a></h3>
+<p>GCNN 全称为 general condensed nearest neighbor，CNN 是 GCNN 的特殊情况。</p>
+<p>GCNN 与 CNN 的不同之处在于将上式改写为：</p>
+<p><div class="math-display">||x-q||-||x-p||&gt;\rho \delta_n \ \delta _ { n } = m i n { || x _ { i } - x _ { j } || : l( x _ { i } ) \neq l ( x _ { j } ) ,  x _ { i } \in X_n,  x _ { j } \in X_n}</div> </p>
+<p>其中 δn 是属于不同类别的两个样本点之间的最小距离，ρ 是参数，取值[0,1)，可以放大缩小阈值，当 ρ=0 时，就是 CNN。l(xi) 表示 xi 的类别。</p>
+<p>也就是说，我们首先要找到两个不同类别的样本之间的最小距离，然后基于这个最小距离乘以一个参数，作为阈值，判断一个样本是否需要舍弃。</p>
+<h3 id="cnn-和-gcnn-比较">CNN 和 GCNN 比较<a class="anchor-link" href="#cnn-和-gcnn-比较" title="Permanent link">&para;</a></h3>
+<p><strong>不同 ρ 值比较</strong></p>
+<p>下表比较了在同一数据集下，KNN，CNN 以及不同 ρ 值下的 GCNN 模型分类情况，Reduction Rate 表示留下多少百分比的样本，KNN 留下了所有样本，因此为 100%。</p>
+<p>另外，KNN 的 <span class="math-inline">k</span> 值就是依据 <span class="math-inline">k</span> 个最近邻点进行分类，而 CNN 和 GCNN 的 <span class="math-inline">k</span> 值代表的是根据 <span class="math-inline">k</span> 个最近邻点来判断是否要剔除样本。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-d318fc983d834c9ac3109fbdd03b03eb_1440w.jpg" /><br />
+可以看到 KNN 的效果是最佳的，这也正常，毕竟 KNN 并没有剔除任何样本，而 CNN 剔除的样本是最多的，同时准确度也是最差的。对于 GCNN 而言，随着 ρ 值变大，保留的样本数量越多，同时准确度和训练时间也有所上升，但可以看到在 ρ=0.99 时，保留了不到 50% 的样本，但准确度只有 0.7 的下降。</p>
+<p><strong>准确度的变化</strong></p>
+<p>下图展示了在不同数据集（Segmentation, Letter, UPS, Forest, Multilingual）下，采用了三种冗余样本剔除的方式（CNN，GCNN，DROP3），并且对比了准确度，训练时间，保留样本百分比，以及与 KNN 相比较下的准确度差别。</p>
+<p><img alt="" src="(20220624)关于K近邻KNN看这一篇就够了算法原理kd树球树KNN解决样本不平衡剪辑法压缩近邻法_舟晓南/v2-3ae098f6c98b5d73ebe8834c292fb47e_1440w.jpg" /><br />
+可以明显得看到 CNN 在训练时间上有明显的优势，毕竟它保留下来的样本数量最少，而 GCNN 在剔除了一定量的样本后，其准确度相比于 KNN 来说下降最少。</p>
+<h2 id="knn-填补缺失数据">KNN 填补缺失数据<a class="anchor-link" href="#knn-填补缺失数据" title="Permanent link">&para;</a></h2>
+<p>大爷：KNN 填补缺失数据的想法十分简单，由于相同类别的数据其样本点相对集中在一个部位，我们可以将具有缺失的特征作为要预测的对象，将其他没有缺失的特征作为训练用特征，再利用 KNN 生成缺失数据即可。</p>
+<p>这里有一个问题需要注意，类别特征是离散特征，而 KNN 在预测连续值方面天然具有缺陷，因此使用该方法进行填补的特征最好是离散特征。</p>
+<h2 id="knn-用于回归">KNN 用于回归<a class="anchor-link" href="#knn-用于回归" title="Permanent link">&para;</a></h2>
+<p>虽然 KNN 在预测连续值方面具有缺陷，但并不是说无法使用 KNN 预测连续值。</p>
+<p>KNN 预测连续值的方式也很简单，找到预测样本附近的 <span class="math-inline">k</span> 个样本点，然后将这 <span class="math-inline">k</span> 个样本的 y 值进行平均，就得到了要测试样本的预测值。</p>
+<p>这里存在的缺陷就是，KNN 无法预测 out of sample 的测试样本的值，也就是只能预测训练样本本身覆盖的值的范围，如果这个测试样本的真实值超过了这个范围，则无法被准确预测。</p>
+<h2 id="后续">后续<a class="anchor-link" href="#后续" title="Permanent link">&para;</a></h2>
+<p>我：大爷，听您说了这么多，不是要讲哲学吗？怎么没有哲学？</p>
+<p>大爷：这 KNN 就是哲学啊，你看，人以类聚，物以群分啊，KNN 不就正体现了这一点吗？你看我们小区茫茫人海，你晚上还天天跟我一起混，为什么？不就是因为我们都是玩算法的吗？这就是类，我们俩的特征在超空间中是两个相距不远的点，孤独地相伴着……</p>
+<p>我：( ‵o′)凸，大爷，不管是您性别，长相，还是年龄，都不合我胃口啊！</p>
+<p>大爷：别打岔，你再细想啊，你的特征是你生来就决定的吗？你作为超空间中的点，是静止的，还是一直在运动的？当你运动到一个类簇旁边时，是你决定了加入他们，还是其他的一些因素让你远离了他们？</p>
+<p>大爷说到这里，只听啪的一声，黑夜中一簇火苗冉冉升起，偷过这星星光点，我看到大爷的双眼深邃如渊，烟雾缭绕，心中不禁感叹，大爷果然还是我大爷。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/521546068">关于K近邻（KNN），看这一篇就够了！算法原理，kd树，球树，KNN解决样本不平衡，剪辑法，压缩近邻法</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

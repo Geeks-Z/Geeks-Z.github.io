@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-从旧类别到新类别">3. 从旧类别到新类别</a><ul>
+<li><a href="#31-类增量学习">3.1 类增量学习</a></li>
+<li><a href="#32-通过知识蒸馏的-cil">3.2 通过知识蒸馏的 CIL</a></li>
+<li><a href="#33-对语义关系的忽视">3.3 对语义关系的忽视</a></li>
+</ul>
+</li>
+<li><a href="#4-通过最优传输的协同传输">4. 通过最优传输的协同传输</a><ul>
+<li><a href="#41-前瞻性传输pt">4.1 前瞻性传输（PT）</a></li>
+<li><a href="#42-回顾性传输rt">4.2 回顾性传输（RT）</a></li>
+<li><a href="#43-通过最优传输的语义映射">4.3 通过最优传输的语义映射</a></li>
+<li><a href="#44-实施指南">4.4 实施指南</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实验设置">5.1 实验设置</a></li>
+<li><a href="#52-与-sota-方法的比较">5.2 与 SOTA 方法的比较</a></li>
+<li><a href="#53-具有大量基础类别的实验">5.3 具有大量基础类别的实验</a></li>
+<li><a href="#54-传输分类器的可视化">5.4 传输分类器的可视化</a></li>
+<li><a href="#55-现实世界的面部表情识别">5.5 现实世界的面部表情识别</a></li>
+<li><a href="#56-消融研究">5.6 消融研究</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/31.Logit Distillation</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>传统的学习系统在封闭世界中针对固定数量的类别进行训练，并且需要预先收集数据集。然而，在现实世界的应用中，新的类别经常出现并且需要增量学习。例如，在电子商务中，每天都会出现新的产品类型；在社交媒体社区中，新的话题频繁出现。在这种情况下，增量模型应能够一次性学习多个新类别而不忘记旧类别。我们发现增量学习中旧类别和新类别之间存在强相关性，这种相关性可以用于关联和促进不同学习阶段的相互学习。因此，我们提出了<strong>类增量学习的协同传输</strong>（COIL），它通过学习类别间的语义关系来关联增量任务。具体来说，协同传输包括两个方面：<strong>前瞻性传输</strong>试图通过最优传输的知识增强旧分类器以实现快速模型适应；<strong>回顾性传输</strong>旨在将新类别的分类器反向传输为旧分类器以克服遗忘问题。通过这些传输，COIL 能够高效适应新任务，并稳定地抵抗遗忘。在基准和现实世界的多媒体数据集上的实验验证了我们提出方法的有效性。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>随着深度学习的发展，当前的深度模型能够以高性能学习固定数量的类别。然而，在不断变化的世界中，数据通常来自开放环境，可能以流的形式出现 [11] 或由于隐私问题而暂时可用 [9]。为了解决这一问题，分类器应能够增量学习新类别，而不是重新启动训练过程 [24]。一个直接的方法是在新数据上微调模型，但这种方法会遭受<strong>灾难性遗忘</strong>现象 [29]：由于缺乏先前数据，对旧类别的预测急剧下降。类增量学习（CIL）[35] 旨在仅通过新类别扩展已有知识。例如，在在线舆情监测中，随着新闻的发生，新话题经常出现 [28]；在电子商务平台上，每天都会出现新的产品类型 [27,49]。在现实世界的人脸识别系统中，随着时间推移，人脸类别不断增加，模型需要增量学习以分类更多类别 [64]。图 1 展示了 CIL 的设置。在第一个任务中，模型需要分类鸟类和狗；之后，模型通过两个新类别（老虎和鱼）进行增量更新，并且需要分类两个旧类别（鸟类和狗）和两个新类别（老虎和鱼）。新类别逐步到达，模型需要在不遗忘旧类别的情况下分类更多类别。</p>
+<p>根据是否保存旧类别的实例，CIL 算法可以分为两类。在不保存任何实例的情况下，[1,19,22,61] 通过对重要参数进行正则化以防止遗忘。它们的区别在于参数重要性计算的方式，例如通过 Fisher 信息矩阵或基于损失的重要性权重估计。其他工作选择性地保存旧类别的样本，并在学习新任务时进行回放 [16,35,48]。在增量学习中，模型应具有可转移性，即先前学习的知识应减少学习新类别的难度。相应地，新学习的类别应巩固先前的知识。然而，这些方法仅使用旧模型来防止遗忘，而忽略了促进新类别学习过程。</p>
+<p>相应地，我们发现旧类别和新类别之间存在相关性，即<strong>语义关系</strong>，受益于此，旧类别的线性分类器可以轻松地传输为新类别的分类器。图 2 展示了类间视觉相似性表明其对应的线性分类器之间的关系，并通过最优传输 [18,41] 进行传输。我们考虑两个不同的空间，即特征空间和分类器空间。我们在特征空间中测量类别的相关性，并使用类别间的关系来指导分类器空间中的分类器合成。通过跨类别的传输知识，旧类别的训练过程可以促进新类别的学习，反之亦然。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318152940.png" style="zoom: 80%;" /></div>
+
+<p>受语义关系有助于知识转移的启发，我们提出了<strong>类增量学习的协同传输</strong>（COIL），它通过学习类别间的语义关系来关联增量任务。具体来说，传输发生在两个阶段。面对新类别的到来，模型应快速调整并描述它们。我们提出了<strong>前瞻性传输</strong>，将旧分类器传输为新类别的初始化，这也有助于在新类别训练中保持内部类别关系。此外，为了消除灾难性遗忘，新分类器应被反向传输为旧分类器，作为蒸馏目标。因此，我们提出了<strong>回顾性传输</strong>，利用反向传输的知识，防止旧类别的遗忘。<strong>前瞻性传输</strong>和<strong>回顾性传输</strong>构成了协同传输框架，并在多个增量类别批次之间传输知识。我们在基准和现实世界的多媒体数据集上进行了广泛的实验，验证了 COIL 的有效性。</p>
+<p>我们首先回顾相关工作，接着介绍 COIL 和实验结果，最后总结本文。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>类增量学习（CIL）目前是机器学习社区中的一个热门话题 [6,9,15,25,39,47,62,68,70]。CIL 主要有两种方法：基于记忆的方法保存旧类别的样本以克服遗忘，而非基于记忆的方法则利用正则化项或考虑动态模型扩展。</p>
+<p><strong>非基于记忆的 CIL</strong>：一些方法期望在训练新任务时网络输出不会急剧漂移，从而保留先前的知识。EWC[19] 通过 Fisher 信息矩阵衡量参数对任务的重要性，期望重要参数发生小的变化，并正则化它们不要偏移太多。SI[61] 和 MAS[1] 遵循 EWC，通过不同的估计方法对重要参数进行正则化。然而，面对长序列的增量任务，不同阶段的重要性矩阵可能会冲突，导致这些算法表现不佳。另一类工作通过改变网络结构来满足新任务的需求。[50,59] 为新任务重新训练并扩展网络。然而，大多数方法需要一个预言机制来指导在测试过程中激活哪个子网络。此外，随着任务的出现，网络会不断扩展，面对长增量序列时，参数数量会变得非常庞大。</p>
+<p><strong>基于记忆的 CIL</strong>：这类工作保存先前任务的原型/样本实例或原型表示。在学习新任务时，将通过这些保存的项进行回放。iCaRL[35] 选择样本进行回放，并利用旧模型的知识蒸馏来防止遗忘。[16] 提出选择特征而不是图像，从而减少存储成本。此外，生成模型可以被视为另一种存储样本的方式。在 [48] 中，旧类别的实例被合成以在新任务训练时进行回放，增量训练过程可以转化为离线训练过程。最近的工作集中在补偿增量模型的漂移。[46] 利用样本来构建额外的验证集，并通过该验证集训练额外的偏差校正层。[14] 提出使用不带偏差的余弦线性层来克服遗忘。[5,63] 简单地通过权重裁剪归一化线性层，以保持新旧类别之间的公平性。[60] 通过新类别实例估计旧类别中心的语义漂移。COIL 遵循基于记忆的方法，并利用不同增量阶段之间的类别语义关系来重用旧模型，这是先前方法所忽略的。</p>
+<p><strong>多媒体的 CIL</strong>：在现实世界的应用中，新类别的出现很常见 [26,32,44,52,53,55,58,65–67]。因此，CIL 在许多多媒体领域中被发现是有用的，例如电子商务产品搜索 [43]、视频动作识别 [54]、自然语言生成 [30]、多媒体检索 [40] 和社交媒体话题挖掘 [49]。</p>
+<p><strong>最优传输（OT）</strong>：OT[34,41] 最初被提出来研究最优运输和资源分配问题 [18,31]。通过地面成本，OT 可以找到两个分布之间的耦合，这可以被视为两个集合之间的映射 [20,41]。原始的 OT 计算涉及线性规划的求解，成本高昂，难以实现。然而，通过熵正则化项的光滑性，OT 可以通过 Sinkhorn 算法 [8,38] 更快地求解。OT 现在被广泛应用于机器学习和计算机视觉领域，例如模型融合 [37]、域适应 [7]、目标检测 [10]、模型重用 [56,57] 和生成模型 [2,4]。</p>
+<h2 id="3-从旧类别到新类别">3. 从旧类别到新类别<a class="anchor-link" href="#3-从旧类别到新类别" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先介绍 CIL 的定义，然后介绍典型的基于记忆的方法。接着，我们讨论当前模型的不足。</p>
+<h3 id="31-类增量学习">3.1 类增量学习<a class="anchor-link" href="#31-类增量学习" title="Permanent link">&para;</a></h3>
+<p>类增量学习旨在从不同类别中增量学习数据流 [35]。假设有一系列训练任务 <span class="math-inline">{D_1,D_2,...,D_B}</span>，这些任务之间没有重叠的类别，其中 <span class="math-inline">D_b={(x_b^i,y_b^i)}<em>{i=1}^{n_b}</span> 是第 <span class="math-inline">b</span> 个增量步骤，包含 <span class="math-inline">n_b</span> 个实例。此外，<span class="math-inline">x_b^i \in \mathbb{R}^D</span> 是类别 <span class="math-inline">y_i \in Y_b</span> 的训练实例，<span class="math-inline">Y_b</span> 是任务 <span class="math-inline">b</span> 的标签空间，其中 <span class="math-inline">Y_b \cap Y</em>{b'}=\emptyset</span>，<span class="math-inline">b \neq b'</span>。在任务 <span class="math-inline">b</span> 的训练过程中，我们只能访问 <span class="math-inline">D_b</span> 中的数据。CIL 在每个步骤的目标不仅是获取当前任务 <span class="math-inline">D_b</span> 的知识，还要保留先前任务的知识。在每个任务之后，训练好的模型将在所有已见类别 <span class="math-inline">Y_b=Y_1 \cup ... Y_b</span> 上进行评估。</p>
+<p>每次新任务 <span class="math-inline">D_b</span> 到达时，模型应学会分类其中的新类别。假设当前模型 <span class="math-inline">f(x)</span> 在 <span class="math-inline">D_{b-1}</span> 上训练，由两部分组成：嵌入函数 <span class="math-inline">\phi(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^d</span> 和线性分类器 <span class="math-inline">W_{old} \in \mathbb{R}^{d \times |Y_{b-1}|}</span>，即 <span class="math-inline">f(x)=W_{old}^T \phi(x)</span>。我们将 softmax 运算符表示为 <span class="math-inline">S(\cdot)</span>，类别 <span class="math-inline">k</span> 的预测概率为 <span class="math-inline">S_k(W_{old}^T \phi(x))</span>。增量模型将首先扩展线性分类器：<span class="math-inline">W_b=[W_{old}, W_{new}]</span>，其中 <span class="math-inline">W_{new} \in \mathbb{R}^{d \times |Y_b|}</span> 是新类别的随机初始化。然后，模型学习在所有 <span class="math-inline">|Y_b|</span> 类别上进行预测。</p>
+<h3 id="32-通过知识蒸馏的-cil">3.2 通过知识蒸馏的 CIL<a class="anchor-link" href="#32-通过知识蒸馏的-cil" title="Permanent link">&para;</a></h3>
+<p>如前所述，基于记忆的方法利用旧类别样本的<strong>小</strong>子集来防止遗忘，记为 <span class="math-inline">E_{b-1}</span>，它是从 <span class="math-inline">|Y_{b-1}|</span> 中选择的。利用这些样本的一个直接方法是回放并计算交叉熵：<br />
+<div class="math-display"><br />
+    L_{CE}(x,y) = \sum_{k=1}^{|Y_b|} - \mathbb{I}(y=k) \log S_k(W_b^T \phi(x)) \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">\mathbb{I}(\cdot)</span> 是指示函数。公式 1 在所有样本和新实例上优化交叉熵，从而获得知识并同时抵抗遗忘。然而，<span class="math-inline">L_{CE}</span> 不足以抵抗遗忘，因为样本数量远少于新实例，即 <span class="math-inline">|E_{b-1}| \ll |D_b|</span>。因此，我们需要通过知识蒸馏 [13] 对齐旧模型和新模型的预测：<br />
+<div class="math-display"><br />
+    L_{KD}(x) = \sum_{k=1}^{|Y_{b-1}|} - S_k(\overline{W}<em>{old}^T \overline{\phi}(x)) \log S_k(W_b^T \phi(x)) \tag{2}<br />
+</div><br />
+其中 <span class="math-inline">\overline{W}</em>{old}</span> 和 <span class="math-inline">\overline{\phi}</span> 对应于学习 <span class="math-inline">D_b</span> 之前的冻结分类器和嵌入。KD 损失将当前模型的输出映射到旧模型在所有旧类别上的输出。对齐的概率使当前模型具有与旧模型相同的判别能力，从而限制先前知识不被遗忘。总体损失是 <span class="math-inline">L_{CE}</span> 和 <span class="math-inline">L_{KD}</span> 的组合：<br />
+<div class="math-display"><br />
+    L(x,y) = (1-\lambda) L_{CE}(x,y) + \lambda L_{KD}(x) \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">\lambda</span> 是平衡新旧类别重要性的权衡参数，设置为 <span class="math-inline">|Y_{b-1}| / |Y_b|</span>[46]。</p>
+<h3 id="33-对语义关系的忽视">3.3 对语义关系的忽视<a class="anchor-link" href="#33-对语义关系的忽视" title="Permanent link">&para;</a></h3>
+<p>公式 3 描述了通过回放和知识蒸馏利用样本进行 CIL 的方法。然而，在学习过程中忽略了一些辅助信息。首先，面对新类别，线性分类器 <span class="math-inline">W_b=[W_{old}, W_{new}]</span> 是一个简单的扩展，其中 <span class="math-inline">W_{new}</span> 是随机初始化的，这可能会对当前模型产生负面影响。相应地，旧类别和新类别之间存在映射关系，即<strong>语义关系</strong>。由于旧模型和新模型在类别上相关，我们不应忽视当前模型，而应利用类别间的相似性来辅助 CIL。随着旧类别的增加，新类别与旧类别相关的概率也增加，使得传输更容易。此外，当前方法仅在知识流的单方向上进行传输，即从旧模型到新模型。利用语义信息作为进一步指导并回顾性地传输知识，从而保留旧知识，这是非常有前景的。</p>
+<h2 id="4-通过最优传输的协同传输">4. 通过最优传输的协同传输<a class="anchor-link" href="#4-通过最优传输的协同传输" title="Permanent link">&para;</a></h2>
+<p>受信息丰富的<strong>语义关系</strong>启发，我们寻求通过模型重用关联旧类别和新类别。此外，嵌入模块 <span class="math-inline">\phi(\cdot)</span> 具有通用性，捕捉输入的共同特征并通过学习的度量对它们进行聚类，因此与类别无关。相比之下，线性层 <span class="math-inline">W</span> 与类别直接相关。因此，我们应根据当前嵌入传输和重用线性层。假设我们已经提取了类别之间的语义关系，我们提出了一个语义映射 <span class="math-inline">T</span>，它将线性分类器从源类别传输到目标类别。<span class="math-inline">T</span> 将源分类器作为输入，并生成适合目标类别的分类器。通过语义映射，我们可以在新类别到达时将旧分类器传输为新类别。生成的分类器不会受到随机初始化的负面影响，而是作为新类别的良好起点。对称地，我们可以在学习新任务时将新分类器传输为旧分类器，并通过传输的分类器鼓励知识保留。因此，模型中的知识在两个方向上传输，即前瞻性和回顾性，该框架因此被称为协同传输。</p>
+<p>假设我们已经知道 <span class="math-inline">T</span> 的表达式，我们首先介绍协同传输框架，最后通过最优传输获得变换 <span class="math-inline">T</span>。</p>
+<h3 id="41-前瞻性传输pt">4.1 前瞻性传输（PT）<a class="anchor-link" href="#41-前瞻性传输pt" title="Permanent link">&para;</a></h3>
+<p>面对新任务，模型应快速适应新类别。PT 通过旧类别和新类别之间的语义映射 <span class="math-inline">T</span> 解决模型适应问题。例如，假设我们有经过良好训练的权重来预测旧类别中的“猫”，我们可以几乎完全重用相同的分类器来确定“老虎”类别。因此，我们通过重用旧分类器 <span class="math-inline">W_{old}</span> 构建新分类器 <span class="math-inline">W_{new}</span>，并由语义映射 <span class="math-inline">T</span> 引导：<br />
+<div class="math-display"><br />
+    \overline{W}<em>{new} = T(W</em>{old}) \tag{4}<br />
+</div><br />
+PT 引导的分类器在两个方面有助于学习新类别：</p>
+<p><strong>快速初始化</strong>：与随机生成的新分类器相比，传输的 <span class="math-inline">\overline{W}<em>{new}</span> 充分利用了旧分类器，同时保留了类别间的语义关系。由于语义映射捕捉了类别间的关系，旧类别和新类别之间的校准得以保持。因此，传输的分类器即使在没有训练新类别的情况下也能区分新类别。<span class="math-inline">\overline{W}</em>{new}</span> 作为新类别的良好初始化，避免了随机初始化的负面影响。</p>
+<p><strong>PT 损失</strong>：由于 <span class="math-inline">\overline{W}<em>{new}</span> 保留了类别间的关系，它有助于在开始时调整预测概率，使其与传输的模型一致。我们通过知识蒸馏对模型施加额外的限制来实现这一目标：<br />
+<div class="math-display"><br />
+    L</em>{PT}(x) = \sum_{k=1}^{|Y_b|} - S_k([\overline{W}<em>{old}, \overline{W}</em>{new}]^T \overline{\phi}(x)) \log S_k(W_b^T \phi(x)) \tag{5}<br />
+</div><br />
+其中 <span class="math-inline">\overline{W}_{new}</span> 是初始化的值。公式 5 强制当前更新模型像传输的模型一样进行预测，并帮助更新模型以监督方式适应新类别。</p>
+<p><strong>PT 的效果</strong>：考虑到类别间的语义关系，PT 重用旧分类器来构建新分类器，避免随机初始化的负面影响。PT 旨在为参数提供更好的初始化。与 [3] 类似，良好的初始化有助于学习更好的嵌入，从而保留先前的知识并抵抗灾难性遗忘。当旧类别和新类别之间存在语义关系时，传输的分类器可以将新类别纳入并校准到当前分类器中。即使旧类别和新类别无关，这种弱初始化也不会比随机初始化的分类器表现更差。快速初始化即使在没有训练新类别的情况下也能正确预测（见第 5.4 节）。在实现中，我们在开始时（例如前五个 epoch）使用 PT 损失进行类别校准。</p>
+<h3 id="42-回顾性传输rt">4.2 回顾性传输（RT）<a class="anchor-link" href="#42-回顾性传输rt" title="Permanent link">&para;</a></h3>
+<p>除了前瞻性传输（通过重用旧分类器来构建新分类器）外，我们提出更新模型中包含的语义关系可以回顾性地传输。新分类器也可以通过新到旧的映射传输为旧分类器，即 <span class="math-inline">\hat{W}<em>{old} = T(W</em>{new})</span>。语义映射现在作为构建旧类别知识正则化的元素。</p>
+<p><strong>RT 损失</strong>：类似于 PT 损失，我们通过转换后的分类器构建 RT 损失以防止遗忘：<br />
+<div class="math-display"><br />
+    L_{RT}(x) = \sum_{k=1}^{|Y_{b-1}|} - S_k(\overline{W}<em>{old}^T \overline{\phi}(x)) \log S_k(\hat{W}</em>{old}^T \phi(x)) \tag{6}<br />
+</div><br />
+其中 <span class="math-inline">\hat{W}<em>{old}</span> 是转换后的分类器。公式 6 强制转换后的模型像旧模型一样进行预测，并保持判别能力。RT 损失构建了一个映射，以保留旧类别上的先前知识。与公式 2 相比，区别在于蒸馏学生变为转换后的模型 <span class="math-inline">\hat{W}</em>{old}^T \phi(x)</span>。变换映射 <span class="math-inline">T</span> 通过语义关系引导保留过程。</p>
+<p><strong>回顾性传输的效果</strong>：RT 利用语义映射将新分类器转换为旧分类器，并通过知识蒸馏限制类别间的关系。因此，对模型施加了更强的正则化，防止遗忘。需要注意的是，当前方法仅在单方向上进行知识传输，而 RT 使两个分类器能够相互监督并进行双向传输。在实现中，我们随着 epoch 的增加逐步增加 RT 损失的权重。</p>
+<p><strong>协同传输总结</strong>：图 3 展示了 COIL 框架。面对新类别的到来，我们提取类别间的关系并传输知识 <span class="math-inline">W_{old} \rightarrow \overline{W}<em>{new}</span>，这有助于模型通过旧类别进行适应。在新类别的学习过程中，我们提取语义关系并传输知识 <span class="math-inline">W</em>{new} \rightarrow \hat{W}_{old}</span>，这有助于克服遗忘。这两种传输在知识流的两个方向上相互协作，从而促进类增量学习。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318150014.png" style="zoom: 80%;" /></div>
+
+<h3 id="43-通过最优传输的语义映射">4.3 通过最优传输的语义映射<a class="anchor-link" href="#43-通过最优传输的语义映射" title="Permanent link">&para;</a></h3>
+<p>到目前为止，我们已经提出了协同传输框架。剩下的最大问题是：如何将一个分类器转换为另一个分类器，即如何获得语义映射 <span class="math-inline">T</span>？<span class="math-inline">T</span> 应捕捉类别集之间的相关性，并能够将原始分类器 <span class="math-inline">W_o</span> 转换为目标分类器 <span class="math-inline">W_g</span>。线性层的系数揭示了特征与类别之间的正/负关系，预测 <span class="math-inline">W^T \phi(x)</span> 是所有特征上类别特定加权和的向量。因此，我们可以通过线性映射 <span class="math-inline">T \in \mathbb{R}^{\alpha \times \beta}</span> 重新加权转换后的预测。<span class="math-inline">T</span> 编码了原始任务中大小为 <span class="math-inline">\alpha</span> 的类别集与目标任务中大小为 <span class="math-inline">\beta</span> 的类别集之间的类别语义相关性。两个类别越相关，<span class="math-inline">T</span> 中对应的值越大。由于相关类别依赖于相似的特征来确定标签，我们可以重用原始任务中相似类别的权重来在目标任务中获得良好的预测。例如，预测“猫”的重要特征也有助于预测目标任务中的“老虎”，反之亦然。通过 <span class="math-inline">T</span>，我们可以在不同类别集之间传输类别间的关系。接下来我们介绍如何计算映射 <span class="math-inline">T</span>。</p>
+<p><strong>传输映射</strong>：设 <span class="math-inline">\mu_1 \in \Delta_\alpha</span>，<span class="math-inline">\mu_2 \in \Delta_\beta</span>，其中 <span class="math-inline">\Delta_d = {\mu: \mu \in \mathbb{R}^d_+, \mu^T \mathbf{1} = 1}</span> 是 <span class="math-inline">d</span> 维单纯形。<span class="math-inline">\mu_1</span> 和 <span class="math-inline">\mu_2</span> 是归一化的边际概率，表示每个类别的重要性，在没有信息先验的情况下设置为均匀分布。引入成本矩阵 <span class="math-inline">C \in \mathbb{R}^{\alpha \times \beta}<em>+</span> 来描述类别变化并指导转换，其元素指出将原始任务的一个类别链接到目标任务对应类别时应支付的代价。因此，我们可以将 <span class="math-inline">T</span> 视为两个分布的耦合，它通过最低的传输成本将任务之间的类别关联起来，可以通过最小化以下公式进行优化：<br />
+<div class="math-display"><br />
+    \min</em>{T} \langle T, C \rangle \quad \text{s.t.} \quad T \mathbf{1} = \mu_1, \quad T^T \mathbf{1} = \mu_2, \quad T \geq 0 \tag{7}<br />
+</div><br />
+公式 7 是 OT 的 Kantorovich 公式，其中 <span class="math-inline">T</span> 显示了如何将一个集合与另一个集合对齐。一个类别的概率质量将被移动到具有较小成本的相似类别。考虑到新类别的到来，<span class="math-inline">\mu_1 \in \Delta_{|Y_{b-1}|}</span>，<span class="math-inline">\mu_2 \in \Delta_{|Y_b|}</span>。公式 7 将输出一个排列映射 <span class="math-inline">T</span>，其中两个类别集之间具有正确的对齐关系。通过对模型应用类别对齐，我们可以将先前任务中训练良好的分类器转换到当前任务中。公式 7 是一个中间函数，不是一个优化项。</p>
+<p><strong>传输成本</strong>：在公式 7 中，给定的 <span class="math-inline">C</span> 描述了原始任务和目标任务中两个不同类别集之间的关系。我们提出了一种通用的方法来编码类别之间的不变关系，而不是手工设计 <span class="math-inline">C</span> 的值。我们首先将所有类别编码为相同的形式。</p>
+<p>特别是，我们从新任务中获得新类别，并从样本集 <span class="math-inline">E_{b-1}</span> 中获得旧类别。每个类别的类别中心可以通过当前嵌入计算得出：<br />
+<div class="math-display"><br />
+    v_n = \frac{\sum_{i=1}^{|E_b|} \mathbb{I}(y_i = n) \phi(x_i)}{\sum_{i=1}^{|E_b|} \mathbb{I}(y_i = n)} \tag{8}<br />
+</div><br />
+为了简化，我们从所有已见类别中提取 <span class="math-inline">E_b</span>。如果两个类别相关，它们对应的类别表示也会彼此接近。我们使用成对的欧几里得距离来衡量类别之间的成本 <span class="math-inline">C</span>：<br />
+<div class="math-display"><br />
+    C_{n,m} = |v_n - v_m|<em>2^2 \tag{9}<br />
+</div><br />
+距离越大，两个类别之间的相似性越低。因此，重用先前训练良好的模型的特定系数的难度也越大。将公式 9 代入公式 7，学习到的传输计划 <span class="math-inline">T \in \mathbb{R}^{\alpha \times \beta}</em>+</span> 指导如何以最低成本将原始任务的类别传输到目标任务领域。我们通过 Sinkhorn 算法 [8] 求解 OT 问题。</p>
+<h3 id="44-实施指南">4.4 实施指南<a class="anchor-link" href="#44-实施指南" title="Permanent link">&para;</a></h3>
+<p>我们在算法 1 中展示了 COIL 的实施指南。总体损失是公式 3 与协同传输损失的组合：<br />
+<div class="math-display"><br />
+    L_{COIL}(x,y) = \sum_{x \in D_b \cup E_{b-1}} L(x,y) + L_{PT}(x) + \gamma L_{RT}(x) \tag{10}<br />
+</div><br />
+其中 <span class="math-inline">\gamma</span> 作为累积学习调节器：<span class="math-inline">\gamma = (t / T_{max})^2</span>，<span class="math-inline">t</span> 和 <span class="math-inline">T_{max}</span> 分别表示当前 epoch 索引和总 epoch 数。<span class="math-inline">L_{PT}</span> 仅在前五个 epoch 中用于快速模型初始化。需要注意的是，OT 是一个中间函数，不是优化项，PT 损失和 RT 损失同时优化。我们使用余弦分类器，即线性层的权重和特征在相乘之前都进行归一化：<span class="math-inline">f(x) = \left(\frac{W}{|W|_2}\right)^T \left(\frac{\phi(x)}{|\phi(x)|_2}\right)</span>。因此，我们不需要关心新旧类别之间的校准。更多细节请参见补充材料。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318150222.png" style="zoom: 80%;" /></div>
+
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们将 COIL 与 SOTA 方法在基准和现实世界的增量数据集上进行比较。此外，可视化了前瞻性传输的效果。我们还进行了消融实验，以验证 COIL 中每个部分的改进。我们还将回顾性传输与其他方法结合，并在补充材料中报告结果。</p>
+<h3 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>数据集</strong>：按照 [35,46,60] 中定义的协议，我们在 CIFAR-100[21]、CUB200-2011[42] 和 ImageNet ILSVRC2012[36] 上评估相关方法的性能。我们还在现实世界的多媒体面部表情识别任务 RAF-DB[23] 上进行了实验。它们列示如下：</p>
+<ul>
+<li><strong>CIFAR-100</strong>：包含 50,000 张训练图像和 10,000 张测试图像，共有 100 个类别。</li>
+<li><strong>CUB-200 和 CUB-100</strong>：一个细粒度图像数据集，包含 200 种鸟类，共 11,788 张图像。我们还根据 [60] 从 CUB 中随机抽取 100 个类别形成 CUB-100。</li>
+<li><strong>ImageNet-1000 和 ImageNet-100</strong>：ImageNet 是一个大规模数据集，包含 1,000 个类别，训练集约 1.28 百万张图像，验证集 50,000 张图像。我们还根据 [46] 从原始 ImageNet-1000 中随机选择 100 个类别形成 ImageNet-100。</li>
+<li><strong>RAF-DB</strong>：包含 15,339 张现实世界的面部图像，标注为七种表情之一。按照 [17,51,69]，我们选择六种基本表情（不包括中性）作为实验数据。</li>
+</ul>
+<p>根据类增量学习的常见设置 [35]，所有数据集均使用 NumPy 随机种子 1993 进行打乱。对于子集数据集（如 CUB-100 和 ImageNet-100），子采样类别是在类别打乱后的前 100 个类别 [46,60]。有两种增量设置 [35,60]。第一种设置从总类别的一半开始，其余类别在不同的阶段到达 [14,60]，而另一种设置将第一个任务的类别数与后续任务相同 [35,63]。在本文中，我们使用这两种设置进行实验，并验证 COIL 的通用性能改进。</p>
+<p><strong>比较方法</strong>：在本节中，我们将 COIL 与 SOTA 方法进行比较，包括 iCaRL[35]、BiC[46]、WA[63]。我们还在结果中报告了离线模型，即 Oracle。</p>
+<ul>
+<li><strong>Finetune</strong>：使用交叉熵微调增量模型。Finetune 不考虑克服遗忘，面临遗忘现象。</li>
+<li><strong>iCaRL[35]</strong>：使用最近中心均值作为分类器，并应用知识蒸馏 [13] 来防止遗忘。iCaRL 的损失函数对应于公式 3。</li>
+<li><strong>BiC[46]</strong>：训练一个额外的偏差校正层以消除线性层的偏差。BiC 从样本中分离出一个验证集，验证集不用于训练。</li>
+<li><strong>WA[63]</strong>：通过 <span class="math-inline">L_2</span> 范数归一化全连接层，使得在学习新类别时该层不会变得不平衡。</li>
+<li><strong>Oracle</strong>：以离线方式联合训练所有类别，可以视为 CIL 方法的上限。</li>
+</ul>
+<p><strong>实现细节</strong>：所有模型均使用 PyTorch[33] 实现。对于 CIFAR-100，我们采用 32 层 ResNet[12] 并训练 160 个 epoch。学习率从 0.1 开始，在 80 和 120 个 epoch 时衰减 0.1。对于 ImageNet、CUB 和 RAF-DB，我们采用 18 层 ResNet，总共训练 90 个 epoch。学习率从 0.1 开始，每 30 个 epoch 衰减 0.1。模型通过 SGD 优化，批量大小为 128，温度 <span class="math-inline">\tau</span> 设置为 2。为了求解 OT 问题，我们使用 Sinkhorn 算法 [8,38]，并将熵正则化项 <span class="math-inline">\alpha</span> 设置为 0.45。</p>
+<h3 id="52-与-sota-方法的比较">5.2 与 SOTA 方法的比较<a class="anchor-link" href="#52-与-sota-方法的比较" title="Permanent link">&para;</a></h3>
+<p>我们首先报告每个任务类别数相等的实验结果。对于 CIFAR-100，100 个类别被打乱并分为 2、5、10 和 20 个增量任务。对于 ImageNet 和 CUB，总类别被分为 10 个增量任务。由于所有比较方法都是基于样本的，我们为每个方法固定相同数量的样本，即 CIFAR-100 和 ImageNet-100 为 2,000 个样本，ImageNet-1000 为 20,000 个样本。因此，每个类别选择的样本数为 20，这对于每个类别来说是<strong>充足的</strong>。相应地，我们还在 CUB-100/200 上进行了<strong>稀少</strong>样本的实验，即每个类别仅保存三个样本。样本通过 herding 算法 [45] 选择。</p>
+<p>性能曲线如图 4 所示，平均准确率如表 1 所示。我们报告 ImageNet 的 top-5 准确率和 CIFAR 及 CUB 的 top-1 准确率。从结果中可以推断，我们提出的 COIL 在最终增量准确率和平均增量准确率方面优于当前的 SOTA 方法。除了 ImageNet-100 外，三个数据集的趋势一致。BiC 在充足样本的情况下表现良好，尤其是在 ImageNet-100 数据集上。然而，它需要构建一个验证集来调整额外的层。对于 CUB-100/200 的稀少样本，每个类别只能保留一个样本用于验证，BiC 的性能因容易过拟合而下降。然而，COIL 在稀少样本的情况下优于它 20%。实验结果表明，我们提出的方法能够很好地处理小规模图像和大规模图像的增量学习，无论是充足样本还是稀少样本。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153017.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153154.png" style="zoom: 80%;" /></div>
+
+<h3 id="53-具有大量基础类别的实验">5.3 具有大量基础类别的实验<a class="anchor-link" href="#53-具有大量基础类别的实验" title="Permanent link">&para;</a></h3>
+<p>在现实世界的应用中，如产品分类或人脸识别，增量学习通常从在预收集数据集上训练的模型开始。为了模拟这一点，我们从训练了总类别的一半的模型开始 [14,60]，其余类别在不同的阶段到达。对于 CIFAR-100，总共有 100 个类别，我们使其中 50 个类别作为第一个任务的基础类别，其余 50 个类别分别在 2、5 和 10 个任务中出现。</p>
+<p>结果如图 5 所示，平均准确率性能在补充材料中报告。从图中可以推断，我们提出的 COIL 在最终增量准确率和平均增量准确率方面优于当前的 SOTA 方法。此外，由于前瞻性传输利用旧类别和新类别之间的语义关系来初始化新分类器，生成的新分类器的性能与旧类别和新类别之间的关系相关。随着基础类别的增加，我们可以从旧类别中提取更多的语义关系，从而促进新类别的学习，并期望前瞻性传输的更强性能。相应地，我们发现图 5 中相比于第二名方法的性能提升略大于图 4 中的 CIFAR 任务，这种改进与我们的假设一致。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153047.png" style="zoom: 80%;" /></div>
+
+<h3 id="54-传输分类器的可视化">5.4 传输分类器的可视化<a class="anchor-link" href="#54-传输分类器的可视化" title="Permanent link">&para;</a></h3>
+<p>在本部分中，我们在 CIFAR-100 数据集上可视化学习到的决策边界。通过将嵌入模块 <span class="math-inline">\phi(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^2</span> 学习为 2D，我们展示实例，即在 CNN 上附加一个额外的线性层作为嵌入模块。需要注意的是，我们采用余弦分类器，并且可视化的特征已归一化。在第一个任务中，我们为三个类别（道路、棕榈树和蛇）训练一个分类器。在第二个任务中，出现了两个新类别（自行车和云）。然后，我们使用算法 2 中的分类器传输算法将旧分类器 <span class="math-inline">W_{old}</span> 传输为新分类器 <span class="math-inline">W_{new}</span> 作为初始化。我们展示了五个类别（包括旧类别和新类别）上增强分类器的决策边界。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153214.png" style="zoom: 80%;" /></div>
+
+<p>我们在图 6 中绘制了可视化结果。在每个图中，点表示实例，阴影区域表示模型的分类边界。可以推断，最优传输的分类器很好地捕捉了类别间的关系，并且即使在没有训练新类别的情况下也能描绘和区分旧类别和新类别。它还展示了前瞻性传输的强大能力，传输的分类器可以作为新分类器的良好初始化，避免了随机初始化的负面影响。此外，在这次试验中，旧类别与新类别几乎无关，初始化的分类器也能够描绘旧类别和新类别之间的差异，这比随机初始化表现更好。可以推断，当旧类别和新类别之间的相关性更强时，初始化的分类器会更强大。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153059.png" style="zoom: 80%;" /></div>
+
+<h3 id="55-现实世界的面部表情识别">5.5 现实世界的面部表情识别<a class="anchor-link" href="#55-现实世界的面部表情识别" title="Permanent link">&para;</a></h3>
+<p>在现实世界的面部表情识别问题中，表情类别变得越来越细粒度和增量。我们还在一个现实世界的多媒体数据集 RAF-DB 上进行了实验。RAF-DB 是一个包含六种类别的面部表情识别数据集，我们将它们分为两个和三个任务以形成一个增量流。类似于 [69]，我们将面部图像调整为 100×100 像素，并为每个类别保留 60 个样本。</p>
+<p>性能曲线如图 7 所示。Finetuning 在没有先前学习知识限制的情况下学习新的面部图像，随着新类别的加入，性能急剧下降。iCaRL 利用知识蒸馏的力量将新模型与旧模型映射，并保留从灾难性遗忘中学到的知识。WA 和 BiC 通过更多的限制扩展了 iCaRL，即权重归一化和额外的偏差校正层，结果优于普通的 iCaRL。然而，面部表情具有很强的相关性，COIL 善于利用这种关系，并利用最优传输的知识获得最佳性能。结果验证了在现实世界的增量学习场景中，COIL 仍然具有竞争力。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153111.png" style="zoom: 80%;" /></div>
+
+<h3 id="56-消融研究">5.6 消融研究<a class="anchor-link" href="#56-消融研究" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们提供了 COIL 中各个组件的消融研究。更多的消融实验在补充材料中报告。</p>
+<p><strong>前瞻性传输的影响</strong>：除了决策边界的可视化外，我们还进行了实验，定量地测量前瞻性传输对模型适应的帮助。为了评估这一点，我们比较了不同的分类器扩展策略：</p>
+<ul>
+<li><strong>PT</strong>：初始化 <span class="math-inline">W_{new} = T W_{old}</span>，其中 <span class="math-inline">T</span> 通过解决公式 6 中的 OT 问题获得。</li>
+<li><strong>NCM</strong>：丢弃线性分类器，通过最近中心均值 [35] 对新实例进行分类。</li>
+<li><strong>Random</strong>：随机初始化 <span class="math-inline">W_{new}</span>。</li>
+</ul>
+<p>我们在 CIFAR-100 上进行十个任务的测试。使用这三种策略，当面对新的增量任务时，我们直接在新类别上进行测试，并在图 8(a) 中报告准确率。与随机分类器相比，随机分类器在新类别上的准确率为 10%，NCM 构建新类别的类别均值，并通过最近类别中心分配标签，表现更好。然而，由于嵌入模块未适应新类别，NCM 无法提取最合适的类别均值。相比之下，PT 利用类别间的关系构建最优传输映射，并通过旧分类器初始化一个良好的分类器，表现最佳。我们还注意到，随着已知类别的增加，测试性能也提高，这与我们的意识一致，即我们知道的类别越多，越容易找到相关类别并进行传输。</p>
+<p><strong>语义传输的消融</strong>：我们进行了实验以验证 COIL 中每个部分的有效性。比较中包含四种变体：</p>
+<ul>
+<li><strong>变体 1</strong>：使用交叉熵训练（公式 1）。</li>
+<li><strong>变体 2</strong>：使用交叉熵和蒸馏损失训练（公式 3）。</li>
+<li><strong>变体 3</strong>：在变体 2 的基础上增加前瞻性传输。</li>
+<li><strong>变体 4</strong>：在变体 2 的基础上增加回顾性传输。</li>
+</ul>
+<p>实验在 CIFAR-100 的五个任务上进行。图 8(b) 报告了结果。由于变体 1 仅学习新概念而没有先前知识的约束，它很快遗忘知识并遭受灾难性遗忘。变体 2 利用蒸馏损失来克服遗忘，并在性能上迈出了一小步。变体 3 和变体 4 在变体 2 的基础上增加了额外的传输步骤，并且都比变体 2 获得了更多的改进。需要注意的是，前瞻性传输在任务的开始时起作用，其效果更多地体现在模型适应上。相比之下，回顾性传输在整个训练过程中起作用，推动模型远离遗忘，并显示出比变体 3 更强的效果。然而，将它们结合起来，我们带来了 COIL，它比每个单独的部分都表现更好。COIL 显著优于基线方法。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250318153128.png" style="zoom: 80%;" /></div>
+
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>在现实世界的应用中，学习系统经常面临新类别的实例。为了在不遗忘旧类别的情况下增量学习所有已见类别的分类器，类增量学习因此被提出。然而，当前方法忽略了旧类别和新类别之间的强相关性，而我们发现它可以帮助促进增量学习过程。在本文中，我们提出了 COIL 以利用类别间的语义关系。一方面，将旧类别的知识传输到新类别有助于快速适应新类别，并避免随机权重初始化的负面影响。另一方面，将新分类器传输为旧分类器可以对增量模型施加额外的正则化项，从而很好地防止灾难性遗忘现象。提出的 COIL 能够高效适应新类别，并在学习新类别时保留旧知识。如何进一步探索类别之间的边际概率和传输成本是有趣的未来工作。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

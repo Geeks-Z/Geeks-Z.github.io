@@ -1,0 +1,2825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建挂载目录</title>
+    <meta name="description" content="创建挂载目录 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#anaconda">Anaconda</a></li>
+<li><a href="#torchvision">torchvision</a></li>
+<li><a href="#java">Java</a><ul>
+<li><a href="#jdk-下载">jdk 下载</a></li>
+<li><a href="#卸载已有的-openjdk">卸载已有的 openJDK</a></li>
+<li><a href="#安装--配置-jdk">安装 + 配置 JDK</a></li>
+<li><a href="#验证安装情况">验证安装情况</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</li>
+<li><a href="#tomcat">Tomcat</a><ul>
+<li><a href="#下载">下载</a></li>
+<li><a href="#上传解压">上传解压</a></li>
+<li><a href="#启动-tomcat">启动 TOMCAT</a></li>
+<li><a href="#访问测试">访问测试</a></li>
+<li><a href="#配置快捷操作和开机启动">配置快捷操作和开机启动</a></li>
+</ul>
+</li>
+<li><a href="#mysql">MySQL</a><ul>
+<li><a href="#下载_1">下载</a></li>
+<li><a href="#安装">安装</a></li>
+<li><a href="#mysql-driver">MySql Driver</a></li>
+<li><a href="#docker-版">Docker 版</a><ul>
+<li><a href="#拉取镜像">拉取镜像</a></li>
+<li><a href="#运行-docker-命令">运行 docker 命令</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#redis">Redis</a><ul>
+<li><a href="#安装-redis-依赖">安装 Redis 依赖</a></li>
+<li><a href="#上传安装包并解压">上传安装包并解压</a></li>
+<li><a href="#启动">启动</a></li>
+<li><a href="#默认启动">默认启动</a></li>
+<li><a href="#指定配置启动">指定配置启动</a></li>
+<li><a href="#开机自启">开机自启</a></li>
+<li><a href="#docker-版_1">Docker 版</a><ul>
+<li><a href="#拉取镜像_1">拉取镜像</a></li>
+<li><a href="#创建挂载目录">创建挂载目录</a></li>
+<li><a href="#启动-redis">启动 redis</a></li>
+<li><a href="#测试">测试</a></li>
+</ul>
+</li>
+<li><a href="#redis-客户端">Redis 客户端</a><ul>
+<li><a href="#redis-命令行客户端">Redis 命令行客户端</a></li>
+<li><a href="#图形化桌面客户端">图形化桌面客户端</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#docker">Docker</a><ul>
+<li><a href="#centos-安装-docker">CentOS 安装 Docker</a><ul>
+<li><a href="#卸载可选">卸载（可选）</a></li>
+<li><a href="#安装-docker">安装 docker</a></li>
+<li><a href="#启动-docker">启动 docker</a></li>
+<li><a href="#配置镜像加速">配置镜像加速</a></li>
+</ul>
+</li>
+<li><a href="#centos7-安装-dockercompose">CentOS7 安装 DockerCompose</a><ul>
+<li><a href="#下载_2">下载</a></li>
+<li><a href="#修改文件权限">修改文件权限</a></li>
+<li><a href="#base-自动补全命令">Base 自动补全命令：</a></li>
+</ul>
+</li>
+<li><a href="#docker-镜像仓库">Docker 镜像仓库</a><ul>
+<li><a href="#简化版镜像仓库">简化版镜像仓库</a></li>
+<li><a href="#配置-docker-信任地址">配置 Docker 信任地址</a></li>
+<li><a href="#带有图形化界面版本">带有图形化界面版本</a></li>
+</ul>
+</li>
+<li><a href="#阿里云服务器ecs安装-docker">阿里云服务器（ECS）安装 Docker</a></li>
+</ul>
+</li>
+<li><a href="#nacos">Nacos</a><ul>
+<li><a href="#安装-jdk">安装 JDK</a></li>
+<li><a href="#上传安装包">上传安装包</a></li>
+<li><a href="#解压">解压</a></li>
+<li><a href="#端口配置">端口配置</a></li>
+<li><a href="#启动_1">启动</a></li>
+<li><a href="#docker安装">Docker安装</a></li>
+<li><a href="#语句讲解">语句讲解</a></li>
+<li><a href="#nacos-的依赖">Nacos 的依赖</a></li>
+</ul>
+</li>
+<li><a href="#nginx">Nginx</a><ul>
+<li><a href="#解压-nginx-包并安装">解压 Nginx 包，并安装</a></li>
+<li><a href="#安装依赖库">安装依赖库</a></li>
+<li><a href="#安装_2">安装</a></li>
+<li><a href="#启动_2">启动</a></li>
+<li><a href="#关闭防火墙">关闭防火墙</a></li>
+<li><a href="#补充-nginx-命令">补充 Nginx 命令</a></li>
+<li><a href="#查看-nginx-状态">查看 nginx 状态</a></li>
+<li><a href="#注册系统服务">注册系统服务</a></li>
+<li><a href="#docker_1">Docker</a><ul>
+<li><a href="#寻找nginx镜像">寻找Nginx镜像</a></li>
+<li><a href="#下载-nginx-镜像">下载 Nginx 镜像</a></li>
+<li><a href="#创建-nginx-配置文件">创建 Nginx 配置文件</a></li>
+<li><a href="#复制容器文件到宿主机">复制容器文件到宿主机</a></li>
+<li><a href="#删除已启动nginx容器">删除已启动Nginx容器</a></li>
+<li><a href="#创建-nginx-容器并运行">创建 Nginx 容器并运行</a></li>
+<li><a href="#结果检测">结果检测</a></li>
+<li><a href="#修改内容进行展示">修改内容进行展示</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#rabbitmq">RabbitMQ</a><ul>
+<li><a href="#单机部署">单机部署</a><ul>
+<li><a href="#下载镜像">下载镜像</a></li>
+<li><a href="#安装-mq">安装 MQ</a></li>
+</ul>
+</li>
+<li><a href="#安装-delayexchange-插件">安装 DelayExchange 插件</a><ul>
+<li><a href="#下载插件">下载插件</a></li>
+<li><a href="#上传插件">上传插件</a></li>
+<li><a href="#安装插件">安装插件</a></li>
+</ul>
+</li>
+<li><a href="#集群部署">集群部署</a><ul>
+<li><a href="#集群分类">集群分类</a></li>
+<li><a href="#获取-cookie">获取 cookie</a></li>
+<li><a href="#准备集群配置">准备集群配置</a></li>
+<li><a href="#启动集群">启动集群</a></li>
+<li><a href="#测试_1">测试</a></li>
+</ul>
+</li>
+<li><a href="#镜像模式">镜像模式</a><ul>
+<li><a href="#镜像模式的特征">镜像模式的特征</a></li>
+<li><a href="#镜像模式的配置">镜像模式的配置</a></li>
+<li><a href="#测试_2">测试</a></li>
+</ul>
+</li>
+<li><a href="#仲裁队列">仲裁队列</a><ul>
+<li><a href="#添加仲裁队列">添加仲裁队列</a></li>
+<li><a href="#测试_3">测试</a></li>
+<li><a href="#集群扩容">集群扩容</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#openresty">OpenResty</a><ul>
+<li><a href="#安装_3">安装</a><ul>
+<li><a href="#1安装开发库">1）安装开发库</a></li>
+<li><a href="#2安装-openresty-仓库">2）安装 OpenResty 仓库</a></li>
+<li><a href="#3安装-openresty">3）安装 OpenResty</a></li>
+<li><a href="#4安装-opm-工具">4）安装 opm 工具</a></li>
+<li><a href="#5目录结构">5）目录结构</a></li>
+<li><a href="#6配置-nginx-的环境变量">6）配置 nginx 的环境变量</a></li>
+</ul>
+</li>
+<li><a href="#启动和运行">启动和运行</a></li>
+<li><a href="#备注">备注</a></li>
+</ul>
+</li>
+<li><a href="#canal">Canal</a><ul>
+<li><a href="#开启-mysql-主从">开启 MySQL 主从</a><ul>
+<li><a href="#开启-binlog">开启 binlog</a></li>
+<li><a href="#设置用户权限">设置用户权限</a></li>
+</ul>
+</li>
+<li><a href="#安装-canal">安装 Canal</a><ul>
+<li><a href="#创建网络">创建网络</a></li>
+<li><a href="#安装-canal_1">安装 Canal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#elasticsearch">Elasticsearch</a><ul>
+<li><a href="#部署单点-es">部署单点 es</a><ul>
+<li><a href="#创建网络_1">创建网络</a></li>
+<li><a href="#加载镜像">加载镜像</a></li>
+<li><a href="#运行">运行</a></li>
+</ul>
+</li>
+<li><a href="#部署-kibana">部署 kibana</a><ul>
+<li><a href="#拉取镜像_2">拉取镜像</a></li>
+<li><a href="#部署">部署</a></li>
+<li><a href="#devtools">DevTools</a></li>
+</ul>
+</li>
+<li><a href="#安装-ik-分词器">安装 IK 分词器</a><ul>
+<li><a href="#在线安装-ik-插件较慢">在线安装 ik 插件（较慢）</a></li>
+<li><a href="#离线安装-ik-插件推荐">离线安装 ik 插件（推荐）</a></li>
+<li><a href="#扩展词词典">扩展词词典</a></li>
+<li><a href="#停用词词典">停用词词典</a></li>
+</ul>
+</li>
+<li><a href="#部署-es-集群">部署 es 集群</a></li>
+</ul>
+</li>
+<li><a href="#minio">MinIO</a></li>
+<li><a href="#reference_1">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>创建挂载目录</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> Others/03.linux</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="anaconda">Anaconda<a class="anchor-link" href="#anaconda" title="Permanent link">&para;</a></h2>
+<ol>
+<li>下载相关环境</li>
+</ol>
+<p><code>sh
+   wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-2019.10-Linux-x86_64.sh --no-check-certificate</code><br />
+2. 增加执行权限</p>
+<p><code>sh
+   chmod +x Anaconda3-2019.10-Linux-x86_64.sh</code></p>
+<ol start="3">
+<li>安装（按照提示操作即可）</li>
+</ol>
+<p><code>sh
+   bash Anaconda3-2019.10-Linux-x86_64.sh</code></p>
+<ol start="4">
+<li>加载环境变量</li>
+</ol>
+<p><code>shell
+   source /root/.bashrc</code></p>
+<p>或者</p>
+<p><code>shell
+   source ~./bashrc</code></p>
+<ol start="5">
+<li>检查是否安装成功</li>
+</ol>
+<p><code>which python</code><br />
+<img alt="image-20220911204343707" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209112043850.png" /></p>
+<h2 id="torchvision">torchvision<a class="anchor-link" href="#torchvision" title="Permanent link">&para;</a></h2>
+<p>下载torchvison地址：https://download.pytorch.org/whl/cu110/torch_stable.html</p>
+<p>torchvision-0.8.2%2Bcu110-cp38-cp38-win_amd64.whl中的命名解释：</p>
+<ul>
+<li><code>torchvision-0.8.2</code>：表示 torchvision版本为：0.8.2</li>
+<li>
+<p><code>cu110</code>：支持的cuda(GPU)版本为：11.0【<code>cu102</code>:表示cuda版本为10.2】</p>
+</li>
+<li>
+<p><code>cp38</code>：指的是anaconda中的python版本为python38</p>
+</li>
+<li>
+<p><code>win_amd64</code>：用于64位window系统。</p>
+</li>
+<li>
+<p><code>torch-1.7.1</code>:表示torch版本为1.7.1</p>
+</li>
+</ul>
+<p>我的anacond中python版本为python38，在windows64位系统上运行，故需要的版本为：<code>torchvision-0.8.2%2Bcu110-cp38-cp38-win_amd64.whl</code></p>
+<p><a href="https://hw-universal.oss-cn-beijing.aliyuncs.com/%E7%BC%96%E7%A8%8B%E7%8E%AF%E5%A2%83%E5%92%8C%E8%BD%AF%E4%BB%B6%E5%B7%A5%E5%85%B7%E5%AE%89%E8%A3%85%E6%89%8B%E5%86%8C.pdf">编程环境和软件工具安装手册</a></p>
+<p>:heartpulse: 具体版本应根据实际需求确定</p>
+<h2 id="java">Java<a class="anchor-link" href="#java" title="Permanent link">&para;</a></h2>
+<h3 id="jdk-下载">jdk 下载<a class="anchor-link" href="#jdk-下载" title="Permanent link">&para;</a></h3>
+<p>JDK 历史版本页面</p>
+<ul>
+<li>JDK 历史版本：https://www.oracle.com/java/technologies/oracle-java-archive-downloads.html</li>
+<li>JDK8 历史版本：https://www.oracle.com/java/technologies/javase/javase8u211-later-archive-downloads.html</li>
+</ul>
+<p>JDK 国内官网下载地址：</p>
+<ul>
+<li><a href="https://www.oracle.com/cn/java/technologies/javase-downloads.html"><strong>https://www.oracle.com/cn/java/technologies/javase-downloads.html</strong></a></li>
+</ul>
+<p>JDK8 国内官网下载地址：</p>
+<ul>
+<li><a href="https://www.oracle.com/cn/java/technologies/javase/javase-jdk8-downloads.html"><strong>https://www.oracle.com/cn/java/technologies/javase/javase-jdk8-downloads.html</strong></a></li>
+</ul>
+<h3 id="卸载已有的-openjdk">卸载已有的 openJDK<a class="anchor-link" href="#卸载已有的-openjdk" title="Permanent link">&para;</a></h3>
+<p>查询本机中已经安装过的 java rpm 包，命令如下；</p>
+<pre><code class="language-shell">rpm -qa |grep java
+</code></pre>
+<pre><code class="language-text">[root@localhost ~]$ rpm -qa |grep java
+
+java-1.8.0-openjdk-1.8.0.65-3.b17.el7.x86_64
+java-1.7.0-openjdk-headless-1.7.0.91-2.6.2.3.el7.x86_64
+javapackages-tools-3.4.1-11.el7.noarch
+java-1.8.0-openjdk-headless-1.8.0.65-3.b17.el7.x86_64
+nuxwdog-client-java-1.0.3-2.el7.x86_64
+java-1.7.0-openjdk-1.7.0.91-2.6.2.3.el7.x86_64
+mysql-connector-java-5.1.25-3.el7.noarch
+python-javapackages-3.4.1-11.el7.noarch
+tzdata-java-2015g-1.el7.noarch
+javassist-3.16.1-10.el7.noarch
+java-1.7.0-openjdk-devel-1.7.0.91-2.6.2.3.el7.x86_64
+javamail-1.4.6-8.el7.noarch
+</code></pre>
+<p>如上，将下面几个删除即可</p>
+<pre><code class="language-text">java-1.8.0-openjdk-1.8.0.65-3.b17.el7.x86_64
+java-1.7.0-openjdk-headless-1.7.0.91-2.6.2.3.el7.x86_64
+java-1.8.0-openjdk-headless-1.8.0.65-3.b17.el7.x86_64
+nuxwdog-client-java-1.0.3-2.el7.x86_64
+java-1.7.0-openjdk-1.7.0.91-2.6.2.3.el7.x86_64
+java-1.7.0-openjdk-devel-1.7.0.91-2.6.2.3.el7.x86_64
+</code></pre>
+<p>.noarch 文件属于通用文件，不影响，不用删除，删了也没事~</p>
+<pre><code class="language-text">javapackages-tools-3.4.1-11.el7.noarch
+mysql-connector-java-5.1.25-3.el7.noarch
+python-javapackages-3.4.1-11.el7.noarch
+tzdata-java-2015g-1.el7.noarch
+javassist-3.16.1-10.el7.noarch
+javamail-1.4.6-8.el7.noarch
+</code></pre>
+<p>删除命令，（注：删除命令需要用 root 权限）</p>
+<pre><code class="language-text">rpm -e --nodeps xxx
+</code></pre>
+<pre><code class="language-text">`rpm -e --nodeps` java-1.8.0-openjdk-1.8.0.65-3.b17.el7.x86_64
+`rpm -e --nodeps` java-1.7.0-openjdk-headless-1.7.0.91-2.6.2.3.el7.x86_64
+`rpm -e --nodeps` java-1.8.0-openjdk-headless-1.8.0.65-3.b17.el7.x86_64
+`rpm -e --nodeps` nuxwdog-client-java-1.0.3-2.el7.x86_64
+`rpm -e --nodeps` java-1.7.0-openjdk-1.7.0.91-2.6.2.3.el7.x86_64
+`rpm -e --nodeps` java-1.7.0-openjdk-devel-1.7.0.91-2.6.2.3.el7.x86_64
+</code></pre>
+<p>检查是否已经删除成功</p>
+<p>在命令窗口键入<code>java -version</code>，如下说明已经删除成功了：</p>
+<pre><code class="language-text">[root@localhost ~]$ java -version
+-bash: java: command not found
+</code></pre>
+<h3 id="安装--配置-jdk">安装 + 配置 JDK<a class="anchor-link" href="#安装--配置-jdk" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>以下方式适用于安装各版本 JDK，本文以 JDK1.8 为例</p>
+</blockquote>
+<p>1、创建一个 java 目录</p>
+<pre><code class="language-text">mkdir -p /usr/local/java
+</code></pre>
+<p>2、进入目录</p>
+<pre><code class="language-text">cd /usr/local/java
+</code></pre>
+<p>3、通过<code>rz</code>命令或 xftp 将下载的 jdk 包上传到该目录</p>
+<p>4、解压 jdk 压缩包</p>
+<pre><code class="language-text">tar -zxvf jdk-8u271-linux-x64.tar.gz
+</code></pre>
+<p>5、配置环境变量</p>
+<p>用 vim 或 vi 打开/etc/profile 文件</p>
+<pre><code class="language-text">vim /etc/profile
+</code></pre>
+<p>6、点击键盘 <code>i</code> 进行编辑；</p>
+<p>将下面内容粘贴到末尾；</p>
+<pre><code class="language-text">JAVA_HOME=/usr/local/java/jdk1.8.0_271
+CLASSPATH=$JAVA_HOME/lib/
+PATH=<span class="math-inline">PATH:</span>JAVA_HOME/bin
+export PATH JAVA_HOME CLASSPATH
+</code></pre>
+<p>注意<code>JAVA_HOME=/home/local/java/jdk1.8.0_271</code>就是你自己的 jdk 目录</p>
+<p><img alt="image-20221008122404342" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039187.png" /></p>
+<p>7、保存修改</p>
+<ul>
+<li>Esc</li>
+<li>Shift + q 进入键盘编辑</li>
+<li>wq 保存并退出</li>
+</ul>
+<p>8、重新加载配置文件，命令：</p>
+<pre><code class="language-text">source /etc/profile
+</code></pre>
+<h3 id="验证安装情况">验证安装情况<a class="anchor-link" href="#验证安装情况" title="Permanent link">&para;</a></h3>
+<p>1、输入：java -version</p>
+<p><img alt="image-20221008122515861" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039228.png" /></p>
+<p>2、输入：javac</p>
+<p><img alt="image-20221008122544304" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039276.png" /></p>
+<p>3、输入：java</p>
+<p><img alt="image-20221008122556609" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039320.png" /></p>
+<h3 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h3>
+<ol>
+<li><a href="https://zhuanlan.zhihu.com/p/341775533">Linux 安装 JDK 并配置环境变量 - 详细步骤</a></li>
+</ol>
+<h2 id="tomcat">Tomcat<a class="anchor-link" href="#tomcat" title="Permanent link">&para;</a></h2>
+<h3 id="下载">下载<a class="anchor-link" href="#下载" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>官网 https://tomcat.apache.org/</p>
+</blockquote>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039202.png" alt="image-20221008114200886" style="zoom:67%;" /></p>
+<p>根据自己需求选择相应版本，不建议选择最新版本，笔者选择了<code>8.5.82</code>版 ：<code>apache-tomcat-8.5.82.tar.gz</code></p>
+<h3 id="上传解压">上传解压<a class="anchor-link" href="#上传解压" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>上传至 <code>/root</code> 目录</p>
+</li>
+<li>
+<p>解压安装</p>
+</li>
+</ol>
+<p>在 <code>/usr/local/</code> 下创建 <code>tomcat</code> ⽂件夹并进⼊</p>
+<p><code>shell
+   cd /usr/local/
+   mkdir tomcat
+   cd tomcat</code></p>
+<p>将 Tomcat 安装包解压到 <code>/usr/local/tomcat</code> 中即可</p>
+<p><code>shell
+    tar -zxvf /root/apache-tomcat-8.5.55.tar.gz -C ./</code></p>
+<p>解压完之后， <code>/usr/local/tomcat</code> ⽬录中会出现⼀个 <code>apache-tomcat-8.5.82</code> 的⽬录</p>
+<p><img alt="image-20221008114851782" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039231.png" /></p>
+<h3 id="启动-tomcat">启动 TOMCAT<a class="anchor-link" href="#启动-tomcat" title="Permanent link">&para;</a></h3>
+<p>直接进 <code>apache-tomcat-8.5.82</code> ⽬录，执⾏其中 <code>bin</code> ⽬录下的启动脚本即可</p>
+<pre><code class="language-shell">cd /bin
+./startup.sh
+</code></pre>
+<p><img alt="image-20221008115146293" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039270.png" /></p>
+<h3 id="访问测试">访问测试<a class="anchor-link" href="#访问测试" title="Permanent link">&para;</a></h3>
+<p>这时候浏览器访问： 你的主机<code>IP:8080</code> ，得到如下画⾯说明成功启动了</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039364.png" alt="image-20221008115248203" style="zoom:50%;" /></p>
+<h3 id="配置快捷操作和开机启动">配置快捷操作和开机启动<a class="anchor-link" href="#配置快捷操作和开机启动" title="Permanent link">&para;</a></h3>
+<p>⾸先进⼊ /etc/rc.d/init.d ⽬录，创建⼀个名为 tomcat 的⽂件，并赋予执⾏权限</p>
+<pre><code class="language-shell">[root@hwzhao bin]## cd /etc/rc.d/init.d/
+[root@hwzhao init.d]##  touch tomcat
+[root@hwzhao bin]##  chmod +x tomcat
+</code></pre>
+<p>接下来编辑 <code>tomcat</code> ⽂件，并在其中加⼊如下内容：</p>
+<pre><code>#!/bin/sh
+## chkconfig: 345 99 10
+## description: Auto-starts tomcat
+## /etc/init.d/tomcatd
+## Tomcat auto-start
+## Source function library.
+ . /etc/init.d/functions
+## source networking configuration.
+ . /etc/sysconfig/network
+RETVAL=0
+
+## 切换成自己的路径
+export JAVA_HOME=/usr/local/java/jdk1.8.0_271
+export CATALINA_HOME=/usr/local/tomcat/apache-tomcat-8.5.82
+export CATALINA_BASE=/usr/local/tomcat/apache-tomcat-8.5.82
+
+start()
+{
+        if [ -f $CATALINA_HOME/bin/startup.sh ];
+          then
+            echo $&quot;Starting Tomcat&quot;
+                $CATALINA_HOME/bin/startup.sh
+            RETVAL=$?
+            echo &quot; OK&quot;
+            return $RETVAL
+        fi
+}
+stop()
+{
+        if [ -f $CATALINA_HOME/bin/shutdown.sh ];
+          then
+            echo $&quot;Stopping Tomcat&quot;
+                $CATALINA_HOME/bin/shutdown.sh
+            RETVAL=$?
+            sleep 1
+            ps -fwwu tomcat | grep apache-tomcat|grep -v grep | grep -v PID | awk '{print $2}'|xargs kill -9
+            echo &quot; OK&quot;
+            ## [ $RETVAL -eq 0 ] &amp;&amp; rm -f /var/lock/...
+            return $RETVAL
+        fi
+}
+case &quot;$1&quot; in
+ start)
+        start
+        ;;
+ stop)
+        stop
+        ;;
+ restart)
+         echo $&quot;Restaring Tomcat&quot;
+         $0 stop
+         sleep 1
+         $0 start
+         ;;
+ *)
+        echo <span class="math-inline">&quot;Usage: </span>0 {start|stop|restart}&quot;
+        exit 1
+        ;;
+esac
+exit $RETVAL
+</code></pre>
+<p>这样后续对于 Tomcat 的开启和关闭只需要执⾏如下命令即可：</p>
+<pre><code class="language-shell">service tomcat start
+service tomcat stop
+</code></pre>
+<p>现在将其添加到系统服务，使用命令：<code>chkconfig --add tomcat</code></p>
+<p>然后使用<code>chkconfig --list</code>查看服务是否添加成功最后加⼊开机启动即可【可以使用<code>chkconfig tomcat on/off</code>切换开机启动关闭】</p>
+<pre><code class="language-shell">chkconfig --add tomcat
+chkconfig tomcat on
+</code></pre>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039425.png" /></p>
+<h2 id="mysql">MySQL<a class="anchor-link" href="#mysql" title="Permanent link">&para;</a></h2>
+<p><a href="https://hw-universal.oss-cn-beijing.aliyuncs.com/MySQL%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.pdf">宋红康 MySQL环境搭建</a></p>
+<h3 id="下载_1">下载<a class="anchor-link" href="#下载_1" title="Permanent link">&para;</a></h3>
+<p>进入 mysql 官网下载 mysql http://www.mysql.com/downloads/</p>
+<p>滑到最下方</p>
+<p><img alt="image-20211229202455598" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039599.png" /></p>
+<p>根据电脑选择相应的版本</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039868.png" alt="image-20211229202605788" style="zoom:40%;" /></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039117.png" alt="image-20211229202708501" style="zoom: 40%;" /></p>
+<h3 id="安装">安装<a class="anchor-link" href="#安装" title="Permanent link">&para;</a></h3>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039506.png" alt="image-20211229204032580" style="zoom:50%;" /></p>
+<h3 id="mysql-driver">MySql Driver<a class="anchor-link" href="#mysql-driver" title="Permanent link">&para;</a></h3>
+<p><a href="https://dev.mysql.com/downloads/">官网</a></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039749.png" alt="image-20220116114307281" style="zoom:50%;" /></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039069.png" alt="image-20220116114526193" style="zoom:50%;" /></p>
+<p>下载完成后解压即可</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039137.png" alt="image-20220116114642693" style="zoom:50%;" /></p>
+<h3 id="docker-版">Docker 版<a class="anchor-link" href="#docker-版" title="Permanent link">&para;</a></h3>
+<h4 id="拉取镜像">拉取镜像<a class="anchor-link" href="#拉取镜像" title="Permanent link">&para;</a></h4>
+<pre><code class="language-shell">docker pull mysql:5.7
+</code></pre>
+<p><img alt="image-20221101152436271" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039302.png" /></p>
+<h4 id="运行-docker-命令">运行 docker 命令<a class="anchor-link" href="#运行-docker-命令" title="Permanent link">&para;</a></h4>
+<p>运行命令：</p>
+<pre><code class="language-sh">docker run -p 3307:3306 --name mysql-master \
+-v /mydata/mysql-master/log:/var/log/mysql \
+-v /mydata/mysql-master/data:/var/lib/mysql \
+-v /mydata/mysql-master/conf:/etc/mysql \
+-e MYSQL_ROOT_PASSWORD=root  \
+-d mysql:5.7
+
+#高版本MySQL
+docker run -p 3308:3306 --name mysql8 \
+-v /mydata/mysql8/log:/var/log/mysql \
+-v /mydata/mysql8/data:/var/lib/mysql \
+-v /mydata/mysql8/conf:/etc/mysql/conf.d  \
+-v /etc/localtime:/etc/localtime:ro \
+-e MYSQL_ROOT_PASSWORD=root  \
+-d mysql:8.0
+</code></pre>
+<p><img alt="image-20221101153701183" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039380.png" /></p>
+<p>安装成功。</p>
+<p>进入容器查看配置，并进行字符集等默认配置：</p>
+<pre><code class="language-shell">[root@hadoop-104 conf]# docker exec -it mysql /bin/bash
+root@b3a74e031bd7:/# whereis mysql
+mysql: /usr/bin/mysql /usr/lib/mysql /etc/mysql /usr/share/mysql
+
+root@b3a74e031bd7:/# ls /etc/mysql
+my.cnf
+root@b3a74e031bd7:/# cat /etc/mysql/my.cnf
+[client]
+default-character-set=utf8
+[mysql]
+default-character-set=utf8
+[mysqld]
+init_connect='SET collation_connection = utf8_unicode_ci'
+init_connect='SET NAMES utf8'
+character-set-server=utf8
+collation-server=utf8_unicode_ci
+skip-character-set-client-handshake
+skip-name-resolve
+root@b3a74e031bd7:/#
+</code></pre>
+<p>设置启动 docker 时，即运行 mysql</p>
+<pre><code>[root@hadoop-104 ~]# docker update mysql --restart=always
+mysql
+[root@hadoop-104 ~]#
+</code></pre>
+<h2 id="redis">Redis<a class="anchor-link" href="#redis" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>基于 CentOS 7<br />
+Redis 的官方网站地址：https://redis.io/</p>
+</blockquote>
+<h3 id="安装-redis-依赖">安装 Redis 依赖<a class="anchor-link" href="#安装-redis-依赖" title="Permanent link">&para;</a></h3>
+<p>Redis 是基于 C 语言编写的，因此首先需要安装 Redis 所需要的 gcc 依赖：</p>
+<pre><code class="language-sh">yum install -y gcc tcl
+</code></pre>
+<h3 id="上传安装包并解压">上传安装包并解压<a class="anchor-link" href="#上传安装包并解压" title="Permanent link">&para;</a></h3>
+<p>然后将 Redis 安装包上传到虚拟机的任意目录：</p>
+<p><img alt="image-20211211071712536" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039570.png" /></p>
+<p>例如，我放到了/usr/local/src 目录：</p>
+<p><img alt="image-20211211080151539" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039574.png" /></p>
+<p>解压缩：</p>
+<pre><code class="language-sh">tar -xzf redis-6.2.6.tar.gz
+</code></pre>
+<p>解压后：</p>
+<p><img alt="image-20211211080339076" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039931.png" /></p>
+<p>进入 redis 目录：</p>
+<pre><code class="language-sh">cd redis-6.2.6
+</code></pre>
+<p>运行编译命令：</p>
+<pre><code class="language-sh">make &amp;&amp; make install
+</code></pre>
+<p>如果没有出错，应该就安装成功了。</p>
+<p>默认的安装路径是在 <code>/usr/local/bin</code>目录下：</p>
+<p><img alt="image-20211211080603710" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039936.png" /></p>
+<p>该目录以及默认配置到环境变量，因此可以在任意目录下运行这些命令。其中：</p>
+<ul>
+<li>redis-cli：是 redis 提供的命令行客户端</li>
+<li>redis-server：是 redis 的服务端启动脚本</li>
+<li>redis-sentinel：是 redis 的哨兵启动脚本</li>
+</ul>
+<h3 id="启动">启动<a class="anchor-link" href="#启动" title="Permanent link">&para;</a></h3>
+<p>redis 的启动方式有很多种，例如：</p>
+<ul>
+<li>默认启动</li>
+<li>指定配置启动</li>
+<li>开机自启</li>
+</ul>
+<h3 id="默认启动">默认启动<a class="anchor-link" href="#默认启动" title="Permanent link">&para;</a></h3>
+<p>安装完成后，在任意目录输入 redis-server 命令即可启动 Redis：</p>
+<pre><code>redis-server
+</code></pre>
+<p>如图：</p>
+<p><img alt="image-20211211081716167" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039939.png" /></p>
+<p>这种启动属于<code>前台启动</code>，会阻塞整个会话窗口，窗口关闭或者按下<code>CTRL + C</code>则 Redis 停止。不推荐使用。</p>
+<h3 id="指定配置启动">指定配置启动<a class="anchor-link" href="#指定配置启动" title="Permanent link">&para;</a></h3>
+<p>如果要让 Redis 以<code>后台</code>方式启动，则必须修改 Redis 配置文件，就在我们之前解压的 redis 安装包下（<code>/usr/local/src/redis-6.2.6</code>），名字叫 redis.conf：</p>
+<p><img alt="image-20211211082225509" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039940.png" /></p>
+<p>我们先将这个配置文件备份一份：</p>
+<pre><code>cp redis.conf redis.conf.bck
+</code></pre>
+<p>然后修改 redis.conf 文件中的一些配置：</p>
+<pre><code class="language-properties">## 允许访问的地址，默认是127.0.0.1，会导致只能在本地访问。修改为0.0.0.0则可以在任意IP访问，生产环境不要设置为0.0.0.0
+bind 0.0.0.0
+## 守护进程，修改为yes后即可后台运行
+daemonize yes
+## 密码，设置后访问Redis必须输入密码
+requirepass 123321
+</code></pre>
+<p>Redis 的其它常见配置：</p>
+<pre><code class="language-properties">## 监听的端口
+port 6379
+## 工作目录，默认是当前目录，也就是运行redis-server时的命令，日志、持久化等文件会保存在这个目录
+dir .
+## 数据库数量，设置为1，代表只使用1个库，默认有16个库，编号0~15
+databases 1
+## 设置redis能够使用的最大内存
+maxmemory 512mb
+## 日志文件，默认为空，不记录日志，可以指定日志文件名
+logfile &quot;redis.log&quot;
+</code></pre>
+<p>启动 Redis：</p>
+<pre><code class="language-sh">## 进入redis安装目录
+cd /usr/local/src/redis-6.2.6
+## 启动
+redis-server redis.conf
+</code></pre>
+<p>停止服务：</p>
+<pre><code class="language-sh">## 利用redis-cli来执行 shutdown 命令，即可停止 Redis 服务，
+## 因为之前配置了密码，因此需要通过 -u 来指定密码
+redis-cli -u 123321 shutdown
+</code></pre>
+<h3 id="开机自启">开机自启<a class="anchor-link" href="#开机自启" title="Permanent link">&para;</a></h3>
+<p>我们也可以通过配置来实现开机自启。</p>
+<p>首先，新建一个系统服务文件：</p>
+<pre><code class="language-sh">vi /etc/systemd/system/redis.service
+</code></pre>
+<p>内容如下：</p>
+<pre><code>[Unit]
+Description=redis-server
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/redis-server /usr/local/src/redis-6.2.6/redis.conf
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p>然后重载系统服务：</p>
+<pre><code class="language-sh">systemctl daemon-reload
+</code></pre>
+<p>现在，我们可以用下面这组命令来操作 redis 了：</p>
+<pre><code class="language-sh">## 启动
+systemctl start redis
+## 停止
+systemctl stop redis
+## 重启
+systemctl restart redis
+## 查看状态
+systemctl status redis
+</code></pre>
+<p>执行下面的命令，可以让 redis 开机自启：</p>
+<pre><code class="language-sh">systemctl enable redis
+</code></pre>
+<h3 id="docker-版_1">Docker 版<a class="anchor-link" href="#docker-版_1" title="Permanent link">&para;</a></h3>
+<h4 id="拉取镜像_1">拉取镜像<a class="anchor-link" href="#拉取镜像_1" title="Permanent link">&para;</a></h4>
+<pre><code class="language-shell">[root@hwServer ~]# docker pull redis:6.2.7
+</code></pre>
+<h4 id="创建挂载目录">创建挂载目录<a class="anchor-link" href="#创建挂载目录" title="Permanent link">&para;</a></h4>
+<pre><code class="language-shell">[root@hwServer ~]#  mkdir -p /home/redis/conf
+[root@hwServer ~]# touch /home/redis/conf/redis.conf
+</code></pre>
+<h4 id="启动-redis">启动 redis<a class="anchor-link" href="#启动-redis" title="Permanent link">&para;</a></h4>
+<pre><code class="language-shell">docker run -p 6379:6379 --name redis -v /home/redis/data:/data \
+-v /home/redis/conf/redis.conf:/etc/redis/redis.conf \
+-d redis:6.2.7 redis-server /etc/redis/redis.conf
+</code></pre>
+<p>设置 redis 容器在 docker 启动的时候启动</p>
+<pre><code class="language-shell">[root@hadoop-104 ~]# docker update redis --restart=always
+redis
+[root@hadoop-104 ~]#
+</code></pre>
+<h4 id="测试">测试<a class="anchor-link" href="#测试" title="Permanent link">&para;</a></h4>
+<pre><code class="language-shell">[root@hwServer ~]# docker exec -it redis redis-cli
+</code></pre>
+<p><img alt="image-20221101165117030" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039017.png" /></p>
+<h3 id="redis-客户端">Redis 客户端<a class="anchor-link" href="#redis-客户端" title="Permanent link">&para;</a></h3>
+<p>安装完成 Redis，我们就可以操作 Redis，实现数据的 CRUD 了。这需要用到 Redis 客户端，包括：</p>
+<ul>
+<li>命令行客户端</li>
+<li>图形化桌面客户端</li>
+<li>编程客户端</li>
+</ul>
+<h4 id="redis-命令行客户端">Redis 命令行客户端<a class="anchor-link" href="#redis-命令行客户端" title="Permanent link">&para;</a></h4>
+<p>Redis 安装完成后就自带了命令行客户端：redis-cli，使用方式如下：</p>
+<pre><code class="language-sh">redis-cli [options] [commonds]
+</code></pre>
+<p>其中常见的 options 有：</p>
+<ul>
+<li><code>-h 127.0.0.1</code>：指定要连接的 redis 节点的 IP 地址，默认是 127.0.0.1</li>
+<li><code>-p 6379</code>：指定要连接的 redis 节点的端口，默认是 6379</li>
+<li><code>-a 123321</code>：指定 redis 的访问密码</li>
+</ul>
+<p>其中的 commonds 就是 Redis 的操作命令，例如：</p>
+<ul>
+<li><code>ping</code>：与 redis 服务端做心跳测试，服务端正常会返回<code>pong</code></li>
+</ul>
+<p>不指定 commond 时，会进入<code>redis-cli</code>的交互控制台：</p>
+<p><img alt="image-20211211110439353" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039130.png" /></p>
+<h4 id="图形化桌面客户端">图形化桌面客户端<a class="anchor-link" href="#图形化桌面客户端" title="Permanent link">&para;</a></h4>
+<p>GitHub 上的大神编写了 Redis 的图形化桌面客户端，地址：https://github.com/uglide/RedisDesktopManager</p>
+<p>不过该仓库提供的是 RedisDesktopManager 的源码，并未提供 windows 安装包。</p>
+<p>在下面这个仓库可以找到安装包：https://github.com/lework/RedisDesktopManager-Windows/releases</p>
+<p><img alt="image-20211211111351885" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039434.png" /></p>
+<h5 id="安装_1">安装<a class="anchor-link" href="#安装_1" title="Permanent link">&para;</a></h5>
+<p>在课前资料中可以找到 Redis 的图形化桌面客户端：</p>
+<p><img alt="image-20211214154938770" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039575.png" /></p>
+<p>解压缩后，运行安装程序即可安装：</p>
+<p><img alt="image-20211214155123841" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039576.png" /></p>
+<p>此处略。</p>
+<p>安装完成后，在安装目录下找到 rdm.exe 文件：</p>
+<p><img alt="image-20211211110935819" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039577.png" /></p>
+<p>双击即可运行：</p>
+<p><img alt="image-20211214155406692" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039580.png" /></p>
+<h5 id="建立连接">建立连接<a class="anchor-link" href="#建立连接" title="Permanent link">&para;</a></h5>
+<p>点击左上角的<code>连接到Redis服务器</code>按钮：</p>
+<p><img alt="image-20211214155424842" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039593.png" /></p>
+<p>在弹出的窗口中填写 Redis 服务信息：</p>
+<p><img alt="image-20211211111614483" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039895.png" /></p>
+<p>点击确定后，在左侧菜单会出现这个链接：</p>
+<p><img alt="image-20211214155804523" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061039999.png" /></p>
+<p>点击即可建立连接了：</p>
+<p><img alt="image-20211214155849495" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040004.png" /></p>
+<p>Redis 默认有 16 个仓库，编号从 0 至 15. 通过配置文件可以设置仓库数量，但是不超过 16，并且不能自定义仓库名称。</p>
+<p>如果是基于 redis-cli 连接 Redis 服务，可以通过 select 命令来选择数据库：</p>
+<pre><code class="language-sh">## 选择 0号库
+select 0
+</code></pre>
+<h2 id="docker">Docker<a class="anchor-link" href="#docker" title="Permanent link">&para;</a></h2>
+<p>Docker 分为 CE 和 EE 两大版本。CE 即社区版（免费，支持周期 7 个月），EE 即企业版，强调安全，付费使用，支持周期 24 个月。</p>
+<p>Docker CE 分为 <code>stable</code> <code>test</code> 和 <code>nightly</code> 三个更新频道。</p>
+<p>官方网站上有各种环境下的 <a href="https://docs.docker.com/install/">安装指南</a>，这里主要介绍 Docker CE 在 CentOS 上的安装。</p>
+<h3 id="centos-安装-docker">CentOS 安装 Docker<a class="anchor-link" href="#centos-安装-docker" title="Permanent link">&para;</a></h3>
+<p>Docker CE 支持 64 位版本 CentOS 7，并且要求内核版本不低于 3.10， CentOS 7 满足最低内核的要求，所以我们在 CentOS 7 安装 Docker。</p>
+<h4 id="卸载可选">卸载（可选）<a class="anchor-link" href="#卸载可选" title="Permanent link">&para;</a></h4>
+<p>如果之前安装过旧版本的 Docker，可以使用下面命令卸载：</p>
+<pre><code>yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-selinux \
+                  docker-engine-selinux \
+                  docker-engine \
+                  docker-ce
+</code></pre>
+<h4 id="安装-docker">安装 docker<a class="anchor-link" href="#安装-docker" title="Permanent link">&para;</a></h4>
+<p>首先需要大家虚拟机联网，安装 yum 工具</p>
+<pre><code class="language-sh">yum install -y yum-utils \
+           device-mapper-persistent-data \
+           lvm2 --skip-broken
+</code></pre>
+<p>然后更新本地镜像源：</p>
+<pre><code class="language-shell">## 设置docker镜像源
+yum-config-manager \
+    --add-repo \
+    https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+sed -i 's/download.docker.com/mirrors.aliyun.com\/docker-ce/g' /etc/yum.repos.d/docker-ce.repo
+yum makecache fast
+</code></pre>
+<p>然后输入命令：</p>
+<pre><code class="language-shell">yum install -y docker-ce
+</code></pre>
+<p>docker-ce 为社区免费版本。稍等片刻，docker 即可安装成功。</p>
+<h4 id="启动-docker">启动 docker<a class="anchor-link" href="#启动-docker" title="Permanent link">&para;</a></h4>
+<p>Docker 应用需要用到各种端口，逐一去修改防火墙设置。非常麻烦，因此建议大家直接关闭防火墙！</p>
+<p>启动 docker 前，一定要关闭防火墙后！！</p>
+<pre><code class="language-sh">## 关闭
+systemctl stop firewalld
+## 禁止开机启动防火墙
+systemctl disable firewalld
+#查看是否关闭防火墙
+systemctl status firewalld
+</code></pre>
+<p><img alt="image-20220815085443679" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040008.png" /></p>
+<p>通过命令启动 docker：</p>
+<pre><code class="language-sh">systemctl start docker  ## 启动docker服务
+
+systemctl stop docker  ## 停止docker服务
+
+systemctl restart docker  ## 重启docker服务
+</code></pre>
+<p>然后输入命令，可以查看 docker 版本：</p>
+<pre><code>docker -v
+</code></pre>
+<p>如图：</p>
+<p><img alt="image-20210418154704436" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040009.png" /></p>
+<h4 id="配置镜像加速">配置镜像加速<a class="anchor-link" href="#配置镜像加速" title="Permanent link">&para;</a></h4>
+<p>docker 官方镜像仓库网速较差，我们需要设置国内镜像服务：</p>
+<p>参考阿里云的镜像加速文档：https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors</p>
+<h3 id="centos7-安装-dockercompose">CentOS7 安装 DockerCompose<a class="anchor-link" href="#centos7-安装-dockercompose" title="Permanent link">&para;</a></h3>
+<h4 id="下载_2">下载<a class="anchor-link" href="#下载_2" title="Permanent link">&para;</a></h4>
+<p>Linux 下需要通过命令下载：</p>
+<pre><code class="language-sh">## 安装
+curl -L https://github.com/docker/compose/releases/download/1.23.1/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose
+</code></pre>
+<h4 id="修改文件权限">修改文件权限<a class="anchor-link" href="#修改文件权限" title="Permanent link">&para;</a></h4>
+<p>修改文件权限：</p>
+<pre><code class="language-sh">## 修改权限
+chmod +x /usr/local/bin/docker-compose
+</code></pre>
+<h4 id="base-自动补全命令">Base 自动补全命令：<a class="anchor-link" href="#base-自动补全命令" title="Permanent link">&para;</a></h4>
+<pre><code class="language-sh">## 补全命令
+curl -L https://raw.githubusercontent.com/docker/compose/1.29.1/contrib/completion/bash/docker-compose &gt; /etc/bash_completion.d/docker-compose
+</code></pre>
+<p>如果这里出现错误，需要修改自己的 hosts 文件：</p>
+<pre><code class="language-sh">echo &quot;199.232.68.133 raw.githubusercontent.com&quot; &gt;&gt; /etc/hosts
+</code></pre>
+<h3 id="docker-镜像仓库">Docker 镜像仓库<a class="anchor-link" href="#docker-镜像仓库" title="Permanent link">&para;</a></h3>
+<p>搭建镜像仓库可以基于 Docker 官方提供的 DockerRegistry 来实现。</p>
+<p>官网地址：https://hub.docker.com/_/registry</p>
+<h4 id="简化版镜像仓库">简化版镜像仓库<a class="anchor-link" href="#简化版镜像仓库" title="Permanent link">&para;</a></h4>
+<p>Docker 官方的 Docker Registry 是一个基础版本的 Docker 镜像仓库，具备仓库管理的完整功能，但是没有图形化界面。</p>
+<p>搭建方式比较简单，命令如下：</p>
+<pre><code class="language-sh">docker run -d \
+    --restart=always \
+    --name registry \
+    -p 5000:5000 \
+    -v registry-data:/var/lib/registry \
+    registry
+</code></pre>
+<p>命令中挂载了一个数据卷 registry-data 到容器内的/var/lib/registry 目录，这是私有镜像库存放数据的目录。</p>
+<p>访问 http://YourIp:5000/v2/_catalog 可以查看当前私有镜像服务中包含的镜像</p>
+<h4 id="配置-docker-信任地址">配置 Docker 信任地址<a class="anchor-link" href="#配置-docker-信任地址" title="Permanent link">&para;</a></h4>
+<p>我们的私服采用的是 http 协议，默认不被 Docker 信任，所以需要做一个配置：</p>
+<pre><code class="language-sh">## 打开要修改的文件
+vi /etc/docker/daemon.json
+## 添加内容：
+&quot;insecure-registries&quot;:[&quot;http://192.168.164.129:8080&quot;]
+## 重加载
+systemctl daemon-reload
+## 重启docker
+systemctl restart docker
+</code></pre>
+<h4 id="带有图形化界面版本">带有图形化界面版本<a class="anchor-link" href="#带有图形化界面版本" title="Permanent link">&para;</a></h4>
+<p>使用 DockerCompose 部署带有图象界面的 DockerRegistry，命令如下：</p>
+<pre><code class="language-yaml">version: '3.0'
+services:
+  registry:
+    image: registry
+    volumes:
+      - ./registry-data:/var/lib/registry
+  ui:
+    image: joxit/docker-registry-ui:static
+    ports:
+      - 8080:80
+    environment:
+      - REGISTRY_TITLE=Hello Geeks_Z
+      - REGISTRY_URL=http://registry:5000
+    depends_on:
+      - registry
+</code></pre>
+<h3 id="阿里云服务器ecs安装-docker">阿里云服务器（ECS）安装 Docker<a class="anchor-link" href="#阿里云服务器ecs安装-docker" title="Permanent link">&para;</a></h3>
+<p><a href="https://help.aliyun.com/document_detail/187598.html">部署并使用 Docker（CentOS 8）</a></p>
+<h2 id="nacos">Nacos<a class="anchor-link" href="#nacos" title="Permanent link">&para;</a></h2>
+<p>Linux 或者 Mac 安装方式与 Windows 类似。</p>
+<h3 id="安装-jdk">安装 JDK<a class="anchor-link" href="#安装-jdk" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>见Java安装-Linux`</p>
+</blockquote>
+<h3 id="上传安装包">上传安装包<a class="anchor-link" href="#上传安装包" title="Permanent link">&para;</a></h3>
+<p>如图：</p>
+<p><img alt="image-20210402161102887" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040323.png" /></p>
+<p>也可以直接使用课前资料中的 tar.gz：</p>
+<p><img alt="image-20210402161130261" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040399.png" /></p>
+<p>上传到 Linux 服务器的某个目录，例如<code>/usr/local/src</code>目录下：</p>
+<p><img alt="image-20210402163715580" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040849.png" /></p>
+<h3 id="解压">解压<a class="anchor-link" href="#解压" title="Permanent link">&para;</a></h3>
+<p>命令解压缩安装包：</p>
+<pre><code class="language-sh">tar -xvf nacos-server-1.4.1.tar.gz
+</code></pre>
+<p>然后删除安装包：</p>
+<pre><code class="language-sh">rm -rf nacos-server-1.4.1.tar.gz
+</code></pre>
+<p>目录中最终样式：</p>
+<p><img alt="image-20210402163858429" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040857.png" /></p>
+<p>目录内部：</p>
+<p><img alt="image-20210402164414827" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040361.png" /></p>
+<h3 id="端口配置">端口配置<a class="anchor-link" href="#端口配置" title="Permanent link">&para;</a></h3>
+<p>与 windows 中类似</p>
+<h3 id="启动_1">启动<a class="anchor-link" href="#启动_1" title="Permanent link">&para;</a></h3>
+<p>在 nacos/bin 目录中，输入命令启动 Nacos：</p>
+<pre><code class="language-sh">sh startup.sh -m standalone
+</code></pre>
+<h3 id="docker安装">Docker安装<a class="anchor-link" href="#docker安装" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><a href="https://blog.csdn.net/xtldcn/article/details/128867700">在docker中安装Nacos--详细教程</a></p>
+<p><a href="https://blog.csdn.net/ilvjiale/article/details/129417768">Docker启动安装nacos（详情讲解，全网最细）</a></p>
+</blockquote>
+<p>拉取镜像</p>
+<pre><code class="language-bash">docker pull nacos/nacos-server:v2.0.4
+</code></pre>
+<p><img alt="image-20231115212406446" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202311152124531.png" /></p>
+<p>创建挂载目录</p>
+<pre><code class="language-bash">mkdir -p /home/nacos/logs/                    
+mkdir -p /home/nacos/conf/
+</code></pre>
+<p>修改配置文件(没有需先行创建)</p>
+<pre><code class="language-bash">vim /home/nacos/conf/application.properties
+</code></pre>
+<pre><code>server.contextPath=/nacos
+server.servlet.contextPath=/nacos
+server.port=8848
+
+spring.datasource.platform=mysql
+db.num=1
+db.url.0=jdbc:mysql://ip:3306/nacos_config?characterEncoding=utf8&amp;connectTimeout=1000&amp;socketTimeout=3000&amp;autoReconnect=true 
+db.user= #账号
+db.password= #密码
+
+nacos.cmdb.dumpTaskInterval=3600
+nacos.cmdb.eventTaskInterval=10
+nacos.cmdb.labelTaskInterval=300
+nacos.cmdb.loadDataAtStart=false
+management.metrics.export.elastic.enabled=false
+management.metrics.export.influx.enabled=false
+server.tomcat.accesslog.enabled=true
+server.tomcat.accesslog.pattern=%h %l %u %t &quot;%r&quot; %s %b %D %{User-Agent}i
+nacos.security.ignore.urls=/,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.ico,/console-fe/public/**,/v1/auth/login,/v1/console/health/**,/v1/cs/**,/v1/ns/**,/v1/cmdb/**,/actuator/**,/v1/console/server/**
+nacos.naming.distro.taskDispatchThreadCount=1
+nacos.naming.distro.taskDispatchPeriod=200
+nacos.naming.distro.batchSyncKeyCount=1000
+nacos.naming.distro.initDataRatio=0.9
+nacos.naming.distro.syncRetryDelay=5000
+nacos.naming.data.warmup=true
+nacos.naming.expireInstance=true
+</code></pre>
+<p>启动nacos容器</p>
+<pre><code class="language-bash">docker  run \
+--name nacos -d \
+-p 8848:8848 \
+--privileged=true \
+--restart=always \
+-e JVM_XMS=256m \
+-e JVM_XMX=256m \
+-e MODE=standalone \
+-e PREFER_HOST_MODE=hostname \
+-v /home/nacos/logs:/home/nacos/logs \
+-v /home/nacos/conf/application.properties:/home/nacos/init.d/custom.properties \
+nacos/nacos-server:v2.0.4
+</code></pre>
+<h3 id="语句讲解">语句讲解<a class="anchor-link" href="#语句讲解" title="Permanent link">&para;</a></h3>
+<ol>
+<li>docker run -d ： 启动容器 -d是后台启动并返回容器id的意思</li>
+<li>–name nacos ：为容器指定一个名称</li>
+<li>-p 8848:8848 -p 9848:9848 -p 9849:9849 ： 指定端口映射，注意这里的p不能大写，大写是随机端口映射</li>
+<li>–privileged=true ： 扩大容器内的权限，将容器内的权限变为root权限，不加的话就是普通用户权限，可能会出现cannot open directory</li>
+<li>-e JVM_XMS=256m ： 为jvm启动时分配的内存</li>
+<li>-e JVM_XMX=256m ： 为jvm运行过程中分配的最大内存</li>
+<li>-e MODE=standalone ： 使用 standalone模式（单机模式）,MODE值有cluster（集群）模式/standalone模式两种，MODE必须大写</li>
+<li>–restart=always ：重启docker时，自动启动相关容器</li>
+</ol>
+<p>浏览器登录访问</p>
+<p>https：xx.xx.xx.xx:8848 账号：nacos 密码：nacos</p>
+<p><img alt="image-20231115212820414" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202311152128502.png" /></p>
+<h3 id="nacos-的依赖">Nacos 的依赖<a class="anchor-link" href="#nacos-的依赖" title="Permanent link">&para;</a></h3>
+<p>父工程的 pom 文件中的<code>&lt;dependencyManagement&gt;</code>中引入 SpringCloudAlibaba 的依赖：</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;com.alibaba.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-alibaba-dependencies&lt;/artifactId&gt;
+    &lt;version&gt;2.2.5.RELEASE&lt;/version&gt;
+    &lt;type&gt;pom&lt;/type&gt;
+    &lt;scope&gt;import&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>客户端：</p>
+<pre><code class="language-xml">&lt;!-- nacos客户端依赖包 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.alibaba.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-starter-alibaba-nacos-discovery&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+</code></pre>
+<h2 id="nginx">Nginx<a class="anchor-link" href="#nginx" title="Permanent link">&para;</a></h2>
+<h3 id="解压-nginx-包并安装">解压 Nginx 包，并安装<a class="anchor-link" href="#解压-nginx-包并安装" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">tar -zxvf  nginx-1.21.6.tar.gz #解压到当前目录
+
+cd nginx-1.21.6 #进入解压后的文件夹
+ls #文件夹中的文件：auto     CHANGES.ru  configure  html     man     src CHANGES  conf        contrib    LICENSE  README
+</code></pre>
+<h3 id="安装依赖库">安装依赖库<a class="anchor-link" href="#安装依赖库" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">#安装C编译器
+yum install -y gcc
+
+#安装pcre库
+yum install -y pcre pcre-devel
+
+#安装zlib
+yum install -y zlib zlib-devel
+</code></pre>
+<h3 id="安装_2">安装<a class="anchor-link" href="#安装_2" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">./configure --prefix=/usr/local/nginx #使用prefix选项指定安装的目录
+make
+make install
+</code></pre>
+<h3 id="启动_2">启动<a class="anchor-link" href="#启动_2" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">cd /usr/local/nginx/sbin
+ls ## 里面是一个nginx的可执行文件
+./nginx ## 启动这个可执行
+</code></pre>
+<h3 id="关闭防火墙">关闭防火墙<a class="anchor-link" href="#关闭防火墙" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">systemctl stop firewalld
+</code></pre>
+<h3 id="补充-nginx-命令">补充 Nginx 命令<a class="anchor-link" href="#补充-nginx-命令" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell">./nginx -s stop #快速停止
+./nginx -s quit #完成已接受的请求后，停止
+./nginx -s reload #重新加载配置
+./nginx -t #检查nginx配置是否正确
+</code></pre>
+<h3 id="查看-nginx-状态">查看 nginx 状态<a class="anchor-link" href="#查看-nginx-状态" title="Permanent link">&para;</a></h3>
+<pre><code class="language-text">ps -ef|grep nginx
+</code></pre>
+<p>启动时：</p>
+<p><img alt="image-20220501205303265" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040441.png" /></p>
+<p>停止时：</p>
+<p><img alt="image-20220501205333304" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040443.png" /></p>
+<h3 id="注册系统服务">注册系统服务<a class="anchor-link" href="#注册系统服务" title="Permanent link">&para;</a></h3>
+<p>通过系统服务的方式启动 nginx</p>
+<pre><code class="language-text">vim usr/lib/systemd/system/nginx.service
+</code></pre>
+<pre><code class="language-shell">[Unit]
+Description=nginx
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
+ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/nginx/sbin/nginx -s stop
+ExecQuit=/usr/local/nginx/sbin/nginx -s quit
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target  ## 多用户
+</code></pre>
+<p>重新加载系统服务</p>
+<pre><code class="language-shell">systemctl daemon-reload
+</code></pre>
+<p>启动服务</p>
+<pre><code class="language-sh">systemctl start nginx.service
+</code></pre>
+<p>开机启动</p>
+<pre><code class="language-shell">systemctl enable nginx.service
+</code></pre>
+<h3 id="docker_1">Docker<a class="anchor-link" href="#docker_1" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><a href="https://blog.csdn.net/BThinker/article/details/123507820">Docker 安装 Nginx 容器 (完整详细版)</a></p>
+</blockquote>
+<h4 id="寻找nginx镜像">寻找<a href="https://so.csdn.net/so/search?q=Nginx&amp;spm=1001.2101.3001.7020">Nginx</a>镜像<a class="anchor-link" href="#寻找nginx镜像" title="Permanent link">&para;</a></h4>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040851.png" /></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040856.png" /></p>
+<h4 id="下载-nginx-镜像">下载 Nginx 镜像<a class="anchor-link" href="#下载-nginx-镜像" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">命令</th>
+<th style="text-align: left;">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">docker pull nginx</td>
+<td style="text-align: left;">下载最新版 Nginx 镜像 (其实此命令就等同于 : docker pull nginx:latest )</td>
+</tr>
+<tr>
+<td style="text-align: left;">docker pull nginx:xxx</td>
+<td style="text-align: left;">下载指定版本的 Nginx 镜像 (xxx 指具体版本号)</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040863.png" /></p>
+<blockquote>
+<p>检查当前所有Docker下载的镜像</p>
+</blockquote>
+<pre><code class="language-undefined">docker images
+</code></pre>
+<h4 id="创建-nginx-配置文件">创建 Nginx 配置文件<a class="anchor-link" href="#创建-nginx-配置文件" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>启动前需要先创建 Nginx 外部挂载的配置文件（ /home/nginx/conf/nginx.conf）<br />
+之所以要先创建 , 是因为 Nginx 本身容器只存在/etc/nginx 目录 , 本身就不创建 nginx.conf 文件<br />
+当服务器和容器都不存在 nginx.conf 文件时, 执行启动命令的时候， docker 会将 nginx.conf 作为目录创建 , 这并不是我们想要的结果 。</p>
+</blockquote>
+<pre><code class="language-bash"># 创建挂载目录
+mkdir -p /home/nginx/conf
+mkdir -p /home/nginx/log
+mkdir -p /home/nginx/html
+</code></pre>
+<h4 id="复制容器文件到宿主机">复制容器文件到宿主机<a class="anchor-link" href="#复制容器文件到宿主机" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash"># 先生成容器
+docker run --name nginx -p 9001:80 -d nginx:1.24
+# 将容器nginx.conf文件复制到宿主机
+docker cp nginx:/etc/nginx/nginx.conf /home/nginx/conf/nginx.conf
+# 将容器conf.d文件夹下内容复制到宿主机
+docker cp nginx:/etc/nginx/conf.d /home/nginx/conf/conf.d
+# 将容器中的html文件夹复制到宿主机
+docker cp nginx:/usr/share/nginx/html /home/nginx/
+</code></pre>
+<p><img alt="image-20221103202624139" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040899.png" /></p>
+<h4 id="删除已启动nginx容器">删除已启动Nginx容器<a class="anchor-link" href="#删除已启动nginx容器" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash"># 直接执行docker rm nginx或者以容器id方式关闭容器
+# 找到nginx对应的容器id
+docker ps -a
+# 关闭该容器
+docker stop nginx
+# 删除该容器
+docker rm nginx
+# 删除正在运行的nginx容器
+docker rm -f nginx
+</code></pre>
+<h4 id="创建-nginx-容器并运行">创建 Nginx 容器并运行<a class="anchor-link" href="#创建-nginx-容器并运行" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash">docker run \
+-p 9002:80 \
+--name nginx \
+-v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v /home/nginx/conf/conf.d:/etc/nginx/conf.d \
+-v /home/nginx/log:/var/log/nginx \
+-v /home/nginx/html:/usr/share/nginx/html \
+-d nginx:1.24
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">命令</th>
+<th style="text-align: left;">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">–name nginx</td>
+<td style="text-align: left;">启动容器的名字</td>
+</tr>
+<tr>
+<td style="text-align: left;">-d</td>
+<td style="text-align: left;">后台运行</td>
+</tr>
+<tr>
+<td style="text-align: left;">-p 9002:80</td>
+<td style="text-align: left;">将容器的 9002(后面那个) 端口映射到主机的 80(前面那个) 端口</td>
+</tr>
+<tr>
+<td style="text-align: left;">-v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf</td>
+<td style="text-align: left;">挂载 nginx.conf 配置文件</td>
+</tr>
+<tr>
+<td style="text-align: left;">-v /home/nginx/conf/conf.d:/etc/nginx/conf.d</td>
+<td style="text-align: left;">挂载 nginx 配置文件</td>
+</tr>
+<tr>
+<td style="text-align: left;">-v /home/nginx/log:/var/log/nginx</td>
+<td style="text-align: left;">挂载 nginx 日志文件</td>
+</tr>
+<tr>
+<td style="text-align: left;">-v /home/nginx/html:/usr/share/nginx/html</td>
+<td style="text-align: left;">挂载 nginx 内容</td>
+</tr>
+<tr>
+<td style="text-align: left;">nginx:1.24</td>
+<td style="text-align: left;">本地运行的版本</td>
+</tr>
+<tr>
+<td style="text-align: left;">\</td>
+<td style="text-align: left;">shell 命令换行</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="image-20231103110403818" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202311031104896.png" /></p>
+<blockquote>
+<p>单行模式</p>
+</blockquote>
+<pre><code class="language-groovy">docker run -p 80:80 --name nginx -v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v /home/nginx/conf/conf.d:/etc/nginx/conf.d -v /home/nginx/log:/var/log/nginx -v /home/nginx/html:/usr/share/nginx/html -d nginx:1.22
+</code></pre>
+<h4 id="结果检测">结果检测<a class="anchor-link" href="#结果检测" title="Permanent link">&para;</a></h4>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040296.png" /></p>
+<p><img alt="image-20221103203137410" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040806.png" /></p>
+<h4 id="修改内容进行展示">修改内容进行展示<a class="anchor-link" href="#修改内容进行展示" title="Permanent link">&para;</a></h4>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040813.png" /></p>
+<pre><code class="language-crystal"># 重启容器
+docker restart nginx
+</code></pre>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040817.png" /></p>
+<h2 id="rabbitmq">RabbitMQ<a class="anchor-link" href="#rabbitmq" title="Permanent link">&para;</a></h2>
+<h3 id="单机部署">单机部署<a class="anchor-link" href="#单机部署" title="Permanent link">&para;</a></h3>
+<p>我们在 Centos7 虚拟机中使用 Docker 来安装。</p>
+<h4 id="下载镜像">下载镜像<a class="anchor-link" href="#下载镜像" title="Permanent link">&para;</a></h4>
+<p>方式一：在线拉取</p>
+<pre><code class="language-sh">docker pull rabbitmq:3-management
+</code></pre>
+<p>方式二：从本地加载</p>
+<p>在课前资料已经提供了镜像包：</p>
+<p><img alt="image-20210423191210349" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040857.png" /></p>
+<p>上传到虚拟机中后，使用命令加载镜像即可：</p>
+<pre><code class="language-sh">docker load -i mq.tar
+</code></pre>
+<h4 id="安装-mq">安装 MQ<a class="anchor-link" href="#安装-mq" title="Permanent link">&para;</a></h4>
+<p>执行下面的命令来运行 MQ 容器：</p>
+<pre><code class="language-sh">docker run \
+ -e RABBITMQ_DEFAULT_USER=zhw \
+ -e RABBITMQ_DEFAULT_PASS=1024 \
+ --name mq \
+ --hostname mq1 \
+ -p 15672:15672 \
+ -p 5672:5672 \
+ -d \
+ rabbitmq:3-management
+</code></pre>
+<h3 id="安装-delayexchange-插件">安装 DelayExchange 插件<a class="anchor-link" href="#安装-delayexchange-插件" title="Permanent link">&para;</a></h3>
+<p>官方的安装指南地址为：https://blog.rabbitmq.com/posts/2015/04/scheduling-messages-with-rabbitmq</p>
+<p>上述文档是基于 linux 原生安装 RabbitMQ，然后安装插件。</p>
+<p>因为我们之前是基于 Docker 安装 RabbitMQ，所以下面我们会讲解基于 Docker 来安装 RabbitMQ 插件。</p>
+<h4 id="下载插件">下载插件<a class="anchor-link" href="#下载插件" title="Permanent link">&para;</a></h4>
+<p>RabbitMQ 有一个官方的插件社区，地址为：https://www.rabbitmq.com/community-plugins.html</p>
+<p>其中包含各种各样的插件，包括我们要使用的 DelayExchange 插件：</p>
+<p><img alt="image-20210713104511055" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040862.png" /></p>
+<p>大家可以去对应的 GitHub 页面下载 3.8.9 版本的插件，地址为https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/tag/3.8.9这个对应RabbitMQ的3.8.5以上版本。</p>
+<h4 id="上传插件">上传插件<a class="anchor-link" href="#上传插件" title="Permanent link">&para;</a></h4>
+<p>因为我们是基于 Docker 安装，所以需要先查看 RabbitMQ 的插件目录对应的数据卷。如果不是基于 Docker 的同学，请参考第一章部分，重新创建 Docker 容器。</p>
+<p>我们之前设定的 RabbitMQ 的数据卷名称为<code>mq-plugins</code>，所以我们使用下面命令查看数据卷：</p>
+<pre><code class="language-sh">docker volume inspect mq-plugins
+</code></pre>
+<p>可以得到下面结果：</p>
+<p><img alt="image-20210713105135701" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040916.png" /></p>
+<p>接下来，将插件上传到这个目录即可：</p>
+<p><img alt="image-20210713105339785" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040188.png" /></p>
+<h4 id="安装插件">安装插件<a class="anchor-link" href="#安装插件" title="Permanent link">&para;</a></h4>
+<p>最后就是安装了，需要进入 MQ 容器内部来执行安装。我的容器名为<code>mq</code>，所以执行下面命令：</p>
+<pre><code class="language-sh">docker exec -it mq bash
+</code></pre>
+<p>执行时，请将其中的 <code>-it</code> 后面的<code>mq</code>替换为你自己的容器名.</p>
+<p>进入容器内部后，执行下面命令开启插件：</p>
+<pre><code class="language-sh">rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+</code></pre>
+<p>结果如下：</p>
+<p><img alt="image-20210713105829435" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040288.png" /></p>
+<h3 id="集群部署">集群部署<a class="anchor-link" href="#集群部署" title="Permanent link">&para;</a></h3>
+<p>接下来，我们看看如何安装 RabbitMQ 的集群。</p>
+<h4 id="集群分类">集群分类<a class="anchor-link" href="#集群分类" title="Permanent link">&para;</a></h4>
+<p>在 RabbitMQ 的官方文档中，讲述了两种集群的配置方式：</p>
+<ul>
+<li>普通模式：普通模式集群不进行数据同步，每个 MQ 都有自己的队列、数据信息（其它元数据信息如交换机等会同步）。例如我们有 2 个 MQ：mq1，和 mq2，如果你的消息在 mq1，而你连接到了 mq2，那么 mq2 会去 mq1 拉取消息，然后返回给你。如果 mq1 宕机，消息就会丢失。</li>
+<li>镜像模式：与普通模式不同，队列会在各个 mq 的镜像节点之间同步，因此你连接到任何一个镜像节点，均可获取到消息。而且如果一个节点宕机，并不会导致数据丢失。不过，这种方式增加了数据同步的带宽消耗。</li>
+</ul>
+<p>我们先来看普通模式集群，我们的计划部署 3 节点的 mq 集群：</p>
+<table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>控制台端口</th>
+<th>amqp 通信端口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mq1</td>
+<td>8081 ---&gt; 15672</td>
+<td>8071 ---&gt; 5672</td>
+</tr>
+<tr>
+<td>mq2</td>
+<td>8082 ---&gt; 15672</td>
+<td>8072 ---&gt; 5672</td>
+</tr>
+<tr>
+<td>mq3</td>
+<td>8083 ---&gt; 15672</td>
+<td>8073 ---&gt; 5672</td>
+</tr>
+</tbody>
+</table>
+<p>集群中的节点标示默认都是：<code>rabbit@[hostname]</code>，因此以上三个节点的名称分别为：</p>
+<ul>
+<li>rabbit@mq1</li>
+<li>rabbit@mq2</li>
+<li>rabbit@mq3</li>
+</ul>
+<h4 id="获取-cookie">获取 cookie<a class="anchor-link" href="#获取-cookie" title="Permanent link">&para;</a></h4>
+<p>RabbitMQ 底层依赖于 Erlang，而 Erlang 虚拟机就是一个面向分布式的语言，默认就支持集群模式。集群模式中的每个 RabbitMQ 节点使用 cookie 来确定它们是否被允许相互通信。</p>
+<p>要使两个节点能够通信，它们必须具有相同的共享秘密，称为<strong>Erlang cookie</strong>。cookie 只是一串最多 255 个字符的字母数字字符。</p>
+<p>每个集群节点必须具有<strong>相同的 cookie</strong>。实例之间也需要它来相互通信。</p>
+<p>我们先在之前启动的 mq 容器中获取一个 cookie 值，作为集群的 cookie。执行下面的命令：</p>
+<pre><code class="language-sh">docker exec -it mq cat /var/lib/rabbitmq/.erlang.cookie
+</code></pre>
+<p>可以看到 cookie 值如下：</p>
+<pre><code class="language-sh">FXZMCVGLBIXZCDEMMVZQ
+</code></pre>
+<p>接下来，停止并删除当前的 mq 容器，我们重新搭建集群。</p>
+<pre><code class="language-sh">docker rm -f mq
+</code></pre>
+<p><img alt="image-20210717212345165" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040410.png" /></p>
+<h4 id="准备集群配置">准备集群配置<a class="anchor-link" href="#准备集群配置" title="Permanent link">&para;</a></h4>
+<p>在/tmp 目录新建一个配置文件 rabbitmq.conf：</p>
+<pre><code class="language-sh">cd /tmp
+## 创建文件
+touch rabbitmq.conf
+</code></pre>
+<p>文件内容如下：</p>
+<pre><code class="language-nginx">loopback_users.guest = false
+listeners.tcp.default = 5672
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
+cluster_formation.classic_config.nodes.1 = rabbit@mq1
+cluster_formation.classic_config.nodes.2 = rabbit@mq2
+cluster_formation.classic_config.nodes.3 = rabbit@mq3
+</code></pre>
+<p>再创建一个文件，记录 cookie</p>
+<pre><code class="language-sh">cd /tmp
+## 创建cookie文件
+touch .erlang.cookie
+## 写入cookie
+echo &quot;FXZMCVGLBIXZCDEMMVZQ&quot; &gt; .erlang.cookie
+## 修改cookie文件的权限
+chmod 600 .erlang.cookie
+</code></pre>
+<p>准备三个目录,mq1、mq2、mq3：</p>
+<pre><code class="language-sh">cd /tmp
+## 创建目录
+mkdir mq1 mq2 mq3
+</code></pre>
+<p>然后拷贝 rabbitmq.conf、cookie 文件到 mq1、mq2、mq3：</p>
+<pre><code class="language-sh">## 进入/tmp
+cd /tmp
+## 拷贝
+cp rabbitmq.conf mq1
+cp rabbitmq.conf mq2
+cp rabbitmq.conf mq3
+cp .erlang.cookie mq1
+cp .erlang.cookie mq2
+cp .erlang.cookie mq3
+</code></pre>
+<h4 id="启动集群">启动集群<a class="anchor-link" href="#启动集群" title="Permanent link">&para;</a></h4>
+<p>创建一个网络：</p>
+<pre><code class="language-sh">docker network create mq-net
+</code></pre>
+<p>docker volume create</p>
+<p>运行命令</p>
+<pre><code class="language-sh">docker run -d --net mq-net \
+-v ${PWD}/mq1/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf \
+-v ${PWD}/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie \
+-e RABBITMQ_DEFAULT_USER=itcast \
+-e RABBITMQ_DEFAULT_PASS=123321 \
+--name mq1 \
+--hostname mq1 \
+-p 8071:5672 \
+-p 8081:15672 \
+rabbitmq:3.8-management
+</code></pre>
+<pre><code class="language-sh">docker run -d --net mq-net \
+-v ${PWD}/mq2/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf \
+-v ${PWD}/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie \
+-e RABBITMQ_DEFAULT_USER=itcast \
+-e RABBITMQ_DEFAULT_PASS=123321 \
+--name mq2 \
+--hostname mq2 \
+-p 8072:5672 \
+-p 8082:15672 \
+rabbitmq:3.8-management
+</code></pre>
+<pre><code class="language-sh">docker run -d --net mq-net \
+-v ${PWD}/mq3/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf \
+-v ${PWD}/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie \
+-e RABBITMQ_DEFAULT_USER=itcast \
+-e RABBITMQ_DEFAULT_PASS=123321 \
+--name mq3 \
+--hostname mq3 \
+-p 8073:5672 \
+-p 8083:15672 \
+rabbitmq:3.8-management
+</code></pre>
+<h4 id="测试_1">测试<a class="anchor-link" href="#测试_1" title="Permanent link">&para;</a></h4>
+<p>在 mq1 这个节点上添加一个队列：</p>
+<p><img alt="image-20210717222833196" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040437.png" /></p>
+<p>如图，在 mq2 和 mq3 两个控制台也都能看到：</p>
+<p><img alt="image-20210717223057902" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040440.png" /></p>
+<h5 id="数据共享测试">数据共享测试<a class="anchor-link" href="#数据共享测试" title="Permanent link">&para;</a></h5>
+<p>点击这个队列，进入管理页面：</p>
+<p><img alt="image-20210717223421750" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040443.png" /></p>
+<p>然后利用控制台发送一条消息到这个队列：</p>
+<p><img alt="image-20210717223320238" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040525.png" /></p>
+<p>结果在 mq2、mq3 上都能看到这条消息：</p>
+<p><img alt="image-20210717223603628" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040914.png" /></p>
+<h5 id="可用性测试">可用性测试<a class="anchor-link" href="#可用性测试" title="Permanent link">&para;</a></h5>
+<p>我们让其中一台节点 mq1 宕机：</p>
+<pre><code class="language-sh">docker stop mq1
+</code></pre>
+<p>然后登录 mq2 或 mq3 的控制台，发现 simple.queue 也不可用了：</p>
+<p><img alt="image-20210717223800203" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040973.png" /></p>
+<p>说明数据并没有拷贝到 mq2 和 mq3。</p>
+<h3 id="镜像模式">镜像模式<a class="anchor-link" href="#镜像模式" title="Permanent link">&para;</a></h3>
+<p>在刚刚的案例中，一旦创建队列的主机宕机，队列就会不可用。不具备高可用能力。如果要解决这个问题，必须使用官方提供的镜像集群方案。</p>
+<p>官方文档地址：https://www.rabbitmq.com/ha.html</p>
+<h4 id="镜像模式的特征">镜像模式的特征<a class="anchor-link" href="#镜像模式的特征" title="Permanent link">&para;</a></h4>
+<p>默认情况下，队列只保存在创建该队列的节点上。而镜像模式下，创建队列的节点被称为该队列的<strong>主节点</strong>，队列还会拷贝到集群中的其它节点，也叫做该队列的<strong>镜像</strong>节点。</p>
+<p>但是，不同队列可以在集群中的任意节点上创建，因此不同队列的主节点可以不同。甚至，<strong>一个队列的主节点可能是另一个队列的镜像节点</strong>。</p>
+<p>用户发送给队列的一切请求，例如发送消息、消息回执默认都会在主节点完成，如果是从节点接收到请求，也会路由到主节点去完成。<strong>镜像节点仅仅起到备份数据作用</strong>。</p>
+<p>当主节点接收到消费者的 ACK 时，所有镜像都会删除节点中的数据。</p>
+<p>总结如下：</p>
+<ul>
+<li>镜像队列结构是一主多从（从就是镜像）</li>
+<li>所有操作都是主节点完成，然后同步给镜像节点</li>
+<li>主宕机后，镜像节点会替代成新的主（如果在主从同步完成前，主就已经宕机，可能出现数据丢失）</li>
+<li>不具备负载均衡功能，因为所有操作都会有主节点完成（但是不同队列，其主节点可以不同，可以利用这个提高吞吐量）</li>
+</ul>
+<h4 id="镜像模式的配置">镜像模式的配置<a class="anchor-link" href="#镜像模式的配置" title="Permanent link">&para;</a></h4>
+<p>镜像模式的配置有 3 种模式：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">ha-mode</th>
+<th style="text-align: left;">ha-params</th>
+<th style="text-align: left;">效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">准确模式 exactly</td>
+<td style="text-align: left;">队列的副本量 count</td>
+<td style="text-align: left;">集群中队列副本（主服务器和镜像服务器之和）的数量。count 如果为 1 意味着单个副本：即队列主节点。count 值为 2 表示 2 个副本：1 个队列主和 1 个队列镜像。换句话说：count = 镜像数量 + 1。如果群集中的节点数少于 count，则该队列将镜像到所有节点。如果有集群总数大于 count+1，并且包含镜像的节点出现故障，则将在另一个节点上创建一个新的镜像。</td>
+</tr>
+<tr>
+<td style="text-align: left;">all</td>
+<td style="text-align: left;">(none)</td>
+<td style="text-align: left;">队列在群集中的所有节点之间进行镜像。队列将镜像到任何新加入的节点。镜像到所有节点将对所有群集节点施加额外的压力，包括网络 I / O，磁盘 I / O 和磁盘空间使用情况。推荐使用 exactly，设置副本数为（N / 2 +1）。</td>
+</tr>
+<tr>
+<td style="text-align: left;">nodes</td>
+<td style="text-align: left;"><em>node names</em></td>
+<td style="text-align: left;">指定队列创建到哪些节点，如果指定的节点全部不存在，则会出现异常。如果指定的节点在集群中存在，但是暂时不可用，会创建节点到当前客户端连接到的节点。</td>
+</tr>
+</tbody>
+</table>
+<p>这里我们以 rabbitmqctl 命令作为案例来讲解配置语法。</p>
+<p>语法示例：</p>
+<h5 id="exactly-模式">exactly 模式<a class="anchor-link" href="#exactly-模式" title="Permanent link">&para;</a></h5>
+<pre><code>rabbitmqctl set_policy ha-two &quot;^two\.&quot; '{&quot;ha-mode&quot;:&quot;exactly&quot;,&quot;ha-params&quot;:2,&quot;ha-sync-mode&quot;:&quot;automatic&quot;}'
+</code></pre>
+<ul>
+<li><code>rabbitmqctl set_policy</code>：固定写法</li>
+<li><code>ha-two</code>：策略名称，自定义</li>
+<li><code>"^two\."</code>：匹配队列的正则表达式，符合命名规则的队列才生效，这里是任何以<code>two.</code>开头的队列名称</li>
+<li><code>'{"ha-mode":"exactly","ha-params":2,"ha-sync-mode":"automatic"}'</code>: 策略内容</li>
+<li><code>"ha-mode":"exactly"</code>：策略模式，此处是 exactly 模式，指定副本数量</li>
+<li><code>"ha-params":2</code>：策略参数，这里是 2，就是副本数量为 2，1 主 1 镜像</li>
+<li><code>"ha-sync-mode":"automatic"</code>：同步策略，默认是 manual，即新加入的镜像节点不会同步旧的消息。如果设置为 automatic，则新加入的镜像节点会把主节点中所有消息都同步，会带来额外的网络开销</li>
+</ul>
+<h5 id="all-模式">all 模式<a class="anchor-link" href="#all-模式" title="Permanent link">&para;</a></h5>
+<pre><code>rabbitmqctl set_policy ha-all &quot;^all\.&quot; '{&quot;ha-mode&quot;:&quot;all&quot;}'
+</code></pre>
+<ul>
+<li><code>ha-all</code>：策略名称，自定义</li>
+<li><code>"^all\."</code>：匹配所有以<code>all.</code>开头的队列名</li>
+<li><code>'{"ha-mode":"all"}'</code>：策略内容</li>
+<li><code>"ha-mode":"all"</code>：策略模式，此处是 all 模式，即所有节点都会称为镜像节点</li>
+</ul>
+<h5 id="nodes-模式">nodes 模式<a class="anchor-link" href="#nodes-模式" title="Permanent link">&para;</a></h5>
+<pre><code>rabbitmqctl set_policy ha-nodes &quot;^nodes\.&quot; '{&quot;ha-mode&quot;:&quot;nodes&quot;,&quot;ha-params&quot;:[&quot;rabbit@nodeA&quot;, &quot;rabbit@nodeB&quot;]}'
+</code></pre>
+<ul>
+<li><code>rabbitmqctl set_policy</code>：固定写法</li>
+<li><code>ha-nodes</code>：策略名称，自定义</li>
+<li><code>"^nodes\."</code>：匹配队列的正则表达式，符合命名规则的队列才生效，这里是任何以<code>nodes.</code>开头的队列名称</li>
+<li><code>'{"ha-mode":"nodes","ha-params":["rabbit@nodeA", "rabbit@nodeB"]}'</code>: 策略内容</li>
+<li><code>"ha-mode":"nodes"</code>：策略模式，此处是 nodes 模式</li>
+<li><code>"ha-params":["rabbit@mq1", "rabbit@mq2"]</code>：策略参数，这里指定副本所在节点名称</li>
+</ul>
+<h4 id="测试_2">测试<a class="anchor-link" href="#测试_2" title="Permanent link">&para;</a></h4>
+<p>我们使用 exactly 模式的镜像，因为集群节点数量为 3，因此镜像数量就设置为 2.</p>
+<p>运行下面的命令：</p>
+<pre><code class="language-sh">docker exec -it mq1 rabbitmqctl set_policy ha-two &quot;^two\.&quot; '{&quot;ha-mode&quot;:&quot;exactly&quot;,&quot;ha-params&quot;:2,&quot;ha-sync-mode&quot;:&quot;automatic&quot;}'
+</code></pre>
+<p>下面，我们创建一个新的队列：</p>
+<p><img alt="image-20210717231751411" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040975.png" /></p>
+<p>在任意一个 mq 控制台查看队列：</p>
+<p><img alt="image-20210717231829505" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040979.png" /></p>
+<h5 id="测试数据共享">测试数据共享<a class="anchor-link" href="#测试数据共享" title="Permanent link">&para;</a></h5>
+<p>给 two.queue 发送一条消息：</p>
+<p><img alt="image-20210717231958996" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040983.png" /></p>
+<p>然后在 mq1、mq2、mq3 的任意控制台查看消息：</p>
+<p><img alt="image-20210717232108584" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040152.png" /></p>
+<h5 id="测试高可用">测试高可用<a class="anchor-link" href="#测试高可用" title="Permanent link">&para;</a></h5>
+<p>现在，我们让 two.queue 的主节点 mq1 宕机：</p>
+<pre><code class="language-sh">docker stop mq1
+</code></pre>
+<p>查看集群状态：</p>
+<p><img alt="image-20210717232257420" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040517.png" /></p>
+<p>查看队列状态：</p>
+<p><img alt="image-20210717232322646" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040410.png" /></p>
+<p>发现依然是健康的！并且其主节点切换到了 rabbit@mq2 上</p>
+<h3 id="仲裁队列">仲裁队列<a class="anchor-link" href="#仲裁队列" title="Permanent link">&para;</a></h3>
+<p>从 RabbitMQ 3.8 版本开始，引入了新的仲裁队列，他具备与镜像队里类似的功能，但使用更加方便。</p>
+<h4 id="添加仲裁队列">添加仲裁队列<a class="anchor-link" href="#添加仲裁队列" title="Permanent link">&para;</a></h4>
+<p>在任意控制台添加一个队列，一定要选择队列类型为 Quorum 类型。</p>
+<p><img alt="image-20210717234329640" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040542.png" /></p>
+<p>在任意控制台查看队列：</p>
+<p><img alt="image-20210717234426209" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040543.png" /></p>
+<p>可以看到，仲裁队列的 + 2 字样。代表这个队列有 2 个镜像节点。</p>
+<p>因为仲裁队列默认的镜像数为 5。如果你的集群有 7 个节点，那么镜像数肯定是 5；而我们集群只有 3 个节点，因此镜像数量就是 3.</p>
+<h4 id="测试_3">测试<a class="anchor-link" href="#测试_3" title="Permanent link">&para;</a></h4>
+<p>可以参考对镜像集群的测试，效果是一样的。</p>
+<h4 id="集群扩容">集群扩容<a class="anchor-link" href="#集群扩容" title="Permanent link">&para;</a></h4>
+<h5 id="加入集群">加入集群<a class="anchor-link" href="#加入集群" title="Permanent link">&para;</a></h5>
+<p>1）启动一个新的 MQ 容器：</p>
+<pre><code class="language-sh">docker run -d --net mq-net \
+-v ${PWD}/.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie \
+-e RABBITMQ_DEFAULT_USER=itcast \
+-e RABBITMQ_DEFAULT_PASS=123321 \
+--name mq4 \
+--hostname mq5 \
+-p 8074:15672 \
+-p 8084:15672 \
+rabbitmq:3.8-management
+</code></pre>
+<p>2）进入容器控制台：</p>
+<pre><code class="language-sh">docker exec -it mq4 bash
+</code></pre>
+<p>3）停止 mq 进程</p>
+<pre><code class="language-sh">rabbitmqctl stop_app
+</code></pre>
+<p>4）重置 RabbitMQ 中的数据：</p>
+<pre><code class="language-sh">rabbitmqctl reset
+</code></pre>
+<p>5）加入 mq1：</p>
+<pre><code class="language-sh">rabbitmqctl join_cluster rabbit@mq1
+</code></pre>
+<p>6）再次启动 mq 进程</p>
+<pre><code class="language-sh">rabbitmqctl start_app
+</code></pre>
+<p><img alt="image-20210718001909492" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040558.png" /></p>
+<h5 id="增加仲裁队列副本">增加仲裁队列副本<a class="anchor-link" href="#增加仲裁队列副本" title="Permanent link">&para;</a></h5>
+<p>我们先查看下 quorum.queue 这个队列目前的副本情况，进入 mq1 容器：</p>
+<pre><code class="language-sh">docker exec -it mq1 bash
+</code></pre>
+<p>执行命令：</p>
+<pre><code class="language-sh">rabbitmq-queues quorum_status &quot;quorum.queue&quot;
+</code></pre>
+<p>结果：</p>
+<p><img alt="image-20210718002118357" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040599.png" /></p>
+<p>现在，我们让 mq4 也加入进来：</p>
+<pre><code class="language-sh">rabbitmq-queues add_member &quot;quorum.queue&quot; &quot;rabbit@mq4&quot;
+</code></pre>
+<p>结果：</p>
+<p><img alt="image-20210718002253226" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040630.png" /></p>
+<p>再次查看：</p>
+<pre><code class="language-sh">rabbitmq-queues quorum_status &quot;quorum.queue&quot;
+</code></pre>
+<p><img alt="image-20210718002342603" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040000.png" /></p>
+<p>查看控制台，发现 quorum.queue 的镜像数量也从原来的 +2 变成了 +3：</p>
+<p><img alt="image-20210718002422365" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040025.png" /></p>
+<h2 id="openresty">OpenResty<a class="anchor-link" href="#openresty" title="Permanent link">&para;</a></h2>
+<h3 id="安装_3">安装<a class="anchor-link" href="#安装_3" title="Permanent link">&para;</a></h3>
+<p>首先你的 Linux 虚拟机必须联网</p>
+<h4 id="1安装开发库"><strong>1）安装开发库</strong><a class="anchor-link" href="#1安装开发库" title="Permanent link">&para;</a></h4>
+<p>首先要安装 OpenResty 的依赖开发库，执行命令：</p>
+<pre><code class="language-sh">yum install -y pcre-devel openssl-devel gcc --skip-broken
+</code></pre>
+<h4 id="2安装-openresty-仓库"><strong>2）安装 OpenResty 仓库</strong><a class="anchor-link" href="#2安装-openresty-仓库" title="Permanent link">&para;</a></h4>
+<p>你可以在你的 CentOS 系统中添加 <code>openresty</code> 仓库，这样就可以便于未来安装或更新我们的软件包（通过 <code>yum check-update</code> 命令）。运行下面的命令就可以添加我们的仓库：</p>
+<pre><code>yum-config-manager --add-repo https://openresty.org/package/centos/openresty.repo
+</code></pre>
+<p>如果提示说命令不存在，则运行：</p>
+<pre><code>yum install -y yum-utils
+</code></pre>
+<p>然后再重复上面的命令</p>
+<h4 id="3安装-openresty"><strong>3）安装 OpenResty</strong><a class="anchor-link" href="#3安装-openresty" title="Permanent link">&para;</a></h4>
+<p>然后就可以像下面这样安装软件包，比如 <code>openresty</code>：</p>
+<pre><code class="language-bash">yum install -y openresty
+</code></pre>
+<h4 id="4安装-opm-工具"><strong>4）安装 opm 工具</strong><a class="anchor-link" href="#4安装-opm-工具" title="Permanent link">&para;</a></h4>
+<p>opm 是 OpenResty 的一个管理工具，可以帮助我们安装一个第三方的 Lua 模块。</p>
+<p>如果你想安装命令行工具 <code>opm</code>，那么可以像下面这样安装 <code>openresty-opm</code> 包：</p>
+<pre><code class="language-bash">yum install -y openresty-opm
+</code></pre>
+<h4 id="5目录结构"><strong>5）目录结构</strong><a class="anchor-link" href="#5目录结构" title="Permanent link">&para;</a></h4>
+<p>默认情况下，OpenResty 安装的目录是：/usr/local/openresty</p>
+<p><img alt="image-20200310225539214" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040066.png" /></p>
+<p>看到里面的 nginx 目录了吗，OpenResty 就是在 Nginx 基础上集成了一些 Lua 模块。</p>
+<h4 id="6配置-nginx-的环境变量"><strong>6）配置 nginx 的环境变量</strong><a class="anchor-link" href="#6配置-nginx-的环境变量" title="Permanent link">&para;</a></h4>
+<p>打开配置文件：</p>
+<pre><code class="language-sh">vi /etc/profile
+</code></pre>
+<p>在最下面加入两行：</p>
+<pre><code class="language-sh">export NGINX_HOME=/usr/local/openresty/nginx
+export PATH=<span class="math-inline">{NGINX_HOME}/sbin:</span>PATH
+</code></pre>
+<p>NGINX_HOME：后面是 OpenResty 安装目录下的 nginx 的目录</p>
+<p>然后让配置生效：</p>
+<pre><code>source /etc/profile
+</code></pre>
+<h3 id="启动和运行">启动和运行<a class="anchor-link" href="#启动和运行" title="Permanent link">&para;</a></h3>
+<p>OpenResty 底层是基于 Nginx 的，查看 OpenResty 目录的 nginx 目录，结构与 windows 中安装的 nginx 基本一致：</p>
+<p><img alt="image-20210811100653291" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040070.png" /></p>
+<p>所以运行方式与 nginx 基本一致：</p>
+<pre><code class="language-sh">## 启动nginx
+nginx
+## 重新加载配置
+nginx -s reload
+## 停止
+nginx -s stop
+</code></pre>
+<p>nginx 的默认配置文件注释太多，影响后续我们的编辑，这里将 nginx.conf 中的注释部分删除，保留有效部分。</p>
+<p>修改<code>/usr/local/openresty/nginx/conf/nginx.conf</code>文件，内容如下：</p>
+<pre><code class="language-nginx">#user  nobody;
+worker_processes  1;
+error_log  logs/error.log;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+
+    server {
+        listen       8081;
+        server_name  localhost;
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+</code></pre>
+<p>在 Linux 的控制台输入命令以启动 nginx：</p>
+<pre><code class="language-sh">nginx
+</code></pre>
+<p>然后访问页面：http://47.92.99.39:8081/，注意ip地址替换为你自己的虚拟机IP：</p>
+<h3 id="备注">备注<a class="anchor-link" href="#备注" title="Permanent link">&para;</a></h3>
+<p>加载 OpenResty 的 lua 模块 (添加在 nginx.conf 的 http 下面)：</p>
+<pre><code class="language-nginx">#lua 模块
+lua_package_path &quot;/usr/local/openresty/lualib/?.lua;;&quot;;
+#c模块
+lua_package_cpath &quot;/usr/local/openresty/lualib/?.so;;&quot;;
+</code></pre>
+<p><img alt="image-20220908151000877" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040389.png" /></p>
+<p>common.lua</p>
+<pre><code class="language-lua">-- 封装函数，发送http请求，并解析响应
+local function read_http(path, params)
+    local resp = ngx.location.capture(path,{
+        method = ngx.HTTP_GET,
+        args = params,
+    })
+    if not resp then
+        -- 记录错误信息，返回404
+        ngx.log(ngx.ERR, &quot;http not found, path: &quot;, path , &quot;, args: &quot;, args)
+        ngx.exit(404)
+    end
+    return resp.body
+end
+-- 将方法导出
+local _M = {
+    read_http = read_http
+}
+return _M
+</code></pre>
+<p>释放 Redis 连接 API：</p>
+<pre><code class="language-lua">-- 关闭redis连接的工具方法，其实是放入连接池
+local function close_redis(red)
+    local pool_max_idle_time = 10000 -- 连接的空闲时间，单位是毫秒
+    local pool_size = 100 --连接池大小
+    local ok, err = red:set_keepalive(pool_max_idle_time, pool_size)
+    if not ok then
+        ngx.log(ngx.ERR, &quot;放入redis连接池失败: &quot;, err)
+    end
+end
+</code></pre>
+<p>读取 Redis 数据的 API：</p>
+<pre><code class="language-lua">-- 查询redis的方法 ip和port是redis地址，key是查询的key
+local function read_redis(ip, port, key)
+    -- 获取一个连接
+    local ok, err = red:connect(ip, port)
+    if not ok then
+        ngx.log(ngx.ERR, &quot;连接redis失败 : &quot;, err)
+        return nil
+    end
+    -- 查询redis
+    local resp, err = red:get(key)
+    -- 查询失败处理
+    if not resp then
+        ngx.log(ngx.ERR, &quot;查询Redis失败: &quot;, err, &quot;, key = &quot; , key)
+    end
+    --得到的数据为空处理
+    if resp == ngx.null then
+        resp = nil
+        ngx.log(ngx.ERR, &quot;查询Redis数据为空, key = &quot;, key)
+    end
+    close_redis(red)
+    return resp
+end
+</code></pre>
+<p>开启共享词典：</p>
+<pre><code class="language-nginx">## 共享字典，也就是本地缓存，名称叫做：item_cache，大小150m
+lua_shared_dict item_cache 150m; 
+</code></pre>
+<h2 id="canal">Canal<a class="anchor-link" href="#canal" title="Permanent link">&para;</a></h2>
+<p>下面我们就开启 mysql 的主从同步机制，让 Canal 来模拟 salve</p>
+<h3 id="开启-mysql-主从">开启 MySQL 主从<a class="anchor-link" href="#开启-mysql-主从" title="Permanent link">&para;</a></h3>
+<p>Canal 是基于 MySQL 的主从同步功能，因此必须先开启 MySQL 的主从功能才可以。</p>
+<p>这里以之前用 Docker 运行的 mysql 为例：</p>
+<h4 id="开启-binlog">开启 binlog<a class="anchor-link" href="#开启-binlog" title="Permanent link">&para;</a></h4>
+<p>打开 mysql 容器挂载的日志文件，我的在<code>/tmp/mysql/conf</code>目录:</p>
+<p><img alt="image-20210813153241537" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040392.png" /></p>
+<p>修改文件：</p>
+<pre><code class="language-sh">vi /tmp/mysql/conf/my.cnf
+</code></pre>
+<p>添加内容：</p>
+<pre><code class="language-ini">log-bin=/var/lib/mysql/mysql-bin
+binlog-do-db=heima
+</code></pre>
+<p>配置解读：</p>
+<ul>
+<li><code>log-bin=/var/lib/mysql/mysql-bin</code>：设置 binary log 文件的存放地址和文件名，叫做 mysql-bin</li>
+<li><code>binlog-do-db=heima</code>：指定对哪个 database 记录 binary log events，这里记录 heima 这个库</li>
+</ul>
+<p>最终效果：</p>
+<pre><code class="language-ini">[mysqld]
+skip-name-resolve
+character_set_server=utf8
+datadir=/var/lib/mysql
+server-id=1000
+log-bin=/var/lib/mysql/mysql-bin
+binlog-do-db=heima
+</code></pre>
+<h4 id="设置用户权限">设置用户权限<a class="anchor-link" href="#设置用户权限" title="Permanent link">&para;</a></h4>
+<p>接下来添加一个仅用于数据同步的账户，出于安全考虑，这里仅提供对 heima 这个库的操作权限。</p>
+<pre><code class="language-sql">create user canal@'%' IDENTIFIED by 'canal';
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT,SUPER ON *.* TO 'canal'@'%' identified by 'canal';
+FLUSH PRIVILEGES;
+</code></pre>
+<p>重启 mysql 容器即可</p>
+<pre><code>docker restart mysql
+</code></pre>
+<p>测试设置是否成功：在 mysql 控制台，或者 Navicat 中，输入命令：</p>
+<pre><code>show master status;
+</code></pre>
+<p><img alt="image-20200327094735948" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040415.png" /></p>
+<h3 id="安装-canal">安装 Canal<a class="anchor-link" href="#安装-canal" title="Permanent link">&para;</a></h3>
+<h4 id="创建网络">创建网络<a class="anchor-link" href="#创建网络" title="Permanent link">&para;</a></h4>
+<p>我们需要创建一个网络，将 MySQL、Canal、MQ 放到同一个 Docker 网络中：</p>
+<pre><code class="language-sh">docker network create heima
+</code></pre>
+<p>让 mysql 加入这个网络：</p>
+<pre><code class="language-sh">docker network connect heima mysql
+</code></pre>
+<h4 id="安装-canal_1">安装 Canal<a class="anchor-link" href="#安装-canal_1" title="Permanent link">&para;</a></h4>
+<p>课前资料中提供了 canal 的镜像压缩包:</p>
+<p><img alt="image-20210813161804292" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040458.png" /></p>
+<p>大家可以上传到虚拟机，然后通过命令导入：</p>
+<pre><code>docker load -i canal.tar
+</code></pre>
+<p>然后运行命令创建 Canal 容器：</p>
+<pre><code class="language-sh">docker run -p 11111:11111 --name canal \
+-e canal.destinations=heima \
+-e canal.instance.master.address=mysql:3306  \
+-e canal.instance.dbUsername=canal  \
+-e canal.instance.dbPassword=canal  \
+-e canal.instance.connectionCharset=UTF-8 \
+-e canal.instance.tsdb.enable=true \
+-e canal.instance.gtidon=false  \
+-e canal.instance.filter.regex=heima\\..* \
+--network heima \
+-d canal/canal-server:v1.1.5
+</code></pre>
+<p>说明:</p>
+<ul>
+<li><code>-p 11111:11111</code>：这是 canal 的默认监听端口</li>
+<li><code>-e canal.instance.master.address=mysql:3306</code>：数据库地址和端口，如果不知道 mysql 容器地址，可以通过<code>docker inspect 容器id</code>来查看</li>
+<li><code>-e canal.instance.dbUsername=canal</code>：数据库用户名</li>
+<li><code>-e canal.instance.dbPassword=canal</code> ：数据库密码</li>
+<li><code>-e canal.instance.filter.regex=</code>：要监听的表名称</li>
+</ul>
+<p>表名称监听支持的语法：</p>
+<pre><code>mysql 数据解析关注的表，Perl正则表达式.
+多个正则之间以逗号(,)分隔，转义符需要双斜杠(\\)
+常见例子：
+1.  所有表：.*   or  .*\\..*
+2.  canal schema下所有表： canal\\..*
+3.  canal下的以canal打头的表：canal\\.canal.*
+4.  canal schema下的一张表：canal.test1
+5.  多个规则组合使用然后以逗号隔开：canal\\..*,mysql.test1,mysql.test2
+</code></pre>
+<h2 id="elasticsearch">Elasticsearch<a class="anchor-link" href="#elasticsearch" title="Permanent link">&para;</a></h2>
+<h3 id="部署单点-es">部署单点 es<a class="anchor-link" href="#部署单点-es" title="Permanent link">&para;</a></h3>
+<h4 id="创建网络_1">创建网络<a class="anchor-link" href="#创建网络_1" title="Permanent link">&para;</a></h4>
+<p>因为我们还需要部署 kibana 容器，因此需要让 es 和 kibana 容器互联。这里先创建一个网络：</p>
+<pre><code class="language-sh">docker network create es-net
+</code></pre>
+<h4 id="加载镜像">加载镜像<a class="anchor-link" href="#加载镜像" title="Permanent link">&para;</a></h4>
+<p>这里我们采用 elasticsearch 的 7.12.1 版本的镜像，这个镜像体积接近 1G。可以自行 pull 或者上传<code>tar</code>包。</p>
+<pre><code>docker pull elasticsearch:7.12.1
+</code></pre>
+<p>如果采用上传的方式，上传到虚拟机中后运行命令加载即可：</p>
+<pre><code class="language-sh">## 导入数据
+docker load -i es.tar
+</code></pre>
+<p>同理还有<code>kibana</code>的 tar 包也需要这样做。</p>
+<h4 id="运行">运行<a class="anchor-link" href="#运行" title="Permanent link">&para;</a></h4>
+<p>运行 docker 命令，部署单点 es：</p>
+<pre><code class="language-sh">docker run -d \
+    --name es \
+    -e &quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot; \
+    -e &quot;discovery.type=single-node&quot; \
+    -v es-data:/usr/share/elasticsearch/data \
+    -v es-plugins:/usr/share/elasticsearch/plugins \
+    --privileged \
+    --network es-net \
+    -p 9200:9200 \
+    -p 9300:9300 \
+elasticsearch:7.12.1
+</code></pre>
+<p>命令解释：</p>
+<ul>
+<li><code>-e "cluster.name=es-docker-cluster"</code>：设置集群名称</li>
+<li><code>-e "http.host=0.0.0.0"</code>：监听的地址，可以外网访问</li>
+<li><code>-e "ES_JAVA_OPTS=-Xms512m -Xmx512m"</code>：内存大小</li>
+<li><code>-e "discovery.type=single-node"</code>：非集群模式</li>
+<li><code>-v es-data:/usr/share/elasticsearch/data</code>：挂载逻辑卷，绑定 es 的数据目录</li>
+<li><code>-v es-logs:/usr/share/elasticsearch/logs</code>：挂载逻辑卷，绑定 es 的日志目录</li>
+<li><code>-v es-plugins:/usr/share/elasticsearch/plugins</code>：挂载逻辑卷，绑定 es 的插件目录</li>
+<li><code>--privileged</code>：授予逻辑卷访问权</li>
+<li><code>--network es-net</code> ：加入一个名为 es-net 的网络中</li>
+<li><code>-p 9200:9200</code>：端口映射配置</li>
+</ul>
+<p>在浏览器中输入：http://IP:9200 即可看到 elasticsearch 的响应结果：</p>
+<p><img alt="image-20210506101053676" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040460.png" /></p>
+<h3 id="部署-kibana">部署 kibana<a class="anchor-link" href="#部署-kibana" title="Permanent link">&para;</a></h3>
+<p>kibana 可以给我们提供一个 elasticsearch 的可视化界面，便于我们学习。</p>
+<h4 id="拉取镜像_2">拉取镜像<a class="anchor-link" href="#拉取镜像_2" title="Permanent link">&para;</a></h4>
+<pre><code>docker pull kibana:7.12.1
+</code></pre>
+<h4 id="部署">部署<a class="anchor-link" href="#部署" title="Permanent link">&para;</a></h4>
+<p>运行 docker 命令，部署 kibana</p>
+<pre><code class="language-sh">docker run -d \
+--name kibana \
+-e ELASTICSEARCH_HOSTS=http://es:9200 \
+--network=es-net \
+-p 5601:5601  \
+kibana:7.12.1
+</code></pre>
+<ul>
+<li><code>--network es-net</code> ：加入一个名为 es-net 的网络中，与 elasticsearch 在同一个网络中</li>
+<li><code>-e ELASTICSEARCH_HOSTS=http://es:9200"</code>：设置 elasticsearch 的地址，因为 kibana 已经与 elasticsearch 在一个网络，因此可以用容器名直接访问 elasticsearch</li>
+<li><code>-p 5601:5601</code>：端口映射配置</li>
+</ul>
+<p>kibana 启动一般比较慢，需要多等待一会，可以通过命令：</p>
+<pre><code class="language-sh">docker logs -f kibana
+</code></pre>
+<p>查看运行日志，当查看到下面的日志，说明成功：</p>
+<p><img alt="image-20210109105135812" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040917.png" /></p>
+<p>此时，在浏览器输入地址访问：http://IP:5601，即可看到结果</p>
+<h4 id="devtools">DevTools<a class="anchor-link" href="#devtools" title="Permanent link">&para;</a></h4>
+<p>kibana 中提供了一个 DevTools 界面：</p>
+<p><img alt="image-20210506102630393" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040040.png" /></p>
+<p>这个界面中可以编写 DSL 来操作 elasticsearch。并且对 DSL 语句有自动补全功能。</p>
+<h3 id="安装-ik-分词器">安装 IK 分词器<a class="anchor-link" href="#安装-ik-分词器" title="Permanent link">&para;</a></h3>
+<h4 id="在线安装-ik-插件较慢">在线安装 ik 插件（较慢）<a class="anchor-link" href="#在线安装-ik-插件较慢" title="Permanent link">&para;</a></h4>
+<pre><code class="language-shell">## 进入容器内部
+docker exec -it elasticsearch /bin/bash
+
+## 在线下载并安装
+./bin/elasticsearch-plugin  install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.12.1/elasticsearch-analysis-ik-7.12.1.zip
+
+#退出
+exit
+#重启容器
+docker restart elasticsearch
+</code></pre>
+<h4 id="离线安装-ik-插件推荐">离线安装 ik 插件（推荐）<a class="anchor-link" href="#离线安装-ik-插件推荐" title="Permanent link">&para;</a></h4>
+<h5 id="1查看数据卷目录">1）查看数据卷目录<a class="anchor-link" href="#1查看数据卷目录" title="Permanent link">&para;</a></h5>
+<p>安装插件需要知道 elasticsearch 的 plugins 目录位置，而我们用了数据卷挂载，因此需要查看 elasticsearch 的数据卷目录，通过下面命令查看:</p>
+<pre><code class="language-sh">docker volume inspect es-plugins
+</code></pre>
+<p>显示结果：</p>
+<pre><code class="language-json">[
+  {
+    &quot;CreatedAt&quot;: &quot;2022-05-06T10:06:34+08:00&quot;,
+    &quot;Driver&quot;: &quot;local&quot;,
+    &quot;Labels&quot;: null,
+    &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/es-plugins/_data&quot;,
+    &quot;Name&quot;: &quot;es-plugins&quot;,
+    &quot;Options&quot;: null,
+    &quot;Scope&quot;: &quot;local&quot;
+  }
+]
+</code></pre>
+<p>说明 plugins 目录被挂载到了：<code>/var/lib/docker/volumes/es-plugins/_data</code>这个目录中。</p>
+<h5 id="2解压缩分词器安装包">2）解压缩分词器安装包<a class="anchor-link" href="#2解压缩分词器安装包" title="Permanent link">&para;</a></h5>
+<p>解压缩 ik 分词器，重命名为<code>ik</code></p>
+<h5 id="3上传到-es-容器的插件数据卷中">3）上传到 es 容器的插件数据卷中<a class="anchor-link" href="#3上传到-es-容器的插件数据卷中" title="Permanent link">&para;</a></h5>
+<p>也就是<code>/var/lib/docker/volumes/es-plugins/_data</code>：</p>
+<p><img alt="image-20210506110704293" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040128.png" /></p>
+<h5 id="4重启容器">4）重启容器<a class="anchor-link" href="#4重启容器" title="Permanent link">&para;</a></h5>
+<pre><code class="language-shell">## 4、重启容器
+docker restart es
+</code></pre>
+<pre><code class="language-sh">## 查看es日志
+docker logs -f es
+</code></pre>
+<h5 id="5测试">5）测试：<a class="anchor-link" href="#5测试" title="Permanent link">&para;</a></h5>
+<p>IK 分词器包含两种模式：</p>
+<ul>
+<li>
+<p><code>ik_smart</code>：最少切分</p>
+</li>
+<li>
+<p><code>ik_max_word</code>：最细切分</p>
+</li>
+</ul>
+<pre><code class="language-json">GET /_analyze
+{
+  &quot;analyzer&quot;: &quot;ik_max_word&quot;,
+  &quot;text&quot;: &quot;黑马程序员学习java太棒了&quot;
+}
+</code></pre>
+<p>结果：</p>
+<pre><code class="language-json">{
+  &quot;tokens&quot;: [
+    {
+      &quot;token&quot;: &quot;黑马&quot;,
+      &quot;start_offset&quot;: 0,
+      &quot;end_offset&quot;: 2,
+      &quot;type&quot;: &quot;CN_WORD&quot;,
+      &quot;position&quot;: 0
+    },
+    {
+      &quot;token&quot;: &quot;程序员&quot;,
+      &quot;start_offset&quot;: 2,
+      &quot;end_offset&quot;: 5,
+      &quot;type&quot;: &quot;CN_WORD&quot;,
+      &quot;position&quot;: 1
+    },
+    {
+      &quot;token&quot;: &quot;程序&quot;,
+      &quot;start_offset&quot;: 2,
+      &quot;end_offset&quot;: 4,
+      &quot;type&quot;: &quot;CN_WORD&quot;,
+      &quot;position&quot;: 2
+    },
+    {
+      &quot;token&quot;: &quot;员&quot;,
+      &quot;start_offset&quot;: 4,
+      &quot;end_offset&quot;: 5,
+      &quot;type&quot;: &quot;CN_CHAR&quot;,
+      &quot;position&quot;: 3
+    },
+    {
+      &quot;token&quot;: &quot;学习&quot;,
+      &quot;start_offset&quot;: 5,
+      &quot;end_offset&quot;: 7,
+      &quot;type&quot;: &quot;CN_WORD&quot;,
+      &quot;position&quot;: 4
+    },
+    {
+      &quot;token&quot;: &quot;java&quot;,
+      &quot;start_offset&quot;: 7,
+      &quot;end_offset&quot;: 11,
+      &quot;type&quot;: &quot;ENGLISH&quot;,
+      &quot;position&quot;: 5
+    },
+    {
+      &quot;token&quot;: &quot;太棒了&quot;,
+      &quot;start_offset&quot;: 11,
+      &quot;end_offset&quot;: 14,
+      &quot;type&quot;: &quot;CN_WORD&quot;,
+      &quot;position&quot;: 6
+    },
+    {
+      &quot;token&quot;: &quot;太棒&quot;,
+      &quot;start_offset&quot;: 11,
+      &quot;end_offset&quot;: 13,
+      &quot;type&quot;: &quot;CN_WORD&quot;,
+      &quot;position&quot;: 7
+    },
+    {
+      &quot;token&quot;: &quot;了&quot;,
+      &quot;start_offset&quot;: 13,
+      &quot;end_offset&quot;: 14,
+      &quot;type&quot;: &quot;CN_CHAR&quot;,
+      &quot;position&quot;: 8
+    }
+  ]
+}
+</code></pre>
+<h4 id="扩展词词典">扩展词词典<a class="anchor-link" href="#扩展词词典" title="Permanent link">&para;</a></h4>
+<p>随着互联网的发展，“造词运动”也越发的频繁。出现了很多新的词语，在原有的词汇列表中并不存在。比如：“奥力给”，“传智播客” 等。</p>
+<p>所以我们的词汇也需要不断的更新，IK 分词器提供了扩展词汇的功能。</p>
+<p>1）打开 IK 分词器 config 目录：</p>
+<p><img alt="image-20210506112225508" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040131.png" /></p>
+<p>2）在 IKAnalyzer.cfg.xml 配置文件内容添加：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE properties SYSTEM &quot;http://java.sun.com/dtd/properties.dtd&quot;&gt;
+&lt;properties&gt;
+        &lt;comment&gt;IK Analyzer 扩展配置&lt;/comment&gt;
+        &lt;!--用户可以在这里配置自己的扩展字典 *** 添加扩展词典--&gt;
+        &lt;entry key=&quot;ext_dict&quot;&gt;ext.dic&lt;/entry&gt;
+&lt;/properties&gt;
+</code></pre>
+<p>3）新建一个 ext.dic，可以参考 config 目录下复制一个配置文件进行修改</p>
+<pre><code class="language-properties">传智播客
+奥力给
+</code></pre>
+<p>4）重启 elasticsearch</p>
+<pre><code class="language-sh">docker restart es
+
+## 查看 日志
+docker logs -f elasticsearch
+</code></pre>
+<p><img alt="image-20201115230900504" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040133.png" /></p>
+<p>日志中已经成功加载 ext.dic 配置文件</p>
+<p>5）测试效果：</p>
+<pre><code class="language-json">GET /_analyze
+{
+  &quot;analyzer&quot;: &quot;ik_max_word&quot;,
+  &quot;text&quot;: &quot;传智播客Java就业超过90%,奥力给！&quot;
+}
+</code></pre>
+<blockquote>
+<p>注意当前文件的编码必须是 UTF-8 格式，严禁使用 Windows 记事本编辑</p>
+</blockquote>
+<h4 id="停用词词典">停用词词典<a class="anchor-link" href="#停用词词典" title="Permanent link">&para;</a></h4>
+<p>在互联网项目中，在网络间传输的速度很快，所以很多语言是不允许在网络上传递的，如：关于宗教、政治等敏感词语，那么我们在搜索时也应该忽略当前词汇。</p>
+<p>IK 分词器也提供了强大的停用词功能，让我们在索引时就直接忽略当前的停用词汇表中的内容。</p>
+<p>1）IKAnalyzer.cfg.xml 配置文件内容添加：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE properties SYSTEM &quot;http://java.sun.com/dtd/properties.dtd&quot;&gt;
+&lt;properties&gt;
+        &lt;comment&gt;IK Analyzer 扩展配置&lt;/comment&gt;
+        &lt;!--用户可以在这里配置自己的扩展字典--&gt;
+        &lt;entry key=&quot;ext_dict&quot;&gt;ext.dic&lt;/entry&gt;
+         &lt;!--用户可以在这里配置自己的扩展停止词字典  *** 添加停用词词典--&gt;
+        &lt;entry key=&quot;ext_stopwords&quot;&gt;stopword.dic&lt;/entry&gt;
+&lt;/properties&gt;
+</code></pre>
+<p>3）在 stopword.dic 添加停用词</p>
+<pre><code class="language-properties">习大大
+</code></pre>
+<p>4）重启 elasticsearch</p>
+<pre><code class="language-sh">## 重启服务
+docker restart elasticsearch
+docker restart kibana
+
+## 查看 日志
+docker logs -f elasticsearch
+</code></pre>
+<p>日志中已经成功加载 stopword.dic 配置文件</p>
+<p>5）测试效果：</p>
+<pre><code class="language-json">GET /_analyze
+{
+  &quot;analyzer&quot;: &quot;ik_max_word&quot;,
+  &quot;text&quot;: &quot;传智播客Java就业率超过95%,习大大都点赞,奥力给！&quot;
+}
+</code></pre>
+<blockquote>
+<p>注意当前文件的编码必须是 UTF-8 格式，严禁使用 Windows 记事本编辑</p>
+</blockquote>
+<h3 id="部署-es-集群">部署 es 集群<a class="anchor-link" href="#部署-es-集群" title="Permanent link">&para;</a></h3>
+<p>部署 es 集群可以直接使用 docker-compose 来完成，不过要求你的 Linux 虚拟机至少有<strong>4G</strong>的内存空间</p>
+<p>首先编写一个 docker-compose 文件，内容如下：</p>
+<pre><code class="language-sh">version: '2.2'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - &quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - &quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - &quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
+</code></pre>
+<p>Run <code>docker-compose</code> to bring up the cluster:</p>
+<pre><code class="language-sh">docker-compose up
+</code></pre>
+<h2 id="minio">MinIO<a class="anchor-link" href="#minio" title="Permanent link">&para;</a></h2>
+<ol>
+<li>拉取docker镜像</li>
+</ol>
+<pre><code class="language-bash">docker pull minio/minio
+</code></pre>
+<ol start="2">
+<li>设置minio用到的文件路径</li>
+</ol>
+<pre><code class="language-bash">mkdir minio
+</code></pre>
+<p>进入minio目录：</p>
+<pre><code class="language-bash">mkdir data
+mkdir config
+</code></pre>
+<ol start="3">
+<li>启动服务：注意，这里要单独设置console的端口，不然会报错，且无法访问</li>
+</ol>
+<p>这种安装方式 MinIO 自定义 Access 和 Secret 密钥要覆盖 MinIO 的自动生成的密钥</p>
+<pre><code class="language-bash">docker run --name minio \
+-p 9000:9000 \
+-p 9999:9999 \
+-d --restart=always \
+-e &quot;MINIO_ROOT_USER=admin&quot; \
+-e &quot;MINIO_ROOT_PASSWORD=admin123&quot; \
+-v /home/minio/data:/data \
+-v /home/minio/config:/root/.minio \
+minio/minio server /data \
+--console-address '0.0.0.0:9999'
+</code></pre>
+<ol start="4">
+<li>防火墙设置，需要为minio开放两个端口，一个9000端口，一个静态端口，此处为9999</li>
+</ol>
+<pre><code class="language-bash">firewall-cmd --zone=public --add-port=9000/tcp --permanent
+firewall-cmd --zone=public --add-port=9999/tcp --permanent
+firewall-cmd --reload
+</code></pre>
+<ol start="5">
+<li>登录客户端（浏览器）：注意—&gt;此处的端口，是你设置的console的端口：9999</li>
+</ol>
+<p>http://ip:9999</p>
+<p><img alt="image-20230819161451580" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202308191614771.png" /></p>
+<p>此处的用户名密码为启动服务时，设置的用户名密码：admin admin123：</p>
+<p><img alt="image-20230819161548871" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202308191615038.png" /></p>
+<ul>
+<li><a href="https://blog.csdn.net/yangkuo024/article/details/120134202">Docker安装minio（最新版）-避坑</a></li>
+</ul>
+<h2 id="reference_1">Reference<a class="anchor-link" href="#reference_1" title="Permanent link">&para;</a></h2>
+<ol>
+<li>https://github.com/hansonwang99/JavaCollection</li>
+<li><a href="https://space.bilibili.com/37974444?spm_id_from=333.337.search-card.all.click">黑马程序员</a></li>
+<li><a href="https://space.bilibili.com/302417610?spm_id_from=333.337.0.0">尚硅谷</a></li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

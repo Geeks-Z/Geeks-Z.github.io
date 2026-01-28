@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zotero+坚果云搞定多设备文献管理</title>
+    <meta name="description" content="Zotero+坚果云搞定多设备文献管理 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#设备软件和思路">设备、软件和思路</a></li>
+<li><a href="#用-zotero-管理文献的条目和文件">用 Zotero 管理文献的条目和文件</a></li>
+<li><a href="#用-zotero-和坚果云同步至多台电脑">用 Zotero 和坚果云同步至多台电脑</a></li>
+<li><a href="#用坚果云-webdav-同步至-ipad">用坚果云 webDAV 同步至 iPad</a></li>
+<li><a href="#讨论">讨论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Zotero+坚果云搞定多设备文献管理</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> ProgramNotes</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="zotero坚果云搞定多设备文献管理">Zotero+坚果云搞定多设备文献管理<a class="anchor-link" href="#zotero坚果云搞定多设备文献管理" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>文章引用自 <a href="https://sspai.com/post/64283">少数派-用 Zotero+坚果云搞定多设备文献管理</a></p>
+</blockquote>
+<h2 id="设备软件和思路">设备、软件和思路<a class="anchor-link" href="#设备软件和思路" title="Permanent link">&para;</a></h2>
+<p>我所用的设备是两台 Windows 10 电脑，一台 iPad mini5。电脑上所用的软件是 <a href="https://www.zotero.org/">Zotero</a>、<a href="https://www.jianguoyun.com/"> 坚果云 </a>、任意 pdf 阅读器，iPad 上所用的 app 是 PDF Expert。</p>
+<p>我对一个高效的文献管理和阅读方案的期待是：</p>
+<ul>
+<li>可以为文献条目添加标签、笔记。在需要时可以根据对文献的记忆，快速筛选和找到文献。</li>
+<li>将所有文献的 pdf 文件收纳到同一个路径下，避免重复下载和保存。无论我从何处查阅某一文献，都将打开同一个 pdf 文档。</li>
+<li>支持多设备同步。可以在多台电脑（管理文献、撰写论文时引用文献）和 iPad（阅读文献）间自动同步上述内容，无需手动拷贝。</li>
+</ul>
+<p>我为此设计的方案如下：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251502724.png" /></p>
+<p>以下详细介绍我的方案是如何实现这些功能的。</p>
+<h2 id="用-zotero-管理文献的条目和文件">用 Zotero 管理文献的条目和文件<a class="anchor-link" href="#用-zotero-管理文献的条目和文件" title="Permanent link">&para;</a></h2>
+<p>首先，我们希望将电脑上所有文献的 pdf 文件都保存在同一个路径下，建立一个 pdf 文件库，便于管理。在本文的示例中，保存所有 pdf 文件的路径为「D:\data\Work\Papers\001 Papers」，下文简称其为「001 Papers」文件夹。</p>
+<p>当我们从网络上检索并下载了一篇文献的 pdf 文件，便以论文标题命名，保存到「001 Papers」中。</p>
+<p>随后，我们在 Zotero 中添加这篇文献的条目。我们可以选择「新建条目」，选择文献类型，并手动输入文献的各种信息。Zotero 提供了多种文献类型，不同文献类型会以不同的小图标加以区分。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251502777.png" /></p>
+<p>一个更方便的方法是通过 ISBN、DOI、PMID 等文献标识符来添加条目。以常见的 DOI（Digital Object Identifier）为例，每一篇期刊论文都对应一个唯一的 DOI 编号，我们输入文献的 DOI，在电脑网络畅通的情况下，Zotero 将根据 DOI 自动获取该文献的详细信息，并将该文献条目添加到文库中。根据实测，即使电脑所连接的网络不是拥有文献出版商访问权限的学校或机构的网络，Zotero 也可以成功获取文献信息并建立条目。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251502932.gif" /></p>
+<p>对于网页内容，我们可以在 Firefox、Chrome、Safari、Edge 等浏览器安装 Zotero Connector 插件，在浏览器中将网页条目添加到 Zotero 的库中。</p>
+<p>在 Zotero 上添加文献条目之后，我们右键单击该条目，选择「添加附件 &gt;附加文件链接」，在弹出的选择框中进入「001 Papers」路径，选中该文献的 pdf 文件，此时该条目下会产生一个类似于 pdf 文件快捷方式的链接。此后，我们在 Zotero 中点击该文献条目的 pdf 链接，即可打开位于「001 Papers」的 pdf 文件。注意，在这一步操作中，不要选择「附加文件副本」，否则 Zotero 会复制 pdf 文件副本到软件的 storage 目录下的文件夹中，导致 pdf 文件的重复保存，这正是我们想避免的情况。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503750.gif" /></p>
+<p>然后，我们根据自己需要和习惯，为文献条目进行补充信息、笔记、标签、分类等操作。例如，当我们在追踪领域内某位大牛的研究进展时，我们可以将相关的文献条目都打上这位大牛或者 Ta 的课题组的标签；也可以根据文献所报道的研究内容，打上分类标签，等等。文献条目中所有的信息、笔记、标签，都可以被 Zotero 的搜索功能检索到。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251502675.png" /></p>
+<p>对每一篇文献都执行这些操作显得有些繁琐，但筛选优秀的、有参考价值的文献录入到 Zotero 中，并坚持用良好的习惯去整理和补充内容，是很有意义的。当我们在 Zotero 中积累了数量较大的文献条目之后，我们可以将对某篇文献的模糊印象提炼为关键词，从大量的文献中快速找到想要的文献，获取文献信息，还可以快速打开文献的 pdf 文件进行研读，从而节省大量时间。</p>
+<h2 id="用-zotero-和坚果云同步至多台电脑">用 Zotero 和坚果云同步至多台电脑<a class="anchor-link" href="#用-zotero-和坚果云同步至多台电脑" title="Permanent link">&para;</a></h2>
+<p>方案已经初具雏形，现在我们来开发它的同步功能。Zotero 提供同步功能，免费账户的限额是 300 MB，如果只同步文献条目信息，这些额度足够使用；但是如果同步 pdf 文件，300 MB 的云存储额度就有些捉襟见肘了。那么，我们的同步思路是：文献的条目和 pdf 文件分开同步；使用 Zotero 同步文献条目，使用坚果云同步 pdf 文件。</p>
+<p>假设我们想要将 Windows 电脑 A 上的文献条目和 pdf 文件同步到 Windows 电脑 B 上。我们首先对电脑 A 上的 Zotero 进行以下设置：</p>
+<p>在 Zotero 中选择「编辑 &gt;首选项 &gt;同步」页面，创建 Zotero 账户并登录：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251502712.png" /></p>
+<p>登录成功后，将「文件同步」选项下的两个复选框取消勾选，即：不使用 Zotero 同步 pdf 文件。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503839.png" /></p>
+<p>然后，我们选择「高级 &gt;文件和文件夹」页面，设置「链接附件的根目录」为我们存放 pdf 文件的「001 Papers」的路径：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503109.png" /></p>
+<p>至此，Zotero 的同步设置就已经完成，它将为我们同步文献的条目信息。</p>
+<p>现在我们设置电脑 A 上的坚果云，它的任务是同步所有文献的 pdf 文件。我们来到「001 Papers」文件夹，右键点击弹出菜单，选择用坚果云「同步该文件夹」：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503377.png" /></p>
+<p>此时查看坚果云，可以看到我们的「001 Papers」文件夹已经同步成功：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503261.png" />▲「001 Papers」文件夹从电脑 A 同步至坚果云</p>
+<p>至此，我们在电脑 A 的设置就完成了。</p>
+<p>现在我们来到电脑 B。打开 Zotero，登录同一账户，软件将执行同步操作。同步完成后，我们在电脑 A 的 Zotero 上的所有文献条目及其操作（包括标签、笔记、pdf 文件链接等）便都同步过来了。但此时点击文献条目下的 pdf 文件链接是无效的，因为我们还没有把 pdf 文件同步过来。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503214.png" />▲电脑 A 的 Zotero</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503162.png" />▲电脑 B 的 Zotero</p>
+<p>我们打开坚果云，软件会弹出提示称「有新的同步文件夹」，我们选择「同步到本地」，设置将同步文件夹放置在电脑 B 某路径下，这个路径即为电脑 B 的 pdf 文件库。等待同步完成后，我们的「001 Papers」中的所有 pdf 文件都已经同步过来。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503431.png" /></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503510.png" /></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503816.png" />▲「001 Papers」文件夹从坚果云同步至电脑 B</p>
+<p>我们回到 Zotero，在「高级 &gt;文件和文件夹」设置「链接附件的根目录」为刚才所设置的电脑 B 的「001 Papers」的路径。此时，点击 Zotero 中文献条目的 pdf 文件链接，Zotero 将从「001 Papers」中查找并打开文献的 pdf 文件。同时可以看到，pdf 文件中所作的批注、高亮等也完全同步。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503631.gif" />▲在电脑 B 的 Zotero 中打开文献的 pdf 文件，看到在电脑 A 所作注释</p>
+<p>此后，我们在任一电脑上添加文献条目和 pdf 文件，只要在操作后保证 Zotero 和坚果云完成同步，那么到了另一电脑，所有的操作都将成功同步过来。在这个同步方案中，电脑 A 和电脑 B 的「001 Papers」的绝对路径并不需要相同，只要这两个文件夹设置了由坚果云同步即可。</p>
+<p>这个同步方案可以拓展到任意多的电脑间的同步。由于 Zotero 和坚果云都是兼容多操作系统的软件，这个同步方案理论上也可以实现 Windows、MacOS、Linux 等系统的设备之间的同步。另外，文献的文件格式不限于 pdf。</p>
+<p><strong>对于已经存在本地的附件，请选中所有条目，右键</strong><code>Manage Attachments</code>→<code>Rename Attachments</code>。</p>
+<h2 id="用坚果云-webdav-同步至-ipad">用坚果云 webDAV 同步至 iPad<a class="anchor-link" href="#用坚果云-webdav-同步至-ipad" title="Permanent link">&para;</a></h2>
+<p>自从有了 apple pencil 的加持，iPad 摇身一变成为研读文献的利器。现在我们利用 webDAV 协议，实现在 iPad 的「PDF Expert」app 上访问由坚果云同步的「001 Papers」文件夹，进而查看和编辑其中的 pdf 文件。</p>
+<p>首先我们需要在坚果云中开启给予「PDF Expert」的 WebDAV 授权。打开 <a href="https://www.jianguoyun.com/">坚果云官网 </a>并登录坚果云账号，选择右上角账户名处的「账户信息 &gt;安全选项」：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503720.png" /></p>
+<p>在「安全选项」中，来到「第三方应用管理」，点击「添加应用」，输入一个自己喜欢的名字后，点击「生成密码」：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503242.png" /></p>
+<p>这样便设置完成了，这时我们可以看到在第三方应用中利用 WebDAV 协议访问坚果云所需要的服务器地址、账号和密码：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503141.png" /></p>
+<p>现在，我们打开 iPad 上的「PDF Expert」app，在右侧栏的「连接」中选择「添加连接」，在弹出菜单中选择「WebDAV」，输入坚果云提供的服务器地址、账号和密码后点击「完成」即可：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503112.png" /></p>
+<p>现在，app 右侧栏的「连接」中多了一个「坚果云」，表示利用 WebDAV 协议的外部存储已经部署完成了。点击「坚果云」，可以看到我们同步到坚果云上的「001 Papers」文件夹，打开其中的 pdf 文件，略加标注后退出，可以看到该 pdf 文件有一个上传的动画。动画完成表示我们对 pdf 所作的改动已经上传至坚果云中。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503944.gif" /></p>
+<p>我们在电脑上打开同一篇文献的 pdf 文件，可以看到我们在 iPad 上所作的标注已经同步过来：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503770.gif" /></p>
+<p>现在，我们可以在电脑上收集文献，然后到 iPad 上研读、注释，所作的注释会自动同步到我们所有的电脑上，方便我们在日后查阅、引用。</p>
+<h2 id="讨论">讨论<a class="anchor-link" href="#讨论" title="Permanent link">&para;</a></h2>
+<p>至此，这个方案已经展示完毕。</p>
+<p>对于方案中的云存储问题，事实上 Zotero 也提供付费的云存储扩容方案。但是在我们的方案中，我们选择了坚果云来同步数据量较大的 pdf 文件。一方面，我认为坚果云更加实惠，相似的价格下有更多的云存储空间，这些空间还可以用于文献以外的内容；另一方面，坚果云作为国内颇受好评的云盘服务商，我相信它所提供的同步速度是有优势的。更何况，它还支持通过 WebDAV 协议访问，我们可以开发更多好玩的灵活的玩法。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503798.png" />▲Zoteor 的付费套餐</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251503331.png" />▲坚果云的付费套餐</p>
+<p>另外，对于文献的管理，我认为不必拘泥于在 Zotero 中进行管理。例如，我们在某个项目中需要频繁查看某几篇文献。那么，我们大可以将「001 Papers」文件夹中这几篇文献 pdf 文件的快捷方式放置到项目文件夹中。如此一来，我们可以更快地打开这些文献的 pdf 文件，所打开的 pdf 文件仍是妥善保存在「001 Papers」中的，不会带来文件重复保存的问题。</p>
+<p>以上是我对多设备的文献管理和阅读的方案和一些想法，希望对大家有所帮助。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

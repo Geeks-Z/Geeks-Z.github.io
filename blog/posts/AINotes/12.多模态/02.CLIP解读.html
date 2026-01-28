@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>image_encoder - ResNet or Vision Transformer</title>
+    <meta name="description" content="image_encoder - ResNet or Vision Transformer - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#clip是如何工作的">CLIP是如何工作的</a></li>
+<li><a href="#如何用clip实现zero-shot分类">如何用CLIP实现zero-shot分类</a></li>
+<li><a href="#为什么是clip">为什么是CLIP</a></li>
+<li><a href="#clip还可以做什么">CLIP还可以做什么</a><ul>
+<li><a href="#zero-shot检测">zero-shot检测</a></li>
+<li><a href="#图像检索">图像检索</a></li>
+<li><a href="#视频理解">视频理解</a></li>
+<li><a href="#图像编辑">图像编辑</a></li>
+<li><a href="#图像生成">图像生成</a></li>
+<li><a href="#自监督学习">自监督学习</a></li>
+<li><a href="#vl任务">VL任务</a></li>
+</ul>
+</li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#limitation">Limitation</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>image_encoder - ResNet or Vision Transformer</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/12.多模态</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><strong>论文地址</strong>：<a href="https://arxiv.org/pdf/2103.00020.pdf">https://arxiv.org/pdf/2103.00020.pdf</a></p>
+<p><strong>代码地址</strong>：<a href="https://github.com/OpenAI/CLIP">https://github.com/OpenAI/CLIP</a></p>
+<p><strong>官方解读博客</strong>：<a href="https://openai.com/research/clip">https://openai.com/research/clip</a></p>
+<p>2021年见证了vision transformer的大爆发，随着谷歌提出ViT之后，一大批的vision transformer的工作席卷计算机视觉任务。除了vision transformer，另外一个对计算机视觉影响比较大的工作就是Open AI在2021年1月份发布的<a href="https://openai.com/blog/dall-e/">https://openai.com/blog/dall-e/</a>和<a href="https://openai.com/blog/clip/">https://openai.com/blog/clip/</a>，这两个都属于结合图像和文本的多模态模型，其中<strong>DALL-E是基于文本来生成模型的模型</strong>，而<strong>CLIP是用文本作为监督信号来训练可迁移的视觉模型</strong>，这两个工作也像ViT一样带动了一波新的研究高潮。</p>
+<h2 id="clip是如何工作的">CLIP是如何工作的<a class="anchor-link" href="#clip是如何工作的" title="Permanent link">&para;</a></h2>
+<p>CLIP的英文全称是<strong>Contrastive Language-Image Pre-training</strong>，即<strong>一种基于对比文本-图像对的预训练方法或者模型</strong>。CLIP是一种基于对比学习的多模态模型，与CV中的一些对比学习方法如moco和simclr不同的是，CLIP的训练数据是文本-图像对：一张图像和它对应的文本描述，这里希望通过对比学习，模型能够学习到文本-图像对的匹配关系。如下图所示，CLIP包括两个模型：<strong>Text Encoder</strong>和<strong>Image Encoder</strong>，其中Text Encoder用来提取文本的特征，可以采用NLP中常用的text transformer模型；而Image Encoder用来提取图像的特征，可以采用常用CNN模型或者vision transformer。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816212928.png" style="zoom: 50%;" /></div>
+
+<p>这里对提取的文本特征和图像特征进行对比学习。对于一个包含<span class="math-inline">N</span>个文本-图像对的训练batch，将<span class="math-inline">N</span>个文本特征和<span class="math-inline">N</span>个图像特征两两组合，CLIP模型会预测出<span class="math-inline">N^2</span> 可能的文本-图像对的相似度，这里的相似度直接<strong>计算文本特征和图像特征的余弦相似性（cosine similarity）</strong>，即上图所示的矩阵。这里共有<span class="math-inline">N</span>个正样本，即真正属于一对的文本和图像（矩阵中的对角线元素），而剩余的<span class="math-inline">N^2-N</span> 文本-图像对为负样本，那么CLIP的训练目标就是最大<span class="math-inline">N</span>个正样本的相似度，同时最小化<span class="math-inline">N^2-N</span> 负样本的相似度，对应的伪代码实现如下所示：</p>
+<pre><code class="language-python"># image_encoder - ResNet or Vision Transformer
+# text_encoder - CBOW or Text Transformer
+# I[n, h, w, c] - minibatch of aligned images
+# T[n, l] - minibatch of aligned texts
+# W_i[d_i, d_e] - learned proj of image to embed
+# W_t[d_t, d_e] - learned proj of text to embed
+# t - learned temperature parameter
+
+# 分别提取图像特征和文本特征
+I_f = image_encoder(I) #[n, d_i]
+T_f = text_encoder(T) #[n, d_t]
+
+# 对两个特征进行线性投射，得到相同维度的特征，并进行l2归一化
+I_e = l2_normalize(np.dot(I_f, W_i), axis=1) # [n, d_i] * [d_i, d_e] = [n, d_e]
+T_e = l2_normalize(np.dot(T_f, W_t), axis=1) # [n, d_t] * [d_t, d_e] = [n, d_e]
+
+# 计算缩放的余弦相似度：[n, n]
+logits = np.dot(I_e, T_e.T) * np.exp(t)
+
+# 对称的对比学习损失：等价于N个类别的cross_entropy_loss
+labels = np.arange(n) # 对角线元素的labels
+loss_i = cross_entropy_loss(logits, labels, axis=0)
+loss_t = cross_entropy_loss(logits, labels, axis=1)
+loss = (loss_i + loss_t)/2
+</code></pre>
+<blockquote>
+<p>关于loss的说明<br />
+-   CLIP分为<strong>按行计算Loss</strong>和<strong>按列计算Loss</strong><br />
+-   <strong>按行计算Loss</strong>，在每一行范围内做softmax，然后计算cross_entropy（蓝色格子部分是真值）。这样计算Loss的意义是：对于每一张图片，我们都希望找到和它最相似的文字。<br />
+-   <strong>按列计算Loss</strong>，在每一列的范围内做softmax，然后计算cross_entropy（蓝色格子部分是真值）。这样计算Loss的意义是：对于每一段文字，我们都希望找到和它最相似的图片。<br />
+-   <strong>最后将这两个Loss相加取平均</strong>，代表我们在模型优化过程中<strong>考虑了“图片-&gt;文字”和“文字-&gt;图片”的双向关系</strong>。</p>
+</blockquote>
+<p>为了训练CLIP，OpenAI从互联网收集了共<strong>4个亿的文本-图像对</strong>，论文称之为<strong>WebImageText</strong>，如果按照文本的单词量，它和训练GPT-2的WebText规模类似，如果从数量上对比的话，它还比谷歌的JFT-300M数据集多一个亿，所以说这是一个很大规模的数据集。CLIP虽然是多模态模型，但它主要是用来<strong>训练可迁移的视觉模型</strong>。论文中Text Encoder固定选择一个包含63M参数的text transformer模型，而Image Encoder采用了两种的不同的架构，一是常用的CNN架构ResNet，二是基于transformer的ViT，其中ResNet包含5个不同大小的模型：<strong>ResNet50</strong>，<strong>ResNet101</strong>，<strong>RN50x4</strong>，<strong>RN50x16</strong>和<strong>RNx64</strong>（后面三个模型是按照EfficientNet缩放规则对ResNet分别增大4x，16x和64x得到），而ViT选择3个不同大小的模型：<strong>ViT-B/32</strong>，<strong>ViT-B/16</strong>和<strong>ViT-L/14</strong>。所有的模型都训练32个epochs，采用AdamW优化器，而且训练过程采用了一个<strong>较大的batch size：32768</strong>。由于数据量较大，最大的ResNet模型RN50x64需要在592个V100卡上训练18天，而最大ViT模型ViT-L/14需要在256张V100卡上训练12天，可见要训练CLIP需要耗费多大的资源。对于ViT-L/14，还在336的分辨率下额外finetune了一个epoch来增强性能，论文发现这个模型效果最好，记为<strong>ViT-L/14@336</strong>，论文中进行对比实验的CLIP模型也采用这个。</p>
+<h2 id="如何用clip实现zero-shot分类">如何用CLIP实现zero-shot分类<a class="anchor-link" href="#如何用clip实现zero-shot分类" title="Permanent link">&para;</a></h2>
+<p>上面我们介绍了CLIP的原理，可以看到训练后的CLIP其实是两个模型，除了视觉模型外还有一个文本模型，那么如何对预训练好的视觉模型进行迁移呢？<strong>与CV中常用的先预训练然后微调不同，CLIP可以直接实现zero-shot的图像分类，即不需要任何训练数据，就能在某个具体下游任务上实现分类</strong>，这也是CLIP亮点和强大之处。用CLIP实现zero-shot分类很简单，只需要简单的两步：</p>
+<ol>
+<li>根据任务的分类标签构建每个类别的描述文本：<code>A photo of {label}</code>，然后将这些文本送入Text Encoder得到对应的文本特征，如果类别数目为<span class="math-inline">N</span>，那么将得到<span class="math-inline">N</span>个文本特征；</li>
+<li>将要预测的图像送入Image Encoder得到图像特征，然后与<span class="math-inline">N</span>个文本特征计算缩放的余弦相似度（和训练过程一致），然后选择相似度最大的文本对应的类别作为图像分类预测结果，进一步地，可以将这些相似度看成logits，送入softmax后可以到每个类别的预测概率。</li>
+</ol>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816213629.png" style="zoom: 50%;" /></div>
+
+<p>可以看到，我们是利用CLIP的多模态特性为具体的任务<strong>构建了动态的分类器</strong>，<strong>其中Text Encoder提取的文本特征可以看成分类器的weights，而Image Encoder提取的图像特征是分类器的输入</strong>。这里我们给出了一个基于CLIP的一个实例（参考官方<a href="https://github.com/openai/CLIP/blob/main/notebooks/Interacting_with_CLIP.ipynb">https://github.com/openai/CLIP/blob/main/notebooks/Interacting_with_CLIP.ipynb</a>），这里任务共有6个类别："dog", "cat", "bird", "person", "mushroom", "cup"，首先我们创建文本描述，然后提取文本特征：</p>
+<pre><code class="language-python"># 首先生成每个类别的文本描述
+labels = [&quot;dog&quot;, &quot;cat&quot;, &quot;bird&quot;, &quot;person&quot;, &quot;mushroom&quot;, &quot;cup&quot;]
+text_descriptions = [f&quot;A photo of a {label}&quot; for label in labels]
+text_tokens = clip.tokenize(text_descriptions).cuda()
+
+# 提取文本特征
+with torch.no_grad():
+    text_features = model.encode_text(text_tokens).float()
+    text_features /= text_features.norm(dim=-1, keepdim=True)
+</code></pre>
+<p>然后我们读取要预测的图像，输入Image Encoder提取图像特征，并计算与文本特征的余弦相似度：</p>
+<pre><code class="language-python"># 读取图像
+original_images = []
+images = []
+texts = []
+
+for label in labels:
+    image_file = os.path.join(&quot;images&quot;, label+&quot;.jpg&quot;)
+    name = os.path.basename(image_file).split('.')[0]
+
+    image = Image.open(image_file).convert(&quot;RGB&quot;)
+    original_images.append(image)
+    images.append(preprocess(image))
+    texts.append(name)
+
+image_input = torch.tensor(np.stack(images)).cuda()
+
+# 提取图像特征  
+with torch.no_grad():
+    image_features = model.encode_image(image_input).float()
+    image_features /= image_features.norm(dim=-1, keepdim=True)
+
+# 计算余弦相似度（未缩放）
+similarity = text_features.cpu().numpy() @ image_features.cpu().numpy().T
+</code></pre>
+<p>相似度如下所示，可以看到对于要预测的6个图像，按照最大相似度，其均能匹配到正确的文本标签： </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816214620.png" style="zoom: 40%;" /></div>
+
+<p>进一步地，我们也可以对得到的余弦相似度计算softmax，得到每个预测类别的概率值，注意这里要对相似度进行缩放：</p>
+<pre><code class="language-python">logit_scale = np.exp(model.logit_scale.data.item())
+text_probs = (logit_scale * image_features @ text_features.T).softmax(dim=-1)
+top_probs, top_labels = text_probs.cpu().topk(5, dim=-1)
+</code></pre>
+<p>得到的预测概率如下所示，可以看到6个图像，CLIP模型均能够以绝对的置信度给出正确的分类结果：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816214645.png" style="zoom: 50%;" /></div>
+
+<p>使用CLIP进行zero-shot分类，另外一个比较重要的地方是<strong>文本描述的生成</strong>，上面的例子我们采用<code>A photo of {label}</code>，但其实也有其它选择，比如我们直接用类别标签，这其实属于最近NLP领域比较火的一个研究：prompt learning或者prompt engineering，具体可以见这篇综述论文：<a href="https://arxiv.org/abs/2107.13586">https://arxiv.org/abs/2107.13586</a>，简单来说，prompt learning的核心是通过构建合适prompt（提示）来使预训练模型能够直接应用到下游任务，这和之前的预训练+微调属于不同的范式。论文也说了，如果我们直接采用类别标签作为文本描述，那么很多文本就是一个单词，缺少具体的上下文，而且也和CLIP的训练数据不太一致，效果上会不如采用<code>A photo of {label}</code>（ImageNet数据集上可以提升1.3%）。论文也实验了采用80个不同的prompt来进行集成，发现在ImageNet数据集上能带来3.5%的提升，具体见CLIP公开的<a href="https://github.com/openai/CLIP/blob/main/notebooks/Prompt_Engineering_for_ImageNet.ipynb">https://github.com/openai/CLIP/blob/main/notebooks/Prompt_Engineering_for_ImageNet.ipynb</a>。下图对比了基于ResNet的CLIP模型直接采用类别名与进行prompt engineering和ensembling的效果对比：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816214846.png" style="zoom: 50%;" /></div>
+
+<p>上面我们介绍了如何用CLIP实现zero-shot分类，下面将简单介绍CLIP与其它方法的效果对比，这个也是论文中篇幅最多的内容。首先是CLIP和17年的一篇工作<a href="https://arxiv.org/abs/1612.09161">https://arxiv.org/abs/1612.09161</a>的在3个分类数据集上zero-shot效果对比，如下表所示，可以看到CLIP模型在效果上远远超过之前的模型，<strong>其中在ImageNet数据集可以达到76.2，这和全监督的ResNet50效果相当</strong>，不用任何训练数据就能达到这个效果是相当惊艳的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816215012.png" style="zoom: 50%;" /></div>
+
+<p>更进一步地，论文还对比了zero-shot CLIP和ResNet50 linear probing（ImageNet数据上预训练，在加上线性分类层进行finetune）在27个数据集上表现，如下图所示，其中在16个数据集上CLIP可以超过ResNet50。但是<strong>在一些特别的，复杂的或者抽象的数据集上CLIP表现较差</strong>，比如卫星图像分类，淋巴结转移检测，在合成场景中计数等，CLIP的效果不如全监督的ResNet50，这说明CLIP并不是万能的，还是有改进的空间。如果认真看下图的话，CLIP表现较差的竟然还有MNIST数据集，分类准确度只有88%，这是不可思议的，因为这个任务太简单了，通过对CLIP训练数据进行分析，作者发现4亿的训练数据中基本上没有和MNIST比较相似的数据，所以这对CLIP来说就属于<strong>域外数据</strong>了，表现较差就比较容易理解了。这也表明<strong>：CLIP依然无法解决域外泛化这个深度学习难题。</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816215117.png" style="zoom: 50%;" /></div>
+
+<p>除了zero-shot对比，论文还对比few-shot性能，即只用少量的样本来微调模型，这里对比了3个模型：在ImageNet21K上训练的BiT-M ResNet-152x2，基于SimCLRv2训练的ResNet50，以及有监督训练的ResNet50。可以看到CLIP的zero-shot和最好的模型（BiT-M）在16-shot下的性能相当，而CLIP在16-shot下效果有进一步的提升。另外一个比较有意思的结果是：虽然CLIP在few-shot实验中随着样本量增加性能有提升，但是1-shot和2-shot性能比zero-shot还差，这个作者认为主要是CLIP的训练和常规的有监督训练存在一定的差异造成的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816215359.png" style="zoom: 50%;" /></div>
+
+<p>除此之外，论文还进行了<strong>表征学习</strong>（<strong>representation Learning</strong>）实验，即自监督学习中常用的<strong>linear probe</strong>：用训练好的模型先提取特征，然后用一个线性分类器来有监督训练。下图为不同模型在27个数据集上的average linear probe score对比，可以看到CLIP模型在性能上超过其它模型，而且计算更高效： </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816215706.png" style="zoom: 50%;" /></div>
+
+<p>另外，论文还发现CLIP在自然分布漂移上表现更鲁棒，比如CLIP和基于ImageNet上有监督训练的ResNet101在ImageNet验证集都能达到76.2%，但是在ImageNetV2数据集上，CLIP要超过ResNet101。在另外的4个分布漂移的数据集上，ResNet101性能下降得比较厉害，但是CLIP能依然保持较大的准确度，比如在ImageNet-A数据集上，ResNet101性能只有2.7%，而CLIP能达到77.1%。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816215848.png" style="zoom: 50%;" /></div>
+
+<p>CLIP能实现这么好的zero-shot性能，大家很可能质疑CLIP的训练数据集可能包含一些测试数据集中的样例，即所谓的数据泄漏。关于这点，论文也采用一个重复检测器对评测的数据集重合做了检查，发现重合率的中位数为2.2%，而平均值在3.2%，去重前后大部分数据集的性能没有太大的变化，如下所示： </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816215946.png" style="zoom: 50%;" /></div>
+
+<p>论文的最后也对CLIP的局限性做了讨论，这里简单总结其中比较重要的几点：</p>
+<ul>
+<li>CLIP的zero-shot性能虽然和有监督的ResNet50相当，但是还不是SOTA，作者估计要达到SOTA的效果，CLIP还需要增加1000x的计算量，这是难以想象的；</li>
+<li>CLIP的zero-shot在某些数据集上表现较差，如细粒度分类，抽象任务等；</li>
+<li>CLIP在自然分布漂移上表现鲁棒，但是依然存在域外泛化问题，即如果测试数据集的分布和训练集相差较大，CLIP会表现较差；</li>
+<li>CLIP并没有解决深度学习的数据效率低下难题，训练CLIP需要大量的数据；</li>
+</ul>
+<h2 id="为什么是clip">为什么是CLIP<a class="anchor-link" href="#为什么是clip" title="Permanent link">&para;</a></h2>
+<p>前面介绍了CLIP的原理和应用，这里我们再回过头来看另外一个问题：<strong>为什么是CLIP，即CLIP这篇工作的motivation</strong>。 在计算机视觉领域，最常采用的迁移学习方式就是先在一个较大规模的数据集如ImageNet上预训练，然后在具体的下游任务上再进行微调。这里的预训练是基于有监督训练的，需要大量的数据标注，因此成本较高。近年来，出现了一些基于自监督的方法，这包括基于对比学习的方法如MoCo和SimCLR，和基于图像掩码的方法如MAE和BeiT，自监督方法的好处是不再需要标注。但是无论是有监督还是自监督方法，它们在迁移到下游任务时，还是需要进行有监督微调，而无法实现zero-shot。对于有监督模型，由于它们在预训练数据集上采用固定类别数的分类器，所以在新的数据集上需要定义新的分类器来重新训练。对于自监督模型，代理任务往往是辅助来进行表征学习，在迁移到其它数据集时也需要加上新的分类器来进行有监督训练。但是NLP领域，基于自回归或者语言掩码的预训练方法已经取得相对成熟，而且预训练模型很容易直接zero-shot迁移到下游任务，比如OpenAI的GPT-3。这种差异一方面是由于文本和图像属于两个完全不同的模态，另外一个原因就是NLP模型可以采用从互联网上收集的大量文本。那么问题来了：<strong>能不能基于互联网上的大量文本来预训练视觉模型？</strong></p>
+<p>那么其实之前已经有一些工作研究用文本来作为监督信号来训练视觉模型，比如16年的工作<a href="https://arxiv.org/abs/1511.02251">https://arxiv.org/abs/1511.02251</a>将这转化成一个多标签分类任务来预测图像对应的文本的bag of words；17年的工作<a href="https://arxiv.org/abs/1612.09161">https://arxiv.org/abs/1612.09161</a>进一步扩展了这个方法来预测n-grams。最近的一些工作采用新的模型架构和预训练方法来从文本学习视觉特征，比如<a href="https://arxiv.org/abs/2006.06666">https://arxiv.org/abs/2006.06666</a>基于transformer的语言模型，<a href="https://arxiv.org/abs/2008.01392">https://arxiv.org/abs/2008.01392</a>基于语言掩码的方法，<a href="https://arxiv.org/abs/2010.00747">https://arxiv.org/abs/2010.00747</a>基于对比学习的方法。整体来看，这方面的工作不是太多，这主要是因为这些方法难以实现较高的性能，比如17年的那篇工作只在ImageNet上实现了11.5%的zero-shot性能，这远远低于ImageNet上的SOTA。另外，还有另外的是一个方向，就是基于文本弱监督来提升性能，比如谷歌的<a href="https://arxiv.org/abs/1912.11370">https://arxiv.org/abs/1912.11370</a>和<a href="https://arxiv.org/abs/2010.11929">https://arxiv.org/abs/2010.11929</a>基于JFT-300M数据集来预训练模型在ImageNet上取得SOTA，JFT-300M数据集是谷歌从互联网上收集的，通过一些自动化的手段来将web text来转化成18291个类别，但是存在一定的噪音。虽然谷歌基于JFT-300M数据集取得了较好的结果，但是这些模型依然采用固定类别的softmax分类器进行预训练，这大大限制了它的迁移能力和扩展性。</p>
+<p><strong>作者认为谷歌的弱监督方法和之前的方法的一个重要的区别在于规模，或者说算力和数据的规模不同</strong>。JFT-300M数据量达到了上亿级别，而且谷歌用了强大的算力来进行预训练。而VirTex，ICMLM和ConVIRT只在10万级别的数据上训练了几天。为了弥补数据上的差异，OpenAI从网上收集了4亿的数据来实验。但是新的问题来了：采用什么样的方法来训练。OpenAI首先尝试了VirTex模型，即联合训练一个CNN和文本transformer来预测图像的文本（image caption），但是发现这种方法的训练效率（用ImageNet数据集上的zero-shot性能来评估）还不如直接预测bag of words，如下图所示，两者的训练效率能相差3倍。如果进一步采用<a href="https://arxiv.org/abs/2010.00747">https://arxiv.org/abs/2010.00747</a>，即基于对比学习的方法，训练效率可以进一步提升4倍。之所出现这个差异，这不难理解，训练数据所包含的文本-图像对是从互联网收集来的，它们存在一定的噪音，就是说文本和图像可能并不完全匹配，这个时候适当的降低训练目标，反而能取得更好的收敛。而从任务难度来看：Transformer Language Model &gt; Bag of Words Prediction &gt; Bag of Words Contrastive (CLIP)。由于训练数据量和模型计算量较大，训练效率成为一个至关重要的因素。这就是作者最终选择对比学习的方法来训练的原因。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816220317.png" style="zoom: 50%;" /></div>
+
+<p><strong>从本质上来讲，CLIP其实并没有太大的创新，它只是将</strong><a href="https://arxiv.org/abs/2010.00747">https://arxiv.org/abs/2010.00747</a><strong>方法进行简化，并采用更大规模的文本-图像对数据集来训练。</strong></p>
+<p>在论文的最后，作者也谈到了由于训练效率的制约，他们采用了对比学习的方法，但是他们依然想做的是直接用图像生成文本，这个如果能成功，那么就和DALL-E这个工作形成闭环了<strong>：文本 -&gt; 图像 -&gt; 文本</strong>。而且基于生成式训练出来的模型，同样可以实现zero-shot分类，我们可以通过预测句子中的单词（标签）来实现：<code>A photo of [?]</code>。</p>
+<h2 id="clip还可以做什么">CLIP还可以做什么<a class="anchor-link" href="#clip还可以做什么" title="Permanent link">&para;</a></h2>
+<p>虽然论文中只对用CLIP进行zero-shot分类做了实验，但其实CLIP的应用价值远不止此，CLIP之后出现了很多基于CLIP的应用研究，这里我们列出一些应用场景</p>
+<h3 id="zero-shot检测">zero-shot检测<a class="anchor-link" href="#zero-shot检测" title="Permanent link">&para;</a></h3>
+<p>CLIP可以应用在目标检测任务上，实现zero-shot检测，即检测训练数据集没有包含的类别，比如谷歌提出的<a href="https://arxiv.org/abs/2104.13921">https://arxiv.org/abs/2104.13921</a>基于CLIP实现了开放词汇的物体检测，其主体架构如下所示，其基本思路和zero-shot分类相似，只不过这里是用文本特征和ROI特征来计算相似度。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240816220444.png" style="zoom: 50%;" /></div>
+
+<p>Meta AI的最新工作<a href="https://arxiv.org/abs/2201.02605">https://arxiv.org/abs/2201.02605</a>可以检测2000个类，背后也用到了CLIP： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209329.jpg" />  </p>
+<h3 id="图像检索">图像检索<a class="anchor-link" href="#图像检索" title="Permanent link">&para;</a></h3>
+<p>基于文本来搜索图像是CLIP最能直接实现的一个应用，其实CLIP也是作为DALL-E的排序模型，即从生成的图像中选择和文本相关性较高的。</p>
+<h3 id="视频理解">视频理解<a class="anchor-link" href="#视频理解" title="Permanent link">&para;</a></h3>
+<p>CLIP是基于文本-图像对来做的，但是它可以扩展到文本-视频，比如<a href="https://arxiv.org/abs/2109.14084">https://arxiv.org/abs/2109.14084</a>就是将CLIP应用在视频领域来实现一些zero-shot视频理解任务。</p>
+<h3 id="图像编辑">图像编辑<a class="anchor-link" href="#图像编辑" title="Permanent link">&para;</a></h3>
+<p>CLIP可以用在指导图像编辑任务上，<a href="https://arxiv.org/abs/2112.05142">https://arxiv.org/abs/2112.05142</a>这篇工作用CLIP来定制化修改发型： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209332.jpg" />  </p>
+<h3 id="图像生成">图像生成<a class="anchor-link" href="#图像生成" title="Permanent link">&para;</a></h3>
+<p>CLIP还可以应用在图像生成上，比如<a href="https://arxiv.org/abs/2103.17249">https://arxiv.org/abs/2103.17249</a>这篇工作用CLIP实现了文本引导的StyleGAN： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209333.jpg" /><br />
+<a href="https://arxiv.org/abs/2203.00386">https://arxiv.org/abs/2203.00386</a>这篇工作基于CLIP来训练文本生成图像模型，训练无需直接采用任何文本数据： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209334.jpg" />  </p>
+<h3 id="自监督学习">自监督学习<a class="anchor-link" href="#自监督学习" title="Permanent link">&para;</a></h3>
+<p>最近华为的工作<a href="https://arxiv.org/abs/2203.05175">https://arxiv.org/abs/2203.05175</a>更是采用CLIP来进行视觉自监督训练： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209335.jpg" />  </p>
+<h3 id="vl任务">VL任务<a class="anchor-link" href="#vl任务" title="Permanent link">&para;</a></h3>
+<p>CLIP本身就是多模态模型，所以它也可以用在用图像-文本多模态任务，如图像描述（image caption）和视觉问答（Visual Question Answering），这篇论文<a href="https://arxiv.org/abs/2107.06383">https://arxiv.org/abs/2107.06383</a>系统评估了CLIP在VL任务上带来的收益。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209336.jpg" /><br />
+<strong>从这些具体的应用可以进一步看到CLIP的强大</strong>。</p>
+<p>除了一些应用研究工作，其实还有针对CLIP的一些改进工作，最新的一篇论文<a href="https://arxiv.org/abs/2203.05796">https://arxiv.org/abs/2203.05796</a>总结了几种对CLIP的改进： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202408162209337.jpg" />  </p>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<p>这篇文章系统地总结了CLIP的原理以及它的具体应用，我个人认为：<strong>CLIP和ViT属于相同量级的工作，它们都打破了计算机视觉的原有范式，必将在CV历史上留名</strong>。</p>
+<h2 id="limitation">Limitation<a class="anchor-link" href="#limitation" title="Permanent link">&para;</a></h2>
+<ul>
+<li>CLIP的zero-shot性能虽然总体上比supervised baseline ResNet-50要好，但其实在很多任务上比不过SOTA methods，因此CLIP的transfer learning有待挖掘；</li>
+<li>CLIP在这几种task上zero-shot性能不好：fine-grained分类（花的分类、车的分类之类的）、抽象的任务（如计算图中object的个数）以及预训练时没见过的task（如分出相邻车辆的距离）。BTW，在这些任务上zero-shot性能不好，不代表CLIP pretrained encoders就没用了，CLIP encoders还是能提供很强的视觉先验的；</li>
+<li>Zero-shot CLIP在真正意义上的out-of-distribution data上性能不好，比如在OCR中；</li>
+<li>尽管CLIP zero-shot classifier能在很广泛的任务上work，但究其本质CLIP还是在有限的类别中进行对比、推理，而不能像image caption那样完全的flexible地生成新的概念（如：词），这是CLIP功能上的缺陷，CLIP终究不是生成模型；</li>
+<li>CLIP仍然没有解决深度学习poor data efficiency的问题，结合CLIP和self-training可能是一个能提高data efficiency的方向；</li>
+<li>CLIP的方法论上也存在几个缺陷：在训练和挑选CLIP模型时，作者采用在几个数据的validation performance来做指导，这其实是不准确的，因为它不能完全代表CLIP的zero-shot性能。如果，设计一套框架来evaluate zero-shot performance对于之后的研究是很重要的；</li>
+<li>CLIP的训练数据是从网上采集的，这些image-text pairs没有做data clear和de-bias，这可能会使模型有一些social biases；</li>
+<li>很多视觉任务很难用text来表达，如何用更高效的few-shot learning方法优化CLIP也很重要。</li>
+</ul>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://openai.com/blog/clip/">https://openai.com/blog/clip/</a></li>
+<li><a href="https://github.com/openai/CLIP">https://github.com/openai/CLIP</a></li>
+<li><a href="https://arxiv.org/abs/2103.00020">https://arxiv.org/abs/2103.00020</a></li>
+<li><a href="https://www.zhihu.com/zvideo/1475706654562299904">https://www.zhihu.com/zvideo/1475706654562299904</a></li>
+<li><a href="https://github.com/yzhuoning/Awesome-CLIP">https://github.com/yzhuoning/Awesome-CLIP</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/493489688">神器CLIP：连接文本和图像，打造可迁移的视觉模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/486857682">【CLIP系列Paper解读】CLIP: Learning Transferable Visual Models From Natural Language Supervision</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/493489688">神器CLIP：连接文本和图像，打造可迁移的视觉模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/660476765">关于多模态经典之作CLIP，还有哪些细节是你不知道的</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

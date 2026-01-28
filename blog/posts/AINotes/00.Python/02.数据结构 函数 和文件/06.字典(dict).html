@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#字典dict">字典(dict)</a><ul>
+<li><a href="#定义">定义</a></li>
+<li><a href="#字典类型操作函数和方法">字典类型操作函数和方法</a></li>
+<li><a href="#创建">创建</a><ul>
+<li><a href="#1-使用---创建字典">1) 使用 { } 创建字典</a></li>
+<li><a href="#2-通过-fromkeys-方法创建字典">2) 通过 fromkeys() 方法创建字典</a></li>
+<li><a href="#3-通过-dict-映射函数创建字典">3) 通过 dict() 映射函数创建字典</a></li>
+</ul>
+</li>
+<li><a href="#遍历字典">遍历字典</a></li>
+<li><a href="#copy-方法">copy() 方法</a></li>
+<li><a href="#update-方法">update() 方法</a></li>
+<li><a href="#pop-和-popitem-方法">pop() 和 popitem() 方法</a><ul>
+<li><a href="#对-popitem-的说明">对 popitem() 的说明</a></li>
+</ul>
+</li>
+<li><a href="#setdefault-方法">setdefault() 方法</a></li>
+<li><a href="#字典和-list">字典和 list</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/00.Python/02.数据结构 函数 和文件</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="字典dict">字典(dict)<a class="anchor-link" href="#字典dict" title="Permanent link">&para;</a></h2>
+<h3 id="定义">定义<a class="anchor-link" href="#定义" title="Permanent link">&para;</a></h3>
+<ol>
+<li>采用大括号<strong>{}</strong>和<strong>dict()</strong>创建，键值对用冒号: 表示；</li>
+<li>可以存储任意类型对象</li>
+<li><strong>任何 Python 对象</strong>都可用作字典中的值；<strong>键</strong>可以是<strong>任何不可变的类型</strong>；</li>
+<li><strong>函数 dict():</strong>从其他映射（如其他字典）或键值对序列创建字典</li>
+<li>键-值对<strong>排列顺序与添加顺序不同</strong></li>
+</ol>
+<h3 id="字典类型操作函数和方法">字典类型操作函数和方法<a class="anchor-link" href="#字典类型操作函数和方法" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法名称</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>del d[k]</strong></td>
+<td>删除字典 d 中键 k 对应的数据值，永久删除</td>
+</tr>
+<tr>
+<td><strong>k in d</strong></td>
+<td>判断<strong>键 k</strong>是否在字典 d 中，如果在返回 True，否则 False</td>
+</tr>
+<tr>
+<td><strong>d.keys()</strong></td>
+<td>返回字典 d 中所有的<strong>键</strong>信息</td>
+</tr>
+<tr>
+<td><strong>d.values()</strong></td>
+<td>返回字典 d 中所有的<strong>值</strong>信息</td>
+</tr>
+<tr>
+<td><strong>d.items()</strong></td>
+<td>返回字典 d 中所有的<strong>键值对</strong>信息</td>
+</tr>
+<tr>
+<td><strong>d.get(k, [default])</strong></td>
+<td>键 k 存在，则返回<strong>相应值</strong>，不在则返回[default]值</td>
+</tr>
+<tr>
+<td><strong>d.pop(k, [default])</strong></td>
+<td>键 k 存在，则取出相应<strong>值</strong>，不在则返回[default]值</td>
+</tr>
+<tr>
+<td><strong>d.popitem()</strong></td>
+<td><strong>随机</strong>从字典 d 中取出<strong>一个键值对</strong>，以元组形式返回</td>
+</tr>
+<tr>
+<td><strong>d.clear()</strong></td>
+<td>删除所有的键值对</td>
+</tr>
+<tr>
+<td><strong>len(d)</strong></td>
+<td>返回字典 d 中元素的个数</td>
+</tr>
+<tr>
+<td><strong>d.copy ()</strong></td>
+<td>返回与原字典相同的键值对的新字典</td>
+</tr>
+</tbody>
+</table>
+<h3 id="创建">创建<a class="anchor-link" href="#创建" title="Permanent link">&para;</a></h3>
+<h4 id="1-使用---创建字典">1) 使用 { } 创建字典<a class="anchor-link" href="#1-使用---创建字典" title="Permanent link">&para;</a></h4>
+<p>由于字典中每个元素都包含两部分，分别是键（key）和值（value），因此在创建字典时，键和值之间使用冒号<code>:</code>分隔，相邻元素之间使用逗号<code>,</code>分隔，所有元素放在大括号<code>{ }</code>中。</p>
+<p>使用<code>{ }</code>创建字典的语法格式如下：</p>
+<pre><code class="language-python">dictname = {'key':'value1', 'key2':'value2', ..., 'keyn':valuen}
+</code></pre>
+<p>其中 dictname 表示字典变量名，keyn : valuen 表示各个元素的键值对。需要注意的是，同一字典中的各个键必须唯一，不能重复。</p>
+<p>如下代码示范了使用花括号语法创建字典：</p>
+<pre><code class="language-python">#使用字符串作为key
+scores = {'数学': 95, '英语': 92, '语文': 84}
+print(scores)
+#使用元组和数字作为key
+dict1 = {(20, 30): 'great', 30: [1,2,3]}
+print(dict1)
+#创建空元组
+dict2 = {}
+print(dict2)
+</code></pre>
+<blockquote>
+<p>{'数学': 95, '英语': 92, '语文': 84}<br />
+{(20, 30): 'great', 30: [1, 2, 3]}<br />
+{}</p>
+</blockquote>
+<p>字典的键可以是整数、字符串或者元组，只要符合<strong>唯一</strong>和<strong>不可变</strong>的特性就行；字典的<strong>值</strong>可以是 Python 支持的<strong>任意</strong>数据类型。</p>
+<h4 id="2-通过-fromkeys-方法创建字典">2) 通过 fromkeys() 方法创建字典<a class="anchor-link" href="#2-通过-fromkeys-方法创建字典" title="Permanent link">&para;</a></h4>
+<p>Python 中，还可以使用 dict 字典类型提供的 fromkeys() 方法创建带有默认值的字典，具体格式为：</p>
+<pre><code class="language-python">dictname = dict.fromkeys(list，value=None)
+</code></pre>
+<p>其中，list 参数表示字典中所有键的列表（list）；value 参数表示默认值，如果不写，则为空值 None。</p>
+<pre><code class="language-python">knowledge = ['语文', '数学', '英语']
+scores = dict.fromkeys(knowledge, 60)
+print(scores)
+</code></pre>
+<p>运行结果为：</p>
+<blockquote>
+<p>{'语文': 60, '英语': 60, '数学': 60}</p>
+</blockquote>
+<p>可以看到，knowledge 列表中的元素全部作为了 scores 字典的键，而各个键对应的值都是 60。这种创建方式通常用于初始化字典，设置 value 的默认值。</p>
+<h4 id="3-通过-dict-映射函数创建字典">3) 通过 dict() 映射函数创建字典<a class="anchor-link" href="#3-通过-dict-映射函数创建字典" title="Permanent link">&para;</a></h4>
+<p>通过 dict() 函数创建字典的写法有多种，表 2 罗列出了常用的几种方式，它们创建的都是同一个字典 a。</p>
+<table>
+<thead>
+<tr>
+<th>创建格式</th>
+<th>注意事项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a = dict(str1=value1, str2=value2, str3=value3)</td>
+<td>str 表示字符串类型的键，value 表示键对应的值。使用此方式创建字典时，字符串不能带引号。</td>
+</tr>
+<tr>
+<td>#方式 1 demo = [('two',2), ('one',1), ('three',3)] #方式 2 demo = [['two',2], ['one',1], ['three',3]] #方式 3 demo = (('two',2), ('one',1), ('three',3)) #方式 4 demo = (['two',2], ['one',1], ['three',3]) a = dict(demo)</td>
+<td>向 dict() 函数传入列表或元组，而它们中的元素又各自是包含 2 个元素的列表或元组，其中第一个元素作为键，第二个元素作为值。</td>
+</tr>
+<tr>
+<td>keys = ['one', 'two', 'three'] #还可以是字符串或元组 values = [1, 2, 3] #还可以是字符串或元组 a = dict( zip(keys, values) )</td>
+<td>通过应用 dict() 函数和 zip() 函数，可将前两个列表转换为对应的字典。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注意，无论采用以上哪种方式创建字典，字典中各元素的键都只能是字符串、元组或数字，不能是列表。列表是可变的，不能作为键。</p>
+</blockquote>
+<h3 id="遍历字典">遍历字典<a class="anchor-link" href="#遍历字典" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">scores = {'数学': 95, '语文': 89, '英语': 90}
+print(scores.keys())
+print(scores.values())
+print(scores.items())
+</code></pre>
+<blockquote>
+<p>dict_keys(['数学', '语文', '英语'])<br />
+dict_values([95, 89, 90])<br />
+dict_items([('数学', 95), ('语文', 89), ('英语', 90)])</p>
+</blockquote>
+<p>可以发现，keys()、values() 和 items() 返回值的类型分别为 dict_keys、dict_values 和 dict_items。</p>
+<p>需要注意的是，在 Python 2.x 中，上面三个方法的返回值都是列表（list）类型。但在 Python 3.x 中，它们的返回值并不是我们常见的列表或者元组类型，因为 Python 3.x 不希望用户直接操作这几个方法的返回值。</p>
+<p>在 Python 3.x 中如果想使用这三个方法返回的数据，一般有下面两种方案：</p>
+<ol>
+<li>使用 list() 函数，将它们返回的数据转换成列表，例如：</li>
+</ol>
+<p><code>python
+   a = {'数学': 95, '语文': 89, '英语': 90}
+   b = list(a.keys())
+   print(b)</code></p>
+<ol start="2">
+<li>for in 循环</li>
+</ol>
+<ul>
+<li>
+<p><strong>for key, value in 字典名.items()</strong>：(key, value 名称任意)；遍历字典时，键值对遍历顺序与存储顺序也不同。</p>
+</li>
+<li>
+<p><strong>for key in 字典名.keys()</strong>：（key 名称任意）遍历字典中所有键；遍历字典时，会默认遍历所有键。</p>
+</li>
+<li>
+<p><strong>for key in</strong> <strong>sorted（字典名.keys()）</strong>：（key 名称任意）<strong>按顺序</strong>遍历字典中所有键；字母顺序排序。</p>
+</li>
+<li>
+<p>遍历字典中所有值<strong>：for value in 字典名.values（）</strong>：（value 名称任意）；为<strong>避免</strong>重复项，调用<strong>for value in set（字典名.values（））</strong>：（value 名称任意）；</p>
+<p><code>python
+ a = {'数学': 95, '语文': 89, '英语': 90}
+ for k in a.keys():
+     print(k,end=' ')
+ print("\n---------------")
+ for v in a.values():
+     print(v,end=' ')
+ print("\n---------------")
+ for k,v in a.items():</code></p>
+<blockquote>
+<p>数学 语文 英语<br />
+---------------<br />
+95 89 90<br />
+---------------<br />
+key: 数学 value: 95<br />
+key: 语文 value: 89<br />
+key: 英语 value: 90</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="copy-方法">copy() 方法<a class="anchor-link" href="#copy-方法" title="Permanent link">&para;</a></h3>
+<p>copy() 方法返回一个字典的拷贝，也即返回一个具有相同键值对的新字典，例如：</p>
+<pre><code class="language-python">a = {'one': 1, 'two': 2, 'three': [1,2,3]}b = a.copy()print(b)
+</code></pre>
+<p>运行结果为：</p>
+<pre><code class="language-python">{'one': 1, 'two': 2, 'three': [1, 2, 3]}
+</code></pre>
+<p>可以看到，copy() 方法将字典 a 的数据全部拷贝给了字典 b。</p>
+<p>注意，copy() 方法所遵循的拷贝原理，既有深拷贝，也有浅拷贝。拿拷贝字典 a 为例，copy() 方法只会对最表层的键值对进行深拷贝，也就是说，它会再申请一块内存用来存放 {'one': 1, 'two': 2, 'three': []}；而对于某些列表类型的值来说，此方法对其做的是浅拷贝，也就是说，b 中的 [1,2,3] 的值不是自己独有，而是和 a 共有。</p>
+<p>请看下面的例子：</p>
+<pre><code class="language-python">a = {'one': 1, 'two': 2, 'three': [1,2,3]}
+b = a.copy()
+#向 a 中添加新键值对，由于b已经提前将 a 所有键值对都深拷贝过来，因此 a 添加新键值对，不会影响 b。
+a['four']=100
+print(a)
+print(b)
+#由于 b 和 a 共享[1,2,3]（浅拷贝），因此移除 a 中列表中的元素，也会影响 b。
+a['three'].remove(1)
+print(a)
+print(b)
+</code></pre>
+<pre><code class="language-python">{'one': 1, 'two': 2, 'three': [1, 2, 3], 'four': 100}
+{'one': 1, 'two': 2, 'three': [1, 2, 3]}
+{'one': 1, 'two': 2, 'three': [2, 3], 'four': 100}
+{'one': 1, 'two': 2, 'three': [2, 3]}
+</code></pre>
+<p>从运行结果不难看出，对 a 增加新键值对，b 不变；而修改 a 某键值对中列表内的元素，b 也会相应改变。</p>
+<h3 id="update-方法">update() 方法<a class="anchor-link" href="#update-方法" title="Permanent link">&para;</a></h3>
+<p>update() 方法可以使用一个字典所包含的键值对来更新己有的字典。</p>
+<p>在执行 update() 方法时，如果被更新的字典中己包含对应的键值对，那么原 value 会被覆盖；如果被更新的字典中不包含对应的键值对，则该键值对被添加进去。</p>
+<p>请看下面的代码：</p>
+<pre><code class="language-python">a = {'one': 1, 'two': 2, 'three': 3}
+a.update({'one':4.5, 'four': 9.3})
+print(a)
+</code></pre>
+<p>运行结果为：</p>
+<pre><code class="language-python">{'one': 4.5, 'two': 2, 'three': 3, 'four': 9.3}
+</code></pre>
+<p>从运行结果可以看出，由于被更新的字典中已包含 key 为“one”的键值对，因此更新时该键值对的 value 将被改写；而被更新的字典中不包含 key 为“four”的键值对，所以更新时会为原字典增加一个新的键值对。</p>
+<h3 id="pop-和-popitem-方法">pop() 和 popitem() 方法<a class="anchor-link" href="#pop-和-popitem-方法" title="Permanent link">&para;</a></h3>
+<p>pop() 和 popitem() 都用来删除字典中的键值对，不同的是，pop() 用来删除指定的键值对，而 popitem() 用来随机删除一个键值对，它们的语法格式如下：</p>
+<pre><code class="language-python">dictname.pop(key)
+dictname.popitem()
+</code></pre>
+<p>其中，dictname 表示字典名称，key 表示键。</p>
+<p>下面的代码演示了两个函数的用法：</p>
+<pre><code class="language-python">a = {'数学': 95, '语文': 89, '英语': 90, '化学': 83, '生物': 98, '物理': 89}
+print(a)
+a.pop('化学')
+print(a)
+a.popitem()
+print(a)
+</code></pre>
+<p>运行结果：</p>
+<pre><code class="language-python">{'数学': 95, '语文': 89, '英语': 90, '化学': 83, '生物': 98, '物理': 89}
+{'数学': 95, '语文': 89, '英语': 90, '生物': 98, '物理': 89}
+{'数学': 95, '语文': 89, '英语': 90, '生物': 98}
+</code></pre>
+<h4 id="对-popitem-的说明">对 popitem() 的说明<a class="anchor-link" href="#对-popitem-的说明" title="Permanent link">&para;</a></h4>
+<p>其实，说 popitem() 随机删除字典中的一个键值对是不准确的，虽然字典是一种无序的列表，但键值对在底层也是有存储顺序的，popitem() 总是弹出底层中的最后一个 key-value，这和列表的 pop() 方法类似，都实现了<a href="http://c.biancheng.net/data_structure/">数据结构</a>中“出栈”的操作。</p>
+<h3 id="setdefault-方法">setdefault() 方法<a class="anchor-link" href="#setdefault-方法" title="Permanent link">&para;</a></h3>
+<p>setdefault() 方法用来返回某个 key 对应的 value，其语法格式如下：</p>
+<p>dictname.setdefault(key, defaultvalue)</p>
+<p>说明，dictname 表示字典名称，key 表示键，defaultvalue 表示默认值（可以不写，不写的话是 None）。</p>
+<p>当指定的 key 不存在时，setdefault() 会先为这个不存在的 key 设置一个默认的 defaultvalue，然后再返回 defaultvalue。</p>
+<p>也就是说，setdefault() 方法总能返回指定 key 对应的 value：</p>
+<ul>
+<li>如果该 key 存在，那么直接返回该 key 对应的 value；</li>
+<li>如果该 key 不存在，那么先为该 key 设置默认的 defaultvalue，然后再返回该 key 对应的 defaultvalue。</li>
+</ul>
+<p>请看下面的代码：</p>
+<pre><code class="language-python">a = {'数学': 95, '语文': 89, '英语': 90}
+print(a)
+#key不存在，指定默认值
+a.setdefault('物理', 94)
+print(a)
+#key不存在，不指定默认值
+a.setdefault('化学')
+print(a)
+#key存在，指定默认值
+a.setdefault('数学', 100)
+print(a)
+</code></pre>
+<p>运行结果为：</p>
+<pre><code class="language-python">{'数学': 95, '语文': 89, '英语': 90}
+{'数学': 95, '语文': 89, '英语': 90, '物理': 94}
+{'数学': 95, '语文': 89, '英语': 90, '物理': 94, '化学': None}
+{'数学': 95, '语文': 89, '英语': 90, '物理': 94, '化学': None}
+</code></pre>
+<h3 id="字典和-list">字典和 list<a class="anchor-link" href="#字典和-list" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<ol>
+<li>dict：</li>
+</ol>
+</li>
+<li>
+<ol>
+<li>查找和插入的速度极快，不会随着 key 的增加而变慢；</li>
+<li>需要占用大量的内存，内存浪费多。</li>
+</ol>
+</li>
+<li>
+<p>list：</p>
+</li>
+<li>
+<ol>
+<li>查找和插入的时间随着元素的增加而增加；</li>
+<li>占用空间小，浪费内存很少。</li>
+</ol>
+</li>
+</ol>
+<h1 id="_1"><a class="anchor-link" href="#_1" title="Permanent link">&para;</a></h1>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

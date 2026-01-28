@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#transformer-与-ffn">Transformer 与 FFN</a><ul>
+<li><a href="#activation-function">Activation Function</a></li>
+<li><a href="#linear-projections">Linear Projections</a></li>
+<li><a href="#fnn-的改动">FNN 的改动</a></li>
+<li><a href="#达到-agi-需要什么结构">达到 AGI 需要什么结构？</a></li>
+</ul>
+</li>
+<li><a href="#如何理解-transformers-中-ffns-的作用">如何理解 Transformers 中 FFNs 的作用？</a><ul>
+<li><a href="#原始论文给的答案">原始论文给的答案</a></li>
+<li><a href="#功能性的角度">功能性的角度</a></li>
+<li><a href="#ffn-承担了记忆功能">FFN 承担了记忆功能</a></li>
+<li><a href="#ffn-是一种混合专家模型">FFN 是一种混合专家模型</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/04.Transformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="transformer-与-ffn">Transformer 与 FFN<a class="anchor-link" href="#transformer-与-ffn" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/685943779">聊一聊 Transformer 中的 FFN</a></p>
+</blockquote>
+<p>Transformer 的基本单位就是一层 block 这里，一个 block 包含 MSA + FFN，目前公认的说法是，</p>
+<p>Attention 作为 token-mixer 做 spatial interaction。<br />
+FFN （又称 MLP）在后面作为 channel-mixer 进一步增强 representation。<br />
+从 2017 至今，过去绝大部分 Transformer 优化，尤其是针对 NLP tasks 的 Efficient Transformer 都是在 Attention 上的，因为文本有显著的 long sequence 问题。</p>
+<p>而 FFN 这里，自从 Transformer 提出基本就是一个 Linear Proj + Activation + Linear Proj 的结构，整体改动十分 incremental。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240430094131.png" style="zoom: 60%;" /></div>
+
+<h3 id="activation-function">Activation Function<a class="anchor-link" href="#activation-function" title="Permanent link">&para;</a></h3>
+<p>经历了 ReLU， GeLU，Swish， SwiGLU 等等，基本都是 empirical observations，但都是为了给 representation 加上非线性变换做增强。</p>
+<ul>
+<li>
+<p>ReLU 对 pruning 挺有帮助，尤其是过去对 CNN 做 pruning 的工作，激活值为 0 大致意味着某个 channel 不重要，可以去掉。ReLU 会造成 dead neurons，因此在 Transformer 上逐渐被抛弃。</p>
+</li>
+<li>
+<p>GeLU 在过去一段时间占比相当大，直到现在 ViT 上使用十分广泛，当然也有用 Swish 的，如 MobileViT。</p>
+</li>
+<li>Gated Linear Units 目前在 LLM 上非常流行，其效果和分析来源于 GLU Variants Improve Transformer。如 PaLM 和 LLaMA 都采用了 SwiGLU, 谷歌的 Gemma 使用 GeGLU。</li>
+</ul>
+<h3 id="linear-projections">Linear Projections<a class="anchor-link" href="#linear-projections" title="Permanent link">&para;</a></h3>
+<p>为什么 Linear Projection 在 Transformer 里就需要这么大？</p>
+<p>常见的说法是 Knowledge Neurons。tokens 在前一层 attention 做 global interaction 之后，通过 FFN 的参数中存放着大量 training 过程中学习到的比较抽象的 knowledge 来进一步 update。</p>
+<p>如果 FFN 存储着 Transformer 的 knowledge，那么注定了这个地方不好做压缩加速:</p>
+<ol>
+<li>FFN 变小意味着 model capacity 也变小，大概率会让整体 performance 变得很差。我自己也有过一些 ViT 上的实验 (相信其他人也做过)，两个 FC 中间会有个 hidden dimension 的 expansion ratio，一般设置为 4。把这个地方调小会发现怎么都不如大点好。当然太大也不行，因为 FFN 这里的 expansion ratio 决定了整个 Transformer 在推理时的 peak memory consumption，有可能造成 out-of-memory (OOM) error，所以大部分我们看到的 expansion ration 也就在 4 倍，一个比较合适的 performance-memory trade-off.</li>
+<li>FFN 中的 activations 非低秩。过去 convnet 上大家又发现 activations 有明显的低秩特性，所以可以通过 low rank 做加速，如 Kaiming 的这篇文章，如下图所示。但是 FFN 中间的 outputs 很难看出低秩的特性，实际做网络压缩的时候会发现 pruning FFN 的 trade-off 明显不如 convnets，而 unstructured pruning 又对硬件不友好。</li>
+</ol>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240430095116.png" style="zoom: 60%;" /></div>
+
+<h3 id="fnn-的改动">FNN 的改动<a class="anchor-link" href="#fnn-的改动" title="Permanent link">&para;</a></h3>
+<p>我们想改动一个 model or module 的时候，无非是两个动机：1）Performance。2）Efficiency。</p>
+<p>性能上，目前在 NLP 上可以做 Gated MLP, 如 Mamba 的 block 中，或者 DeepMind 的新结构 <a href="https://arxiv.org/abs/2402.19427">Griffin</a>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240430095832.png" style="zoom: 60%;" /></div>
+
+<p>但是难说这个地方的性能提升是不是来自于更多的参数量和模型复杂度。</p>
+<p>在 CV 上，有个心照不宣的 trick，那就是加 depthwise convolution 引入 locality，试过的朋友都知道这个地方的提升在 CV 任务上有多明显，例如 CIFAR100 上，DeiT-Ti 可以涨接近 10 个点这样子。</p>
+<p>但是，鉴于最原始的 FFN 依然是目前采用最广泛的，并且 conv 引入了 inductive bias，破坏了原先 permutation invariant 的 sequence（因为卷积要求规整的 shape，width x height）。大规模 ViT 训练依然没有采用 depthwise conv，如 CLIP, DINOv2, SAM, etc。</p>
+<p>效率上，目前最 promising 是改成 Mixture-of-Expert (MoE)，但其实 GPT4 和 Mixtral 8x7B 没出来之前基本是 Google 在 solo，没人关注。当然现在时代变了，Mixtral 8x7B 让 MoE 起死回生。</p>
+<h3 id="达到-agi-需要什么结构">达到 AGI 需要什么结构？<a class="anchor-link" href="#达到-agi-需要什么结构" title="Permanent link">&para;</a></h3>
+<p>目前这个阶段，没人知道一周以后会有什么大新闻，就像 Sora 悄无声息放出来，一夜之间干掉 U-Net，我也没法说什么结构是最有效的。</p>
+<p>总体上，目前没有任何结构能真的完全 beat Transformer，Mamba 目前 也不行，如这篇发现 copy and paste 不太行，scaling 和 in-context 能力也有待查看。</p>
+<p>考虑到未来扩展，优秀的结构应该满足这么几个东西，个人按重要性排序：</p>
+<p>Scaling Law。如果 model 很难通过 scale up 提升性能，意义不大（针对 AGI 来讲）。但是建议大家不要针对这个地方过度攻击学术界 paper，学术界很难有资源进行这种实验，路都是一步一步踩出来的，提出一个新 architecture 需要勇气和信心，给一些宽容。嗯，说的就是 Mamba。<br />
+In-Context Learning 能力。这个能力需要强大的 retrieval 能力和足够的 capacity，而对于 Transformer 来讲，retrieval 靠 Attention，capacity 靠 FFN。scaling 带来的是两者协同提升，进而涌现强大的 in-context learning 能力。<br />
+Better Efficiency。说到底这也是为什么我们想换掉 Transformer。做过的朋友都知道 Transformer 训练太耗卡了，无论是 NLP 还是 CV 上。部署的时候又不像 CNN 可以做 bn conv 融合，inference memory 大，low-bit quantization 效果上也不如 CNN，大概率是 attention 这个地方 low-bit 损失大。在满足 1,2 的情况下，如果一个新结构能在 speed, memory 上展现出优势那非常有潜力。Mamba 能火有很大一部分原因是引入 hardware-aware 的实现，极大提升了原先 SSM 的计算效率。<br />
+Life-long learning. 知识是不断更新的，训练一个 LLM 需要海量 tokens，强如 OpenAI 也不可能每次 Common Crawl 放出新 data 就从头训一遍，目前比较实际的方案是持续训练，但依然很耗资源。未来的结构需要更高效且持久地学习新知识。</p>
+<h2 id="如何理解-transformers-中-ffns-的作用">如何理解 Transformers 中 FFNs 的作用？<a class="anchor-link" href="#如何理解-transformers-中-ffns-的作用" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>https://www.zhihu.com/question/622085869/answer/3518358912</p>
+</blockquote>
+<h3 id="原始论文给的答案">原始论文给的答案<a class="anchor-link" href="#原始论文给的答案" title="Permanent link">&para;</a></h3>
+<p>FNN 可以看作用 1x1 的卷积核来进行特征的升维和降维。</p>
+<p>研究人员发现 FFN 和 ResNet 的 Skip Connection 无论去掉哪一个，模型都会变得不可用，具体可以看《One Wide Feedforward Is All You Need》 这篇论文。所以说 <strong>Attention, FFN, ResNet 可以认为是 Transformers 架构的三驾马车，缺一不可。</strong></p>
+<p>FFN 设计的初衷，其实就是为模型引入<strong>非线性变换</strong>。那接着问，attention 中也有 softmax，也是非线性，那 FFN 还是必须的么？</p>
+<p>其实这么追问是个陷阱，用这个陷阱其实会引出另外一个问题：attention 是线性运算的还是非线性运算的？</p>
+<p>全局来看，对于 <span class="math-inline">x</span> 来说是非线性运算。因为仔细看一下 Attention 的计算公式，其中确实有一个针对 <span class="math-inline">q</span> 和 <span class="math-inline">k</span> 的 softmax 的非线性运算。</p>
+<p>但是对于 value 来说，并没有任何的非线性变换。所以每一次 Attention 的计算相当于是对 value 代表的向量进行了加权平均，虽然权重是非线性的权重。这就是 FFN 必须要存在的原因，或者说更本质的原因是因为 FFN 提供了最简单的非线性变换。</p>
+<p>Attention, FFN, ResNet 缺一不可但却可能是各司其职，个人的观点（并不一定准确）是， Attention 的功能是做信息的提取和聚合，Resnet 提供信息带宽，而真正学到的知识或者信息都存储在 FFN 中。在图像领域中，也有一种说法，那就是 Attention 其实是 token mixer, FNN 其实是 channel mixer.</p>
+<h3 id="功能性的角度">功能性的角度<a class="anchor-link" href="#功能性的角度" title="Permanent link">&para;</a></h3>
+<p>首先大家先猜一下整个 Transformers 中 FFN 的参数占比是多少？ 答案是 2/3，你猜对了么？</p>
+<p>关于 FFN 的作用，后续研究人员做了很多实验和研究。但是直到目前也不能说就研究清楚了，因为神经网络的解释性本来就差。一个新技术的应用往往要比理论提前好久，比如 GBDT 等 ensemble 模型非常好用，但是很多年以后才用 Margin 的理论研究明白。</p>
+<p>这里将一些 FFN 研究的成果做一个小汇总，只列举了目前大家都比较公认的结果。</p>
+<p>FFN 是 Transformers 的必备模块，没有 FFN 的 Transformers 学不到什么东西<br />
+上面的结论同样适用于 Transformers 中的 skip connect。</p>
+<p>《 Attention is Not All You Need: Pure Attention Loses Rank Doubly Exponentially with Depth》这篇论文，提出了 Transformers 架构存在 token uniformity 的归纳偏置(inductive bias，有时候也叫归纳偏好)问题。如果去掉 FFN 或者 Resnet，则问题更加严重。</p>
+<p>这里解释一下这两个名词，所谓归纳偏置，可以通俗的理解为模型的“个性”，就是满足训练集合的解法有无数种，但是不同的模型架构会让模型更偏向于某些解法。比如我们常用的一些正则化方法，其实就是让模型的归纳偏置倾向于选择一些简单的解法。任何模型都有归纳偏置，尤其是碰到未见过的样本的时候，模型的归纳偏置就更容易体现出来。 Transformers 的一个归纳偏执是什么呢？就是 token uniformity，有时候也叫 information diffusion，或者 anisotropic (各向异性)，也就是说 训练完后的 token 会共享很多相似信息。详细可以看<a href="https://www.zhihu.com/question/460991118/answer/2353153090">Bert 中的词向量各向异性具体什么意思啊？</a>。</p>
+<p>看下图大概就知道了，我们期望表示 token 的向量，相似的要相近，不相似的要远，而且最好是均匀的分布在整个空间中，比如下图所示。但是 Transformers 会存在 各向异性的问题，也就是所有的 token 都挤到一个很窄的锥形区域了。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240626214159.png"/></div>
+
+<p>回到论文，论文将 FFN 和 ResNet 去掉之后做了一些消融实验，证明了 FFN 和 ResNet 是 Transformers 中的必备组件，这两个可以大大的缓解 token uniformity 或者 各向异性的问题。</p>
+<p>论文中从数学上证明了经过 Attention 变换后的输出与 rank-1 的矩阵之间的差值存在上界，但是有点复杂，我也没仔细推导过。简单一点的理解呢，就是 Attention 本质上是 value 的线性变换（虽然线性变换的权重是非线性的 softmax）。</p>
+<p>当然并不是说 Transformers 就已经将 token uniformity 问题解决了，这个问题依然存在，所以后续又有 Bert-flow 、whitening 等改进。详细可以参考：Bert 中的词向量各向异性具体什么意思啊？ - 看图学的回答 - 知乎 https://www.zhihu.com/question/460991118/answer/2353153090</p>
+<h3 id="ffn-承担了记忆功能">FFN 承担了记忆功能<a class="anchor-link" href="#ffn-承担了记忆功能" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Transformer Feed-Forward Layers Are Key-Value Memories》</p>
+</blockquote>
+<h3 id="ffn-是一种混合专家模型">FFN 是一种混合专家模型<a class="anchor-link" href="#ffn-是一种混合专家模型" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>MoEfication: Transformer Feed-forward Layers are Mixtures of Experts</p>
+</blockquote>
+<p>这是刘知远团队的论文，其实一直以来，神经网络就存在稀疏激活的现象，也就是在推理的时候，其实只有极小一部分参数参与了计算。这篇论文则通过 MoE 的思想来将 FFN 层拆分成了多个专家，并且新增了一个路由模块来确定推理的时候来挂哪个专家的门诊：）</p>
+<p>这么做完之后，在提升推理速度的同时，效果依然能保持原来的 95%以上。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

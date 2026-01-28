@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>以下二选一, 第一个是使用gloo后端需要设置的, 第二个是使用nccl需要设置的</title>
+    <meta name="description" content="以下二选一, 第一个是使用gloo后端需要设置的, 第二个是使用nccl需要设置的 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#distributed-data-parallelddp">Distributed Data Parallel，DDP</a></li>
+<li><a href="#使用">使用</a><ul>
+<li><a href="#进程组的相关概念">进程组的相关概念</a></li>
+<li><a href="#ddp-的基本用法-代码编写流程">DDP 的基本用法 (代码编写流程)</a></li>
+<li><a href="#主要代码">主要代码</a></li>
+<li><a href="#启动">启动</a></li>
+</ul>
+</li>
+<li><a href="#原理">原理</a><ul>
+<li><a href="#与dp区别">与DP区别</a></li>
+<li><a href="#ring-allreduce">Ring AllReduce</a></li>
+</ul>
+</li>
+<li><a href="#实现">实现</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>以下二选一, 第一个是使用gloo后端需要设置的, 第二个是使用nccl需要设置的</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/06.并行计算</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="distributed-data-parallelddp">Distributed Data Parallel，DDP<a class="anchor-link" href="#distributed-data-parallelddp" title="Permanent link">&para;</a></h2>
+<h2 id="使用">使用<a class="anchor-link" href="#使用" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403181055100.png"/></div>
+
+<p>不过通过 DP 进行分布式多卡训练的方式容易造成负载不均衡，有可能第一块 GPU 显存占用更多，因为输出默认都会被 gather 到第一块 GPU 上。为此 Pytorch 也提供了<code>torch.nn.parallel.DistributedDataParallel</code>（DDP）方法来解决这个问题。</p>
+<p>针对每个 GPU，启动一个进程，然后这些进程在最开始的时候会保持一致（模型的初始化参数也一致，每个进程拥有自己的优化器），同时在更新模型的时候，梯度传播也是完全一致的，这样就可以保证任何一个 GPU 上面的模型参数就是完全一致的，所以这样就不会出现<code>DataParallel</code>那样显存不均衡的问题。</p>
+<h3 id="进程组的相关概念">进程组的相关概念<a class="anchor-link" href="#进程组的相关概念" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>GROUP</strong>：进程组，默认情况下，只有一个组，一个 job 即为一个组，也即一个 world。（当需要进行更加精细的通信时，可以通过 new_group 接口，使用 world 的子集，创建新组，用于集体通信等。）</li>
+<li><strong>WORLD_SIZE</strong>：表示全局进程个数。如果是多机多卡就表示机器数量，如果是单机多卡就表示 GPU 数量。</li>
+<li><strong>RANK</strong>：表示进程序号，用于进程间通讯，表征进程优先级。rank = 0 的主机为 master 节点。 如果是多机多卡就表示对应第几台机器，如果是单机多卡，由于一个进程内就只有一个 GPU，所以 rank 也就表示第几块 GPU。</li>
+<li><strong>LOCAL_RANK</strong>：表示进程内，GPU 编号，非显式参数，由 torch.distributed.launch 内部指定。例如，多机多卡中 rank = 3，local_rank = 0 表示第 3 个进程内的第 1 块 GPU。</li>
+</ul>
+<blockquote>
+<p>在 <strong>单机多卡</strong> 场景下，如果使用 PyTorch 提供的 <code>torchrun</code>（或原先的 <code>torch.distributed.launch</code>）来做分布式训练，通常不需要手动设置 <code>group</code>、<code>WORLD_SIZE</code>、<code>RANK</code> 等环境变量。<strong><code>torchrun</code> 会在后台自动为每个进程设置好</strong>，脚本只需要在代码中使用 <code>dist.init_process_group(...)</code> 即可。</p>
+</blockquote>
+<h3 id="ddp-的基本用法-代码编写流程">DDP 的基本用法 (代码编写流程)<a class="anchor-link" href="#ddp-的基本用法-代码编写流程" title="Permanent link">&para;</a></h3>
+<ul>
+<li>在使用 <code>distributed</code> 包的任何其他函数之前，需要使用 <code>init_process_group</code> <strong>初始化进程组</strong>，同时初始化 <code>distributed</code> 包。</li>
+<li>使用 <code>torch.nn.parallel.DistributedDataParallel</code> 创建 <strong>分布式模型</strong> <code>DDP(model, device_ids=device_ids)</code></li>
+<li>使用 <code>torch.utils.data.distributed.DistributedSampler</code> 创建 <strong>DataLoader</strong></li>
+<li>使用启动工具 <code>torch.distributed.launch</code> 在每个主机上执行一次脚本，开始训练</li>
+</ul>
+<p>首先是对代码进行修改，添加参数 --local_rank</p>
+<pre><code class="language-python">import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument(&quot;--local_rank&quot;, type=int) # 这个参数很重要
+args = parser.parse_args()
+</code></pre>
+<p>这里的 local_rank 参数，可以理解为<code>torch.distributed.launch</code>在给一个 GPU 创建进程的时候，给这个进程提供的 GPU 号，这个是程序自动给的，<strong>不需要手动在命令行中指定这个参数。</strong></p>
+<pre><code class="language-python">local_rank = int(os.environ[&quot;LOCAL_RANK&quot;]) #也可以自动获取
+</code></pre>
+<p>然后在所有和 GPU 相关代码的前面添加如下代码，如果不写这句代码，所有的进程都默认在你使用<code>CUDA_VISIBLE_DEVICES</code>参数设定的 0 号 GPU 上面启动</p>
+<pre><code class="language-python">torch.cuda.set_device(args.local_rank) # 调整计算的位置
+</code></pre>
+<p>接下来我们得初始化<code>backend</code>，也就是俗称的后端，pytorch 介绍了以下后端：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403181055101.png"/></div>
+
+<p>可以看到，提供了<code>gloo</code>，<code>nccl</code>，<code>mpi</code>，那么如何进行选择呢，官网中也给了以下建议</p>
+<ul>
+<li>
+<p>经验之谈</p>
+</li>
+<li>
+<p>如果是使用<code>cpu</code>的分布式计算, 建议使用<code>gloo</code>，因为表中可以看到 <code>gloo</code>对<code>cpu</code>的支持是最好的</p>
+</li>
+<li>
+<p>如果使用<code>gpu</code>进行分布式计算, 建议使用<code>nccl</code>。</p>
+</li>
+<li>
+<p>GPU 主机</p>
+</li>
+<li>InfiniBand 连接，建议使用<code>nccl</code>，因为它是目前唯一支持 InfiniBand 和 GPUDirect 的后端。</li>
+<li>Ethernet 连接，建议使用<code>nccl</code>，因为它的分布式 GPU 训练性能目前是最好的，特别是对于多进程单节点或多节点分布式训练。 如果在使用 <code>nccl</code>时遇到任何问题，可以使用<code>gloo</code> 作为后备选项。 （不过注意，对于 GPU，<code>gloo</code> 目前的运行速度比 <code>nccl</code> 慢。）</li>
+<li>CPU 主机</li>
+<li>InfiniBand 连接，如果启用了 IP over IB，那就使用<code>gloo</code>，否则使用<code>mpi</code></li>
+<li>Ethernet 连接，建议使用<code>gloo</code>，除非有不得已的理由使用<code>mpi</code>。</li>
+</ul>
+<p>当后端选择好了之后, 我们需要设置一下网络接口, 因为多个主机之间肯定是使用网络进行交换, 那肯定就涉及到 IP 之类的, 对于<code>nccl</code>和<code>gloo</code>一般会自己寻找网络接口，不过有时候如果网卡比较多的时候，就需要自己设置，可以利用以下代码</p>
+<pre><code class="language-python">import os
+# 以下二选一, 第一个是使用gloo后端需要设置的, 第二个是使用nccl需要设置的
+os.environ['GLOO_SOCKET_IFNAME'] = 'eth0'
+os.environ['NCCL_SOCKET_IFNAME'] = 'eth0'
+</code></pre>
+<blockquote>
+<p>可以通过以下操作知道自己的网络接口，输入<code>ifconfig</code>, 然后找到自己 IP 地址的就是, 一般就是<code>em0</code>, <code>eth0</code>, <code>esp2s0</code>之类的,</p>
+</blockquote>
+<p>从以上介绍我们可以看出， 当使用 GPU 的时候, <code>nccl</code>的效率是高于<code>gloo</code>的，我们一般还是会选择<code>nccl</code>后端，设置 GPU 之间通信使用的后端和端口：</p>
+<pre><code class="language-python"># ps 检查nccl是否可用
+# torch.distributed.is_nccl_available ()
+torch.distributed.init_process_group(backend='nccl') # 选择nccl后端，初始化进程组
+</code></pre>
+<p>之后，使用 <code>DistributedSampler</code> 对数据集进行划分。它能帮助我们将每个 batch 划分成几个 partition，在当前进程中只需要获取和 rank 对应的那个 partition 进行训练：</p>
+<pre><code class="language-python"># 创建Dataloader
+train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, sampler=train_sampler)
+</code></pre>
+<p>注意： testset 不用 sampler</p>
+<p>然后使用<code>torch.nn.parallel.DistributedDataParallel</code>包装模型：</p>
+<pre><code class="language-python"># DDP进行训练
+model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank])
+</code></pre>
+<h3 id="主要代码">主要代码<a class="anchor-link" href="#主要代码" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import argparse
+import torch
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+parser = argparse.ArgumentParser()
+parser.add_argument(&quot;--save_dir&quot;, default='')
+parser.add_argument(&quot;--local_rank&quot;, default=-1)
+parser.add_argument(&quot;--world_size&quot;, default=1)
+args = parser.parse_args()
+
+# 初始化后端
+
+# world_size 指的是总的并行进程数目
+# 比如16张卡单卡单进程 就是 16
+# 但是如果是8卡单进程 就是 1
+# 等到连接的进程数等于world_size，程序才会继续运行
+torch.distributed.init_process_group(backend='nccl',
+                                         world_size=ws,
+                                         init_method='env://')
+
+torch.cuda.set_device(args.local_rank)
+
+device = torch.device(f'cuda:{args.local_rank}')
+
+model = nn.Linear(2,3).to(device)
+
+# train dataset
+# train_sampler
+# train_loader
+
+# 初始化 DDP，这里我们通过规定 device_id 用了单卡单进程
+# 实际上根据我们前面对 parallel_apply 的解读，DDP 也支持一个进程控制多个线程利用多卡
+model = DDP(model,
+            device_ids=[args.local_rank],
+            output_device=args.local_rank).to(device)
+
+
+# 保存模型 
+if torch.distributed.get_rank() == 0:
+  torch.save(model.module.state_dict(),
+             'results/%s/model.pth' % args.save_dir)
+</code></pre>
+<p>在 ImageNet 上的完整训练代码，请点击<a href="https://link.zhihu.com/?target=https%3A//github.com/tczhangzhi/pytorch-distributed/blob/master/distributed.py">Github</a>。</p>
+<h3 id="启动">启动<a class="anchor-link" href="#启动" title="Permanent link">&para;</a></h3>
+<ul>
+<li>torch.distributed.launch 启动器</li>
+<li>PyTorch 从 <strong>1.10</strong> 版本开始推荐使用 <code>torchrun</code> 来启动分布式训练</li>
+</ul>
+<h2 id="原理">原理<a class="anchor-link" href="#原理" title="Permanent link">&para;</a></h2>
+<h3 id="与dp区别">与DP区别<a class="anchor-link" href="#与dp区别" title="Permanent link">&para;</a></h3>
+<ul>
+<li>多进程<br />
+  和 DP 不同， DDP 采用多进程，最推荐的做法是每张卡一个进程从而避免单进程带来的影响。 DP 和 DDP 共用一个 parallel_apply 函数，所以 DDP 同样支持单进程多线程多卡操作，自然也支持多进程多线程，不过需要注意一下 world_size。</li>
+<li>通信效率<br />
+  DP 的通信成本随着 GPU 数量线性增长，而 DDP 支持 Ring AllReduce，其通信成本是恒定的，与 GPU 数量无关。</li>
+<li>同步参数<br />
+  DP 通过收集梯度到 device[0]，在device[0] 更新参数，然后其他设备复制 device[0] 的参数实现各个模型同步； <br />
+  DDP 通过保证初始状态相同并且改变量也相同（指同步梯度） ，保证模型同步。</li>
+</ul>
+<h3 id="ring-allreduce">Ring AllReduce<a class="anchor-link" href="#ring-allreduce" title="Permanent link">&para;</a></h3>
+<p>假设我们有 <span class="math-inline">k</span> 个 GPU，传输总量是 <span class="math-inline">p</span> ， <span class="math-inline">b</span> 为每次通信上限。</p>
+<p>首先我们将要传输的梯度等分成 <span class="math-inline">k</span> 份，则每台机器每次需要传输 <span class="math-inline">\frac{p}{k}</span> 。传输 <span class="math-inline">k-1</span> 次可以收集到一个完整梯度（如动图 5 所示），之后再传输 <span class="math-inline">k-1</span> 次将梯度分给所有 GPU（如动图 6 所示）。</p>
+<p>举个例子，假设现有 5 个 GPU，那么就将梯度分为 5 份，如下图，分别是 <span class="math-inline">a_i, b_i, c_i, d_i, e_i</span> , 这里的 <span class="math-inline">i</span> 指的是 GPU 编号。</p>
+<p>Scatter Reduce 流程，从 diagonal 的位置开始传，每次传输时 GPU 之间只有一个块在传输，比如 <span class="math-inline">a_0</span> ，在传播 4 次后 GPU 4 上就有了一个完整的梯度块。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/v2-4590aeb5fd981b1e6f926cc68605884a_b.webp" style="zoom: 80%;" /></div>
+
+<p>图 5: Scatter Reduce 流程图</p>
+<p>All Gather 的过程也类似，只是将收集到的完整梯度通过通信传播给所有参与的 GPU。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/v2-c9df34575d7d95ec87d85575d25d6f37_b.jpg" style="zoom: 80%;" /></div>
+
+<p>图 6: All Gather 流程图</p>
+<p>这样，通信开销就只有 <span class="math-inline">2(k-1)\frac{\frac{p}{k}}{b}</span> ，和 GPU 数量无关了。</p>
+<ul>
+<li>DDP</li>
+</ul>
+<p>DDP 也是数据并行，所以每张卡都有模型和输入。我们以多进程多线程为例，每起一个进程，该进程的 device[0] 都会从本地复制模型，如果该进程仍有多线程，就像 DP，模型会从 device[0] 复制到其他设备。</p>
+<p>DDP 通过 Reducer 来管理梯度同步。为了提高通讯效率， Reducer 会将梯度归到不同的桶里（按照模型参数的 reverse order， 因为反向传播需要符合这样的顺序），一次归约一个桶。其中桶的大小为参数 bucket_cap_mb 默认为 25，可根据需要调整。下图即为一个例子。</p>
+<p>可以看到每个进程里，模型参数都按照倒序放在桶里，每次归约一个桶。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250311075739.png" style="zoom: 80%;" /></div>
+
+<p>图 7: Gradient Bucketing 示意图</p>
+<p>DDP 通过在构建时注册 autograd hook 进行梯度同步。反向传播时，当一个梯度计算好后，相应的 hook 会告诉 DDP 可以用来归约。当一个桶里的梯度都可以了，Reducer 就会启动异步 allreduce 去计算所有进程的平均值。allreduce 异步启动使得 DDP 可以边计算边通信，提高效率。当所有桶都可以了，Reducer 会等所有 allreduce 完成，然后将得到的梯度写到 param.grad。</p>
+<h2 id="实现">实现<a class="anchor-link" href="#实现" title="Permanent link">&para;</a></h2>
+<p>DDP 主要基于下图所示结构。至于 backend，NCCL 已经最优化了，建议直接用 NCCL，不过 NCCL 只支持 GPU Tensor 间通信。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250311075802.png" style="zoom: 80%;" /></div>
+
+<ul>
+<li>伪代码</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250311075937.png" style="zoom: 80%;" /></div>
+
+<p>图 9: DDP 伪代码，原图见 [11]</p>
+<p>从 DDP 的伪代码我们可以看出，DDP 最重要的包括三部分：</p>
+<ul>
+<li>
+<p><em>constructor</em></p>
+</li>
+<li>
+<p>负责在构建的时候将 rank 0 的 state_dict() 广播 ➜ 保证所有网络初始状态相同；</p>
+</li>
+<li>初始化 buckets 并尽可能按逆序将 parameters 分配进 buckets ➜ 按桶通信提高效率；</li>
+<li>
+<p>为每个 parameter 加上 grad_accumulator 以及在 autograd_graph 注册 autograd_hook ➜ 在 backward 时负责梯度同步。</p>
+</li>
+<li>
+<p><em>forward</em></p>
+</li>
+<li>
+<p>正常的 forward 操作；</p>
+</li>
+<li>
+<p>如果 self.find_unused_parameters 设置为 True，DDP 会在 forward 结束时 traverse autograd graph 找到所有没用过的parameters 并标记为 ready ➜ 虽说这一步开销很大，但是有时计算动态图会改变，所以很必要。</p>
+</li>
+<li>
+<p><em>autograd_hook</em></p>
+</li>
+<li>
+<p>这个 hook 是挂在 autograd graph 在 backward 时负责梯度同步的。当一个梯度计算好后，相应的 hook 会告诉 DDP 可以用来归约。当一个桶里的梯度都可以了，Reducer 就会启动异步 allreduce 去计算所有进程的平均值。当所有桶都可以了，Reducer 会等所有 allreduce 完成，然后将得到的梯度写到 param.grad。</p>
+</li>
+</ul>
+<p>好的，但现在为止我们应该对 DDP 有了大致了解了，接下来就一起看一下代码是怎么实现的！</p>
+<ul>
+<li>通信</li>
+</ul>
+<p>因为 DDP 依赖 c10d 的 ProcessGroup 进行通信，所以开始前我们先要有个 ProcessGroup 实例。这步可以通过 torch.distributed.init_process_group 实现。</p>
+<p>除了正常的前向传播，DDP 还允许在 subgraph 进行反向传播，只需将 self.find_unused_parameters 设置为 True。或许有朋友会问，如果 find_unused_parameters 设置为 True，那每次都要 traverse 计算图，明明开销很大，为什么有时候我们还要将 self.find_unused_parameters 设置为 True？ 这是因为训练时有可能某次迭代只用到整个模型的一个 subgraph， 并且这个 subgraph 迭代时可能会改变，就是说某些参数可能会在训练时被跳过。但因为所有parameters 在一开始就被分好桶了，而我们的 hook 又规定了只有整个桶 ready 了（pending==0）才会通信，如果我们不将 unused parameter 标记为 ready，整个过程会没法进行。我们在这节结束的部分附上一个小实验验证一下。</p>
+<p>DDP 通过在构建时注册 autograd hook 进行梯度同步。当一个梯度计算好后，相应的 hook 会告诉 DDP 可以用来归约。当一个桶里的梯度都可以了，Reducer 就会启动异步 allreduce 去计算所有进程的平均值。当所有桶都可以了，Reducer 会等所有 allreduce 完成，然后将得到的梯度写到 param.grad。</p>
+<ul>
+<li>optimizer step 独立于 DDP，所有进程的模型能够同步是因为初始状态相同并且改变量也相同。</li>
+<li>no_sync</li>
+</ul>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/343951042">PyTorch 源码解读之 DP &amp; DDP：模型并行和分布式训练解析</a></li>
+<li><a href="https://github.com/tczhangzhi/pytorch-distributed">pytorch-distributed</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

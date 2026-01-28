@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI | 算法工程师必备的深度学习--最优化（上）</title>
+    <meta name="description" content="AI | 算法工程师必备的深度学习--最优化（上） - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#一代价函数">一、代价函数</a><ul>
+<li><a href="#11-经验风险最小化">1.1 经验风险最小化</a></li>
+<li><a href="#12-替代损失函数">1.2 替代损失函数</a></li>
+</ul>
+</li>
+<li><a href="#二神经网络最优化挑战">二、神经网络最优化挑战</a><ul>
+<li><a href="#21-病态黑塞矩阵">2.1 病态黑塞矩阵</a></li>
+<li><a href="#22-局部极小值">2.2 局部极小值</a></li>
+<li><a href="#23-鞍点">2.3 鞍点</a></li>
+<li><a href="#24-悬崖">2.4 悬崖</a></li>
+<li><a href="#25-长期依赖">2.5 长期依赖</a></li>
+<li><a href="#26-非精确梯度">2.6 非精确梯度</a></li>
+<li><a href="#27-局部和全局结构的弱对应">2.7 局部和全局结构的弱对应</a></li>
+</ul>
+</li>
+<li><a href="#三-mini-batch">三、 mini-batch</a><ul>
+<li><a href="#31-mini-batch-大小">3.1 mini-batch 大小</a></li>
+<li><a href="#32-随机抽样">3.2 随机抽样</a></li>
+<li><a href="#33-重复样本">3.3 重复样本</a></li>
+</ul>
+</li>
+<li><a href="#四基本优化算法">四、基本优化算法</a><ul>
+<li><a href="#41-随机梯度下降-sgd">4.1 随机梯度下降 SGD</a><ul>
+<li><a href="#411-算法">4.1.1 算法</a></li>
+<li><a href="#412-学习率">4.1.2 学习率</a></li>
+<li><a href="#413-性质">4.1.3 性质</a></li>
+</ul>
+</li>
+<li><a href="#42-动量方法">4.2 动量方法</a><ul>
+<li><a href="#421-算法">4.2.1 算法</a></li>
+<li><a href="#422-衰减因子">4.2.2 衰减因子</a></li>
+<li><a href="#423-nesterov-动量">4.2.3 Nesterov 动量</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#五自适应学习率算法">五、自适应学习率算法</a><ul>
+<li><a href="#51-delta-bar-delta">5.1 delta-bar-delta</a></li>
+<li><a href="#52-adagrad">5.2 AdaGrad</a></li>
+<li><a href="#53-rmsprop">5.3 RMSProp</a><ul>
+<li><a href="#531-rmsprop-原始算法">5.3.1 RMSProp 原始算法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>AI | 算法工程师必备的深度学习--最优化（上）</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/08.模型优化</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><img alt="cover_image" src="https://mmbiz.qlogo.cn/mmbiz_jpg/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxibNYMM0Oiaa7rVlbf0KsQ3WtWn7LkMia5NfSZSnnNdG6Hk9w3CUTT69IA/0?wx_fmt=jpeg" /></p>
+<h1 id="ai--算法工程师必备的深度学习--最优化上">AI | 算法工程师必备的深度学习--最优化（上）<a class="anchor-link" href="#ai--算法工程师必备的深度学习--最优化上" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>https://mp.weixin.qq.com/s/DuB0Fvj7ubbg4QudpH8fAw</p>
+</blockquote>
+<p>原创  运筹OR帷幄  <a href="javascript:void(0);"> 运筹OR帷幄 </a></p>
+<hr />
+<p>** ** ** ↑↑↑↑↑  ** ** 点击上方  ** ** 蓝色字  ** ** 关注我们！  **  </p>
+<hr />
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_jpg/LvobWLKhkBtkKWUe4p2lF43E17RicUHczNvE3Txpf3EKvnQfq0v1ibyl3fe1gicVcmSd3qhwzSEGic6DI4OmHyveXw/640?wx_fmt=jpeg" /></p>
+<hr />
+<p>『运筹OR帷幄』原创</p>
+<p>** 作者：华校专  **</p>
+<p><em>作者信息：</em></p>
+<p>华校专，曾任阿里巴巴资深算法工程师、智易科技首席算法研究员，现任腾讯高级研究员，《Python 大战机器学习》的作者。</p>
+<p><strong>编者按</strong>：</p>
+<p>算法工程师必备系列更新啦！继上次推出了算法工程师必备的数学基础后，小编继续整理了必要的机器学习知识，全部以干货的内容呈现，哪里不会学哪里，老板再也不用担心你的基础问题!</p>
+<h1 id="深度学习中的最优化问题">深度学习中的最优化问题<a class="anchor-link" href="#深度学习中的最优化问题" title="Permanent link">&para;</a></h1>
+<ol>
+<li>
+<p>深度学习中最优化问题很重要，代价也很高，因此需要开发一组专门的优化技术。 </p>
+</li>
+<li>
+<p>在深度学习领域，即使在数据集和模型结构完全相同的情况下，选择不同的优化算法可能导致截然不同的训练效果。 </p>
+</li>
+</ol>
+<p>甚至相同的优化算法，但是选择了不同的参数初始化策略，也可能会导致不同的训练结果。</p>
+<h2 id="一代价函数">一、代价函数<a class="anchor-link" href="#一代价函数" title="Permanent link">&para;</a></h2>
+<h3 id="11-经验风险最小化">1.1 经验风险最小化<a class="anchor-link" href="#11-经验风险最小化" title="Permanent link">&para;</a></h3>
+<ol>
+<li>机器学习通常是间接的，需要优化的是测试集上的某个性能度量 P 。这个度量 P 通常很难直接求解，甚至难以直接建模优化。如：在图像目标检测问题中，常见的 P 就是 <code>mAP:mean average precision</code> 。 </li>
+</ol>
+<p>普遍的做法是：希望通过降低代价函数  来提高 P。这不同于纯粹的最小化 J 本身，因为最终目标是提高 P 。</p>
+<p>当代价函数  最小时是否 P 最大？这一结论是未知的。</p>
+<ol start="2">
+<li>实际任务中，可以采用训练集上的损失函数均值作为代价函数： </li>
+</ol>
+<p>其中：L 为每个样本的损失函数，  为对输入  的预测输出，  是经验分布， y 为标记信息。</p>
+<ol start="3">
+<li>理论上，代价函数中的期望最好取自真实的数据生成分布  ，而不是有限个训练集上对应的经验分布  。即：  称作泛化误差。 </li>
+</ol>
+<p>问题是对于绝大多数问题，样本的真实分布  是未知的，仅能提供训练集中的样本的分布  。</p>
+<p>实际应用中，使用经验分布  来代替真实分布  。这就是为什么使用  作为代价函数的原因。</p>
+<ol start="4">
+<li>
+<p>最小化训练集上的期望损失称作最小化经验风险 <code>empirical risk</code> 。其缺点是： </p>
+<ul>
+<li>
+<p>很容易过拟合 。 </p>
+</li>
+<li>
+<p>某些类型的损失函数没有导数，无法使用基于梯度下降的优化算法来优化。 </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>如 ： <code>0-1</code> 损失函数，导数要么为零，要么没有定义。</p>
+<h3 id="12-替代损失函数">1.2 替代损失函数<a class="anchor-link" href="#12-替代损失函数" title="Permanent link">&para;</a></h3>
+<ol>
+<li>有时候真正的代价函数无法有效优化，此时可以考虑使用 <code>替代损失函数</code> 来代替真实的损失函数。 </li>
+</ol>
+<p>如：将正类的负对数似然函数作为 <code>0-1</code> 损失函数的替代。</p>
+<ol start="2">
+<li>
+<p>一般的优化和机器学习优化的一个重要不同：机器学习算法通常并不收敛于代价函数的局部极小值。因为： </p>
+<ul>
+<li>机器学习算法通常使用 <code>替代损失函数</code> 。 </li>
+</ul>
+</li>
+</ol>
+<p>算法终止时，可能出现：采用 <code>替代损失函数</code> 的代价函数的导数较小，而采用真实损失函数的代价函数的导数仍然较大（相比较于0值）。</p>
+<pre class="highlight"><code> * 机器学习算法可能会基于早停策略而提前终止。
+</code></pre>
+
+<p>早停发生时，可能出现：训练集上的代价函数的导数值仍然较大（相比较于0值）。</p>
+<p>因为早停的规则是基于验证集上代价函数的值不再下降，它并不关心训练集上代价函数的导数值。</p>
+<h2 id="二神经网络最优化挑战">二、神经网络最优化挑战<a class="anchor-link" href="#二神经网络最优化挑战" title="Permanent link">&para;</a></h2>
+<ol>
+<li>机器学习中，通常会仔细设计目标函数和约束，从而保证最优化问题是凸的。但是神经网络中，通常遇到的都是非凸的最优化问题。 </li>
+</ol>
+<h3 id="21-病态黑塞矩阵">2.1 病态黑塞矩阵<a class="anchor-link" href="#21-病态黑塞矩阵" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>病态 <code>ill-conditioning</code> 的黑塞矩阵  是凸优化或者其他形式优化中普遍存在的问题。 </p>
+<ul>
+<li>在神经网络训练过程中，如果  是病态的，则随机梯度下降会“卡”在某些地方：此时即使很小的更新步长也会增加代价函数。 </li>
+<li>当黑塞矩阵是病态时，牛顿法是一个很好的解决方案。但是牛顿法并不适用于神经网络，需要对它进行较大改动才能用于神经网络。 <br />
+  2. 将  在  处泰勒展开：  。其中  为  处的梯度；  为  处的海森矩阵。 </li>
+</ul>
+</li>
+</ol>
+<p>根据梯度下降法：  。应用在点  ，有：</p>
+<p>因此沿着负梯度的方向，步长  将导致代价函数 f 增加：  。</p>
+<p>当  时，黑塞矩阵的病态会成为问题。此时沿着负梯度的方向，代价函数 f 的值反而在增长！</p>
+<ol start="3">
+<li>理论上，随着训练的推进，梯度的平方范数  应该逐步降低并最终收敛到 0 。因为代价函数 f 取极小值时，梯度为 0 。 </li>
+</ol>
+<p>实际上在很多问题中，梯度的平方范数  并不会在训练过程中显著缩小，而是随着时间的延长在增加，且并不随着训练过程收敛到临界点而减小。</p>
+<p>下面左图为梯度的范数随着时间的变化，右图为验证集上的分类误差随着时间的变化。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxOaf1R4nRsMqab3DMu5vcN1WgO28asCVkLXvIx8TjdCs9OA5r5Fu8iaA/640?wx_fmt=png" /></p>
+<p>这是因为  会更快速的增长（相对于  ）  。它带来两个结果：</p>
+<pre class="highlight"><code> * 尽管梯度很强，但是训练却可以成功，因为它使得代价函数 f 的增量不断逼近0（增量为0表示到达极值点）。 
+ * 尽管梯度很强，但是学习会变得非常缓慢，因为学习率必须减小从而适应更强的曲率。
+</code></pre>
+
+<h3 id="22-局部极小值">2.2 局部极小值<a class="anchor-link" href="#22-局部极小值" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>对于非凸函数，如神经网络，可能存在多个局部极小值。实际上这并不是一个严重的问题。 </p>
+</li>
+<li>
+<p>如果一个训练集可以唯一确定一组模型参数，则该模型称作可辨认的 <code>identifiable</code> 。 </p>
+<ul>
+<li>带有隐变量的模型通常是不可辨认的。因为可以批量交换隐变量，从而得到等价的模型。如：交换隐单元 i 和 j 的权重向量。 </li>
+</ul>
+</li>
+</ol>
+<p>这种不可辨认性称作权重空间对称性 <code>weight space symmetry</code> 。</p>
+<pre class="highlight"><code> * 也可以放大权重和偏置  倍，然后缩小输出  倍，从而保持模型等价。
+
+ * 模型可辨认性问题意味着：神经网络的代价函数具有非常多、甚至是无限多的局部极小解。
+
+ * 由可辨认性问题产生的局部极小解都具有相同的代价函数值，它并不是代价函数非凸性带来的问题。
+</code></pre>
+
+<ol start="3">
+<li>
+<p>如果局部极小解和全局极小解相差很大时，此时多个局部极小解会带来很大隐患。它将给基于梯度的优化算法带来很大的问题。 </p>
+<ul>
+<li>实际中的网络，是否存在大量严重偏离全局极小解的局部极小解、优化算法是否会遇到这些局部极小解？ </li>
+</ul>
+</li>
+</ol>
+<p>这些都是未决的问题。</p>
+<pre class="highlight"><code> * 目前学者们猜想：对于足够大的神经网络，大部分局部极小值都具有很小的代价函数值。
+</code></pre>
+
+<p>是否找到全局极小值并不重要，实际上只需要在参数空间中找到一个使得损失函数很小的点。</p>
+<ol start="4">
+<li>目前很多人将神经网络优化中的所有困难都归结于局部极小值。 </li>
+</ol>
+<p>有一种方案是排除局部极小值导致的困难（说明是其他原因导致的困难）：绘制梯度范数随着时间的变化：</p>
+<pre class="highlight"><code> * 如果梯度范数没有缩小到一个很小的值，则问题的原因既不是局部极小值引起的，也不是其他形式的临界点（比如鞍点）引起的。 
+ * 如果梯度范数缩小到一个很小的值，则问题的原因可能是局部极小值引起的，也可能是其他原因引起的。
+</code></pre>
+
+<ol start="5">
+<li>神经网络训练中，通常不关注代价函数的精确全局极小值，而是关心将代价函数值下降到足够小，从而获得一个很好的泛化误差。 </li>
+</ol>
+<p>关于优化算法能否到达这个目标的理论分析是极其困难的。</p>
+<h3 id="23-鞍点">2.3 鞍点<a class="anchor-link" href="#23-鞍点" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>鞍点是另一类梯度为零的点。鞍点附近的某些点的函数值比鞍点处的值更大，鞍点附近的另一些点的函数值比鞍点处的值更小。 </p>
+</li>
+<li>
+<p>在鞍点处，黑塞矩阵同时具有正负特征值： </p>
+<ul>
+<li>正特征值对应的特征向量方向的点，具有比鞍点更大的值。 </li>
+<li>
+<p>负特征值对应的特征向量方向的点，具有比鞍点更小的值。 <br />
+  3. 通常在低维空间中，局部极小值很普遍；在高维空间中，局部极小值很少见，鞍点更常见。 </p>
+</li>
+<li>
+<p>在一维情况下，很容易抛硬币得到正面向上。 </p>
+</li>
+<li>而在 n 维中，很难出现 n 次抛硬币都是正面向上。 </li>
+<li>
+<p>对于函数  ，鞍点和局部极小值的数量之比的期望随着 n 呈指数级增长。 </p>
+</li>
+<li>
+<p>假如黑塞矩阵的特征值的正负号由抛硬币来决定的话： </p>
+</li>
+</ul>
+</li>
+<li>
+<p>当位于函数值较低的区间时，黑塞矩阵的特征值为正的可能性更大。这意味着： </p>
+<ul>
+<li>具有较大函数值的临界点更可能是鞍点，因为此时黑塞矩阵的特征值可能既存在正值、也存在负值。 </li>
+<li>具有较小函数值的临界点更可能是局部极小值点，因为此时黑塞矩阵的特征值更可能全部为正值。 </li>
+<li>
+<p>具有极高函数值的临界点更可能是局部极大值点，因为此时黑塞矩阵的特征值更可能全部为负值。 <br />
+  5. 鞍点对于训练算法的影响： </p>
+</li>
+<li>
+<p>理论上，鞍点附近的梯度通常会非常小，这导致梯度下降算法沿着梯度方向的步长非常小。 </p>
+</li>
+<li>实际上，梯度下降算法似乎在很多情况下都能够逃离鞍点。 </li>
+<li>
+<p>对于只使用了梯度的一阶优化算法而言：情况不明。 </p>
+</li>
+<li>
+<p>对于牛顿法而言，鞍点是个大问题。 </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>因为梯度下降的原则是：朝着下坡路的方向移动。而牛顿法的原则是：明确寻找梯度为零的点。如果不做任何修改，则牛顿法会主动跳入一个鞍点。</p>
+<ol start="6">
+<li>也可能出现一个恒值的、平坦的宽区域：在这个区域中，梯度和黑塞矩阵都为零。 </li>
+</ol>
+<h3 id="24-悬崖">2.4 悬崖<a class="anchor-link" href="#24-悬崖" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>多层神经网络通常有像悬崖一样的区域，悬崖是指代价函数斜率较大的区域。 </p>
+</li>
+<li>
+<p>产生悬崖的原因：由于几个较大的权重相乘，导致求导的时候，其梯度异常巨大。 </p>
+</li>
+</ol>
+<p>在 <code>RNN</code> 网络的代价函数中悬崖结构很常见，因为 <code>RNN</code> 这一类模型会涉及到多个时间步长中的因子的相乘，导致产生了大量的权重相乘。</p>
+<ol start="3">
+<li>悬崖的影响：在梯度更新时，如果遇到悬崖，则会导致参数更新的步长非常大（因为此时梯度非常大），从而跨了非常大的一步，使得参数弹射的非常远。这样可能会使得已经完成的大量优化工作无效。 </li>
+</ol>
+<p>因为当弹射非常远时，可能横跨了参数空间的很多个区域而进入到另一个区域。这样已经探索的参数区域就被放弃了。</p>
+<p>下图是一个悬崖的例子：第二根路径就是由于遇到悬崖，导致参数更新的步长非常大。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxOAS6aZxLBdLYib1VPppBKf9Snpxa5A5HdATmayIyzLyBEeiaauaejWqQ/640?wx_fmt=png" /></p>
+<ol start="4">
+<li>解决悬崖问题的方案：使用梯度截断策略。 </li>
+</ol>
+<p>梯度下降法只是指明了参数更新的方向（负梯度的方向），但是未指明最佳步长。当常规的梯度下降算法建议更新一大步时，梯度截断会干涉并缩减步长，从而使其基本上贴着悬崖来更新。如上图的第一根路径所示。</p>
+<h3 id="25-长期依赖">2.5 长期依赖<a class="anchor-link" href="#25-长期依赖" title="Permanent link">&para;</a></h3>
+<ol>
+<li>当计算图非常深时，容易产生另一种优化困难：长期依赖。 </li>
+</ol>
+<p>假设计算图中包含一条重复地、与矩阵  相乘的路径。经过 t 步，则相当于与  相乘。在第 i 步有：  。</p>
+<p>根据反向传播原理，有：  。</p>
+<p>考虑到权重  参与到每个时间步的计算，因此有：  。</p>
+<p>其中记  。假设矩阵  ，则有：</p>
+<p>假设  有特征值分解  ，则：  。其中：</p>
+<p>考虑特征值  ，当它不在 1 附近时：</p>
+<pre class="highlight"><code> * 如果量级大于 1，  非常大，这称作梯度爆炸问题 ` exploding gradient problem ` 。
+</code></pre>
+
+<p>梯度爆炸使得学习不稳定，悬崖结构是梯度爆炸的一个例子。</p>
+<pre class="highlight"><code> * 如果量级小于 1，  非常小，这称作梯度消失问题 ` vanishing gradient problem ` 。
+</code></pre>
+
+<p>梯度消失使得学习难以进行，此时学习的推进会非常缓慢。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxFjAL2avE9csqHlhBDczeCeCiaCiaqmVUj1NKJpUGP0SHUhywBvNwV9lQ/640?wx_fmt=png" /></p>
+<ol start="2">
+<li>循环网络在每个时间步上使用相同的矩阵  ，因此非常容易产生梯度爆炸和梯度消失问题。 </li>
+</ol>
+<p>前馈神经网络并没有在每一层使用相同的矩阵  ，因此即使是非常深层的前馈神经网络也能很大程度上避免梯度爆炸和梯度消失问题。</p>
+<ol start="3">
+<li>对于梯度爆炸，可以通过梯度裁剪来缓解：限定梯度的范数的上限。 </li>
+</ol>
+<p>对于梯度消失，不能够简单的通过放大来解决。因为有两个问题：</p>
+<pre class="highlight"><code> * 当梯度很小的时候，无法分辨它是梯度消失问题，还是因为抵达了极小值点。
+
+ * 当梯度很小的时候，噪音对梯度的影响太大。获得的梯度很可能由于噪音的影响，导致它的方向是随机的。
+</code></pre>
+
+<p>此时如果放大梯度，则无法确保此时的方向就是代价函数下降的方向。而对于梯度爆炸，如果缩小梯度，仍然可以保证此时的方向就是代价函数下降的方向。</p>
+<h3 id="26-非精确梯度">2.6 非精确梯度<a class="anchor-link" href="#26-非精确梯度" title="Permanent link">&para;</a></h3>
+<ol>
+<li>大多数优化算法都假设知道精确的梯度或者 <code>Hessian</code> 矩阵，实际中这些量都有躁扰，甚至是有偏的估计。如： <code>mini-batch</code> 随机梯度下降中，用一个 <code>batch</code> 的梯度来估计整体的梯度。 </li>
+</ol>
+<p>各种神经网络优化算法的设计都考虑到了梯度估计的不精确。</p>
+<ol start="2">
+<li>另外，实际情况中的目标函数是比较棘手的，甚至难以用简洁的数学解析形式给出。 </li>
+</ol>
+<p>此时可以选择 <code>替代损失函数</code> 来避免这个问题。</p>
+<h3 id="27-局部和全局结构的弱对应">2.7 局部和全局结构的弱对应<a class="anchor-link" href="#27-局部和全局结构的弱对应" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>对于最优化问题，即使克服了以上的所有困难，但是并没有到达代价函数低得多的区域，则表现仍然不佳。这就是局部优秀，全局不良。 </p>
+<ul>
+<li>局部优秀：跨过了鞍点、爬过了悬崖、克服了梯度消失，最终到达局部极小值点。 </li>
+<li>全局不良：并未到达目标函数全局比较小的值所在的区域。 <br />
+  2. 大多数优化研究的难点集中于：目标函数是否到达了全局最小值、局部最小值、鞍点。 </li>
+</ul>
+</li>
+</ol>
+<p>但是实践中，神经网络不会到达任何一种临界点，甚至不会到达梯度很小的区域，甚至这些临界点不是必然存在的。</p>
+<p>如：损失函数  没有全局极小点，而是趋向于某个极限值。</p>
+<ol start="3">
+<li>下图的例子说明：即使没有局部极小值和鞍点，还是无法使用梯度下降得到一个好的结果。 </li>
+</ol>
+<p>原因是：初始化在山的左侧。左侧向左趋向于一条渐近线，此时梯度的负方向会不停向左来逼近这条渐进线。</p>
+<p>理论上，优化算法要向右跨过山头，从而沿着右侧下降才能到达一个较低的函数值。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxcewwiasZEoiarPaWPw2W4baV3U5QmST7ELMd7y5wOkuaicjfViaTESGibXA/640?wx_fmt=png" /></p>
+<ol start="4">
+<li>
+<p>在局部结构中执行梯度下降（称作 <code>局部梯度下降</code> ）的问题： </p>
+<ul>
+<li>
+<p>局部梯度下降或许能找出一条解路径，但是该路径可能包含了很多次梯度更新，遵循该路径会带来很高的计算代价。 </p>
+</li>
+<li>
+<p>如果目标函数是类似  函数：没有任何鞍点、极值点，而是具有一个宽而平坦的区域（这个区域逼近某个极限）。 </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>此时，若要寻求一个精确的临界点，则局部梯度下降无法给出解路径。这意味着算法难以收敛。</p>
+<pre class="highlight"><code> * 局部梯度下降可能太过贪心，使得训练虽然朝着梯度下降的方向移动，但是远离了真正的解。
+</code></pre>
+
+<ol start="5">
+<li>
+<p>如果存在某个参数区域，当遵循局部梯度下降就能够合理地直接到达最优解，且参数初始化点就位于该区域，则局部梯度下降的问题就得到解决。 </p>
+</li>
+<li>
+<p>现有的很多研究方法在求解局部结构复杂的最优化问题时，解决方案为：寻求良好的初始化点，而不再是寻求良好的全局参数更新算法。 </p>
+</li>
+</ol>
+<h2 id="三-mini-batch">三、 mini-batch<a class="anchor-link" href="#三-mini-batch" title="Permanent link">&para;</a></h2>
+<ol>
+<li>机器学习算法和一般最优化算法不同的一点：机器学习算法的目标函数通常可以分解为每个训练样本上的损失函数的求和。如：  。 </li>
+</ol>
+<p>最大化这个总和，等价于最大化训练集在经验分布上的期望：</p>
+<ol start="2">
+<li>当使用基于梯度的优化算法求解时，需要用到梯度： </li>
+</ol>
+<p>这个梯度本质上也是一个期望，要准确的求解这个期望的计算量非常大，因为需要计算整个数据集上的每一个样本。</p>
+<p>实践中，可以从数据集中随机采样少量的样本，然后计算这些样本上的梯度的均值，将这个均值作为该期望的一个估计。</p>
+<ol start="3">
+<li>
+<p>使用小批量样本来估计梯度的原因： </p>
+<ul>
+<li>使用更多样本来估计梯度的方法的收益是低于线性的。 </li>
+</ul>
+</li>
+</ol>
+<p>独立同分布的 n 个样本的均值  是个随机变量，其标准差为  ，其中  为样本的真实标准差。</p>
+<pre class="highlight"><code> * 如果能够快速计算出梯度的估计值（而不是费时地计算准确值），则大多数优化算法会更快收敛。
+</code></pre>
+
+<p>大多数优化算法基于梯度下降，如果每一步中计算梯度的时间大大缩短，则它们会更快收敛。</p>
+<pre class="highlight"><code> * 训练集存在冗余。
+</code></pre>
+
+<p>实践中可能发现：大量样本都对梯度做出了非常相似的贡献。</p>
+<p>最坏情况下， 训练集中的 N 个样本都是相同的拷贝。此时基于小批量样本估计梯度的策略也能够计算正确的梯度，但是节省了大量时间。</p>
+<ol start="4">
+<li>使用整个训练集的优化算法被称作 <code>batch</code> 梯度算法（或者确定性 <code>deterministic</code> 梯度算法）。 </li>
+</ol>
+<p>每次只使用单个样本的优化算法被称作随机 <code>stochastic</code> 算法（或者在线 <code>online</code> 算法）。</p>
+<p>大多数深度学习的优化算法介于两者之间：使用一个以上、又不是采用全部的训练样本，称作 <code>mini-batch</code> 或者 <code>mini-batch</code><br />
+随机算法。</p>
+<ol start="5">
+<li>当使用小批量样本来估计梯度时，由于估计的梯度往往会偏离真实的梯度，这可以视作在学习过程中加入了噪声扰动。这种扰动会带来一些正则化效果。 </li>
+</ol>
+<h3 id="31-mini-batch-大小">3.1 mini-batch 大小<a class="anchor-link" href="#31-mini-batch-大小" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><code>mini-batch</code> 的大小由下列因素决定： </p>
+<ul>
+<li>
+<p>不能太大。更大的 <code>batch</code> 会使得训练更快，但是可能导致泛化能力下降。 </p>
+</li>
+<li>
+<p>训练更快是因为： </p>
+</li>
+<li>
+<p>更大的 <code>batch size</code> 只需要更少的迭代步数就可以使得训练误差收敛。 </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>因为 <code>batch size</code> 越大，则小批量样本来估计总体梯度越可靠，则每次参数更新沿着总体梯度的负方向的概率越大。</p>
+<p>另外，训练误差收敛速度快，并不意味着模型的泛化性能强。</p>
+<pre class="highlight"><code> * 更大的 ` batch size ` 可以利用大规模数据并行的优势。
+
+ * 泛化能力下降是因为：更大的 ` batch size ` 计算的梯度估计更精确，它带来更小的梯度噪声。此时噪声的力量太小，不足以将参数推出一个尖锐极小值的吸引区域。
+</code></pre>
+
+<p>解决方案为：提高学习率，从而放大梯度噪声的贡献。</p>
+<pre class="highlight"><code> * 不能太小。因为对于多核架构来讲，太小的 ` batch ` 并不会相应地减少计算时间（考虑到多核之间的同步开销）。
+
+ * 如果 ` batch ` 中所有样本可以并行地预处理，则内存消耗和 ` batch ` 大小成正比。
+</code></pre>
+
+<p>对于许多硬件设备来说，这就是 <code>batch</code> 大小的限制因素。</p>
+<pre class="highlight"><code> * 在有些硬件上，特定大小的效果更好。
+</code></pre>
+
+<p>在使用 <code>GPU</code> 时，通常使用 2 的幂作为 <code>batch</code> 大小。</p>
+<ol start="2">
+<li>泛化误差通常在 <code>batch</code> 大小为 1 时最好，但此时梯度估计值的方差非常大，因此需要非常小的学习速率以维持稳定性。如果学习速率过大，则导致步长的变化剧烈。 </li>
+</ol>
+<p>由于需要降低学习速率，因此需要消耗更多的迭代次数来训练。虽然每一轮迭代中，计算梯度估计值的时间大幅度降低了（ <code>batch size</code> 为<br />
+1），但是总的运行时间还是非常大。</p>
+<ol start="3">
+<li>
+<p>某些算法对采样误差非常敏感，此时 <code>mini-batch</code> 效果较差。原因可能有两个： </p>
+<ul>
+<li>这些算法需要用到全部样本的一些精确信息，但是这些信息难以在少量样本上估计到。 </li>
+<li>这些算法会放大采样误差，导致误差积累越来越严重。 <br />
+  4. 通常仅仅基于梯度  的更新方法相对更稳定，它能够处理更小的 <code>batch</code> （如100）。 </li>
+</ul>
+</li>
+</ol>
+<p>如果使用了黑塞矩阵  （如需要计算  的二阶方法） 通常需要更大的 <code>batch</code> （如 10000）。</p>
+<pre class="highlight"><code> * 即使  被精确估计，但是它的条件数很差，那么乘以  或者  会放大之前存在的误差。这就导致  的一个非常小的变化也会导致  的一个非常大的变化。因此 ` batch ` 需要更大从而降低梯度估计的方差。 
+ * 通常只是近似地估计  ，因此只会引入更多的误差。
+</code></pre>
+
+<h3 id="32-随机抽样">3.2 随机抽样<a class="anchor-link" href="#32-随机抽样" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>mini-batch</code> 是随机抽样的也非常重要。从一组样本中计算出梯度期望的无偏估计要求：组内的样本是独立的。 </li>
+</ol>
+<p>另外，也希望两个连续的梯度估计也是相互独立的。这要求：两个连续的 <code>mini-batch</code> 样本集合也应该是彼此独立的。</p>
+<ol start="2">
+<li>实际应用中，采集的数据样本很可能出现这样的情况：连续的样本之间具有高度相关性。 </li>
+</ol>
+<p>如：统计人群的偏好，很可能连续的样本就是同一个家庭、同一个职业、同一个地域...。</p>
+<p>解决方法是：将样本随机混洗之后存储，训练时按照混洗之后的顺序读取。</p>
+<p>这种打乱顺序不会对 <code>mini-batch</code> 产生严重的影响，不打乱顺序的 <code>mini-batch</code> 才会极大降低算法泛化能力。</p>
+<ol start="3">
+<li><code>mini-batch</code> 可以异步并行分布式更新：在计算 <code>mini-batch</code> 样本集合 \mathbb X_i 上梯度更新时，也可以同时计算其他 <code>mini-batch</code> 样本集合  上的更新。 </li>
+</ol>
+<h3 id="33-重复样本">3.3 重复样本<a class="anchor-link" href="#33-重复样本" title="Permanent link">&para;</a></h3>
+<ol>
+<li>当  ,y 都是离散时，泛化误差的期望： </li>
+</ol>
+<p>其梯度为：</p>
+<p>泛化误差的梯度的无偏估计可以通过从数据生成分布  抽取 <code>mini-batch</code> 样本  以及对应的标签  ，然后计算 <code>mini-batch</code><br />
+上的损失函数对于  的梯度：</p>
+<p>它就是  的无偏估计。</p>
+<p>因此， <code>mini-batch</code> 随机梯度下降中，只要没有重复使用样本，它就是真实泛化误差梯度的无偏估计。</p>
+<ol start="2">
+<li>
+<p>如果是在线学习，则每个样本或者 <code>mini-batch</code> 都不会重复。每次更新都是独立地从真实分布 p_{data} 中采样获得。 </p>
+</li>
+<li>
+<p>如果训练集不大，通常需要多次遍历训练集，此时只有第一遍满足泛化误差的梯度的无偏估计。 </p>
+</li>
+</ol>
+<p>后续的遍历中，泛化误差的梯度估计不再是无偏的。但是后续的遍历会减小训练误差，从而抵消了训练误差和测试误差之间 <code>gap</code><br />
+的增加。最终效果是：减小了测试误差。</p>
+<ol start="4">
+<li>随着数据集规模的爆炸性增长，超过了计算能力的增长速度，现在普遍地对每个样本只使用一次，甚至不完整地使用训练集。 </li>
+</ol>
+<p>此时过拟合不再是问题，欠拟合以及计算效率成为主要问题。</p>
+<h2 id="四基本优化算法">四、基本优化算法<a class="anchor-link" href="#四基本优化算法" title="Permanent link">&para;</a></h2>
+<h3 id="41-随机梯度下降-sgd">4.1 随机梯度下降 SGD<a class="anchor-link" href="#41-随机梯度下降-sgd" title="Permanent link">&para;</a></h3>
+<h4 id="411-算法">4.1.1 算法<a class="anchor-link" href="#411-算法" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p>随机梯度下降沿着随机挑选的 <code>mini-batch</code> 数据的梯度下降方向推进，可以很大程度的加速训练过程。 </p>
+</li>
+<li>
+<p>随机梯度下降 <code>SGD</code> 及其变种可能是机器学习中用的最多的优化算法。 </p>
+</li>
+<li>
+<p>算法： </p>
+<ul>
+<li>
+<p>输入：学习率 </p>
+</li>
+<li>
+<p>初始参数： </p>
+</li>
+<li>
+<p>算法步骤： </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>迭代，直到满足停止条件。迭代步骤为：</p>
+<pre class="highlight"><code> * 从训练集中随机采样 m 个样本  构成 ` mini-batch ` ，对应的标记为  。
+
+ * 计算 ` mini-batch ` 上的梯度作为训练集的梯度的估计：
+
+ * 更新参数：
+</code></pre>
+
+<ol start="4">
+<li>在深度学习中，通常的停止条件是：运行指定数量的迭代步或者 <code>epoch</code> ， 或者在验证集上的某个度量（如：损失函数、错误率、 <code>auc</code> 等）不再提升. </li>
+</ol>
+<h4 id="412-学习率">4.1.2 学习率<a class="anchor-link" href="#412-学习率" title="Permanent link">&para;</a></h4>
+<ol>
+<li><code>SGD</code> 中一个关键参数是学习率。前面介绍的 <code>SGD</code> 算法步骤使用固定的学习率  ，实践中有必要随着时间的推移而降低学习率。 </li>
+</ol>
+<p>使用标准的梯度下降到达极小点时，整个代价函数的真实梯度非常小，甚至为零。由于 <code>SGD</code> 使用 <code>mini-batch</code><br />
+的梯度作为整体梯度的估计，因此引入了噪源。</p>
+<p>该噪源并不会在极小值处消失，使得在极小点时，梯度的估计可能会比较大。因此：标准的梯度下降可以使用固定的学习率，而 <code>SGD</code> 必须使用逐渐降低的学习率。</p>
+<p>假设在极小点时，梯度的估计值  由于引入了噪源导致较大：</p>
+<pre class="highlight"><code> * 如果采取降低学习率的方法，则步长  会很小，这就会导致参数  在极小点附近宅幅震荡直至收敛。 
+ * 如果没有采取降低学习率的方法，则步长  会很大，这会导致参数  在极小点附近宽幅震荡而且很难收敛。
+</code></pre>
+
+<ol start="2">
+<li>
+<p>第 k 步的学习率记做  ，则对于学习率，保证 <code>SGD</code> 收敛的一个充分条件是：  。 </p>
+</li>
+<li>
+<p>在实践中，学习率一般线性衰减到第  次迭代，之后由于学习率足够小则可以保持不变： </p>
+</li>
+</ol>
+<p>其中：  是预先指定的（如 <code>1000</code> ），  为常数。</p>
+<p>学习率不能够衰减到零，因为一旦  衰减到零，则很难说明模型收敛是因为学习率为零，还是梯度为零。</p>
+<ol start="4">
+<li>
+<p>可以通过试验来选取。 </p>
+<ul>
+<li>
+<p>通常被设置为  的大约 <code>1%</code> ， 即降低到足够低的位置。 </p>
+</li>
+<li>
+<p>决定了学习率衰减的速度：经过多少个迭代步，使得学习率降低到足够低的位置。 </p>
+</li>
+<li>
+<p>被称作初始学习率，它的选择是个重要因素： </p>
+</li>
+<li>
+<p>如果太大，则学习曲线将会剧烈震荡，代价函数值会明显增加。因为学习率太大，则容易发生超调现象。即：参数剧烈震荡，导致代价函数发散或者震荡。 </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>注意：温和的震荡是良好的。</p>
+<pre class="highlight"><code> * 如果太小，则学习过程会非常缓慢，学习可能会卡在一个相当高的代价函数值上。
+
+ * 通常最好检测最早的几轮迭代，使用一个高于此时效果最佳学习率的一个学习率，但是又不能太高以至于导致严重的不稳定性。
+</code></pre>
+
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxH14qRph2n7RLQryCEy5QKn6rM0k6T0Lkfaic6EXpN8AE0ibNWdzLUDjg/640?wx_fmt=png" /></p>
+<ol start="5">
+<li>学习速率的选择更像是一门艺术，而不是科学。 </li>
+</ol>
+<h4 id="413-性质">4.1.3 性质<a class="anchor-link" href="#413-性质" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><code>SGD</code> 以及其它的 <code>mini-batch</code> 算法的最重要性质是：每一步参数更新的计算时间（就是计算梯度的时间）不会随着训练样本数量的增加而增加。 </p>
+<ul>
+<li>即使训练样本数量非常庞大时，算法也能收敛。 </li>
+<li>对于足够大的数据集， <code>SGD</code> 可能在处理整个训练集的所有样本之前就收敛到测试集误差的允许范围之内了 <br />
+  2. 研究优化算法的收敛率，会衡量额外误差 <code>excess error</code> ：  。它刻画了：目标函数当前值到目标函数最小值的距离。 </li>
+</ul>
+</li>
+</ol>
+<p>本章中剩余介绍的大多数算法都实现了实践中的好处，但是丢失了常数倍  的渐进收敛率。</p>
+<pre class="highlight"><code> * ` SGD ` 应用于凸问题时， k 步迭代之后的额外误差量级是  ，在强凸情况下是  。除非给定额外条件，否则这些界限无法进一步改进。 
+ * ` Cramer-Rao ` 界限指出：泛化误差的下降速度不会快于  。 
+ * ` Bottou and Bousquet ` 认定：对于机器学习任务，不值得探寻收敛快于  的优化算法。更快的收敛可能对应于过拟合。
+</code></pre>
+
+<ol start="3">
+<li>可以结合标准梯度下降和 <code>SGD</code> 两者的优点，在学习过程中逐渐增大 <code>mini-batch</code> 的大小。 </li>
+</ol>
+<h3 id="42-动量方法">4.2 动量方法<a class="anchor-link" href="#42-动量方法" title="Permanent link">&para;</a></h3>
+<h4 id="421-算法">4.2.1 算法<a class="anchor-link" href="#421-算法" title="Permanent link">&para;</a></h4>
+<ol>
+<li>应用了学习率衰减的 <code>SGD</code> 算法存在一个问题：有些时候学习率会很小，但是明明可以应用一个较大的学习率，而 <code>SGD</code> 并不知道这一情况。 </li>
+</ol>
+<p>其解决方法是采用动量方法。</p>
+<ol start="2">
+<li>
+<p>动量方法积累了之前梯度的指数级衰减的移动平均，然后继续沿着该方向移动。 </p>
+<ul>
+<li>它是一种移动平均，权重是指数级衰减的：近期的权重较大，远期的权重很小。 </li>
+<li>动量方法取这些加权梯度的均值，根据该均值的方向决定参数的更新方向。 <br />
+  3. 动量方法是一种框架，它可以应用到随机梯度下降 <code>SGD</code> 算法中。 </li>
+</ul>
+</li>
+<li>
+<p>动量方法引入了变量  充当速度的角色：它刻画了参数在参数空间移动的方向和速度。 </p>
+</li>
+</ol>
+<p>定义速度为负梯度的指数衰减平均，其更新规则为：</p>
+<p>超参数  描述了衰减权重的底数，从近期到远期的衰减权重为</p>
+<pre class="highlight"><code> * 决定了梯度衰减有多快。 
+ * 越大，则早期的梯度对当前的更新方向的影响越大；反之，则越小。
+</code></pre>
+
+<ol start="5">
+<li>
+<p>令  为位移，  为参数空间的势能，作用力  。根据动量定理： </p>
+<ul>
+<li>令粒子为单位质量，时间间隔为单位时间，则有  ，即：  。 </li>
+</ul>
+</li>
+</ol>
+<p>则得到更新公式：  。</p>
+<pre class="highlight"><code> * 引入一个速度衰减系数  ，它对上一刻的速度进行降权，则有：  。
+
+ * 这段时间位移的增量为：  ，  因  此  有  位  移  更  新  公  式  ：  。
+
+ * 由于这个单位时间内，速度发生了变化，因此应该用平均速度。但是由于速度的变化不大，因此用最新的速度也可以。
+
+ * 当前时刻的最新速度等于下一时刻的起始速度，因此无论用起始速度还是最新速度，位移的更新序列都是相同的。
+
+ * 动量方法更新规则的物理意义为：速度更新，位移更新。
+</code></pre>
+
+<ol start="6">
+<li>下图给出了非动量的方法与动量方法的路径图。代价函数为一个二次函数，它的黑塞矩阵具有不良的条件数。 </li>
+</ol>
+<p>红色路径表示动量方法的路径图，黑色箭头给出了在这些点非动量方法的更新方向和步长。</p>
+<pre class="highlight"><code> * 可以看到：动量方法能够快速、正确地到达极小值，而非动量方法会浪费大量的时间在某些方向上宽幅震荡。
+
+ * 原因是：动量方法中，经过加权移动平均之后，在指向极小值的方向上的速度  不断加强，在垂直于极小值的方向上速度  不断抵消。
+</code></pre>
+
+<p>最终参数会沿着极小值方向快速到达极小值，而在垂直极小值方向波动很小。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/x3YYuUrJv099lPmzMAIv0VO5yKmukdjxo4KSrfJFDjzsUIFHm6dPPzugfVfBU8yuibsazah5GhEMMQeTEmaVjibw/640?wx_fmt=png" /></p>
+<ol start="7">
+<li>
+<p>使用动量的 <code>SGD</code> 算法： </p>
+<ul>
+<li>
+<p>输入： </p>
+</li>
+<li>
+<p>学习率 </p>
+</li>
+<li>
+<p>动量参数 </p>
+</li>
+<li>
+<p>初始参数 </p>
+</li>
+<li>
+<p>初始速度 </p>
+</li>
+<li>
+<p>算法步骤： </p>
+</li>
+</ul>
+</li>
+</ol>
+<p>迭代，直到满足停止条件。迭代步骤为：</p>
+<pre class="highlight"><code> * 从训练集中随机采样 m 个样本  构成 ` mini-batch ` ，对应的标记为  。
+
+ * 计算 ` mini-batch ` 上的梯度作为训练集的梯度的估计：
+
+ * 更新速度：
+
+ * 更新参数：
+</code></pre>
+
+<h4 id="422-衰减因子">4.2.2 衰减因子<a class="anchor-link" href="#422-衰减因子" title="Permanent link">&para;</a></h4>
+<ol>
+<li>非动量方法的步长只是梯度范数乘以学习率。采用动量之后，步长取决于梯度序列、衰减因子、学习率。 </li>
+</ol>
+<blockquote>
+<p>通过求解速度序列  的解析表达式可以得到</p>
+</blockquote>
+<pre class="highlight"><code> * 当有许多连续的梯度指向相同的方向时，步长最大。
+</code></pre>
+
+<p>可以理解为：不同单位时刻的作用力沿着同一个方向连续的次数越多，则质点的速度会较大（不停沿着同一个方向加速）。而步长就是质点的速度。</p>
+<pre class="highlight"><code> * 动量方法中，如果梯度始终为常量  ，则它会在方向  上不停地加速，直到最终的步长为：  。
+</code></pre>
+
+<ol start="2">
+<li>
+<p>实践中，  取值一般为 0.5、0.9、0.99。 </p>
+<ul>
+<li>和学习率一样，  也可以随着时间变化。通常初始时采用一个较小的值，后面慢慢变大。 </li>
+<li>随着时间推移，改变  没有收缩  更重要。因为只要  ，则最终  。因此最终参数更新主导的还是  。 </li>
+</ul>
+</li>
+</ol>
+<h4 id="423-nesterov-动量">4.2.3 Nesterov 动量<a class="anchor-link" href="#423-nesterov-动量" title="Permanent link">&para;</a></h4>
+<ol>
+<li><code>Nesterov</code> 动量是动量方法的变种，也称作 <code>Nesterov Accelerated Gradient</code> （ <code>NAG</code> ）。区别在于：计算 <code>mini-batch</code> 的梯度时，采用更新后的参数  。 </li>
+</ol>
+<p>它可以视作向标准动量方法中添加了一个校正因子：</p>
+<ol start="2">
+<li>在凸 <code>batch</code> 梯度情况下， <code>Nesterov</code> 动量将额外误差收敛率从  改进到  。 </li>
+</ol>
+<p>但是在随机梯度的情况下， <code>Nesterov</code> 动量并没有改进收敛率。</p>
+<h2 id="五自适应学习率算法">五、自适应学习率算法<a class="anchor-link" href="#五自适应学习率算法" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>假设代价函数高度敏感于参数空间中的某些方向，则优化算法最好针对不同的参数设置不同的学习率。 </p>
+<ul>
+<li>代价函数变化明显的参数方向（偏导数较大）：学习率较小，使得更新的步长较小。 </li>
+<li>
+<p>代价函数变化不明显的参数方向（偏导数较小）：学习率较大，使得更新的步长较大。 <br />
+  2. 对于标准的 <code>batch</code> 梯度下降优化算法，沿着负梯度的方向就是使得代价函数下降的方向。 </p>
+</li>
+<li>
+<p>如果不同的方向设置了不同的学习率，则前进的方向不再是负梯度方向，有可能出现代价函数上升。 </p>
+</li>
+<li>对于 <code>mini-batch</code> 梯度下降，由于对梯度引入了躁扰，因此可以针对不同的方向设置不同的学习率。 <br />
+  3. 选择哪个算法并没有一个统一的共识，并没有哪一个算法表现的最好。 </li>
+</ul>
+</li>
+</ol>
+<p>目前流行的优化算法包括： <code>SGD</code> ，具有动量的 <code>SGD</code> ， <code>RMSProp</code> ， <code>AdaDelta</code> ， <code>Adam</code><br />
+。选用哪个算法似乎主要取决于使用者对于算法的熟悉程度，以便调节超参数。</p>
+<h3 id="51-delta-bar-delta">5.1 delta-bar-delta<a class="anchor-link" href="#51-delta-bar-delta" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>delta-bar-delta</code> 算法是一个自适应学习率的算法，其策略是：对于代价函数，如果其偏导数保持相同的符号，则该方向的学习率应该增加；如果偏导数变化了符号，则该方向的学习率应该减小。 </li>
+</ol>
+<p>偏导数符号变化，说明更新的方向发生了反向。如果此时降低了学习率，则会对震荡执行衰减，会更有利于到达平衡点（偏导数为0的位置）。</p>
+<ol start="2">
+<li><code>delta-bar-delta</code> 算法只能用于标准的梯度下降中。 <code>mini-batch</code> 算法对于梯度的估计不是精确的，因此对于正负号的判断会出现较大偏差。 </li>
+</ol>
+<p>对于 <code>mini-batch</code> 随机梯度下降，有一些自适应学习率的算法。包括： <code>AdaGrad、RMSProp、Adam</code> 等算法。</p>
+<h3 id="52-adagrad">5.2 AdaGrad<a class="anchor-link" href="#52-adagrad" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><code>AdaGrad</code> 算法会独立设置参数空间每个轴方向上的学习率。 </p>
+<ul>
+<li>如果代价函数在某个方向上具有较大的偏导数，则这个方向上的学习率会相应降低。 </li>
+<li>如果代价函数在某个方向上具有较小的偏导数，则这个方向上的学习率会相应提高。 <br />
+  2. <code>AdaGrad</code> 算法的思想是：参数空间每个方向的学习率反比于某个值的平方根。这个值就是该方向上梯度分量的所有历史平方值之和。 </li>
+</ul>
+</li>
+</ol>
+<p>其中  表示两个向量的逐元素的相乘。</p>
+<pre class="highlight"><code> * 用平方和的平方根而不是均值，因为分量可能为负值。 
+ * 用历史结果累加，因为考虑的是该方向上的平均表现，而不仅仅是单次的表现。
+</code></pre>
+
+<ol start="3">
+<li>
+<p><code>AdaGrad</code> 算法： </p>
+<ul>
+<li>
+<p>输入： </p>
+</li>
+<li>
+<p>全局学习率 </p>
+</li>
+<li>
+<p>初始参数 </p>
+</li>
+<li>
+<p>小常数  （为了数值稳定，大约为  ） </p>
+</li>
+<li>
+<p>算法步骤： </p>
+</li>
+<li>
+<p>初始化梯度累计变量 </p>
+</li>
+<li>
+<p>迭代，直到停止条件。迭代步骤为： </p>
+</li>
+<li>
+<p>从训练集中随机采样 m 个样本  构成 <code>mini-batch</code> ，对应的标记为  。 </p>
+</li>
+<li>
+<p>计算 <code>mini-batch</code> 上的梯度作为训练集的梯度的估计： </p>
+</li>
+<li>
+<p>累计平方梯度： </p>
+</li>
+<li>
+<p>计算更新（逐元素）： </p>
+</li>
+<li>
+<p>更新参数： </p>
+</li>
+</ul>
+</li>
+<li>
+<p>由于随迭代次数的增加，  的值也会增加，因此  随着迭代的推进而降低。这起到了一个学习率衰减的效果。 </p>
+</li>
+</ol>
+<p>另一方面，不同方向的分量  不同，平均来说梯度分量越大的方向的学习率下降的最快。这起到了一个自适应的效果。</p>
+<ol start="5">
+<li>效果： </li>
+</ol>
+<p>在训练深度神经网络模型的实践中发现： <code>AdaGrad</code><br />
+学习速率减小的时机过早，且减小的幅度过量。因为学习率与历史梯度的平方和的开方成反比，导致过快、过多的下降。</p>
+<pre class="highlight"><code> * 在凸优化中， ` AdaGrad ` 算法效果较好。
+
+ * ` AdaGrad ` 算法在某些深度学习模型上效果不错，但大多数情况下效果不好。
+</code></pre>
+
+<h3 id="53-rmsprop">5.3 RMSProp<a class="anchor-link" href="#53-rmsprop" title="Permanent link">&para;</a></h3>
+<h4 id="531-rmsprop-原始算法">5.3.1 RMSProp 原始算法<a class="anchor-link" href="#531-rmsprop-原始算法" title="Permanent link">&para;</a></h4>
+<ol>
+<li><code>RMSProp</code> 是 <code>AdaGrad</code> 的一个修改：将梯度累计策略修改为指数加权的移动平均。 </li>
+</ol>
+<p>其中  为衰减速率，它决定了指数加权移动平均的有效长度。</p>
+<ol start="2">
+<li>
+<p>标准的 <code>RMSProp</code> 算法： </p>
+<ul>
+<li>
+<p>输入： </p>
+</li>
+<li>
+<p>全局学习率 </p>
+</li>
+<li>
+<p>衰减速率 </p>
+</li>
+<li>
+<p>初始参数 </p>
+</li>
+<li>
+<p>小常数  （为了数值稳定，大约为  ） </p>
+</li>
+<li>
+<p>算法步骤： </p>
+</li>
+<li>
+<p>初始化梯度累计变量 </p>
+</li>
+<li>
+<p>迭代，直到停止条件。迭代步骤为： </p>
+</li>
+<li>
+<p>从训练集中随机采样 m 个样本  构成 <code>mini-batch</code> ，对应的标记为  。 </p>
+</li>
+<li>
+<p>计算 <code>mini-batch</code> 上的梯度作为训练集的梯度的估计： </p>
+</li>
+<li>
+<p>累计平方梯度： </p>
+</li>
+<li>
+<p>计算更新（逐元素）： </p>
+</li>
+<li>
+<p>更新参数： </p>
+</li>
+</ul>
+</li>
+<li>
+<p>实践证明 <code>RMSProp</code> 是一种有效、实用的深度神经网络优化算法，目前它是深度学习业界经常采用的优化方法之一。 </p>
+</li>
+</ol>
+<p><strong>本文福利</strong></p>
+<p>可以在 <strong>本</strong> <strong>公众号后台</strong> 回复关键词：  <strong>“</strong> ** DS  ** ** ”  **<br />
+获取大量由我平台编辑精心整理的学习资料，如果觉得有用， 请勿吝啬你的留言和赞哦！</p>
+<p>—— 完 ——</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=Mzg2MTA0NzA0Mw==&amp;mid=2247502259&amp;idx=2&amp;sn=4538cd713555f5b0b3ec814af5f6bd81&amp;chksm=ce1f99def96810c8c8289926da21980abff06a25cb876827c30ad3c6&amp;scene=21#wechat_redirect"><br />
+<img alt="" src="https://mmbiz.qpic.cn/mmbiz_gif/LvobWLKhkBuFtP4EXug3x2cgkRibeRVj7bibtiaGm3UY3Ore7z63rLkSrRu1PQ0YmgjFF6qibo9xtdO9mvU1EcrSGA/640?wx_fmt=gif" /><br />
+</a></p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_jpg/LvobWLKhkBtreWXUJmjtnAvBiaaLnOsEwpOGIVjF2rrJhYibDzeouT7jKic2wUMB6Qa6QfphaiakPGsJ4cGeBicBCCA/640?wx_fmt=jpeg" /></p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=Mzg2MTA0NzA0Mw==&amp;mid=2247505543&amp;idx=3&amp;sn=0c15e76e2604131ce0e26e5d8a9be491&amp;chksm=ce1f86ebf9680ffdfd557a3c96bdd35e0332190a133a1c75307c04ed54633ad73c45f6074a94&amp;scene=21#wechat_redirect"><br />
+<img alt="" src="https://mmbiz.qpic.cn/mmbiz_gif/LvobWLKhkBv60LtwarKklNkWy5dycytsiagLhfP3UO4zw5GjDSQdDFI2UYicBgic86wUE7sthUpXZdUJicEEtdHARw/640?wx_fmt=gif" /><br />
+</a></p>
+<p><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzU3MDQyMTQzOA==&amp;action=getalbum&amp;album_id=1342696062943068161&amp;token=956405695&amp;lang=zh_CN#wechat_redirect"><br />
+<img alt="" src="https://mmbiz.qpic.cn/mmbiz_jpg/LvobWLKhkBvj3PQeAXjazeThVuGNe6IRxWZKblAx78oCofeAKlmGEwibcpKk9HeS5v4MkMdrTaXfzwSCzqsV40Q/640?wx_fmt=jpeg" /><br />
+</a></p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_gif/LvobWLKhkBtlkRdSAcRskiaqSCUZyJfUlt5qdhcB6g4FTaGWpOasOpCBpfOAlvEVsgp7zoYqMaN85sCZbXWboTQ/640?wx_fmt=gif" />  </p>
+<p><strong>文章须知</strong></p>
+<p>文章作者：华校专</p>
+<p>责任编辑：周岩 Logic 破茧</p>
+<p>审核编辑：阿春</p>
+<p>微信编辑：  破茧</p>
+<p>本文由『运筹OR帷幄』原创发布</p>
+<p>如需转载请在公众号后台获取转载须知</p>
+<p>原文链接：3_regularization (huaxiaozhuan.com)</p>
+<p>预览时标签不可点</p>
+<p><a href="javascript:;"> 阅读原文 </a></p>
+<p>微信扫一扫<br />
+关注该公众号</p>
+<hr />
+<hr />
+<p>×  分析</p>
+<p>收藏</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

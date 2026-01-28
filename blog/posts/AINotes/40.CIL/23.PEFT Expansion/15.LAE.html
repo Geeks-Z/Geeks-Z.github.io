@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-预备知识">3. 预备知识</a><ul>
+<li><a href="#31-持续学习公式">3.1 持续学习公式</a></li>
+<li><a href="#32-参数高效调优回顾">3.2 参数高效调优回顾</a></li>
+</ul>
+</li>
+<li><a href="#4-方法论">4. 方法论</a><ul>
+<li><a href="#41-朴素基线">4.1 朴素基线</a></li>
+<li><a href="#42-提出的框架">4.2 提出的框架</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-数据集和评估协议">5.1 数据集和评估协议</a></li>
+<li><a href="#52-实现和训练细节">5.2 实现和训练细节</a></li>
+<li><a href="#53-基准结果">5.3 基准结果</a></li>
+<li><a href="#54-消融研究">5.4 消融研究</a></li>
+<li><a href="#55-pet-模块的附加位置">5.5 PET 模块的附加位置</a></li>
+<li><a href="#56-transformer-变体和-convnet-的结果">5.6 Transformer 变体和 ConvNet 的结果</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>“预训练 → 下游适应”为持续学习（Continual Learning, CL）带来了新的机遇和挑战。尽管最近的最先进 CL 方法通过参数高效调优（Parameter-Efficient-Tuning, PET）适应范式取得了成功，但仅探索了提示（prompt）方法，限制了其仅适用于 Transformer 模型。本文将提示视为 PET 的一种实例，并提出了一种通用的 PET 持续学习框架，称为学习 - 积累 - 集成（Learning-Accumulation-Ensemble, LAE）。PET（例如使用 Adapter、LoRA 或 Prefix）可以用更少的参数和资源将预训练模型适应到下游任务。给定一个 PET 方法，我们的 LAE 框架通过三个新颖的设计将其应用于 CL：1）<strong>学习</strong>：预训练模型通过调优在线 PET 模块来适应新任务，并通过适应速度校准来对齐不同的 PET 模块；2）<strong>积累</strong>：在线 PET 模块学习到的任务特定知识通过动量更新积累到离线 PET 模块中；3）<strong>集成</strong>：在推理过程中，我们分别构建两个专家模型（在线/离线 PET 模块，分别擅长处理新任务和历史任务）进行预测集成。我们展示了 LAE 与多种 PET 方法的兼容性，并获得了强大的 CL 能力。例如，使用 Adapter PET 的 LAE 在 CIFAR100 和 ImageNet-R 数据集上的最后增量准确率分别比之前的最先进方法高出 1.3% 和 3.6%。代码可在 https://github.com/gqk/LAE 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>在不断变化的世界中，持续学习（Continual Learning, CL）新知识是 AI 模型的一项基本能力。然而，神经网络常常遭受灾难性遗忘 [9, 39] 的困扰，即当模型吸收新信息时，先前学到的知识会被遗忘。尽管许多工作致力于减少遗忘，例如动态网络 [41, 50, 26, 18]、正则化 [28, 20, 52, 1] 和记忆回放 [38, 15, 6, 30, 2]，但它们的性能仍然无法满足实际需求。</p>
+<p>最近，预训练和下游适应技术为 CL 开辟了新的机遇和挑战。基本上，这些技术 [4, 36, 12, 11, 48] 在大规模数据上预训练一个深度模型，然后将预训练模型适应到新任务。我们观察到，下游适应和 CL 是相互重要的。一方面，在实际的 AI 系统中，预训练模型有时需要依次适应多个下游任务，从而产生了对 CL 的需求。另一方面，最近的研究 [47, 46, 45] 表明，“预训练 → 下游适应”技术可以提升 CL 性能。</p>
+<p>具体来说，L2P[47]、DualPrompt[46] 和 ESN[45] 都使用了一种流行的适应技术，称为参数高效调优（Parameter-Efficient-Tuning, PET）。通常，PET 以更少的可学习参数和资源将预训练模型适应到下游任务。尽管这些方法在 CL 中取得了最先进的成果，但它们仍然存在一些局限性。1）它们都局限于特定的 PET 方法，即提示调优，限制了其灵活性，考虑到提示只能与 Transformer 配合使用，无法适应其他网络架构。2）大多数方法依赖于为每个任务选择任务特定的参数（特别是提示标记）。根据我们的补充材料中的调查，随着任务数量的增加，选择往往会变得嘈杂，任务特定的提示显得同质化。</p>
+<p>为了解决这些问题，本文提出了学习 - 积累 - 集成（Learning-Accumulation-Ensemble, LAE），一个通用的参数高效调优（PET）持续学习框架。LAE 不仅限于提示，还可以利用各种其他 PET 模块，如图 2(b) 所示。给定一个 PET 方法，我们的 LAE 通过三个步骤直接将其重塑为 CL 方法，即学习、积累和集成。</p>
+<ul>
+<li>
+<p><strong>1) 学习与校准速度</strong>：预训练模型通过调优在线 PET 模块来适应新任务。为了适应各种 PET 方法，一个关键挑战是不同的 PET 模块具有不同的<strong>适应速度</strong>（对于新任务）以及不同的<strong>遗忘速度</strong>（对于历史任务）。为此，我们设计了一种基于梯度分析的适应校准策略。我们通过实验证明，这种校准策略能够对齐不同的 PET 模块，并使 LAE 成为一个统一的框架。</p>
+</li>
+<li>
+<p><strong>2) 多任务知识的积累</strong>：在将预训练模型适应到新任务后，在线 PET 模块中的参数倾向于当前的新任务，可能不适合历史任务。与 L2P 和 DualPrompt 中记忆多个 PET 模块集合并选择一些子集（用于单个任务）不同，LAE 通过动量更新将所有已见任务的知识积累到单个离线 PET 模块中。这种简单的积累避免了嘈杂的选择，并且能够有效<strong>缓解灾难性遗忘</strong>，<strong>尤其是在学习的任务数量较大时</strong>（见第 5 节的图 3 和图 4）。</p>
+</li>
+<li>
+<p><strong>3) 两个专家模型的集成</strong>：在线和离线 PET 模块分别包含更多的新知识和历史知识，因此，用它们构建的两个专家模型分别更擅长处理新任务和旧任务。与仅使用在线或离线专家模型进行推理不同，我们通过能量指标（详见第 4.2 节）集成两个专家模型的输出，以获得来自任何已学习任务的推理样本的预测。这种专家集成策略帮助我们的框架实现了比单独使用一个专家模型更鲁棒的性能。</p>
+</li>
+</ul>
+<p>本文的贡献总结如下：</p>
+<ul>
+<li>我们深入研究了通过通用参数高效调优（PET）方法不断将预训练模型适应到新任务的持续学习范式，并提出了统一的学习 - 积累 - 集成（LAE）框架。</li>
+<li>我们的 LAE 框架通过三个新颖的设计将给定的 PET 方法重塑为一种具有竞争力的无记忆持续学习方法：校准速度的学习、多任务知识的积累以及由在线和离线 PET 模块构建的两个专家模型的集成。</li>
+<li>我们在 CIFAR100 和 ImageNet-R 基准上进行了广泛的实验，在所有实验中，我们的 LAE 始终优于之前的最先进方法。</li>
+</ul>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p><strong>参数高效调优</strong>。作为全微调的高效替代方案，Adapter-Tuning[16] 首次提出将大型预训练语言模型迁移到下游任务。受文本提示的启发，Prompt-Tuning[25] 和 Prefix-Tuning[27] 插入可学习的标记以适应新任务。更先进的方法 [51, 7, 17, 33] 实现了与全微调相当或更优的性能，并通过将额外的可学习参数合并到原始预训练模型中来保持相同的推理成本。随着成功的 Vision Transformers[5, 31] 的出现，VPT[19] 和 AdapterFormer[3] 被提出用于解决视觉迁移学习问题。提示调优和前缀调优依赖于 Transformer 架构，因为它们修改了输入或隐藏标记。Adapter 及其变体是网络架构通用的，因为它们是可以以与预训练模型兼容的形式实现的新模块。所有类型的参数高效调优模块都可以集成到我们的 LAE 框架中，只要它们适用于预训练模型，但我们在本文中重点关注代表性的 Adapter[16]、LoRA[17] 和 Prefix[27]。</p>
+<p><strong>持续学习</strong>。持续学习（CL）的核心问题是应对灾难性遗忘 [9]。基于记忆的方法 [38, 15, 6, 30, 2] 将学习样本的子集保存到记忆缓冲区中，并在学习新任务时回放它们。无记忆方法不依赖于可能引发隐私问题的旧样本，它们动态扩展网络或为不同任务隔离参数 [41, 50, 26, 18]，正则化对已学习任务重要的网络参数 [28, 20, 52, 1]，并回放生成或合成的数据 [42, 49, 43, 8]。传统的 CL 方法使用随机初始化的模型从头开始学习任务，而预训练模型直到最近才受到 CL 研究者的关注。两项开创性工作 [47, 46] 将提示调优引入 CL，并取得了比之前方法高得多的增量性能，展示了在 CL 中使用预训练模型的优势。Side-Tuning[53] 采用了一种类似于 Adapter-Tuning 的技术，但需要推理样本的任务身份。在本文中，我们提出了一种统一的无记忆 CL 框架，可以整合各种类型的 PET 模块。特别是，我们专注于具有潜力的类增量学习（Class-Incremental Learning, CIL），未来工作可以将我们的 LAE 扩展到其他 CL 场景。</p>
+<h2 id="3-预备知识">3. 预备知识<a class="anchor-link" href="#3-预备知识" title="Permanent link">&para;</a></h2>
+<h3 id="31-持续学习公式">3.1 持续学习公式<a class="anchor-link" href="#31-持续学习公式" title="Permanent link">&para;</a></h3>
+<p>我们专注于增量类的持续学习，即类增量学习（Class-Incremental Learning, CIL），其中模型依次学习任务 <span class="math-inline">\mathcal{T}!!:=!{\mathcal{T}<em>{1},\mathcal{T}</em>{2},\cdots,\mathcal{T}<em>{n}}</span>，第 <span class="math-inline">i^{th}</span> 个任务 <span class="math-inline">\mathcal{T}</em>{i}</span> 有 <span class="math-inline">|\mathcal{T}<em>{i}|</span> 个类别，<span class="math-inline">\mathcal{T}</em>{i}</span> 的训练集记为 <span class="math-inline">\mathcal{D}<em>{i}</span>，且任务之间的类别不重叠。模型 <span class="math-inline">f(\cdot;\boldsymbol{\theta},\boldsymbol{\phi})</span> 为已学习任务的给定样本 <span class="math-inline">\mathbf{x}\in\mathcal{X}</span> 预测类别标签 <span class="math-inline">y\in\mathcal{Y}</span>，其中 <span class="math-inline">\mathcal{Y}</span> 是所有已见类别，<span class="math-inline">\boldsymbol{\theta}</span> 和 <span class="math-inline">\boldsymbol{\phi}</span> 分别是特征提取器和分类头的参数。在本文中，特征提取器是由 <span class="math-inline">\boldsymbol{\theta}</em>{pre}</span> 参数化的预训练模型，附加了由 <span class="math-inline">\boldsymbol{\theta}<em>{pet}</span> 参数化的参数高效调优模块，且 <span class="math-inline">\boldsymbol{\phi}!!=!!\text{concatenate}(\boldsymbol{\phi}</em>{old},\boldsymbol {\phi}<em>{new})</span>，其中 <span class="math-inline">\boldsymbol{\phi}</em>{old}</span> 和 <span class="math-inline">\boldsymbol{\phi}<em>{new}</span> 分别是所有已学习任务 <span class="math-inline">\mathcal{T}</em>{i.i}</span> 和当前学习任务 <span class="math-inline">\mathcal{T}<em>{i}</span> 的分类器。由于在学习新任务时 <span class="math-inline">\boldsymbol{\theta}</em>{pre}</span> 和 <span class="math-inline">\boldsymbol{\phi}_{old}</span> 保持不变，我们在本文的其余部分可能会省略它们以简洁。</p>
+<h3 id="32-参数高效调优回顾">3.2 参数高效调优回顾<a class="anchor-link" href="#32-参数高效调优回顾" title="Permanent link">&para;</a></h3>
+<p>参数高效调优（Parameter-Efficient Tuning, PET）保持预训练模型冻结，并调优少量额外的可学习参数，称为 PET 模块。下面我们回顾几个代表性的 PET 模块，其中 <span class="math-inline">g</span> 是 PET 附加到的模块，<span class="math-inline">\mathbf{e}</span> 和 <span class="math-inline">\mathbf{h}</span> 是原始 <span class="math-inline">g</span> 的输入和输出，<span class="math-inline">\mathbf{h}^{\prime}</span> 是附加 PET 后的 <span class="math-inline">g</span> 的输出。</p>
+<p><strong>Adapter</strong>[16] 是一个可以插入预训练模型任何层（即 <span class="math-inline">g</span>）的小模块。如图 2(b) 所示，Adapter 通常是一个由下投影（参数为 <span class="math-inline">\mathbf{W}<em>{down}</span>）、非线性激活函数 <span class="math-inline">\sigma(\cdot)</span> 和上投影（参数为 <span class="math-inline">\mathbf{W}</em>{up}</span>）组成的残差块。这两个投影可以是卷积 [37]（用于 CNN）或线性 [16] 层（用于 Transformer 架构）。我们将 Adapter 公式化为：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}=\mathbf{h}+\sigma(\mathbf{h}<em>\mathbf{W}_{down})</em>\mathbf{W}<em> {up}, \tag{1}<br />
+</div><br />
+其中 <span class="math-inline"><em></span> 是矩阵乘法或卷积操作，<span class="math-inline">\sigma</span> 是激活函数。或者，Adapter 也可以与 <span class="math-inline">g</span> 并行，类似于残差分支 [53, 10]：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}=\mathbf{h}+\sigma(\mathbf{e}</em>\mathbf{W}</em>{down})<em>\mathbf{W}_ {up}. \tag{2}<br />
+</div><br />
+</em><em>LoRA</em><em>[17] 假设在将预训练模型调优到下游任务时，参数的变化处于低秩空间。对于权重为 <span class="math-inline">\mathbf{W}\in\mathbb{R}^{d\times d^{\prime}}</span> 的线性层，权重更新 <span class="math-inline">\Delta\mathbf{W}</span> 可以分解为两个小矩阵的乘积：<br />
+<div class="math-display"><br />
+    \Delta\mathbf{W}=\mathbf{W}<em>{down}\mathbf{W}</em>{up}, \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">\mathbf{W}<em>{down}\in\mathbb{R}^{d\times r}</span> 和 <span class="math-inline">\mathbf{W}</em>{up}\in\mathbb{R}^{r\times d^{\prime}}</span>。对于卷积层，更新可以重塑为核形状。最后，LoRA 将适应层的前向传递修改为以下形式：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}=\mathbf{h}+\mathbf{e}</em>(\mathbf{W}<em>{down}\mathbf{W}</em>{up}), \tag{4}<br />
+</div><br />
+其中 <span class="math-inline">*</span> 是矩阵乘法或卷积操作，偏置和重塑操作为了简洁而省略。由于 LoRA 适应 <span class="math-inline">g</span> 的权重，权重更新可以合并到 <span class="math-inline">g</span> 中以减少推理延迟。</p>
+<p><strong>Prefix</strong>[27] 和<strong>Prompt</strong>[25] 是可学习的标记，预加到 Transformer 块的输入或注意力模块的键和值。给定两组前缀标记 <span class="math-inline">\mathbf{P}<em>{k},\mathbf{P}</em>{v}\in\mathbb{R}^{l\times d}</span>，注意力模块修改为：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}=\text{Attn}\left(\mathbf{x}\mathbf{W}<em>{q},[\mathbf{P}</em>{k}, \mathbf{e}\mathbf{W}<em>{k}],[\mathbf{P}</em>{v},\mathbf{e}\mathbf{W}_{v}]\right), \tag{5}<br />
+</div><br />
+其中 <span class="math-inline">[\cdot,\cdot]</span> 是连接操作，Attn 定义为：<br />
+<div class="math-display"><br />
+    \text{Attn}\left(\mathbf{Q},\mathbf{K},\mathbf{V}\right):=\text{softmax}\left( \frac{\mathbf{Q}\mathbf{K}^{T}}{\sqrt{d}}\right)\mathbf{V},<br />
+</div><br />
+并且为了简洁省略了多头机制。</p>
+<p>在本文中，我们遵循 [10] 为并行 Adapter（公式 2）和 LoRA（公式 4）分别添加一个可学习的缩放参数 <span class="math-inline">s</span>，得到：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}=\mathbf{h}+s\cdot\sigma(\mathbf{e}<em>\mathbf{W}_{down})</em>\mathbf{ W}_{up}, \tag{6}<br />
+</div></p>
+<p><div class="math-display"><br />
+    \mathbf{h}^{\prime}=\mathbf{h}+s\cdot\mathbf{e}*(\mathbf{W}<em>{down}\mathbf{W}</em>{ up}). \tag{7}<br />
+</div><br />
+公式 (6) 和 (7) 是公式 (2) 和 (4) 的一般形式，当 <span class="math-inline">s</span> 为常数 1 时，它们退化为公式 (2) 和 (4)。我们在实验中使用公式 (6) 和 (7) 中的 PET，而不是公式 (1) 和 (4) 中的 PET（见第 5 节）。</p>
+<p>除了上述三种 PET 模块外，还有许多其他模块，如 AdaptBias[7]、Compacter[33] 和 AdapterFormer[3]，未来还会有新的、更优秀的 PET 方法。只要它们与预训练模型兼容，所有这些方法都可以应用于我们的 CL 框架（见第 4.2 节）。</p>
+<h2 id="4-方法论">4. 方法论<a class="anchor-link" href="#4-方法论" title="Permanent link">&para;</a></h2>
+<h3 id="41-朴素基线">4.1 朴素基线<a class="anchor-link" href="#41-朴素基线" title="Permanent link">&para;</a></h3>
+<p>我们通过利用预训练模型和 PET 技术构建了一个基线，遵循通常被认为是 CIL 下界的朴素顺序微调（Seq-FT）。直观上，我们的基线创建一个 PET 模块并将其附加到预训练模型上，然后以与 Seq-FT 相同的方式顺序学习任务，但保持预训练模型冻结。我们选择局部交叉熵损失（CE）而不是全局 CE 损失作为 Seq-FT 和基线的学习目标，因为在使用大型预训练模型时，局部 CE 在经验上表现优于全局 CE[47, 46, 45]。局部 CE 是在当前任务的类别上计算的标准 CE：<br />
+<div class="math-display"><br />
+    \mathcal{L}=\frac{1}{|\mathcal{D}<em>{i}|}\sum</em>{(\mathbf{x},y)\in\mathcal{D}<em>{i}} \mathcal{L}</em>{\text{ce}}({\rm mask}(f(\mathbf{x};\boldsymbol{\theta},\boldsymbol {\phi})),y), \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">y</span> 是当前训练集 <span class="math-inline">\mathcal{D}_{i}</span> 中输入 <span class="math-inline">\mathbf{x}</span> 的真实标签，<span class="math-inline">{\rm mask}(\cdot)</span> 是过滤掉旧类别 logits 的函数。当移除 <span class="math-inline">{\rm mask}(\cdot)</span> 时，公式 (8) 退化为全局 CE。尽管我们的基线非常朴素，但在使用相同的 Prefix 模块时，其性能与最先进的 DualPrompt 相当。</p>
+<h3 id="42-提出的框架">4.2 提出的框架<a class="anchor-link" href="#42-提出的框架" title="Permanent link">&para;</a></h3>
+<p>LAE 基于我们的网络架构通用基线，并额外引入了三个新颖的设计，从而产生了一个强大的框架，可以轻松地将任何 PET 方法重塑为具有竞争力的持续学习方法。接下来，我们将深入探讨 LAE 的三个关键方面：学习、积累和集成。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250206145101.png" style="zoom: 80%;" /></div>
+
+<p><strong>学习与校准速度</strong>。我们观察到，<strong>PET 模块在获取新知识的速度上存在差异，导致性能差异</strong>。理论上，PET 模块对新任务的适应速度过快可能导致过拟合，并导致更严重的灾难性遗忘，而较慢的适应速度可以保持模型的稳定性，但会限制其可塑性。我们认为，对齐不同 PET 模块的适应速度对于将它们转化为高效且鲁棒的 CL 方法至关重要。为此，我们提出了校准 PET 模块以适应速度的策略。</p>
+<p>此外，由于相同的 PET 模块 <span class="math-inline">\boldsymbol{\theta}<em>{pet}</span> 被新旧任务共享，为新任务对 <span class="math-inline">\boldsymbol{\theta}</em>{pet}</span> 所做的更改可能会导致旧任务的遗忘。因此，减缓 <span class="math-inline">\boldsymbol{\theta}<em>{pet}</span> 的变化，例如通过降低学习率（见补充材料），可以帮助缓解灾难性遗忘。Kumar 等人 [22] 展示了线性探测后微调策略如何有效平衡分布外和分布内任务的性能。我们采用类似的技术来校准 <span class="math-inline">\boldsymbol{\theta}</em>{pet}</span> 相对于 <span class="math-inline">\boldsymbol{\phi}<em>{new}</span> 的适应速度。具体来说，在训练开始时，我们只学习 <span class="math-inline">\boldsymbol{\phi}</em>{new}</span>，同时冻结 <span class="math-inline">\boldsymbol{\theta}<em>{pet}</span>；然后在 <span class="math-inline">\boldsymbol{\phi}</em>{new}</span> 充分学习且损失显著下降后，我们联合学习 <span class="math-inline">\boldsymbol{\phi}<em>{new}</span> 和 <span class="math-inline">\boldsymbol{\theta}</em>{pet}</span>。</p>
+<p>根据 He 等人 [10] 的研究，Prefix 可以等效地转换为类似于 Adapter 的形式：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}\leftarrow(1-\lambda(\mathbf{e}))\mathbf{h}+\lambda(\mathbf {e})\sigma\left(\mathbf{e}\mathbf{W}<em>{1}\right)\mathbf{W}</em>{2}, \tag{9}<br />
+</div><br />
+其中 <span class="math-inline">\mathbf{W}<em>{1}</span>=<span class="math-inline">\mathbf{W}</em>{q}\mathbf{P}<em>{k}^{\top}</span>，<span class="math-inline">\mathbf{W}</em>{2}</span>=<span class="math-inline">\mathbf{P}<em>{v}</span>，<span class="math-inline">\sigma</span>=softmax，且<br />
+<div class="math-display"><br />
+    \lambda(\mathbf{e})=\frac{\sum</em>{i}\exp\left(\mathbf{e}\mathbf{W}<em>{q}\mathbf{P}</em> {k}^{\top}\right)<em>{i}}{\sum</em>{i}\exp\left(\mathbf{e}\mathbf{W}<em>{q}\mathbf{P}</em>{k }^{\top}\right)<em>{i}+\sum</em>{j}\exp\left(\mathbf{e}\mathbf{W}<em>{q}\mathbf{W}</em>{k}^{ \top}\mathbf{C}^{\top}\right)<em>{j}}. \tag{10}<br />
+</div><br />
+由于 <span class="math-inline">\mathbf{P}</em>{k}</span> 通常包含比输入 <span class="math-inline">\mathbf{C}</span> 少得多的标记，<span class="math-inline">\lambda(\mathbf{e})</span> 通常是一个接近 0 的小正数，这影响了 Prefix 标记 <span class="math-inline">\mathbf{P}<em>{v}</span> 的梯度：<br />
+<div class="math-display"><br />
+    \frac{\partial\mathcal{L}}{\partial\mathbf{P}</em>{v}}=\bigg(\frac{\partial\mathbf {h}^{\prime}}{\partial\mathbf{P}<em>{v}}\bigg)^{\top}\frac{\partial\mathcal{L}}{ \partial\mathbf{h}^{\prime}}=\lambda(\mathbf{e})(\sigma\left(\mathbf{e}\mathbf{ W}</em>{1}\right))^{\top}\frac{\partial\mathcal{L}}{\partial\mathbf{h}^{\prime}}. \tag{11}<br />
+</div><br />
+因此，<span class="math-inline">\mathbf{P}<em>{v}</span> 的梯度显著小于由 <span class="math-inline">\mathbf{W}</em>{down}</span>=<span class="math-inline">\mathbf{W}<em>{1}</span> 和 <span class="math-inline">\mathbf{W}</em>{up}</span>=<span class="math-inline">\mathbf{W}<em>{2}</span> 参数化的相应 Adapter 参数 <span class="math-inline">\mathbf{W}</em>{up}</span> 的梯度，并且我们可以得出关于 <span class="math-inline">\mathbf{P}<em>{k}</span> 和 <span class="math-inline">\mathbf{W}</em>{down}</span> 的类似结论。然后，我们可以很容易地观察到，Prefix 对新任务的适应速度比 Adapter 慢得多。这也是为什么之前方法 [47, 46] 中不同任务的提示趋于同质化的部分原因（见补充材料）。在这里，我们通过补偿其梯度 <span class="math-inline">\frac{1}{\lambda(\mathbf{e})}</span> 并添加两个可学习的缩放参数 <span class="math-inline">s^{k}</span> 和 <span class="math-inline">s^{v}</span> 来对齐 Prefix 与 Adapter，将公式 (9) 中的 Prefix 校准为以下形式：<br />
+<div class="math-display"><br />
+    \mathbf{h}^{\prime}\leftarrow(1-\lambda(\mathbf{e}))\mathbf{h}+\sigma\left(s^{ k}\cdot\mathbf{eW}<em>{1}\right)(s^{v}\cdot\mathbf{W}</em>{2}). \tag{12}<br />
+</div><br />
+校准后的 Prefix 的适应速度几乎等同于公式 (6) 中的 Adapter，并将其性能提升到与 Adapter 相当的水平。对于其他 PET 模块，我们也可以具体分析它们，然后校准它们的适应速度以与 Adapter 对齐。</p>
+<p>通过对齐 PET 模块的适应速度并校准它们相对于分类器的适应速度，我们的框架在使用各种 PET 模块时实现了更好且更一致的稳定性 - 可塑性平衡。</p>
+<p><strong>多任务知识的积累</strong>。PET 模块 <span class="math-inline">\boldsymbol{\theta}<em>{pet}</span> 旨在不断适应新任务，使模型更擅长处理新任务。然而，这种适应过程可能导致模型逐渐忘记如何处理旧任务。为了解决这个问题，我们提出为旧任务创建一个额外的专家，以补充新任务的专家，灵感来自人类大脑的互补学习系统 [34, 23]，其中海马体快速学习新知识，而新皮质随着时间的推移以离线方式整合已学知识。我们通过在模型学习第一个任务后复制在线 PET 模块 <span class="math-inline">\boldsymbol{\theta}^{on}</em>{pet}</span>（即基线中的 <span class="math-inline">\boldsymbol{\theta}<em>{pet}</span>）作为离线 PET 模块 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span> 来实现这一点。当模型学习新任务时，<span class="math-inline">\boldsymbol{\theta}^{off}<em>{pet}</span> 通过积累函数缓慢积累已学知识，我们通过实验发现简单的指数移动平均（EMA）算法对我们的 LAE 效果很好：<br />
+<div class="math-display"><br />
+    \boldsymbol{\theta}^{off}</em>{pet}\leftarrow\alpha\cdot\boldsymbol{\theta}^{off}<em> {pet}+(1-\alpha)\cdot\boldsymbol{\theta}^{on}</em>{pet}, \tag{13}<br />
+</div><br />
+其中 <span class="math-inline">\alpha\in(0,1)</span> 是一个较大的（即接近 1）权重衰减。</p>
+<p>这样，类似于新皮质的离线 PET 模块逐渐以缓慢的离线方式整合已学知识，而类似于海马体的在线 PET 模块继续快速学习新知识。然后，我们可以分别获得用于新任务和旧任务的两个专家模型，分别使用 <span class="math-inline">\boldsymbol{\theta}^{on}<em>{pet}</span> 和 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span>。然而，在推理过程中，样本所属的任务是未知的，我们需要设计一种方法来有效利用两个专家模型进行推理。</p>
+<p><strong>两个专家模型的集成</strong>。由 <span class="math-inline">\boldsymbol{\theta}^{on}<em>{pet}</span> 和 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span> 构建的两个专家模型分别擅长处理新任务和旧任务。与仅使用在线或离线专家模型进行推理不同，我们通过能量指标（详见第 4.2 节）集成它们的输出，以获得来自任何已学习任务的推理样本的预测。</p>
+<p>分类器可以被视为能量模型，当我们定义未归一化的负对数概率为能量函数时 [24]。能量模型的优化目标是最小化其学习任务数据分布上的能量。先前的研究 [29] 表明，在一个数据域上训练的能量模型在其他数据域上的能量通常非常高。因此，公式 (8) 实际上是在新任务上不断最小化 <span class="math-inline">\phi_{new}</span> 的能量。即使训练期间不使用旧数据，旧数据在 <span class="math-inline">\phi_{new}</span> 上的能量也会非常高，正如最近的工作 ESN[45] 所展示的那样。</p>
+<p>同样，由于 <span class="math-inline">\boldsymbol{\theta}^{on}<em>{pet}</span> 和 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span> 分别包含相对更多的新知识和历史知识，理论上，<span class="math-inline">\boldsymbol{\theta}^{on}<em>{pet}</span> 对新任务样本产生的能量应该小于 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span> 产生的能量，反之亦然。因此，选择能量最低的预测结果作为推理样本的最终预测似乎是一个简单但有效的解决方案。然而，在实践中，我们发现在对 <span class="math-inline">\boldsymbol{\theta}^{on}<em>{pet}</span> 和 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span> 产生的能量进行归一化后再进行集成会产生更鲁棒的结果。因此，我们采用以下集成算法：<br />
+<div class="math-display"><br />
+    f_{ens}(\mathbf{o}^{on},\mathbf{o}^{off}):=\max\left(\sigma\left(\mathbf{o}^{ on}\right),\sigma\left(\mathbf{o}^{off}\right)\right), \tag{14}<br />
+</div><br />
+其中 <span class="math-inline">\sigma</span> 是 softmax 函数，<span class="math-inline">\mathbf{o}^{on}</span> 和 <span class="math-inline">\mathbf{o}^{off}</span> 分别是在线和离线专家模型（即 <span class="math-inline">f(\cdot;\boldsymbol{\theta}^{on}<em>{pet},\boldsymbol{\phi})</span> 和 <span class="math-inline">f(\cdot;\boldsymbol{\theta}^{off}</em>{pet},\boldsymbol{\phi})</span>）对推理样本的输出。</p>
+<p>如图 2 所示，在我们的 LAE 框架中，模型使用 <span class="math-inline">\boldsymbol{\theta}^{on}<em>{pet}</span> 学习新任务，并将已学知识积累到 <span class="math-inline">\boldsymbol{\theta}^{off}</em>{pet}</span> 中，两个分别擅长新任务和旧任务的专家模型被集成以获得推理样本的最终预测。只要 PET 模块与模型兼容，我们的 LAE 就可以应用于任何网络架构的预训练模型。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<h3 id="51-数据集和评估协议">5.1 数据集和评估协议<a class="anchor-link" href="#51-数据集和评估协议" title="Permanent link">&para;</a></h3>
+<p>我们的实验使用在 ImageNet21k[40] 数据集上预训练的模型，除非另有说明，我们遵循先前的工作在 CIFAR100[21] 和 ImageNet-R[14] 基准上训练和评估模型。</p>
+<p><strong>CIFAR100</strong>是先前持续学习（CL）工作中广泛使用的数据集，包含 100 个类别，每个类别有 500 张训练图像和 100 张测试图像，图像大小为 <span class="math-inline">32\times 32\times 3</span>。</p>
+<p><strong>ImageNet-R</strong>由 Wang 等人 [46] 首次引入 CL，包括 ImageNet[40] 的 200 个子类别，但其样本风格多样，如卡通、涂鸦和折纸。原始数据集分为 24000 个样本的训练集和 6000 个样本的测试集，训练和测试样本数量在类别之间有所不同。</p>
+<p>我们遵循先前的工作将数据集分为 10 个任务，所有任务具有相同数量的类别，即 CIFAR100 为 10 个，ImageNet-R 为 20 个。我们使用广泛使用的增量指标评估模型：最后增量准确率 <span class="math-inline">A_{N}</span> 和平均增量准确率 <span class="math-inline">\bar{A}<em>{N}=\frac{1}{N}\sum</em>{i=1}^{N}A_{i}</span>，其中 <span class="math-inline">N</span> 是任务总数（即 10），<span class="math-inline">\bar{A}<em>{i}</span> 正式定义为：<br />
+<div class="math-display"><br />
+  A</em>{i}=\frac{1}{|\mathcal{D}<em>{1:i}^{test}|}\sum</em>{(\mathbf{x},y)\in\mathcal{D}<em>{1: i}^{test}}\mathds{1}\left(\hat{y}=y\right), \tag{15}<br />
+</div><br />
+其中 <span class="math-inline">\mathds{1}(\cdot)</span> 是将布尔值映射到 <span class="math-inline">{0,1}</span> 的指示函数，<span class="math-inline">\mathcal{D}</em>{1:i}^{test}</span> 是所有已见任务到目前的测试集，<span class="math-inline">\hat{y}</span> 和 <span class="math-inline">y</span> 是输入 <span class="math-inline">\mathbf{x}</span> 的预测标签和真实标签。<strong>我们对所有实验进行了 3 次不同类别顺序的运行，并报告了这 3 次运行的平均值和标准差。</strong></p>
+<h3 id="52-实现和训练细节">5.2 实现和训练细节<a class="anchor-link" href="#52-实现和训练细节" title="Permanent link">&para;</a></h3>
+<p>为了进行公平比较，我们考虑了基于预训练模型的最先进方法 [47, 46]，如我们的 LAE，并使用 Jaeho Lee 发布的 PyTorch 代码进行实验。联合微调（Joint-FT）和朴素顺序微调（Seq-FT）通常被认为是 CIL 的上限和下限，我们在代码库中实现了它们，参考了 Jaeho Lee 的代码。我们还与最近的工作 ESN[45] 进行了比较，使用了其官方的 PyTorch 代码。我们为基线和 LAE 框架选择了三种类型的代表性 PET 模块，每种类型有两个大小，其中<strong>大小表示 Adapter 的下投影维度、LoRA 的秩或 Prefix 的长度</strong>，如第 3 节所述。为了方便起见，我们假设在前面的讨论中只有一个 PET 模块附加到预训练模型上，实际上，多个 PET 模块被插入到 Transformer 的注意力块或 ConvNet 的卷积块的浅层中，遵循 DualPrompt[46]。</p>
+<p>我们的基线和 LAE 框架的训练策略与 DualPrompt 相同，即使用 Adam 优化器训练模型 5 和 50 个 epoch，基于批量大小 256 的恒定学习率 0.03 和 0.005，分别用于 CIFAR100 和 ImageNet-R。EMA 算法的权重衰减 <span class="math-inline">\alpha</span> 在公式 (13) 中定义为 0.9999，在所有实验中经验性地设置为 0.9999。PET 模块的冻结 epoch 数设置为 CIFAR100 的 3 和 ImageNet-R 的 30。数据增强与模型预训练中使用的一致。我们使用 ViT[5] 推荐的微调策略训练 Joint-FT 和 Seq-FT，但训练 epoch 数与我们的相同。更多细节可以在补充材料中找到。</p>
+<h3 id="53-基准结果">5.3 基准结果<a class="anchor-link" href="#53-基准结果" title="Permanent link">&para;</a></h3>
+<p><strong>CIFAR100</strong>基准结果如表 1 所示。所有方法都使用相同的 ViT-B/16[5] 模型，该模型在 ImageNet21k[40] 数据集上进行了预训练。PET 模块的数字后缀表示其大小（即下投影维度或长度）。L2P 和 DualPrompt 是最先进的方法，采用池来存储 Prompt 或 Prefix。然而，随着学习任务数量的增加，它们的提示选择准确性逐渐下降，并且不同任务的提示趋于同质化（见补充材料）。因此，我们的基线虽然非常朴素，但实现了与 L2P 和 DualPrompt 相当的性能，而我们的 LAE 框架在所有 6 个 PET 模块上都始终优于 DualPrompt 和 ESN，最后增量准确率提高了约 1.5%。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250206105315.png" style="zoom: 80%;" /></div>
+
+<p><strong>ImageNet-R</strong>基准比 CIFAR100 更具挑战性，但它能更好地展示我们 LAE 框架的优势。从表 2 中的结果可以看出，我们的基线在使用 Prefix 时只能实现与 DualPrompt 相当的性能。这是因为 Adapter 和 LoRA 对新任务的适应速度比 Prefix 快，这在 ImageNet-R 数据集中被放大，但通过我们 LAE 框架的适应速度校准成功解决了这个问题。因此，我们可以看到，我们的 LAE 在最后增量准确率 <span class="math-inline">A_{10}</span> 上比 DualPrompt 提高了超过 3.5%，与较简单的 CIFAR100 数据集相比，这一提升更为显著。我们还可以观察到，PET 模块的大小对我们的 LAE 框架的性能影响不大，并且我们的 LAE 对类别顺序更具鲁棒性，而我们的基线在不同类别顺序之间的差异较大。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250206105330.png" style="zoom: 80%;" /></div>
+
+<p>现实世界中的 CL 是一个无止境的过程，每个学习阶段的性能对 AI 系统同样重要。因此，我们还在图 (a)a 和 (b)b 中绘制了逐任务增量准确率。我们可以观察到，我们的 LAE 在所有三个 PET 模块上几乎在所有学习阶段都优于 L2P 和 DualPrompt。<strong>我们的 LAE 在补充材料中展示的 20 任务实验中以更大的优势优于其他方法，突显了其处理长期 CL 场景的能力</strong>。在补充材料中，我们将我们的 LAE 与当代的 CODA-Prompt[44] 方法在 ImageNet-R 和 DomainNet[35] 数据集上进行了比较。参数和计算比较也可以在补充材料中找到。</p>
+<h3 id="54-消融研究">5.4 消融研究<a class="anchor-link" href="#54-消融研究" title="Permanent link">&para;</a></h3>
+<p>我们的 LAE 由三个主要新颖设计组成，即学习、积累和集成，因此我们对它们进行了消融研究，并在表 3 中报告了结果。第一行和最后一行分别是我们的基线和 LAE 框架。当移除我们的校准速度学习时，性能下降最多，表明它对我们的 LAE 贡献最大。积累和集成对我们的 LAE 也很重要，没有它们，最后增量准确率下降了 2.15%。第六行表示我们的 LAE 仅使用离线 PET 模块进行推理，其 <span class="math-inline">A_{10}</span> 甚至优于我们的专家集成推理。如图 4 所示，在早期学习阶段，专家集成推理比单独使用在线或离线 PET 模块进行推理表现更好。然而，随着学习任务数量的增加，专家集成相对于离线 PET 模块的优势逐渐减小，部分原因是旧任务的性能主导了整体性能。尽管如此，在大多数情况下，专家集成推理产生了更鲁棒的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250206150729.png" style="zoom: 80%;" /></div>
+
+<p>我们还对 Prefix 的校准进行了消融实验。从表 4 中可以看出，梯度补偿和可学习缩放参数各自都显著提高了性能。此外，当它们一起使用时，性能提升大约等于单独使用它们时的提升之和，表明它们对性能的贡献是独立的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250206150949.png" style="zoom: 80%;" /></div>
+
+<h3 id="55-pet-模块的附加位置">5.5 PET 模块的附加位置<a class="anchor-link" href="#55-pet-模块的附加位置" title="Permanent link">&para;</a></h3>
+<p>我们的 LAE 将 PET 模块直接插入前 5 个 Transformer 块中，遵循 DualPrompt。如图 5（左）所示，将 PET 模块插入最浅的位置比插入更深的位置产生更好的结果，这与 DualPrompt 中的观察一致。此外，图 5（右）显示，将 PET 模块插入前 6 个 Transformer 块中实现了最佳性能，而插入前 5 个 Transformer 块中（即我们 LAE 的默认设置）也产生了几乎相同的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250206151114.png" style="zoom: 80%;" /></div>
+
+<h3 id="56-transformer-变体和-convnet-的结果">5.6 Transformer 变体和 ConvNet 的结果<a class="anchor-link" href="#56-transformer-变体和-convnet-的结果" title="Permanent link">&para;</a></h3>
+<p>Prefix 和 Prompt 不够灵活，无法应用于 ConvNet 和 Transformer 变体，而我们的 LAE 由于能够利用各种 PET 模块，因此具有模型架构通用性。我们选择 Swin Transformer[31] 和 ConvNeXt[32] 来验证我们的 LAE。</p>
+<p><strong>Swin Transformer</strong>是一个代表性的基于窗口的 Vision Transformer，但 L2P 和 DualPrompt 不能直接应用于它，因为插入的标记可能会破坏窗口的正确划分。因此，我们仅在使用 Swin Transformer 时将我们的 LAE 与基线进行比较，并在表 5 中报告结果。我们可以看到，我们的 LAE 在使用 Swin-B 时比使用 ViT-B/16 时表现更好，这主要是由于 Swin-B 的优越性能。此外，我们的 LAE 显著提高了基线在所有两个数据集上的性能。</p>
+<p><strong>ConvNeXt</strong>是 2020 年代的现代 ConvNet，通过将几种新颖设计纳入标准 ResNet[13] 中，超越了 Swin Transformer。同样，我们在表 6 中将我们的 LAE 与基线进行了比较。Adapter 的下投影和上投影使用 1x1 卷积层实现。我们的基线和 LAE 在使用 ConvNeXt-B 时都显著优于使用 ViT-B/16 和 Swin-B，突显了 LAE 的优势不仅限于 Transformer。我们的 LAE 在两个数据集上始终提高了基线的性能。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>本文深入研究了从预训练模型开始并利用通用参数高效调优（PET）方法不断将模型适应到新任务的持续学习（CL）范式。我们构建了一个朴素的基线，其性能与之前的最先进方法相当。我们通过向基线引入三个新颖的设计，提出了学习 - 积累 - 集成（LAE）框架。我们的 LAE 可以将任何 PET 方法转化为高效的 CL 方法，而无需访问任何旧数据。我们进行了广泛的实验来验证 LAE 的有效性，结果表明我们的 LAE 显著优于之前的最先进方法。</p>
+<p><strong>局限性</strong>。未来仍有一些需要改进的局限性，例如如何更有效地积累知识和更好地集成专家模型。此外，由于缺乏与预训练数据集不重叠的大规模数据集，我们的 LAE 尚未在任务数量更多的 CL 场景中得到验证。</p>
+<p>总的来说，本文为无记忆 CL 提供了一种新的解决方案，并为未来研究这一新颖的 CL 范式提供了一些理论和实验参考。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

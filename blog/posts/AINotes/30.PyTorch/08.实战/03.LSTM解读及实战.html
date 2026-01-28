@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章结构</title>
+    <meta name="description" content="文章结构 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#门">门</a></li>
+<li><a href="#遗忘门">遗忘门</a></li>
+<li><a href="#记忆门">记忆门</a></li>
+<li><a href="#状态更新">状态更新</a></li>
+<li><a href="#输出门">输出门</a></li>
+<li><a href="#模型总结">模型总结</a></li>
+<li><a href="#实验说明">实验说明</a></li>
+<li><a href="#模型实现">模型实现</a></li>
+<li><a href="#超参数及参数说明">超参数及参数说明</a><ul>
+<li><a href="#mylstm-与-nnlstm">MyLSTM 与 nn.LSTM</a></li>
+<li><a href="#nnrnn">nn.RNN</a></li>
+</ul>
+</li>
+<li><a href="#实验结果">实验结果</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>文章结构</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/08.实战</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="文章结构">文章结构<a class="anchor-link" href="#文章结构" title="Permanent link">&para;</a></h1>
+<p>在<a href="./RNN%E8%AF%A6%E8%A7%A3%E5%8F%8A%E5%85%B6%E5%AE%9E%E7%8E%B0.md">RNN详解及其实战</a>中，我们简单讨论了为什么需要RNN这类模型、RNN的具体思路、RNN的简单实现等问题。同时，在文章结尾部分我们提到了RNN存在的梯度消失问题，及之后的一个解决方案<strong>：LSTM</strong>。因此，本篇文章主要结构如下：</p>
+<ol>
+<li>LSTM 理解及简单实现</li>
+<li>LSTM 实战</li>
+<li>经典 RNN 与 LSTM 对比</li>
+<li>关于梯度消失</li>
+</ol>
+<h1 id="lstm-理解">LSTM 理解<a class="anchor-link" href="#lstm-理解" title="Permanent link">&para;</a></h1>
+<p>其实，我们将 LSTM 与 RNN 说成两个并不可取， LSTM 依然归属于 RNN 之下，相比于使用线性回归方式来处理序列问题， LSTM 其实是设计了一个模块来取代线性回归算法。</p>
+<p>LSTM(Long Short-Term Memory)，翻译过来是长短期记忆法，其核心思想可以说非常的简单：既然 RNN 只能保存短期的记忆，那我增加一个长期记忆，不就可以解决这个问题了名？因此，LSTM提出了长期记忆和短期记忆，通过调整长期记忆和短期记忆之间的比例，来维持长期记忆的可靠，降低 RNN 的梯度消失问题。可以看到下方结构图中，模型输入由两个升级到三个，分别是当前节点状态 <span class="math-inline">\mathbf{X}<em>{t}</span>，长期记忆：<span class="math-inline">\mathbf{C}</em>{t-1}</span>，短期记忆 <span class="math-inline">\mathbf{H}<em>{t-1}</span>。输出状态依然是两个：节点当前状态 <span class="math-inline">\mathbf{C}</em>{t}</span>，和节点当前隐藏状态 <span class="math-inline">\mathbf{H}_{t}</span>。</p>
+<p><img alt="LSTM结构图" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403231023098.jpg" /></p>
+<p>那么问题来了， LSTM 是如何实现对长短记忆的控制呢？<br />
+这就不得不提众人所知的三个门：<br />
+ - 遗忘门：控制保留多少上一时刻的单元节点到当前节点<br />
+ - 记忆门：控制将当前时刻的多少信息记忆到节点中<br />
+ - 输出门：控制输出多少信息给当前输出</p>
+<p>我们在分析三个门之前，我们先了解 <strong>门</strong> 这一概念。</p>
+<h2 id="门">门<a class="anchor-link" href="#门" title="Permanent link">&para;</a></h2>
+<p>从简化图中可以看到， <strong>门</strong>的感觉类似于电路中的一个开关，当开关按下，信息通过，而开关抬起，信息不再通过。实际也如此类似，<strong>门</strong>是一个全连接层，输入为一个向量，输出为一个位于 [0,1] 之间的值。<br />
+我们来设计一个非常简单的遗忘门：每次学习状态之后，都遗忘一定的已学习内容，注意，这里的遗忘门与 LSTM 的遗忘门无关，单纯理解 <strong>门</strong> 这一概念。</p>
+<pre><code class="language-python"># 一个线性层 用来计算遗忘多少
+gate_linear = nn.Linear(hidden_size, 1)
+# 一个线性层 用来学习
+study_linear = nn.Linear(hidden_size, hidden_size)
+# 此刻 h_t 是上一时刻状态
+# 输出为 0 - 1 的值
+gate = gate_linear(h_t)
+# h_t 经过 study_linear 进行学习
+_h_t = study_linear(h_t)
+# 在输出结果之前，经过 gate 导致内容受损，遗忘了一定的学习内容
+h_t = gate * （_h_t）
+</code></pre>
+<p>可以看到，如果 <span class="math-inline">gate</span> 值为 0，则历史信息均会被遗忘，而如果值为1，则历史信息则会被完全保留，而 <code>gate_linear</code> 网络中的超参数会不断的学习，因此一个可以学习的开关门就出现了。</p>
+<p>但是，<span class="math-inline">gate</span> 作为一个浮点型的数据，对于 临时结果矩阵变量 <span class="math-inline">_h_t</span> 而言，其遗忘控制是全局的，也就是，当 <span class="math-inline">gate</span> 为 0 时， 其最终结果 <span class="math-inline">h_t</span> 为全 0 矩阵。因此我们应该注意： LSTM 中并不采用这样的大闸门，而是采用对每个变量进行分别控制的小水龙头(神经网络激活函数 <code>nn.Sigmode</code> )</p>
+<p>而在 LSTM 中，门主要使用 <span class="math-inline">Sigmod</span> 神经网络(<strong>再次注意，并非是激活函数，而是 Sigmod 神经网络</strong>)来完成。</p>
+<p>下方是一个示例代码：</p>
+<pre><code class="language-python">hidden_size = 5
+sigmoid = nn.Sigmoid()
+# 隐藏状态 为了方便计算，假定全 1
+hidden_emb = torch.ones(hidden_size, hidden_size)
+# 中间某一层神经网络
+model = nn.Linear(hidden_size，hidden_size)
+# 获取该层输出,此时尚未被门限制
+mid_out = model(hidden_emb)
+# 获取一个门 -- 注意：并非一定由该变量所控制
+# 比如：也可以由上一时刻的隐藏状态控制
+# 代码为： gate = sigmoid(hidden_emb)
+gate = sigmoid(mid_out) 
+# 得到最终输出
+final_out = gate * mid_out
+</code></pre>
+<p>在有了对门的基础知识后，接下来对遗忘门、记忆门、输出门进行分别分析。</p>
+<h2 id="遗忘门">遗忘门<a class="anchor-link" href="#遗忘门" title="Permanent link">&para;</a></h2>
+<p>遗忘门涉及部分如下图所示：<br />
+<img alt="LSTM-遗忘门" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403231023099.jpg" /></p>
+<p>其中，下方蓝色表示三个门共用的输入部分，均为 [<span class="math-inline">\mathbf{h}<em>{t-1}</span>,<span class="math-inline">\mathbf{X}</em>{t}</span>],需要注意，这里由于三个门之间并不共享权重参数，因此公示虽然接近，但是一共计算了三次，遗忘门被标记为 <span class="math-inline">f_t</span>, 列出遗忘门公式为：<br />
+<div class="math-display"><br />
+f_t = \sigma(\mathbf{W_f} * [\mathbf{h}<em>{t-1},\mathbf{X}</em>{t}]  + \mathbf{b_f})<br />
+</div><br />
+输出结果为取值范围为 [ 0, 1 ] 的矩阵，主要功能是控制与之相乘的矩阵的<strong>遗忘程度</strong>。<br />
+将 <span class="math-inline">f_t</span> 与输入的上一长期状态 <span class="math-inline">C_{t-1}</span> 相乘：<br />
+<div class="math-display"><br />
+C_t' = f_t * C_{t-1}<br />
+</div></p>
+<p>一部分的 <span class="math-inline">C_{t-1}</span> 就这样被遗忘了。</p>
+<h2 id="记忆门">记忆门<a class="anchor-link" href="#记忆门" title="Permanent link">&para;</a></h2>
+<p>记忆门涉及部分如下所示：<br />
+<img alt="LSTM记忆门" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403231023100.jpg" /></p>
+<p>从图中可以看到，记忆门中相乘的两个部分均由 <span class="math-inline">\mathbf{h}<em>{t-1}</span> 与 <span class="math-inline">\mathbf{X}</em>{t}</span> 得到，<br />
+其中，左侧控制记忆多少的部分，与遗忘门公式基本一致：<br />
+<div class="math-display"><br />
+i_t = \sigma(\mathbf{W_i} * [\mathbf{h}<em>{t-1},\mathbf{X}</em>{t}]  + \mathbf{b_i})<br />
+</div><br />
+与遗忘门相通，输出结果为取值范围为 [ 0, 1 ] 的矩阵，主要功能是控制与之相乘的矩阵的<strong>记忆程度</strong>。<br />
+而右侧，则更换了激活函数，由 <span class="math-inline">sigmoid</span> 变成了 <span class="math-inline">tanh</span>：<br />
+<div class="math-display"><br />
+\tilde{C_t} = \tanh(\mathbf{W_c} * [\mathbf{h}<em>{t-1},\mathbf{X}</em>{t}]  + \mathbf{b_c})<br />
+</div><br />
+该公式负责的部分可以看做负责<strong>短期隐藏状态</strong>的更新，取值范围为 [ -1, 1 ]。</p>
+<p>最终记忆门更新公式如下:<br />
+<div class="math-display"><br />
+\tilde{C_t'}=  i_t * \tilde{C_t}<br />
+</div></p>
+<p>我们可以说  <span class="math-inline">\tilde{C_t'}</span> 是保留了一定内容的短期状态</p>
+<h2 id="状态更新">状态更新<a class="anchor-link" href="#状态更新" title="Permanent link">&para;</a></h2>
+<p><img alt="LSTM-状态更新" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403231023101.jpg" /></p>
+<p>在通过遗忘门获取到了被遗忘一定内容的长期状态 <span class="math-inline">C_t'</span> 和 保留了一定内容的短期状态 <span class="math-inline">\tilde{C_t'}</span> 之后，可以通过加法直接结合</p>
+<p><div class="math-display"><br />
+C_t =  C_t' + \tilde{C_t'}<br />
+</div></p>
+<h2 id="输出门">输出门<a class="anchor-link" href="#输出门" title="Permanent link">&para;</a></h2>
+<p><img alt="LSTM输出门" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403231023102.jpg" /></p>
+<p>输出门是三个门中最后一个门，当数据到达这里的时候，我们主要控制将长期状态中的内容 <span class="math-inline">C_t</span> 保存一定内容到 <span class="math-inline">h_t</span> 中，这里不再赘述<br />
+<div class="math-display"><br />
+o_t = \sigma(\mathbf{W_o} * [\mathbf{h}<em>{t-1},\mathbf{X}</em>{t}]  + \mathbf{b_o})<br />
+</div></p>
+<p><div class="math-display"><br />
+h_t = o_t * \tanh(C_t)<br />
+</div></p>
+<h2 id="模型总结">模型总结<a class="anchor-link" href="#模型总结" title="Permanent link">&para;</a></h2>
+<p>可以看到，所有公式的核心部分都是如此的相似：<br />
+<div class="math-display"><br />
+\mathbf{W_c} * [\mathbf{h}<em>{t-1},\mathbf{X}</em>{t}]  + \mathbf{b_c}<br />
+</div><br />
+而这部分其实又只是简单的线性函数，所以 LSTM 比 RNN 高级的地方其实并不在于某一条公式，而是它调整了数据之间的流动，按照一定的比例进行融合，弱化了长距离下的梯度消失问题。</p>
+<p>最后总的来看，LSTM 其实就是一个升级版本的的 RNN，他额外初始化了一个状态 <span class="math-inline">C</span>， 用来保存长期的记忆，控制远距离上的参数权重。而输出也基本类似于此。</p>
+<h1 id="lstm-实战">LSTM 实战<a class="anchor-link" href="#lstm-实战" title="Permanent link">&para;</a></h1>
+<h2 id="实验说明">实验说明<a class="anchor-link" href="#实验说明" title="Permanent link">&para;</a></h2>
+<p>完整代码实现可以点击<a href="../../notebook/第十章%20常见网络代码的解读/LSTM实战.ipynb">这里</a>下载。在完整代码中，我们共计使用了三个模型并对比了他们的效果，三个模型分别是：由我完全使用 <code>nn.Linear</code> 实现的 LSTM 模型、 使用 <code>nn.LSTM</code> 为基础的 LSTM 模型和使用 <code>nn.RNN</code> 为基础实现的 RNN 模型。</p>
+<p>实验数据集采用 <a href="http://ai.stanford.edu/~amaas/data/sentiment/">IMDB 数据集</a>。主要由电影评论构成，长度不均，<strong>但是长度在 1000 左右的数据属于常见数据</strong>。数据集样本均衡，数共计 50000 个样本，训练和测试各有 25000 个样本，同时训练和测试的正负比例均为 1:1。</p>
+<p>根据我们对 RNN 的了解，这样的长度是很难学习到有效的知识的，所以很适合比较 RNN 与 LSTM 之间的区别。</p>
+<p>为了方便代码复现，在实现中借助了 <code>torchtext</code> 来完成数据下载及加载。</p>
+<p>为了证明模型真的有学习到一定的内容，所以对比实验中部分参数可能存在部分区别，可以在本地调整到同一参数进行细致的对比实验。</p>
+<h2 id="模型实现">模型实现<a class="anchor-link" href="#模型实现" title="Permanent link">&para;</a></h2>
+<p>我们在这里分析一下由我实现的 LSTM 模型，并以此了解 LSTM 模型。(ps:个人能力有限,没能实现 <code>num_layers</code> 和 <code>Bi-LSTM</code> 两个特点，此外可能实现存在其他问题，欢迎给予反馈)</p>
+<pre><code class="language-python"># 定义基础模型
+class LSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, num_classes):
+        &quot;&quot;&quot;
+        args:
+            input_size: 输入大小
+            hidden_size: 隐藏层大小
+            num_classes: 最后输出的类别，在这个示例中，输出应该是 0 或者 1
+        &quot;&quot;&quot;
+        super(LSTM, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.fc_i = nn.Linear(input_size + hidden_size, hidden_size)
+        self.fc_f = nn.Linear(input_size + hidden_size, hidden_size)
+        self.fc_g = nn.Linear(input_size + hidden_size, hidden_size)
+        self.fc_o = nn.Linear(input_size + hidden_size, hidden_size)
+        self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
+        self.fc_out = nn.Linear(hidden_size, num_classes)
+    def forward(self, x):
+        # 初始化隐藏状态 -- 短期记忆
+        h_t = torch.zeros(x.size(0), x.size(1), self.hidden_size).to(x.device)
+        # 初始化隐藏状态 -- 长期记忆
+        c_t = torch.zeros(x.size(0), x.size(1), self.hidden_size).to(x.device)
+        # 输入与短期记忆相拼接
+        combined = torch.cat((x, h_t), dim=2)
+        # 记忆门 -- 输出矩阵内容为 0-1 之间的数字
+        i_t = self.sigmoid(self.fc_i(combined))
+        # 遗忘门 -- 输出矩阵内容为 0-1 之间的数字
+        f_t = self.sigmoid(self.fc_f(combined))
+        #
+        g_t = self.tanh(self.fc_g(combined))
+        #  输出门 -- 输出矩阵内容为 0-1 之间的数字
+        o_t = self.sigmoid(self.fc_o(combined))
+        # 长期状态 =  遗忘门 * 上一时刻的长期状态 + 记忆门* 当前记忆状态
+        c_t = f_t * c_t + i_t * g_t
+        # 隐藏状态 = 输出门 * 长期状态
+        h_t = o_t * self.tanh(c_t)
+        # 降维操作 
+        h_t = F.avg_pool2d(h_t, (h_t.shape[1],1)).squeeze()
+        # 
+        out = self.fc_out(h_t)
+        return out 
+</code></pre>
+<h2 id="超参数及参数说明">超参数及参数说明<a class="anchor-link" href="#超参数及参数说明" title="Permanent link">&para;</a></h2>
+<h3 id="mylstm-与-nnlstm">MyLSTM 与 nn.LSTM<a class="anchor-link" href="#mylstm-与-nnlstm" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>learning_rate</td>
+<td>0.001</td>
+</tr>
+<tr>
+<td>batch_size</td>
+<td>32</td>
+</tr>
+<tr>
+<td>epoch</td>
+<td>6(3)</td>
+</tr>
+<tr>
+<td>input_size</td>
+<td>64</td>
+</tr>
+<tr>
+<td>hidden_size</td>
+<td>128</td>
+</tr>
+<tr>
+<td>num_classes</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>此时：<br />
+MyLSTM 参数量: 99074<br />
+nn.LSTM 参数量: 99328</p>
+<p>由于我实现的 MyLSTM 与 nn.LSTM 有 254 的参数差，我本人并没能分析出来差别。 <code>nn.LSTM</code> 在实验时大概率比我的 MyLSTM 迭代更快，所以容易较早的过拟合，所以将其训练 epoch 砍半，也就是说 MyLSTM 使用 6 epoch 进行训练，而 <code>nn.LSTM</code> 使用 3 epoch 进行训练。两者可以达到基本相近的效果</p>
+<p>另外在代码实现中 <code>nn.LSTM</code> 后面加了一个 <code>nn.Linear</code> 来实现二分类，参数量为 258， 所以 MyLSTM 和 LSTM 相差参数总量为 512。</p>
+<h3 id="nnrnn">nn.RNN<a class="anchor-link" href="#nnrnn" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>learning_rate</td>
+<td><strong>0.0001</strong></td>
+</tr>
+<tr>
+<td>batch_size</td>
+<td>32</td>
+</tr>
+<tr>
+<td>epoch</td>
+<td><strong>12-18</strong></td>
+</tr>
+<tr>
+<td>input_size</td>
+<td>64</td>
+</tr>
+<tr>
+<td>hidden_size</td>
+<td>128</td>
+</tr>
+<tr>
+<td>num_classes</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>此时：<br />
+nn.RNN 参数量: 25090</p>
+<p>由于实验样本长度在 1000 上下， RNN 显示出来了极大的不稳定性，其中， 相较于 LSTM 更容易梯度爆炸、训练 epoch 更多、学习率需要调低等等问题，尽管如此依然不能保证稳定的良好结果。</p>
+<p>举例来说，某学生学习阅读理解，要求根据文章内容回答文章的情感倾向，但是学生只喜欢看最后一句话，每次都根据最后一句话来回答问题，那么他基本上是等于瞎猜的，只能学到一点浅薄的知识。</p>
+<h2 id="实验结果">实验结果<a class="anchor-link" href="#实验结果" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>MyLSTM</th>
+<th>nn.LSTM</th>
+<th>nn.RNN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.86</td>
+<td>0.80</td>
+<td>0.67</td>
+</tr>
+</tbody>
+</table>
+<h1 id="关于梯度问题">关于梯度问题<a class="anchor-link" href="#关于梯度问题" title="Permanent link">&para;</a></h1>
+<ul>
+<li>
+<p>RNN问题中，<strong>总的梯度是不会消失的</strong>。即便梯度越传越弱，那也是远处的梯度逐渐消失，而近距离的梯度不会消失，因此，梯度总和不会消失。RNN 梯度消失的真正含义是：梯度被近距离梯度所主导，导致模型难以学到远距离的依赖关系。</p>
+</li>
+<li>
+<p>LSTM 上有多条信息流路径，其中，<strong>元素相加的路径的梯度流是最稳定的</strong>，而其他路径上与基本的 RNN 相类似，依然存在反复相乘问题。</p>
+</li>
+<li>
+<p>LSTM 刚刚提出时不存在遗忘门。这时候历史数据可以在这条路径上无损的传递，可以将其视为一条 <strong>高速公路</strong>，类似于 ResNet 中的残差连接。</p>
+</li>
+<li>
+<p>但是其他路径上， LSTM 与 RNN 并无太多区别，依然会爆炸或者消失。由于<strong>总的远距离梯度 = 各个路径的远距离梯度之和</strong>，因此只要有一条路的远距离梯度没有消失，总的远距离梯度就不会消失。可以说，LSTM 通过这一条路拯救了总的远距离梯度。</p>
+</li>
+<li>
+<p>同样，<strong>总的远距离梯度 = 各个路径的远距离梯度之和</strong>，虽然高速路上的梯度流比较稳定，但是其他路上依然存在梯度消失和梯度爆炸问题。因此，总的远距离梯度 = 正常梯度 + 爆炸梯度 = 爆炸梯度，因此 LSTM 依然存在梯度爆炸问题。 但是由于 LSTM 的道路相比经典 RNN 来说非常崎岖， 存在多次激活函数，因此 LSTM 发生梯度爆炸的概率要小得多。实践中通常通过梯度剪裁来优化问题。</p>
+</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

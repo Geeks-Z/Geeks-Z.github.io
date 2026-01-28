@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Convolutional Network</title>
+    <meta name="description" content="Graph Convolutional Network - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#在cnnrnn如此强大的模型之后为什么出现gcn">在CNN、RNN如此强大的模型之后，为什么出现GCN？</a></li>
+<li><a href="#卷积">卷积</a></li>
+<li><a href="#拓扑图空间特征提取两种方式">拓扑图空间特征提取两种方式</a></li>
+<li><a href="#图的拉普拉斯矩阵">图的拉普拉斯矩阵</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Graph Convolutional Network</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="graph-convolutional-network">Graph Convolutional Network<a class="anchor-link" href="#graph-convolutional-network" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="anchor-link" href="#overview" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<h2 id="在cnnrnn如此强大的模型之后为什么出现gcn">在CNN、RNN如此强大的模型之后，为什么出现GCN？<a class="anchor-link" href="#在cnnrnn如此强大的模型之后为什么出现gcn" title="Permanent link">&para;</a></h2>
+</li>
+</ol>
+<p>CNN：针对图像（二维数据结构，矩阵形式。Eucliden Structure），它的核心在于其kernel，一个滑动窗口，通过卷积来提取特征。因为图像具有<strong>平移不变性</strong>：滑动窗口无论移动到图片的哪一个位置，其内部的结构都是一模一样的，因此CNN可以实现<strong>参数共享</strong>。这就是CNN的精髓所在。</p>
+<p>RNN：针对自然语言（序列信息，一维结构），通过各种门的操作，使得序列前后的信息互相影响，从而很好地捕捉序列的特征。</p>
+<p>GCN：针对图结构，即Non Eucliden Structure，拓扑结构。如社交网络、化学分子结构、知识图谱等等。</p>
+<p>GCN实际上可以看作一个特征提取器（类似于CNN的作用），不同的是它的处理对象为图结构数据。利用GCN提取出的特征，我们可以实现<strong>节点分类（node classification）、图分类（graph classification）、边预测（link prediction）</strong>，还可以得到<strong>图的嵌入表示（graph embedding）。</strong></p>
+<ol start="2">
+<li>
+<h2 id="卷积">卷积<a class="anchor-link" href="#卷积" title="Permanent link">&para;</a></h2>
+</li>
+</ol>
+<p>离散卷积本质上是一种加权求和。CNN中的卷积本质上就是利用一个共享参数的过滤器（Kernel)，通过计算中心像素点及相邻像素点的加权和来构成feature map实现空间的特征提取，加权系数就是卷积核的权重系数（先初始化，然后根据误差函数通过反向传播梯度下降进行迭代优化）</p>
+<ol start="3">
+<li>
+<h2 id="拓扑图空间特征提取两种方式">拓扑图空间特征提取两种方式<a class="anchor-link" href="#拓扑图空间特征提取两种方式" title="Permanent link">&para;</a></h2>
+</li>
+</ol>
+<ul>
+<li>vertex domain：提取拓扑图上的空间特征，然后把每个顶点相邻的neighbors找出来</li>
+<li>spectral domain：借助图谱的理论实现拓扑图上的卷积操作（借助于图的拉普拉斯矩阵的特征值和特征向量）</li>
+</ul>
+<ol start="4">
+<li>
+<h2 id="图的拉普拉斯矩阵">图的拉普拉斯矩阵<a class="anchor-link" href="#图的拉普拉斯矩阵" title="Permanent link">&para;</a></h2>
+</li>
+</ol>
+<p>对于图<span class="math-inline">G=(V,E)</span>，其Laplacian 矩阵的定义为 <span class="math-inline">L=D-A</span>，</p>
+<p><span class="math-inline">L</span> 为拉普拉斯矩阵Laplacian matrix;<br />
+   <span class="math-inline">D</span> 为对角度矩阵Degree matrix，对角线上的元素是顶点的度，即该元素链接的元素的个数;<br />
+   <span class="math-inline">A</span> 邻接矩阵 Adjacency matrix ,即表示任意两个顶点之间的邻接关系，邻接则为1，不邻接则为0。</p>
+<p><img alt="image-20211016161553777" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953646.png" /></p>
+<p>物理意义：这个矩阵描述图的拉普拉斯矩阵与图的性质之间的关系。拉普拉斯矩阵与图的性质满足 <span class="math-inline">L=D-A</span> 种矩阵关系，其中图<span class="math-inline">G=(V,E)</span> 性质，体现在图的邻接矩阵<span class="math-inline">A</span> 图的度矩阵<span class="math-inline">D</span> 。</p>
+<p>在理解了这个的基础上，还有其他的几种拉普拉斯矩阵，上面这种拉普拉斯矩阵只是其中的一种，下面几种拉普拉斯矩阵在不同的任务中有不同的运用。</p>
+<p>Combinatorial Laplacian <span class="math-inline">L=D-A</span><br />
+   Symmetric normalized Laplacian <span class="math-inline">L^{sys}=\tilde{D}^{-\frac{1}{2}}L\tilde{D}^{-\frac{1}{2}}</span><br />
+   Random walk normalized Laplacian <span class="math-inline">L^{rw}=D^{-1}L</span><br />
+   通过上面的公式的物理意义，我们知道了，图的性质可以表示在拉普拉斯矩阵之中，即图的性质可以通过拉普拉斯矩阵体现出来。这样，我们将图的分析，可以变为对拉普拉斯矩阵的分析。</p>
+<p>## 5.why Laplacian</p>
+<ul>
+<li>拉普拉斯矩阵是对称矩阵，可以进行特征分解；</li>
+<li>拉普拉斯矩阵只在中心顶点和一阶相连的顶点上（1-hop neighbor）有非0元素，其余均为0；</li>
+<li></li>
+</ul>
+<h1 id="二theory"><strong>二、</strong>Theory<a class="anchor-link" href="#二theory" title="Permanent link">&para;</a></h1>
+<p>它是一个神经网络层，且仅仅是一个全连接层。（下图是一个2层的GCN例子）</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953265.png" alt="img" style="zoom:67%;" /></p>
+<p>假设有一组图数据，包含<span class="math-inline">N</span> 节点（node），每个节点有自己的特征信息，我们设这些节点的特征组成一个<span class="math-inline">N\times D</span> 的矩阵<span class="math-inline">X</span>，然后各个节点之间的关系也会形成一个<span class="math-inline">N\times N</span> 的矩阵<span class="math-inline">A</span>，即邻接矩阵（adjacency matrix）。那么<span class="math-inline">X</span> <span class="math-inline">A</span> 是我们模型的输入。</p>
+<p>该网络的传播方式为：<br />
+<div class="math-display"><br />
+H^{(l+1)}=\sigma(\tilde{D}^{-\frac{1}{2}}\tilde{A}\tilde{D}^{-\frac{1}{2}}H^{(l)}W^{(l)})<br />
+</div><br />
+其中，</p>
+<p>（1）<span class="math-inline">\tilde{A}</span>=<span class="math-inline">A+I</span>，<span class="math-inline">I</span> 单位矩阵；</p>
+<p>（2）<span class="math-inline">\tilde{D}</span> <span class="math-inline">\tilde{A}</span> 度矩阵（degree matrix）；</p>
+<p>（3）<span class="math-inline">H</span> 每一层的特征，对于输入层的话，<span class="math-inline">H_0</span> 是<span class="math-inline">X</span>；</p>
+<p>（4）<span class="math-inline">\sigma</span> 非线性激活函数。</p>
+<p>至于为什么要这样去设计一个公式，先不考虑。现在只需要知道<span class="math-inline">\tilde{D}^{-\frac{1}{2}}\tilde{A}\tilde{D}^{-\frac{1}{2}}</span> 个部分是可以事先计算得到的，因为<span class="math-inline">\tilde{D}</span> <span class="math-inline">A</span> 算得来，而<span class="math-inline">A</span> 输入之一。对于不需要去了解数学原理、只想应用GCN来解决实际问题的人来说，就只需知道：这个GCN设计了一个强大的公式，用这个公式就可以很好地提取图的特征。</p>
+<p>进一步理解。引用一张图：</p>
+<p><img alt="image-20211015103736348" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953727.png" /></p>
+<p>上图中的GCN输入一个图，通过若干层GCN每个node的特征从<span class="math-inline">X</span> 成了<span class="math-inline">Z</span>，但是，无论中间有多少层，<strong>node之间的连接关系，即<span class="math-inline">A</span>，都是共享的。</strong>也就是说解决了上面说的不具备平移不变性问题。其思路是：借鉴CNN，将卷积分为三步：</p>
+<p>（1）选定中心节点后，确定邻域：对每个节点选择固定个数的节点作为邻居；</p>
+<p>（2）给邻域结点编号；</p>
+<p>（3）参数共享：选择固定大小的窗口进行参数共享。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953266.png" /></p>
+<p>参考论文作者，由简入繁：</p>
+<p>每一层GCN的输入都是邻接矩阵<span class="math-inline">A</span> node的特征<span class="math-inline">H</span>，那么我们考虑直接做一个内积，再乘一个参数矩阵W，然后激活一下，就相当于一个简单基础的神经网络层嘛。如下：<br />
+<div class="math-display"><br />
+f(H^{(l)},A)=\sigma(AH^{(l)}W^{(l)})<br />
+</div><br />
+实验证明，即使就这么简单的神经网络层，就已经很强大。</p>
+<p>上面这个简单的模型存在几个局限：</p>
+<p>（1）由于<span class="math-inline">A</span> 对角线上都是0，所以在和特征矩阵<span class="math-inline">H</span> 乘的时候，只会计算一个node的所有邻居的特征的加权和，该node自己的特征却被忽略了。因此，<strong>做了一个小小的改动，给<span class="math-inline">A</span> 上一个单位矩阵<span class="math-inline">I</span></strong>，这样就让对角线元素变成1了。</p>
+<p>（2）<span class="math-inline">A</span> 没有经过归一化的矩阵，这样与特征矩阵相乘会改变特征原本的分布，产生一些不可预测的问题。所以我们<strong>对<span class="math-inline">A</span> 一个标准化处理</strong>。首先让<span class="math-inline">A</span> 每一行加起来为1，我们可以乘以一个<span class="math-inline">D^{-1}</span>  ，<span class="math-inline">D</span> 是度矩阵。考虑每一列做到归一化，所以我们可以进一步把<span class="math-inline">D^{-1}</span> 拆开与A相乘，得到一个对称且归一化的矩阵<span class="math-inline">D^{\frac{-1}{2}}AD^{\frac{-1}{2}}</span>。此设计与对称归一化拉普拉斯矩阵十分类似，而在谱图卷积的核心就是使用对称归一化拉普拉斯矩阵，这也是GCN的卷积叫法的来历。（具体的我也不懂，只知道是这样，从而说明了谱域的图卷积是空域图卷积的子集。)</p>
+<p>通过对上面两个局限的改进，我们便得到了最终的层特征传播公式：<br />
+<div class="math-display"><br />
+f(H^{(l)},A)=\sigma(\hat{D}^{\frac{-1}{2}}\hat{A}\hat{D}^{\frac{-1}{2}}H^{(l)}W^{(l)})<br />
+</div></p>
+<h1 id="三example"><strong>三、Example</strong><a class="anchor-link" href="#三example" title="Permanent link">&para;</a></h1>
+<p>下面用一个例子记录GCN强大公式是如何起作用的。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953856.png" /></p>
+<p>【引用：https://baijiahao.baidu.com/s?id=1678519457206249337&amp;wfr=spider&amp;for=pc】</p>
+<p>直接将矩阵<span class="math-inline">A</span> 矩阵<span class="math-inline">X</span> 乘，得到的矩阵第一行就是与<span class="math-inline">A</span> 连接的<span class="math-inline">E</span> 点的特征向量（如下图）。同理，得到的矩阵的第二行是D和E的特征向量之和，通过这个方法，我们可以得到所有邻居节点的向量之和。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953462.png" /></p>
+<p>此时的计算还存在上述章节三中提到的局限（1）忽略了节点本身的特征。按理得到的矩阵第一行应该包含结点A和E的信息，所以做出改进：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953908.png" /></p>
+<p>通过给每个节点增加一个自循环，我们得到新的邻接矩阵。</p>
+<p>对于局限（2）矩阵缩放，实现归一化。</p>
+<p>在矩阵缩放中，通常考虑乘上一个对角矩阵，正好度矩阵<span class="math-inline">D</span> 对角矩阵，一定存在这某种关联，所以有了如下的改进：</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953358.png" /></p>
+<p>因此，通过<span class="math-inline">D</span> 反和<span class="math-inline">X</span> 乘法，我们可以取所有邻居节点的特征向量（包括自身节点）的平均值。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953983.png" /></p>
+<p>按照上图左乘一个D波浪逆矩阵，我们只是按行缩放(即，行归一化)，而忽略了对应的列（虚线框）。【缩放方法给我们提供了 "加权 "的平均值。我们在这里做的是给低度的节点加更多的权重，以减少高度节点的影响。这个加权平均的想法是，我们假设低度节点会对邻居节点产生更大的影响，而高度节点则会产生较低的影响，因为它们的影响力分散在太多的邻居节点上。】</p>
+<p>所以，进行了两次归一化处理，左乘和右乘了<span class="math-inline">\tilde{D}</span> -1/2逆。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953611.png" /><br />
+<div class="math-display"><br />
+f(H^{(l)},A)=\sigma(\hat{D}^{\frac{-1}{2}}\hat{A}\hat{D}^{\frac{-1}{2}}H^{(l)}W^{(l)})<br />
+</div><br />
+至此，强大的GCN公式诞生。</p>
+<h1 id="四others">四、Others<a class="anchor-link" href="#四others" title="Permanent link">&para;</a></h1>
+<ol>
+<li>对于很多网络，我们可能没有节点的特征，这个时候可以使用GCN吗？答案是可以的，如论文中作者对那个俱乐部网络，采用的方法就是用<strong>单位矩阵 <span class="math-inline"> I </span> 替换特征矩阵 <span class="math-inline">X</span></strong>。</li>
+<li>我没有任何的节点类别的标注，或者什么其他的标注信息，可以使用GCN吗？当然，就如前面讲的，不训练的GCN，也可以用来提取graph embedding，而且效果还不错。</li>
+<li>GCN网络的层数多少比较好？论文的作者做过GCN网络深度的对比研究，在他们的实验中发现，GCN层数不宜多，2-3层的效果就很好了。</li>
+<li>GCNs同时使用节点特征和结构进行训练。</li>
+<li>该框架目前仅限于无向图（加权或不加权）。但是，可以通过将原始有向图表示为一个无向的两端图，并增加代表原始图中边的节点，来处理有向边和边特征。</li>
+<li></li>
+</ol>
+<h1 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h1>
+<p><a href="https://blog.csdn.net/weixin_36474809/article/details/89316439">GCN (Graph Convolutional Network) 图卷积网络解析_祥瑞的技术博客-CSDN博客_图卷积网络</a></p>
+<p><a href="https://blog.csdn.net/weixin_40252835/article/details/119143938">GCN——初步理解_AiA_AiA的博客-CSDN博客</a></p>
+<p>https://www.zhihu.com/question/54504471/answer/332657604</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

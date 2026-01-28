@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查看当前版本</title>
+    <meta name="description" content="查看当前版本 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#conda">conda</a></li>
+<li><a href="#目录结构">目录结构</a></li>
+<li><a href="#常用配置">常用配置</a></li>
+<li><a href="#conda-管理">conda 管理</a></li>
+<li><a href="#conda环境管理">conda环境管理</a></li>
+<li><a href="#conda环境离线迁移">conda环境离线迁移</a><ul>
+<li><a href="#打包">打包</a></li>
+<li><a href="#重现">重现</a></li>
+<li><a href="#pip-download">pip download</a></li>
+</ul>
+</li>
+<li><a href="#conda-导入导出虚拟环境">conda 导入导出虚拟环境</a></li>
+<li><a href="#conda-python版本管理">conda python版本管理</a></li>
+<li><a href="#conda-packages管理">conda packages管理</a></li>
+<li><a href="#anconda3虚拟环境离线迁移到服务器">anconda3虚拟环境离线迁移到服务器</a><ul>
+<li><a href="#准备本地虚拟环境要迁移的环境">准备本地虚拟环境（要迁移的环境）</a></li>
+<li><a href="#上传压缩文件">上传压缩文件</a></li>
+<li><a href="#服务器安装">服务器安装</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>查看当前版本</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> Others/04.ai</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="conda">conda<a class="anchor-link" href="#conda" title="Permanent link">&para;</a></h2>
+<p>conda是一个包，依赖和环境管理工具，适用于多种语言，如: Python, R, Scala, Java, Javascript, C/ C++, FORTRAN</p>
+<p>conda默认随miniconda或anaconda发行，因此要安装conda，只需要安装miniconda或anconda即可。</p>
+<p>如果通过anaconda安装, 国内直接从官网下载安装包会比较慢，可以通过<a href="https://link.jianshu.com/?t=https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/">清华大学的源</a>下载。</p>
+<h2 id="目录结构">目录结构<a class="anchor-link" href="#目录结构" title="Permanent link">&para;</a></h2>
+<p>安装anacoda后，在用户HOME目录下，会有一个<code>anaconda</code>目录，目录结构如下</p>
+<pre><code class="language-bash">$ tree -L 1 anaconda
+anaconda
+├── Anaconda-Navigator.app
+├── bin
+├── conda-meta
+├── doc
+├── envs         # conda管理的环境信息
+├── etc
+├── include
+├── lib
+├── libexec
+├── mkspecs
+├── phrasebooks
+├── pkgs         # 里面是解压的软件安装包
+├── plugins
+├── python.app
+├── qml
+├── resources
+├── sbin
+├── share
+├── ssl
+└── translations
+
+20 directories, 0 files
+</code></pre>
+<p><code>bin</code>, <code>include</code>, <code>lib</code>, <code>share</code>里面是conda默认环境的文件</p>
+<h2 id="常用配置">常用配置<a class="anchor-link" href="#常用配置" title="Permanent link">&para;</a></h2>
+<p>conda默认的配置文件为<code>~/.condarc</code>，通过修改配置文件: 我们可以配置如下内容：</p>
+<ul>
+<li>conda从哪里获取安装包</li>
+<li>conda是否使用代理服务器</li>
+<li>conda从哪里获取环境信息</li>
+<li>是否更新bash提示当conda环境激活的时候</li>
+<li>等其它配置信息</li>
+</ul>
+<p>查看所有配置信息</p>
+<pre><code class="language-bash">$ conda config --show --json
+</code></pre>
+<p>配置使用清华的源</p>
+<pre><code class="language-bash">conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+conda config --set show_channel_urls yes
+
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
+</code></pre>
+<p>配置安装软件时不要提示输入yes</p>
+<pre><code class="language-bash">$ conda config --set always_yes true
+</code></pre>
+<p>更多配置可以参考https://conda.io/docs/user-guide/configuration/index.html</p>
+<p>一个conda环境就是一个目录包含所有的安装包和依赖，不同环境之间独立且不相互影响。跟python的虚拟环境<code>virtualenv</code>一样</p>
+<p>可以通过执行 <code>anaconda search -t &lt;software&gt;</code>来列出保存目标软件的所有官方镜像</p>
+<h2 id="conda-管理">conda 管理<a class="anchor-link" href="#conda-管理" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash"># 查看当前版本
+$ conda --version
+conda 4.3.27
+# 更新conda
+$ conda update conda
+</code></pre>
+<h2 id="conda环境管理">conda环境管理<a class="anchor-link" href="#conda环境管理" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>代码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>创建环境</td>
+<td>conda create -n  environment-name</td>
+</tr>
+<tr>
+<td>激活环境</td>
+<td>conda activate</td>
+</tr>
+<tr>
+<td>关闭环境</td>
+<td>conda deactivate</td>
+</tr>
+<tr>
+<td>删除环境</td>
+<td>conda remove -n <code>environment-name</code> --all</td>
+</tr>
+<tr>
+<td>打开终端自动进入conda环境</td>
+<td>conda config --set auto_activate_base true</td>
+</tr>
+<tr>
+<td>关闭打开终端自动进入conda环境</td>
+<td>conda config --set auto_activate_base false</td>
+</tr>
+<tr>
+<td>复制Conda的虚拟环境的命令</td>
+<td>conda create -n conda-env2 --clone conda-env1 (这里conda-env2是新创建的Conda环境，conda-env1是被复制的Conda环境)</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>示例：</p>
+<pre><code class="language-bash"># 创建一个名为snowflakes的环境，并安装biopython（默认使用下载anconda时选择的python版本)
+$ conda create --name snowflakes biopython
+
+# 激活环境
+$ source activate snowflakes
+
+# 退出环境
+$ source deactivate
+
+# 创建名为bunnies，使用python 3.5版本的环境，并安装astroid和babel
+$ conda create --name bunnies python=3.5 astroid babel
+
+# 查看所有的环境
+$ conda info --envs（conda env list）
+
+# 复制snowflakes环境到flowers
+conda create --name flowers --clone snowflakes
+
+# 删除环境 -–all如果不加上的话代表删除的是当前环境下的一个包，比如numpy等
+$ conda remove --name flowers --all 
+
+</code></pre>
+<h2 id="conda环境离线迁移">conda环境离线迁移<a class="anchor-link" href="#conda环境离线迁移" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://blog.csdn.net/dendi_hust/article/details/115475741">【炼丹炉】Conda环境离线迁移</a></p>
+</blockquote>
+<p><code>conda-pack</code>是一个命令行工具，用于打包conda环境。该命令会将坏境中安装的软件包的二进制文件进行打包。</p>
+<blockquote>
+<p>注：本方法不需要下载安装包，因此，conda-pack需要指定平台和操作系统，目标计算机必须于源计算机有相同的平台和操作系统。</p>
+</blockquote>
+<h3 id="打包">打包<a class="anchor-link" href="#打包" title="Permanent link">&para;</a></h3>
+<p>在conda的base环境中安装conda-pack；</p>
+<pre><code class="language-bash">pip install conda-pack
+</code></pre>
+<p>打包一个环境</p>
+<pre><code class="language-bash"># Pack environment my_env into my_env.tar.gz
+conda pack -n my_env
+
+# Pack environment my_env into out_name.tar.gz
+conda pack -n my_env -o out_name.tar.gz
+
+# Pack environment located at an explicit path into my_env.tar.gz
+conda pack -p /explicit/path/to/my_env
+</code></pre>
+<h3 id="重现">重现<a class="anchor-link" href="#重现" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash"># Unpack environment into directory `my_env`
+mkdir -p my_env
+tar -xzf my_env.tar.gz -C my_env
+
+# Use Python without activating or fixing the prefixes. Most Python
+# libraries will work fine, but things that require prefix cleanups
+# will fail.
+./my_env/bin/python
+
+# Activate the environment. This adds `my_env/bin` to your path
+source my_env/bin/activate
+
+# Run Python from in the environment
+(my_env) $ python
+
+# Cleanup prefixes from in the active environment.
+# Note that this command can also be run without activating the environment
+# as long as some version of Python is already installed on the machine.
+(my_env) $ conda-unpack
+</code></pre>
+<h3 id="pip-download">pip download<a class="anchor-link" href="#pip-download" title="Permanent link">&para;</a></h3>
+<p>利用pip将服务运行所依赖的包下载到本地，拷贝到目标服务器进行离线安装。</p>
+<ol>
+<li>保存虚拟环境到requirements.txt</li>
+</ol>
+<pre><code class="language-bash">pip list --format=freeze &gt; requirements.txt
+</code></pre>
+<blockquote>
+<p>注： 此处不使用pip freeze命令是因为pip freeze导出的文件会出现@ file://的问题，导致后续下载依赖包的时候出现问题。</p>
+</blockquote>
+<ol start="2">
+<li>下载依赖包到指定目录</li>
+</ol>
+<pre><code class="language-python">pip download -r requirements.txt -d &quot;/home/admin/packs&quot; -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+</code></pre>
+<ol start="3">
+<li>将requirements.txt和依赖包拷贝到目标服务器</li>
+</ol>
+<pre><code class="language-python">
+</code></pre>
+<ol start="4">
+<li>在目标服务器创建conda虚拟环境</li>
+</ol>
+<pre><code class="language-python">conda create -n my_env python=3.6.5 pip=10.0.1 --offline
+</code></pre>
+<blockquote>
+<ul>
+<li><code>--offline</code>：指定离线创建虚拟环境；<br></li>
+<li><code>python=3.6.5 &amp; pip=10.0.1</code>：指定默认的python版本号、并安装<code>pip工具</code>，如果不安装<code>pip</code>，则改虚拟环境使用默认的<code>pip</code>工具，就无法将依赖包安装到新虚拟环境。Anaconda自带的package在<code>anaconda3/pkgs</code>目录下，可自行查看；</li>
+</ul>
+</blockquote>
+<ol start="5">
+<li>切换到虚拟环境，并安装依赖包</li>
+</ol>
+<pre><code class="language-python">pip install -U --no-index --find-links=./packs -r requirements.txt
+
+</code></pre>
+<blockquote>
+<p>备注： 若出现<code>Cannot uninstall 'xxxx'. It is a distutils installed project and thus we cannot accurately det...</code>（xxx是某package的名称），使用如下命令进行解决：</p>
+</blockquote>
+<pre><code class="language-bash"> pip install -U --ignore-installed --no-index --find-links=./packs xxx
+</code></pre>
+<h2 id="conda-导入导出虚拟环境">conda 导入导出虚拟环境<a class="anchor-link" href="#conda-导入导出虚拟环境" title="Permanent link">&para;</a></h2>
+<ol>
+<li>激活环境</li>
+</ol>
+<p>conda acitvate environment-name</p>
+<ol start="2">
+<li>导出虚拟环境</li>
+</ol>
+<p>conda env export &gt; environment-name.yaml</p>
+<ol start="3">
+<li>创建环境</li>
+</ol>
+<p>conda env create -n new-environment-name -f environment-name.yaml (根据environment-name.yaml创建名为new-environment-name的虚拟环境)</p>
+<h2 id="conda-python版本管理">conda python版本管理<a class="anchor-link" href="#conda-python版本管理" title="Permanent link">&para;</a></h2>
+<p>conda把python看作和其他包一样，可以在创建虚拟环境的时候指定</p>
+<pre><code class="language-bash"># 查看可用的python版本
+$ conda search --full-name python
+
+# 安装不同版本的python
+$ conda create --name snakes python=3
+</code></pre>
+<h2 id="conda-packages管理">conda packages管理<a class="anchor-link" href="#conda-packages管理" title="Permanent link">&para;</a></h2>
+<p>查看可以通过conda命令安装的包名，可以在网站查看http://docs.continuum.io/anaconda/pkg-docs.html</p>
+<pre><code class="language-bash"># 查看当前环境下的已经安装的包
+$ conda list
+
+# 查找包
+$ conda search beautifulsoup4
+
+# 安装包到环境bunnies，不加--name时，默认安装到当前环境
+$ conda install --name bunnies beautifulsoup4
+</code></pre>
+<p>conda默认从https://repo.continuum.io/pkgs/下载安装包，当无法找到需要的安装包时，可以通过Anaconda.org安装包, 在http://anaconda.org可以搜索可用的包并在包详情页面获取下载命令,如:</p>
+<pre><code class="language-bash"># 安装包bottleneck
+$ conda install -c conda-forge bottleneck
+
+# 检查安装结果
+$ conda list
+</code></pre>
+<p>使用pip命令安装包，当无法使用conda安装，也无法从Anaconda.org下载到需要的安装包时，可以通过pip命令安装</p>
+<pre><code class="language-bash">$ pip install see
+
+# 查看包
+$ conda list
+</code></pre>
+<p>删除指定环境里的包</p>
+<pre><code>$ conda remove --name bunnies iopro
+</code></pre>
+<h2 id="anconda3虚拟环境离线迁移到服务器">anconda3虚拟环境离线迁移到服务器<a class="anchor-link" href="#anconda3虚拟环境离线迁移到服务器" title="Permanent link">&para;</a></h2>
+<p>Reference</p>
+<ul>
+<li>https://blog.csdn.net/u013232219/article/details/114535937</li>
+</ul>
+<h3 id="准备本地虚拟环境要迁移的环境">准备本地虚拟环境（要迁移的环境）<a class="anchor-link" href="#准备本地虚拟环境要迁移的环境" title="Permanent link">&para;</a></h3>
+<pre><code class="language-shell"> conda pack -n venv_name -o output_name.tar.gz #venv_name 本地虚拟环境的名称 
+</code></pre>
+<p>如果提示No command 'conda pack'，</p>
+<p>则尝试使用</p>
+<pre><code class="language-shell">conda install -c conda-forge conda-pack
+</code></pre>
+<p>安装完成后重新进行打包。</p>
+<h3 id="上传压缩文件">上传压缩文件<a class="anchor-link" href="#上传压缩文件" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>使用WinSCP进行上传下载文件</p>
+</li>
+<li>
+<p>如果开发服务器和生产服务器网络不通，且没有winSCP则：<br />
+   拥有SecureCRT则： ALT+P  进入sftp界面<br />
+   可以用 lpwd 命令查看当前界面锁定的windows路径<br />
+   指定操作的windows中的路径 命令是 lcd 命令，例如：lcd D:\download</p>
+</li>
+</ol>
+<p>上传命令： put E:\ocr_code\output_name.tar.gz<br />
+   下载命令： get output_name.tar.gz</p>
+<ol start="3">
+<li>
+<p>没直连权限时，只能先上传文件到跳板机，再从跳板机传到生产服务器：</p>
+<p>a、从服务器上下载文件<br />
+scp username@serverIP:/path/filename /var/download/local_dir（本地目录）</p>
+<p>b、上传本地文件到服务器<br />
+scp /path/filename username@serverIP:/path </p>
+<p>C、从服务器下载整个目录<br />
+scp -r username@serverIP:/var/download/remote_dir/（远程目录） /var/download/local_dir（本地目录）</p>
+<p>d、上传目录到服务器<br />
+scp  -r local_dir username@serverIP:remote_dir</p>
+</li>
+</ol>
+<h3 id="服务器安装">服务器安装<a class="anchor-link" href="#服务器安装" title="Permanent link">&para;</a></h3>
+<p>在服务器上找到服务器上的Anaconda3的环境安装路径：</p>
+<pre><code class="language-bash">查看conda环境安装路径命令：                 conda info --env
+进入目录:                                  cd Anaconda3/envs/
+创建虚拟环境目录：                          mkdir -p pdocr
+将刚才上传的虚拟环境压缩文件解压至目录： 
+
+tar -xzvf output_name.tar.gz -C Anaconda3/envs/pdocr
+</code></pre>
+<p>环境应该已迁移安装成功了，</p>
+<p>检查是否出现了迁移的虚拟环境：conda info -e</p>
+<p>激活虚拟环境： source activate pdocr</p>
+<p>检查是否所有的包均成功迁移: conda list</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

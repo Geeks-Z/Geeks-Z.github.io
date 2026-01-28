@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置训练集的数据增强和转化</title>
+    <meta name="description" content="设置训练集的数据增强和转化 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#transforms">transforms</a></li>
+<li><a href="#transformsnormalize">transforms.Normalize</a></li>
+<li><a href="#transformscompose">transforms.Compose</a></li>
+<li><a href="#transformsnormalizemean-std">transforms.Normalize(mean, std)</a></li>
+<li><a href="#transformsresizesize">transforms.Resize(size)</a></li>
+<li><a href="#transformsscalesize">transforms.Scale(size)</a></li>
+<li><a href="#transformscentercropsize">transforms.CenterCrop(size)</a></li>
+<li><a href="#transformsrandomcropsize">transforms.RandomCrop(size)</a></li>
+<li><a href="#transformsrandomresizedcropsizescale">transforms.RandomResizedCrop(size,scale)</a></li>
+<li><a href="#transformstotensor">transforms.ToTensor</a></li>
+<li><a href="#transformstopilimage">transforms.ToPILImage</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>设置训练集的数据增强和转化</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/03.数据处理</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="transforms">transforms<a class="anchor-link" href="#transforms" title="Permanent link">&para;</a></h2>
+<p>我们在安装<code>PyTorch</code>时，还安装了<code>torchvision</code>，这是一个计算机视觉工具包。有 3 个主要的模块：</p>
+<ul>
+<li><code>torchvision.transforms</code>:  里面包括常用的图像预处理方法</li>
+<li><code>torchvision.datasets</code>: 里面包括常用数据集如 mnist、CIFAR-10、Image-Net 等</li>
+<li><code>torchvision.models</code>: 里面包括常用的预训练好的模型，如 AlexNet、VGG、ResNet、GoogleNet 等</li>
+</ul>
+<p>深度学习模型是由数据驱动的，数据的数量和分布对模型训练的结果起到决定性作用。所以我们需要对数据进行预处理和数据增强。下面是用数据增强，从一张图片经过各种变换生成 64 张图片，增加了数据的多样性，这可以提高模型的泛化能力。</p>
+<p><img alt="image-20220912181100477" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209121811619.png" /></p>
+<p>常用的图像预处理方法有：</p>
+<p>数据中心化  |  数据标准化  |  缩放  |  裁剪  |  旋转  |  翻转  |  填充  |  噪声  |  添加灰度  |  变换  |  线性变换  |  仿射变换  |  亮度、饱和度以及对比度变换。</p>
+<p>在<a href="https://www.notion.so/2-tu-pian-chu-li-yu-shu-ju-jia-zai/2.2-tu-pian-yu-chu-li-transforms-mo-kuai-ji-zhi">人民币图片二分类实验</a>中，我们对数据进行了一定的增强。</p>
+<pre><code class="language-python"># 设置训练集的数据增强和转化
+train_transform = transforms.Compose([
+    transforms.Resize((32, 32)),# 缩放
+    transforms.RandomCrop(32, padding=4), #裁剪
+    transforms.ToTensor(), # 转为张量，同时归一化
+    transforms.Normalize(norm_mean, norm_std),# 标准化
+])
+
+# 设置验证集的数据增强和转化，不需要 RandomCrop
+valid_transform = transforms.Compose([
+    transforms.Resize((32, 32)),
+    transforms.ToTensor(),
+    transforms.Normalize(norm_mean, norm_std),
+])
+</code></pre>
+<p>当我们需要多个<code>transforms</code>操作时，需要作为一个<code>list</code>放在<code>transforms.Compose</code>中。需要注意的是<code>transforms.ToTensor()</code>是把图片转换为张量，同时进行归一化操作，把每个通道 0~255 的值归一化为 0~1。在验证集的数据增强中，不再需要<code>transforms.RandomCrop()</code>操作。然后把这两个<code>transform</code>操作作为参数传给<code>Dataset</code>，在<code>Dataset</code>的<code>__getitem__()</code>方法中做图像增强。</p>
+<pre><code class="language-python">def __getitem__(self, index):
+    # 通过 index 读取样本
+    path_img, label = self.data_info[index]
+    # 注意这里需要 convert('RGB')
+    img = Image.open(path_img).convert('RGB')     # 0~255
+    if self.transform is not None:
+        img = self.transform(img)   # 在这里做transform，转为tensor等等
+    # 返回是样本和标签
+    return img, label
+</code></pre>
+<p>其中<code>self.transform(img)</code>会调用<code>Compose</code>的<code>__call__()</code>函数：</p>
+<pre><code class="language-python">def __call__(self, img):
+    for t in self.transforms:
+        img = t(img)
+    return img
+</code></pre>
+<p>可以看到，这里是遍历<code>transforms</code>中的函数，按顺序应用到 img 中。</p>
+<h2 id="transformsnormalize">transforms.Normalize<a class="anchor-link" href="#transformsnormalize" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">torchvision.transforms.Normalize(mean, std, inplace=False)
+</code></pre>
+<p>功能：逐 channel 地对图像进行标准化</p>
+<p>output = ( input - mean ) / std</p>
+<ul>
+<li>mean: 各通道的均值</li>
+<li>std: 各通道的标准差</li>
+<li>inplace: 是否原地操作</li>
+</ul>
+<p>该方法调用的是<code>F.normalize(tensor, self.mean, self.std, self.inplace)</code>而<code>`F.normalize()</code>方法如下：</p>
+<pre><code class="language-python">def normalize(tensor, mean, std, inplace=False):
+    if not _is_tensor_image(tensor):
+        raise TypeError('tensor is not a torch image.')
+
+    if not inplace:
+        tensor = tensor.clone()
+
+    dtype = tensor.dtype
+    mean = torch.as_tensor(mean, dtype=dtype, device=tensor.device)
+    std = torch.as_tensor(std, dtype=dtype, device=tensor.device)
+    tensor.sub_(mean[:, None, None]).div_(std[:, None, None])
+    return tensor
+</code></pre>
+<p>首先判断是否为 tensor，如果不是 tensor 则抛出异常。然后根据<code>inplace</code>是否为 true 进行 clone，接着把mean 和 std 都转换为tensor (原本是 list)，最后减去均值除以方差：<code>tensor.sub_(mean[:, None, None]).div_(std[:, None, None])</code></p>
+<p>对数据进行均值为 0，标准差为 1 的标准化，可以加快模型的收敛。</p>
+<p>在<a href="https://www.notion.so/2-tu-pian-chu-li-yu-shu-ju-jia-zai/2.2-tu-pian-yu-chu-li-transforms-mo-kuai-ji-zhi">逻辑回归的实验</a>中，我们的数据生成代码如下：</p>
+<pre><code class="language-python">sample_nums = 100
+mean_value = 1.7
+bias = 1
+n_data = torch.ones(sample_nums, 2)
+# 使用正态分布随机生成样本，均值为张量，方差为标量
+x0 = torch.normal(mean_value * n_data, 1) + bias      # 类别0 数据 shape=(100, 2)
+# 生成对应标签
+y0 = torch.zeros(sample_nums)                         # 类别0 标签 shape=(100, 1)
+# 使用正态分布随机生成样本，均值为张量，方差为标量
+x1 = torch.normal(-mean_value * n_data, 1) + bias     # 类别1 数据 shape=(100, 2)
+# 生成对应标签
+y1 = torch.ones(sample_nums)                          # 类别1 标签 shape=(100, 1)
+train_x = torch.cat((x0, x1), 0)
+train_y = torch.cat((y0, y1), 0)
+</code></pre>
+<p>生成的数据均值是<code>mean_value+bias=1.7+1=2.7</code>，比较靠近 0 均值。模型在 380 次迭代时，准确率就超过了 99.5%。</p>
+<p>如果我们把 bias 修改为 5。那么数据的均值变成了 6.7，偏离 0 均值较远，这时模型训练需要更多次才能收敛 (准确率达到 99.5%)。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209121811797.gif" /></p>
+<p><a href="https://pytorch.zhangxiann.com/2-tu-pian-chu-li-yu-shu-ju-jia-zai/2.3-er-shi-er-zhong-transforms-tu-pian-shu-ju-yu-chu-li-fang-fa">二十二种 transforms 图片数据预处理方法</a></p>
+<h2 id="transformscompose">transforms.Compose<a class="anchor-link" href="#transformscompose" title="Permanent link">&para;</a></h2>
+<p>transforms.Compose类看作一种容器，它能够同时对多种数据变换进行组合。传入的参数是一个列表，列表中的元素就是对载入的数据进行的各种变换操作。</p>
+<h2 id="transformsnormalizemean-std">transforms.Normalize(mean, std)<a class="anchor-link" href="#transformsnormalizemean-std" title="Permanent link">&para;</a></h2>
+<p>这里使用的是标准正态分布变换，这种方法需要使用原始数据的均值（Mean）和标准差（Standard Deviation）来进行数据的标准化，在经过标准化变换之后，数据全部符合均值为0、标准差为1的标准正态分布。计算公式如下： <br />
+<div class="math-display"><br />
+x=\frac{x-mean(x)}{std(x)}<br />
+</div> <br />
+一般来说，mean和std是实现从原始数据计算出来的，对于计算机视觉，更常用的方法是从样本中抽样算出来的或者是事先从相似的样本预估一个标准差和均值。如下代码，对三通道的图片进行标准化：</p>
+<pre><code class="language-python"># 标准化是把图片3个通道中的数据整理到规范区间 x = (x - mean(x))/stddev(x)# [0.485, 0.456, 0.406]这一组平均值是从imagenet训练集中抽样算出来的normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+</code></pre>
+<h2 id="transformsresizesize">transforms.Resize(size)<a class="anchor-link" href="#transformsresizesize" title="Permanent link">&para;</a></h2>
+<p>对载入的图片数据按照我们的需要进行缩放，传递给这个类的size可以是一个整型数据，也可以是一个类似于 (h ,w) 的序列。如果输入是个(h,w)的序列，h代表高度，w代表宽度，h和w都是int，则直接将输入图像resize到这个(h,w)尺寸，相当于force。如果使用的是一个整型数据，则将图像的短边resize到这个int数，<strong>长边则根据对应比例调整</strong>，图像的长宽比不变。</p>
+<h2 id="transformsscalesize">transforms.Scale(size)<a class="anchor-link" href="#transformsscalesize" title="Permanent link">&para;</a></h2>
+<p>对载入的图片数据我们的需要进行缩放，用法和torchvision.transforms.Resize类似。传入的size<strong>只能是一个整型数据</strong>，size是指缩放后图片最小边的边长。举个例子，如果原图的height&gt;width,那么改变大小后的图片大小是(size*height/width, size)。</p>
+<h2 id="transformscentercropsize">transforms.CenterCrop(size)<a class="anchor-link" href="#transformscentercropsize" title="Permanent link">&para;</a></h2>
+<p>以输入图的中心点为参考点，按我们需要的大小进行裁剪。传递给这个类的参数可以是一个整型数据，也可以是一个类似于(h,w)的序列。<strong>如果输入的是一个整型数据，那么裁剪的长和宽都是这个数值</strong>。</p>
+<h2 id="transformsrandomcropsize">transforms.RandomCrop(size)<a class="anchor-link" href="#transformsrandomcropsize" title="Permanent link">&para;</a></h2>
+<p>用于对载入的图片按我们需要的大小进行随机裁剪。传递给这个类的参数可以是一个整型数据，也可以是一个类似于(h,w)的序列。<strong>如果输入的是一个整型数据，那么裁剪的长和宽都是这个数值</strong>。</p>
+<h2 id="transformsrandomresizedcropsizescale">transforms.RandomResizedCrop(size,scale)<a class="anchor-link" href="#transformsrandomresizedcropsizescale" title="Permanent link">&para;</a></h2>
+<p>先将给定图像随机裁剪为不同的大小和宽高比，然后缩放所裁剪得到的图像为size的大小。即先随机采集，然后对裁剪得到的图像安装要求缩放，默认scale=(0.08, 1.0)。scale是一个面积采样的范围，假如是一个100<em>100的图片，scale = (0.5,1.0)，采样面积最小是0.5</em>100<em>100=5000，最大面积就是原图大小100</em>100=10000。先按照scale将给定图像裁剪，然后再按照给定的输出大小进行缩放。</p>
+<h2 id="transformstotensor">transforms.ToTensor<a class="anchor-link" href="#transformstotensor" title="Permanent link">&para;</a></h2>
+<p>用于对载入的图片数据进行类型转换，将之前构成PIL图片的数据转换成Tensor数据类型的变量，让PyTorch能够对其进行计算和处理。</p>
+<h2 id="transformstopilimage">transforms.ToPILImage<a class="anchor-link" href="#transformstopilimage" title="Permanent link">&para;</a></h2>
+<p>用于将Tensor变量的数据转换成PIL图片数据，主要是为了方便图片内容的显示。</p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ol>
+<li>https://pytorch.org/docs/stable/index.html</li>
+<li>https://www.w3cschool.cn/pytorch/pytorch-5ubt3bby.html</li>
+<li>https://zhuanlan.zhihu.com/p/103630393</li>
+<li><a href="https://www.cnblogs.com/yjphhw/p/9773333.html">torchvision库简介</a></li>
+<li><a href="https://blog.csdn.net/qq_37555071/article/details/107532319">PyTorch之torchvision.transforms详解</a></li>
+<li>https://pytorch-cn.readthedocs.io/zh/latest/torchvision/torchvision-transform/</li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

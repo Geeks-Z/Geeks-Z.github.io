@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>定义模型和优化器</title>
+    <meta name="description" content="定义模型和优化器 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#优化器">优化器</a></li>
+<li><a href="#optimizer">Optimizer</a><ul>
+<li><a href="#optimizer-属性">Optimizer 属性</a></li>
+<li><a href="#optimizer-方法">Optimizer 方法</a></li>
+<li><a href="#zero_grad">zero_grad()</a><ul>
+<li><a href="#使用示例">使用示例</a></li>
+</ul>
+</li>
+<li><a href="#step">step()</a><ul>
+<li><a href="#使用示例_1">使用示例</a></li>
+</ul>
+</li>
+<li><a href="#add_param_group">add_param_group()</a><ul>
+<li><a href="#使用示例_2">使用示例</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#torchoptim">torch.optim</a><ul>
+<li><a href="#torchoptimlr_scheduler">torch.optim.lr_scheduler</a></li>
+</ul>
+</li>
+<li><a href="#实例">实例</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>定义模型和优化器</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/05.训练</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="优化器">优化器<a class="anchor-link" href="#优化器" title="Permanent link">&para;</a></h2>
+<p>PyTorch 中的优化器是用于管理并更新模型中可学习参数的值，使得模型输出更加接近真实标签。</p>
+<h2 id="optimizer">Optimizer<a class="anchor-link" href="#optimizer" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><code>Optimizer</code>是优化器的基类</p>
+</blockquote>
+<pre><code class="language-python">class Optimizer(object):
+    def __init__(self, params, defaults):
+        self.defaults = defaults
+        self.state = defaultdict(dict)
+        self.param_groups = []
+</code></pre>
+<h3 id="optimizer-属性">Optimizer 属性<a class="anchor-link" href="#optimizer-属性" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>defaults</code>：存储的是优化器的超参数，例子如下：</li>
+</ul>
+<pre><code class="language-python">{'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False}
+</code></pre>
+<ul>
+<li><code>state</code>：参数的缓存，例子如下：</li>
+</ul>
+<pre><code class="language-python">defaultdict(&lt;class 'dict'&gt;, {tensor([[ 0.3864, -0.0131],
+        [-0.1911, -0.4511]], requires_grad=True): {'momentum_buffer': tensor([[0.0052, 0.0052],
+        [0.0052, 0.0052]])}})
+</code></pre>
+<ul>
+<li><code>param_groups</code>：管理的参数组，是一个 list，其中每个元素是一个字典，顺序是 params，lr，momentum，dampening，weight_decay，nesterov，例子如下：</li>
+</ul>
+<pre><code class="language-python">[{'params': [tensor([[-0.1022, -1.6890],[-1.5116, -1.7846]], requires_grad=True)], 'lr': 1, 'momentum': 0, 'dampening': 0, 'weight_decay': 0, 'nesterov': False}]
+</code></pre>
+<h3 id="optimizer-方法">Optimizer 方法<a class="anchor-link" href="#optimizer-方法" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>zero_grad()</code>：清空所管理参数的梯度。由于 <code>PyTorch</code> 的特性是张量的梯度不自动清零，因此每次反向传播之后都需要清空梯度。代码如下：</li>
+<li><code>step()</code>：执行一步梯度更新</li>
+<li><code>add_param_group()</code>：添加参数组，主要代码如下：</li>
+<li><code>state_dict()</code>：获取优化器当前状态信息字典</li>
+<li><code>load_state_dict()</code>：加载状态信息字典，包括 <code>state 、momentum_buffer 和 param_groups</code>。主要用于模型的断点续训练。我们可以在每隔 50 个 epoch 就保存模型的 <code>state_dict</code> 到硬盘，在意外终止训练时，可以继续加载上次保存的状态，继续训练。</li>
+</ul>
+<h3 id="zero_grad">zero_grad()<a class="anchor-link" href="#zero_grad" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>在 PyTorch 中，<code>zero_grad()</code>函数用于将模型中所有参数的梯度重置为零。这是因为在神经网络训练过程中，每次进行反向传播（backpropagation）时，梯度是累积计算的，而不是被替换。因此，在处理每个批次（batch）的数据之前，我们需要调用<code>zero_grad()</code>来确保梯度的正确计算。</p>
+</blockquote>
+<pre><code class="language-python">def zero_grad(self, set_to_none: bool = False):
+    for group in self.param_groups:
+        for p in group['params']:
+            if p.grad is not None:  #梯度不为空
+                if set_to_none:
+                    p.grad = None
+                else:
+                    if p.grad.grad_fn is not None:
+                        p.grad.detach_()
+                    else:
+                        p.grad.requires_grad_(False)
+                    p.grad.zero_()# 梯度设置为0
+</code></pre>
+<p><code>zero_grad()</code>函数有两种常见的使用方式：<code>model.zero_grad()</code>和<code>optimizer.zero_grad()</code>。这两种方式在功能上是等效的，它们都会将模型中所有参数的梯度设置为零。当使用<code>optimizer = optim.Optimizer(model.parameters())</code>时，这两种方式可以互换使用，其中<code>Optimizer</code>可以是 SGD、Adam 等优化器。</p>
+<h4 id="使用示例">使用示例<a class="anchor-link" href="#使用示例" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import torch
+import torch.optim as optim
+
+# 定义模型和优化器
+model = ...  # 这里应该是你的模型定义
+optimizer = optim.SGD(model.parameters(), lr=0.01)  # 使用SGD优化器，学习率为0.01
+
+# 训练循环
+for inputs, targets in dataloader:
+    # 前向传播
+    outputs = model(inputs)
+    # 计算损失
+    loss = criterion(outputs, targets)
+    # 梯度清零
+    optimizer.zero_grad()  # 或者使用 model.zero_grad()
+    # 反向传播
+    loss.backward()
+    # 更新参数
+    optimizer.step()
+</code></pre>
+<p>在上面的示例中，我们首先定义了一个模型和一个优化器。然后，在训练循环中，我们首先对模型进行前向传播以计算输出，接着计算损失，然后调用<code>optimizer.zero_grad()</code>来清零梯度，进行反向传播以计算梯度，最后使用优化器更新模型的参数。</p>
+<h3 id="step">step()<a class="anchor-link" href="#step" title="Permanent link">&para;</a></h3>
+<p><code>step()</code>方法执行以下操作：</p>
+<ol>
+<li>
+<p><strong>梯度获取</strong>：在调用<code>step()</code>之前，通常已经通过<code>loss.backward()</code>计算了损失函数关于模型参数的梯度。这些梯度存储在模型参数的<code>.grad</code>属性中。</p>
+</li>
+<li>
+<p><strong>参数更新</strong>：<code>step()</code>方法会根据优化器（如 SGD、Adam 等）中定义的更新规则，以及当前的学习率和其他超参数，来更新模型的参数。对于每个参数，它会使用相应的梯度信息来调整参数值，以便在下一次迭代中更好地拟合训练数据。</p>
+</li>
+<li>
+<p><strong>内部状态更新</strong>：一些优化器（如 Adam）还维护了参数的内部状态，如一阶矩估计和二阶矩估计。在调用<code>step()</code>时，这些内部状态也会根据当前的梯度和参数进行更新。</p>
+</li>
+</ol>
+<p>需要注意的是，在每次调用<code>step()</code>之前，通常需要先调用<code>optimizer.zero_grad()</code>来清除之前累积的梯度。这是因为 PyTorch 中的梯度是累积的，如果不进行清零操作，新的梯度将会与之前的梯度相加，导致错误的更新。</p>
+<p>此外，<code>step()</code>方法通常与训练循环中的批次（batch）处理配合使用。在每个批次处理完成后，都会调用<code>step()</code>来更新模型参数，以便在下一个批次中继续优化。</p>
+<p>张量 weight 的形状为<span class="math-inline">2 \times 2</span>，并设置梯度为 1，把 weight 传进优化器，学习率设置为 1，执行<code>optimizer.step()</code>更新梯度，也就是所有的张量都减去 1。</p>
+<h4 id="使用示例_1">使用示例<a class="anchor-link" href="#使用示例_1" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">weight = torch.randn((2, 2), requires_grad=True)
+weight.grad = torch.ones((2, 2))
+
+optimizer = optim.SGD([weight], lr=1)
+print(&quot;weight before step:{}&quot;.format(weight.data))
+optimizer.step()
+print(&quot;weight after step:{}&quot;.format(weight.data))
+</code></pre>
+<p>输出为：</p>
+<pre><code class="language-python">weight before step:tensor([[0.6614, 0.2669],
+        [0.0617, 0.6213]])
+weight after step:tensor([[-0.3386, -0.7331],
+        [-0.9383, -0.3787]])
+</code></pre>
+<h3 id="add_param_group">add_param_group()<a class="anchor-link" href="#add_param_group" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>在 PyTorch 的<code>torch.optim.Optimizer</code>类中，<code>add_param_group()</code>方法用于向优化器中添加一个参数组。这允许你为模型的不同部分设置不同的学习率或其他优化参数。这在训练复杂的神经网络时非常有用，特别是当你希望某些层的学习率高于其他层时。</p>
+</blockquote>
+<p><code>add_param_group()</code>方法接受一个字典作为参数，该字典描述了参数组的配置。下面是一些常见的键及其说明：</p>
+<ul>
+<li><code>params (iterable)</code>: 一个可迭代的参数列表或字典，指定了需要优化的参数。通常，你可以直接传入<code>model.parameters()</code>来获取模型的所有参数，或者通过某些条件筛选特定的参数。</li>
+<li><code>weight_decay (float, optional)</code>: 权重衰减系数，用于正则化。它通过将权重乘以一个小于 1 的因子来实现，通常设置为类似 0.001 的值。如果未指定，则默认为优化器级别的<code>weight_decay</code>。</li>
+<li><code>lr (float, optional)</code>: 学习率。它控制参数更新的步长。如果未指定，则默认为优化器级别的学习率。</li>
+<li><code>momentum (float, optional)</code>: 动量系数，仅对使用动量的优化器（如 SGD）有效。它用于加速 SGD 在相关方向上前进，并抑制震荡。如果未指定，则默认为优化器级别的动量。</li>
+<li><code>dampening (float, optional)</code>: 阻尼系数，用于调节动量的影响，防止动量过大导致的不稳定。如果未指定，则默认为优化器级别的阻尼。</li>
+<li><code>nesterov (bool, optional)</code>: 是否使用 Nesterov 动量。当设置为<code>True</code>时，使用 Nesterov 加速梯度（NAG）算法，它是对标准动量方法的一种改进。如果未指定，则默认为优化器级别的 Nesterov 设置。</li>
+</ul>
+<h4 id="使用示例_2">使用示例<a class="anchor-link" href="#使用示例_2" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">import torch
+import torch.optim as optim
+
+# 假设我们有一个简单的模型
+model = torch.nn.Sequential(
+    torch.nn.Linear(10, 20),
+    torch.nn.ReLU(),
+    torch.nn.Linear(20, 1)
+)
+
+# 创建优化器，并添加默认的参数组
+optimizer = optim.SGD(model.parameters(), lr=0.01)
+
+# 为模型的第一层设置不同的学习率
+param_group = {'params': model[0].parameters(), 'lr': 0.02}
+optimizer.add_param_group(param_group)
+
+# 现在，模型的第一层将使用0.02的学习率，而其余层将使用默认的0.01学习率
+</code></pre>
+<h2 id="torchoptim">torch.optim<a class="anchor-link" href="#torchoptim" title="Permanent link">&para;</a></h2>
+<p>PyTorch 提供了一个优化器的库<code>torch.optim</code>：</p>
+<ul>
+<li>torch.optim.SGD</li>
+<li>torch.optim.ASGD</li>
+<li>torch.optim.Adadelta</li>
+<li>torch.optim.Adagrad</li>
+<li>torch.optim.Adam</li>
+<li>torch.optim.AdamW</li>
+<li>torch.optim.Adamax</li>
+<li>torch.optim.RAdam</li>
+<li>torch.optim.NAdam</li>
+<li>torch.optim.SparseAdam</li>
+<li>torch.optim.LBFGS</li>
+<li>torch.optim.RMSprop</li>
+<li>torch.optim.Rprop</li>
+</ul>
+<h3 id="torchoptimlr_scheduler">torch.optim.lr_scheduler<a class="anchor-link" href="#torchoptimlr_scheduler" title="Permanent link">&para;</a></h3>
+<p><code>torch.optim.lr_scheduler</code> 是 PyTorch 中用于调整学习率（learning rate）的模块。在训练神经网络时，学习率是一个非常重要的超参数，它决定了模型参数在每次更新时的步长大小。学习率调度器（scheduler）可以根据训练过程中的某些指标（如验证损失或训练轮次）动态地调整学习率，以优化训练过程。学习率调度应该在优化器更新后应用。</p>
+<p><code>torch.optim.lr_scheduler</code> 提供了多种学习率调度器，每种调度器都有其特定的参数。以下是一些常用调度器的参数说明：</p>
+<ol>
+<li><strong>StepLR</strong>: 每训练一定数量的轮次（epochs），学习率按指定的因子衰减。</li>
+</ol>
+<ul>
+<li><code>optimizer</code> (Optimizer): 优化器。</li>
+<li><code>step_size</code> (int): 学习率衰减的周期，即每隔多少个 epochs 衰减一次。</li>
+<li><code>gamma</code> (float, optional): 学习率衰减的因子，默认为 0.1。</li>
+<li><code>last_epoch</code> (int, optional): 上一个 epoch 的索引，默认为 -1。</li>
+</ul>
+<ol start="2">
+<li><strong>ExponentialLR</strong>: 学习率按指数衰减。</li>
+</ol>
+<ul>
+<li><code>optimizer</code> (Optimizer): 优化器。</li>
+<li><code>gamma</code> (float): 衰减因子。</li>
+<li><code>last_epoch</code> (int, optional): 上一个 epoch 的索引，默认为 -1。</li>
+</ul>
+<ol start="3">
+<li><strong>CosineAnnealingLR</strong>: 学习率按余弦退火策略调整。</li>
+</ol>
+<ul>
+<li><code>optimizer</code> (Optimizer): 优化器。</li>
+<li><code>T_max</code> (int): 余弦退火周期的一半，即一个完整余弦周期包含的 epochs 数量。</li>
+<li><code>eta_min</code> (float, optional): 学习率的最小值，默认为 0。</li>
+<li><code>last_epoch</code> (int, optional): 上一个 epoch 的索引，默认为 -1。</li>
+</ul>
+<ol start="4">
+<li><strong>ReduceLROnPlateau</strong>: 当某个指标（如验证损失）停止改进时，减少学习率。</li>
+</ol>
+<ul>
+<li><code>optimizer</code> (Optimizer): 优化器。</li>
+<li><code>mode</code> (str): 指标改进的模式，可选 'min' 或 'max'。</li>
+<li><code>factor</code> (float): 学习率减少的因子。</li>
+<li><code>patience</code> (int): 等待多少个 epochs 无改进后才减少学习率。</li>
+<li><code>verbose</code> (bool): 是否打印信息，默认为 False。</li>
+<li><code>threshold</code> (float): 测量新的最佳值的阈值，仅用于 'min' 模式。</li>
+<li><code>threshold_mode</code> (str): 相对或绝对阈值模式。</li>
+<li><code>cooldown</code> (int): 学习率减少后的冷却周期，即多少个 epochs 不调整学习率。</li>
+<li><code>min_lr</code> (float or list): 学习率的最小值。</li>
+<li><code>eps</code> (float): 提高数值稳定性的小值。</li>
+</ul>
+<ol start="5">
+<li><strong>CyclicLR</strong>: 学习率在给定范围内循环变化。</li>
+</ol>
+<ul>
+<li><code>optimizer</code> (Optimizer): 优化器。</li>
+<li><code>base_lr</code> (float or list): 初始学习率。</li>
+<li><code>max_lr</code> (float or list): 最大学习率。</li>
+<li><code>step_size_up</code> (int): 学习率从 <code>base_lr</code> 增加到 <code>max_lr</code> 的周期长度。</li>
+<li><code>step_size_down</code> (int): 学习率从 <code>max_lr</code> 减少到 <code>base_lr</code> 的周期长度。</li>
+<li><code>mode</code> (str): 循环的模式，可以是 'triangular', 'triangular2' 或 'exp_range'。</li>
+<li><code>gamma</code> (float): 用于 'exp_range' 模式的乘数因子。</li>
+<li><code>scale_fn</code> (function): 自定义的缩放函数。</li>
+<li><code>scale_mode</code> (str): 缩放模式，可以是 'cycle' 或 'iterations'。</li>
+<li><code>cycle_momentum</code> (bool): 是否也循环动量。</li>
+<li><code>base_momentum</code> (float or list): 动量的初始值。</li>
+<li><code>max_momentum</code> (float or list): 动量的最大值。</li>
+<li><code>last_epoch</code> (int): 上一个 epoch 的索引。</li>
+</ul>
+<ol start="6">
+<li><strong>LambdaLR</strong>: 根据一个 lambda 函数来调整学习率。<br />
+   - <code>optimizer</code> (Optimizer): 优化器。<br />
+   - <code>lr_lambda</code> (function or list): 用于计算学习率的 lambda 函数或函数列表。<br />
+   - <code>last_epoch</code> (int): 上一个 epoch 的索引。</li>
+</ol>
+<p>这只是 <code>torch.optim.lr_scheduler</code> 中提供的一些常见调度器及其参数。具体的用法和参数可能因不同的调度器而有所差异。</p>
+<h2 id="实例">实例<a class="anchor-link" href="#实例" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">import os
+import torch
+
+# 设置权重，服从正态分布  --&gt; 2 x 2
+weight = torch.randn((2, 2), requires_grad=True)
+# 设置梯度为全1矩阵  --&gt; 2 x 2
+weight.grad = torch.ones((2, 2))
+# 输出现有的weight和data
+print(&quot;The data of weight before step:\n{}&quot;.format(weight.data))
+print(&quot;The grad of weight before step:\n{}&quot;.format(weight.grad))
+# 实例化优化器
+optimizer = torch.optim.SGD([weight], lr=0.1, momentum=0.9)
+# 进行一步操作
+optimizer.step()
+# 查看进行一步后的值，梯度
+print(&quot;The data of weight after step:\n{}&quot;.format(weight.data))
+print(&quot;The grad of weight after step:\n{}&quot;.format(weight.grad))
+# 权重清零
+optimizer.zero_grad()
+# 检验权重是否为0
+print(&quot;The grad of weight after optimizer.zero_grad():\n{}&quot;.format(weight.grad))
+# 输出参数
+print(&quot;optimizer.params_group is \n{}&quot;.format(optimizer.param_groups))
+# 查看参数位置，optimizer和weight的位置一样，我觉得这里可以参考Python是基于值管理
+print(&quot;weight in optimizer:{}\nweight in weight:{}\n&quot;.format(id(optimizer.param_groups[0]['params'][0]), id(weight)))
+# 添加参数：weight2
+weight2 = torch.randn((3, 3), requires_grad=True)
+optimizer.add_param_group({&quot;params&quot;: weight2, 'lr': 0.0001, 'nesterov': True})
+# 查看现有的参数
+print(&quot;optimizer.param_groups is\n{}&quot;.format(optimizer.param_groups))
+# 查看当前状态信息
+opt_state_dict = optimizer.state_dict()
+print(&quot;state_dict before step:\n&quot;, opt_state_dict)
+# 进行5次step操作
+for _ in range(50):
+    optimizer.step()
+# 输出现有状态信息
+print(&quot;state_dict after step:\n&quot;, optimizer.state_dict())
+# 保存参数信息
+torch.save(optimizer.state_dict(),os.path.join(r&quot;D:\pythonProject\Attention_Unet&quot;, &quot;optimizer_state_dict.pkl&quot;))
+print(&quot;----------done-----------&quot;)
+# 加载参数信息
+state_dict = torch.load(r&quot;D:\pythonProject\Attention_Unet\optimizer_state_dict.pkl&quot;) # 需要修改为你自己的路径
+optimizer.load_state_dict(state_dict)
+print(&quot;load state_dict successfully\n{}&quot;.format(state_dict))
+# 输出最后属性信息
+print(&quot;\n{}&quot;.format(optimizer.defaults))
+print(&quot;\n{}&quot;.format(optimizer.state))
+print(&quot;\n{}&quot;.format(optimizer.param_groups))
+</code></pre>
+<p>输出结果</p>
+<pre><code class="language-python"># 进行更新前的数据，梯度
+The data of weight before step:
+tensor([[-0.3077, -0.1808],
+        [-0.7462, -1.5556]])
+The grad of weight before step:
+tensor([[1., 1.],
+        [1., 1.]])
+# 进行更新后的数据，梯度
+The data of weight after step:
+tensor([[-0.4077, -0.2808],
+        [-0.8462, -1.6556]])
+The grad of weight after step:
+tensor([[1., 1.],
+        [1., 1.]])
+# 进行梯度清零的梯度
+The grad of weight after optimizer.zero_grad():
+tensor([[0., 0.],
+        [0., 0.]])
+# 输出信息
+optimizer.params_group is
+[{'params': [tensor([[-0.4077, -0.2808],
+        [-0.8462, -1.6556]], requires_grad=True)], 'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False}]
+
+# 证明了优化器的和weight的储存是在一个地方，Python基于值管理
+weight in optimizer:1841923407424
+weight in weight:1841923407424
+
+# 输出参数
+optimizer.param_groups is
+[{'params': [tensor([[-0.4077, -0.2808],
+        [-0.8462, -1.6556]], requires_grad=True)], 'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False}, {'params': [tensor([[ 0.4539, -2.1901, -0.6662],
+        [ 0.6630, -1.5178, -0.8708],
+        [-2.0222,  1.4573,  0.8657]], requires_grad=True)], 'lr': 0.0001, 'nesterov': True, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0}]
+
+# 进行更新前的参数查看，用state_dict
+state_dict before step:
+ {'state': {0: {'momentum_buffer': tensor([[1., 1.],
+        [1., 1.]])}}, 'param_groups': [{'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False, 'params': [0]}, {'lr': 0.0001, 'nesterov': True, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'params': [1]}]}
+# 进行更新后的参数查看，用state_dict
+state_dict after step:
+ {'state': {0: {'momentum_buffer': tensor([[0.0052, 0.0052],
+        [0.0052, 0.0052]])}}, 'param_groups': [{'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False, 'params': [0]}, {'lr': 0.0001, 'nesterov': True, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'params': [1]}]}
+
+# 存储信息完毕
+----------done-----------
+# 加载参数信息成功
+load state_dict successfully
+# 加载参数信息
+{'state': {0: {'momentum_buffer': tensor([[0.0052, 0.0052],
+        [0.0052, 0.0052]])}}, 'param_groups': [{'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False, 'params': [0]}, {'lr': 0.0001, 'nesterov': True, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'params': [1]}]}
+
+# defaults的属性输出
+{'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False}
+
+# state属性输出
+defaultdict(&lt;class 'dict'&gt;, {tensor([[-1.3031, -1.1761],
+        [-1.7415, -2.5510]], requires_grad=True): {'momentum_buffer': tensor([[0.0052, 0.0052],
+        [0.0052, 0.0052]])}})
+
+# param_groups属性输出
+[{'lr': 0.1, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'nesterov': False, 'params': [tensor([[-1.3031, -1.1761],
+        [-1.7415, -2.5510]], requires_grad=True)]}, {'lr': 0.0001, 'nesterov': True, 'momentum': 0.9, 'dampening': 0, 'weight_decay': 0, 'params': [tensor([[ 0.4539, -2.1901, -0.6662],
+        [ 0.6630, -1.5178, -0.8708],
+        [-2.0222,  1.4573,  0.8657]], requires_grad=True)]}]
+
+</code></pre>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

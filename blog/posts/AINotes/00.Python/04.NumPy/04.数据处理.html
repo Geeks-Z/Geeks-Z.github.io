@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#利用数组进行数据处理">利用数组进行数据处理</a><ul>
+<li><a href="#将条件逻辑表述为数组运算">将条件逻辑表述为数组运算</a></li>
+<li><a href="#数学和统计方法">数学和统计方法</a></li>
+<li><a href="#用于布尔型数组的方法">用于布尔型数组的方法</a></li>
+<li><a href="#排序">排序</a></li>
+<li><a href="#唯一化以及其它的集合逻辑">唯一化以及其它的集合逻辑</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/00.Python/04.NumPy</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="利用数组进行数据处理">利用数组进行数据处理<a class="anchor-link" href="#利用数组进行数据处理" title="Permanent link">&para;</a></h2>
+<p>NumPy 数组使你可以将许多种数据处理任务表述为简洁的数组表达式（否则需要编写循环）。用数组表达式代替循环的做法，通常被称为向量化。一般来说，向量化数组运算要比等价的纯 Python 方式快上一两个数量级（甚至更多），尤其是各种数值计算。在后面内容中（见附录 A）我将介绍广播，这是一种针对向量化计算的强大手段。</p>
+<p>作为简单的例子，假设我们想要在一组值（网格型）上计算函数<code>sqrt(x^2+y^2)</code>。<code>np.meshgrid</code>函数接受两个一维数组，并产生两个二维矩阵（对应于两个数组中所有的<code>(x,y)</code>对）：</p>
+<pre><code class="language-python">In [155]: points = np.arange(-5, 5, 0.01) # 1000 equally spaced points
+
+In [156]: xs, ys = np.meshgrid(points, points)
+In [157]: ys
+Out[157]: 
+array([[-5.  , -5.  , -5.  , ..., -5.  , -5.  , -5.  ],
+       [-4.99, -4.99, -4.99, ..., -4.99, -4.99, -4.99],
+       [-4.98, -4.98, -4.98, ..., -4.98, -4.98, -4.98],
+       ..., 
+       [ 4.97,  4.97,  4.97, ...,  4.97,  4.97,  4.97],
+       [ 4.98,  4.98,  4.98, ...,  4.98,  4.98,  4.98],
+       [ 4.99,  4.99,  4.99, ...,  4.99,  4.99,  4.99]])
+</code></pre>
+<p>现在，对该函数的求值运算就好办了，把这两个数组当做两个浮点数那样编写表达式即可：</p>
+<pre><code class="language-python">In [158]: z = np.sqrt(xs ** 2 + ys ** 2)
+
+In [159]: z
+Out[159]: 
+array([[ 7.0711,  7.064 ,  7.0569, ...,  7.0499,  7.0569,  7.064 ],
+       [ 7.064 ,  7.0569,  7.0499, ...,  7.0428,  7.0499,  7.0569],
+       [ 7.0569,  7.0499,  7.0428, ...,  7.0357,  7.0428, 7.0499],
+       ..., 
+       [ 7.0499,  7.0428,  7.0357, ...,  7.0286,  7.0357,  7.0428],
+       [ 7.0569,  7.0499,  7.0428, ...,  7.0357,  7.0428,  7.0499],
+       [ 7.064 ,  7.0569,  7.0499, ...,  7.0428,  7.0499,  7.0569]])
+</code></pre>
+<p>作为第 9 章的先导，我用 matplotlib 创建了这个二维数组的可视化：</p>
+<pre><code class="language-python">In [160]: import matplotlib.pyplot as plt
+
+In [161]: plt.imshow(z, cmap=plt.cm.gray); plt.colorbar()
+Out[161]: &lt;matplotlib.colorbar.Colorbar at 0x7f715e3fa630&gt;
+
+In [162]: plt.title(&quot;Image plot of <span class="math-inline">\sqrt{x^2 + y^2}</span> for a grid of values&quot;)
+Out[162]: &lt;matplotlib.text.Text at 0x7f715d2de748&gt;
+</code></pre>
+<p>见图 4-3。这张图是用 matplotlib 的<code>imshow</code>函数创建的。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161006004.png" alt="图 4-3 根据网格对函数求值的结果" style="zoom:67%;" /></p>
+<h3 id="将条件逻辑表述为数组运算">将条件逻辑表述为数组运算<a class="anchor-link" href="#将条件逻辑表述为数组运算" title="Permanent link">&para;</a></h3>
+<p><code>numpy.where</code>函数是三元表达式<code>x if condition else y</code>的向量化版本。假设我们有一个布尔数组和两个值数组：</p>
+<pre><code class="language-python">In [165]: xarr = np.array([1.1, 1.2, 1.3, 1.4, 1.5])
+
+In [166]: yarr = np.array([2.1, 2.2, 2.3, 2.4, 2.5])
+
+In [167]: cond = np.array([True, False, True, True, False])
+</code></pre>
+<p>假设我们想要根据<code>cond</code>中的值选取<code>xarr</code>和<code>yarr</code>的值：当<code>cond</code>中的值为<code>True</code>时，选取<code>xarr</code>的值，否则从<code>yarr</code>中选取。列表推导式的写法应该如下所示：</p>
+<pre><code class="language-python">In [168]: result = [(x if c else y)
+   .....:           for x, y, c in zip(xarr, yarr, cond)]
+
+In [169]: result
+Out[169]: [1.1000000000000001, 2.2000000000000002, 1.3, 1.3999999999999999, 2.5]
+</code></pre>
+<p>这有几个问题。第一，它对大数组的处理速度不是很快（因为所有工作都是由纯 Python 完成的）。第二，无法用于多维数组。若使用<code>np.where</code>，则可以将该功能写得非常简洁：</p>
+<pre><code class="language-python">In [170]: result = np.where(cond, xarr, yarr)
+
+In [171]: result
+Out[171]: array([ 1.1,  2.2,  1.3,  1.4,  2.5])
+</code></pre>
+<p><code>np.where</code>的第二个和第三个参数不必是数组，它们都可以是标量值。在数据分析工作中，<code>where</code>通常用于根据另一个数组而产生一个新的数组。假设有一个由随机数据组成的矩阵，你希望将所有正值替换为 2，将所有负值替换为 -2。若利用<code>np.where</code>，则会非常简单：</p>
+<pre><code class="language-python">In [172]: arr = np.random.randn(4, 4)
+
+In [173]: arr
+Out[173]: 
+array([[-0.5031, -0.6223, -0.9212, -0.7262],
+       [ 0.2229,  0.0513, -1.1577,  0.8167],
+       [ 0.4336,  1.0107,  1.8249, -0.9975],
+       [ 0.8506, -0.1316,  0.9124,  0.1882]])
+
+In [174]: arr &gt; 0
+Out[174]: 
+array([[False, False, False, False],
+       [ True,  True, False,  True],
+       [ True,  True,  True, False],
+       [ True, False,  True,  True]], dtype=bool)
+
+In [175]: np.where(arr &gt; 0, 2, -2)
+Out[175]: 
+array([[-2, -2, -2, -2],
+       [ 2,  2, -2,  2],
+       [ 2,  2,  2, -2],
+       [ 2, -2,  2,  2]])
+</code></pre>
+<p>使用<code>np.where</code>，可以将标量和数组结合起来。例如，我可用常数 2 替换<code>arr</code>中所有正的值：</p>
+<pre><code class="language-python">In [176]: np.where(arr &gt; 0, 2, arr) # set only positive values to 2
+Out[176]: 
+array([[-0.5031, -0.6223, -0.9212, -0.7262],
+       [ 2.    ,  2.    , -1.1577,  2.    ],
+       [ 2.    ,  2.    ,  2.    , -0.9975],
+       [ 2.    , -0.1316,  2.    ,  2.    ]])
+</code></pre>
+<p>传递给<code>where</code>的数组大小可以不相等，甚至可以是标量值。</p>
+<h3 id="数学和统计方法">数学和统计方法<a class="anchor-link" href="#数学和统计方法" title="Permanent link">&para;</a></h3>
+<p>可以通过数组上的一组数学函数对整个数组或某个轴向的数据进行统计计算。<code>sum</code>、<code>mean</code>以及标准差<code>std</code>等聚合计算（aggregation，通常叫做约简（reduction））既可以当做数组的实例方法调用，也可以当做顶级 NumPy 函数使用。</p>
+<p>这里，我生成了一些正态分布随机数据，然后做了聚类统计：</p>
+<pre><code class="language-python">In [177]: arr = np.random.randn(5, 4)
+
+In [178]: arr
+Out[178]: 
+array([[ 2.1695, -0.1149,  2.0037,  0.0296],
+       [ 0.7953,  0.1181, -0.7485,  0.585 ],
+       [ 0.1527, -1.5657, -0.5625, -0.0327],
+       [-0.929 , -0.4826, -0.0363,  1.0954],
+       [ 0.9809, -0.5895,  1.5817, -0.5287]])
+
+In [179]: arr.mean()
+Out[179]: 0.19607051119998253
+
+In [180]: np.mean(arr)
+Out[180]: 0.19607051119998253
+
+In [181]: arr.sum()
+Out[181]: 3.9214102239996507
+</code></pre>
+<p><code>mean</code>和<code>sum</code>这类的函数可以接受一个<code>axis</code>选项参数，用于计算该轴向上的统计值，最终结果是一个少一维的数组：</p>
+<pre><code class="language-python">In [182]: arr.mean(axis=1)
+Out[182]: array([ 1.022 ,  0.1875, -0.502 , -0.0881,  0.3611])
+
+In [183]: arr.sum(axis=0)
+Out[183]: array([ 3.1693, -2.6345,  2.2381,  1.1486])
+</code></pre>
+<p>这里，<code>arr.mean(1)</code>是“计算行的平均值”，<code>arr.sum(0)</code>是“计算每列的和”。</p>
+<p>其他如<code>cumsum</code>和<code>cumprod</code>之类的方法则不聚合，而是产生一个由中间结果组成的数组：</p>
+<pre><code class="language-python">In [184]: arr = np.array([0, 1, 2, 3, 4, 5, 6, 7])
+
+In [185]: arr.cumsum()
+Out[185]: array([ 0,  1,  3,  6, 10, 15, 21, 28])
+</code></pre>
+<p>在多维数组中，累加函数（如<code>cumsum</code>）返回的是同样大小的数组，但是会根据每个低维的切片沿着标记轴计算部分聚类：</p>
+<pre><code class="language-python">In [186]: arr = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+
+In [187]: arr
+Out[187]: 
+array([[0, 1, 2],
+       [3, 4, 5],
+       [6, 7, 8]])
+
+In [188]: arr.cumsum(axis=0)
+Out[188]: 
+array([[ 0,  1,  2],
+       [ 3,  5,  7],
+       [ 9, 12, 15]])
+
+In [189]: arr.cumprod(axis=1)
+Out[189]: 
+array([[  0,   0,   0],
+       [  3,  12,  60],
+       [  6,  42, 336]])
+</code></pre>
+<p>表 4-5 列出了全部的基本数组统计方法。后续章节中有很多例子都会用到这些方法。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161006402.png" style="zoom:67%;" /></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161006893.png" style="zoom:67%;" /></p>
+<h3 id="用于布尔型数组的方法">用于布尔型数组的方法<a class="anchor-link" href="#用于布尔型数组的方法" title="Permanent link">&para;</a></h3>
+<p>在上面这些方法中，布尔值会被强制转换为 1（<code>True</code>）和 0（<code>False</code>）。因此，<code>sum</code>经常被用来对布尔型数组中的<code>True</code>值计数：</p>
+<pre><code class="language-python">In [190]: arr = np.random.randn(100)
+
+In [191]: (arr &gt; 0).sum() # Number of positive values
+Out[191]: 42
+</code></pre>
+<p>另外还有两个方法<code>any</code>和<code>all</code>，它们对布尔型数组非常有用。<code>any</code>用于测试数组中是否存在一个或多个<code>True</code>，而<code>all</code>则检查数组中所有值是否都是<code>True</code>：</p>
+<pre><code class="language-python">In [192]: bools = np.array([False, False, True, False])
+
+In [193]: bools.any()
+Out[193]: True
+
+In [194]: bools.all()
+Out[194]: False
+</code></pre>
+<p>这两个方法也能用于非布尔型数组，所有非 0 元素将会被当做<code>True</code>。</p>
+<h3 id="排序">排序<a class="anchor-link" href="#排序" title="Permanent link">&para;</a></h3>
+<p>跟 Python 内置的列表类型一样，NumPy 数组也可以通过<code>sort</code>方法就地排序：</p>
+<pre><code class="language-python">In [195]: arr = np.random.randn(6)
+
+In [196]: arr
+Out[196]: array([ 0.6095, -0.4938,  1.24  , -0.1357,  1.43  , -0.8469])
+
+In [197]: arr.sort()
+
+In [198]: arr
+Out[198]: array([-0.8469, -0.4938, -0.1357,  0.6095,  1.24  ,  1.43  ])
+</code></pre>
+<p>多维数组可以在任何一个轴向上进行排序，只需将轴编号传给<code>sort</code>即可：</p>
+<pre><code class="language-python">In [199]: arr = np.random.randn(5, 3)
+
+In [200]: arr
+Out[200]: 
+array([[ 0.6033,  1.2636, -0.2555],
+       [-0.4457,  0.4684, -0.9616],
+       [-1.8245,  0.6254,  1.0229],
+       [ 1.1074,  0.0909, -0.3501],
+       [ 0.218 , -0.8948, -1.7415]])
+
+In [201]: arr.sort(1)
+
+In [202]: arr
+Out[202]: 
+array([[-0.2555,  0.6033,  1.2636],
+       [-0.9616, -0.4457,  0.4684],
+       [-1.8245,  0.6254,  1.0229],
+       [-0.3501,  0.0909,  1.1074],
+       [-1.7415, -0.8948,  0.218 ]])
+</code></pre>
+<p>顶级方法<code>np.sort</code>返回的是数组的已排序副本，而就地排序则会修改数组本身。计算数组分位数最简单的办法是对其进行排序，然后选取特定位置的值：</p>
+<pre><code class="language-python">In [203]: large_arr = np.random.randn(1000)
+
+In [204]: large_arr.sort()
+
+In [205]: large_arr[int(0.05 * len(large_arr))] # 5% quantile
+Out[205]: -1.5311513550102103
+</code></pre>
+<p>更多关于 NumPy 排序方法以及诸如间接排序之类的高级技术，请参阅附录 A。在 pandas 中还可以找到一些其他跟排序有关的数据操作（比如根据一列或多列对表格型数据进行排序）。</p>
+<h3 id="唯一化以及其它的集合逻辑">唯一化以及其它的集合逻辑<a class="anchor-link" href="#唯一化以及其它的集合逻辑" title="Permanent link">&para;</a></h3>
+<p>NumPy 提供了一些针对一维<code>ndarray</code>的基本集合运算。最常用的可能要数<code>np.unique</code>了，它用于找出数组中的唯一值并返回已排序的结果：</p>
+<pre><code class="language-python">In [206]: names = np.array(['Bob', 'Joe', 'Will', 'Bob', 'Will', 'Joe', 'Joe'])
+
+In [207]: np.unique(names)
+Out[207]: 
+array(['Bob', 'Joe', 'Will'],
+      dtype='&lt;U4')
+
+In [208]: ints = np.array([3, 3, 3, 2, 2, 1, 1, 4, 4])
+
+In [209]: np.unique(ints)
+Out[209]: array([1, 2, 3, 4])
+</code></pre>
+<p>拿跟<code>np.unique</code>等价的纯 Python 代码来对比一下：</p>
+<pre><code class="language-python">In [210]: sorted(set(names))
+Out[210]: ['Bob', 'Joe', 'Will']
+</code></pre>
+<p>另一个函数<code>np.in1d</code>用于测试一个数组中的值在另一个数组中的成员资格，返回一个布尔型数组：</p>
+<pre><code class="language-python">In [211]: values = np.array([6, 0, 0, 3, 2, 5, 6])
+
+In [212]: np.in1d(values, [2, 3, 6])
+Out[212]: array([ True, False, False,  True,  True, False,  True], dtype=bool)
+</code></pre>
+<p>NumPy 中的集合函数请参见表 4-6。<br />
+<img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161006338.png" style="zoom:67%;" /></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

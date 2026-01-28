@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器学习调参自动优化方法</title>
+    <meta name="description" content="机器学习调参自动优化方法 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul></ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>机器学习调参自动优化方法</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/08.模型优化</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><img alt="cover_image" src="https://mmbiz.qlogo.cn/mmbiz_jpg/vI9nYe94fsEdWl1RjERNWqia63EmoBmWJFgw9TUA0ibJm5hvHWMcHXm4YmAkBibr3yZX8b4RZic2VR0yuLRGL9BibOg/0?wx_fmt=jpeg" /></p>
+<h1 id="机器学习调参自动优化方法">机器学习调参自动优化方法<a class="anchor-link" href="#机器学习调参自动优化方法" title="Permanent link">&para;</a></h1>
+<p>https://mp.weixin.qq.com/s/qFhRjBBXXwCKnyPIh5GSiQ?poc_token=HCyh4majWbZFpbSQ_WGjood0-_0r1y-AtxO64-tQ</p>
+<p><a href="javascript:void(0);"> Datawhale </a></p>
+<hr />
+<p>以下文章来源于宅码  ，作者Ai</p>
+<p><img alt="" src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM4sr9616HCZ2SH6cWOrqDEruxuBv7v4Cxyu0iaz4IEoMYg/0" /><br />
+<strong>宅码</strong> .  print("Hello, world!")</p>
+<p>本文旨在介绍当前被大家广为所知的超参自动优化方法，像网格搜索、随机搜索、贝叶斯优化和Hyperband，并附有相关的样例代码供大家学习。</p>
+<p><strong>一、网格搜索(Grid Search)</strong>  </p>
+<p>网格搜索是暴力搜索，在给定超参搜索空间内，尝试所有超参组合，最后搜索出最优的超参组合。sklearn已实现该方法，使用样例如下:</p>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>*</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>​  <br />
+    from sklearn import svm, datasetsfrom sklearn.model_selection import GridSearchCVimport pandas as pd<br />
+    # 导入数据iris = datasets.load_iris()# 定义超参搜索空间parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}# 初始化模型svc = svm.SVC()# 网格搜索clf = GridSearchCV(estimator = svc,                   param_grid = parameters,                   scoring = 'accuracy',                   n_jobs = -1,                   cv = 5)clf.fit(iris.data, iris.target)返回：GridSearchCV(cv=5, estimator=SVC(), n_jobs=-1,                   param_grid={'C': [1, 10], 'kernel': ('linear', 'rbf')},                   scoring='accuracy')<br />
+    # 打印结果print('详细结果:\n', pd.DataFrame.from_dict(clf.cv_results_))print('最佳分类器:\n', clf.best_estimator_)print('最佳分数:\n', clf.best_score_)print('最佳参数:\n', clf.best_params_).返回：详细结果:    mean_fit_time  std_fit_time  mean_score_time  std_score_time param_C  ... split3_test_score split4_test_score  mean_test_score  std_test_score  rank_test_score0       0.000788      0.000394         0.000194        0.000389       1  ...          0.966667               1.0         0.980000        0.016330                11       0.000804      0.000402         0.000199        0.000399       1  ...          0.933333               1.0         0.966667        0.021082                42       0.000593      0.000484         0.000593        0.000484      10  ...          0.966667               1.0         0.973333        0.038873                33       0.000593      0.000484         0.000399        0.000489      10  ...          0.966667               1.0         0.980000        0.016330                1[4 rows x 15 columns]最佳分类器: SVC(C=1, kernel='linear')最佳分数:0.9800000000000001最佳参数: {'C': 1, 'kernel': 'linear'}</p>
+<p>sklearn.model_selection.GridSearchCV  [1]  的重要参数说明:</p>
+<ul>
+<li>
+<p>estimator: scikit-learn模型。 </p>
+</li>
+<li>
+<p>param_grid: 超参搜索空间，即超参数字典。 </p>
+</li>
+<li>
+<p>scoring: 在交叉验证中使用的评估策略。 </p>
+</li>
+<li>
+<p>n_jobs: 并行任务数，-1为使用所有CPU。 </p>
+</li>
+<li>
+<p>cv: 决定采用几折交叉验证。 </p>
+</li>
+</ul>
+<p><strong>二、随机搜索(Randomized Search)</strong></p>
+<p>随机搜索是在搜索空间中采样出超参组合，然后选出采样组合中最优的超参组合。随机搜索的好处如下图所示：</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXuuSML2dfbQY2qqNkun9fuMfmUibWFuoPfqE0EOVlWbTGJ8NHibDf3D70g/640?wx_fmt=png" /></p>
+<p>图1: 网格搜索和随机搜索的对比  [2]</p>
+<p>解释图1，如果目前我们要搜索两个参数，但参数A重要而另一个参数B并没有想象中重要，网格搜索9个参数组合(A,<br />
+B)，而由于模型更依赖于重要参数A，所以只有3个参数值是真正参与到最优参数的搜索工作中。反观随机搜索，随机采样9种超参组合，在重要参数A上会有9个参数值参与到搜索工作中，所以，<br />
+<strong>在某些参数对模型影响较小时，使用随机搜索能让我们有更多的探索空间</strong> 。  </p>
+<p>同样地，sklearn实现了随机搜索  [3]  ，样例代码如下:</p>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>*</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>​  <br />
+    from sklearn import svm, datasetsfrom sklearn.model_selection import RandomizedSearchCVimport pandas as pdfrom scipy.stats import uniform  </p>
+<pre class="highlight"><code># 导入数据iris = datasets.load_iris()# 定义超参搜索空间distributions = {'kernel':['linear', 'rbf'], 'C':uniform(loc=1, scale=9)}# 初始化模型svc = svm.SVC()# 网格搜索clf = RandomizedSearchCV(estimator = svc,                         param_distributions = distributions,                         n_iter = 4,                         scoring = 'accuracy',                         cv = 5,                         n_jobs = -1,                         random_state = 2021)clf.fit(iris.data, iris.target)返回：RandomizedSearchCV(cv=5, estimator=SVC(), n_iter=4, n_jobs=-1,                         param_distributions={'C': &lt;scipy.stats._distn_infrastructure.rv_frozen object at 0x000001F372F9A190&gt;,                                              'kernel': ['linear', 'rbf']},                         random_state=2021, scoring='accuracy')
+
+# 打印结果print('详细结果:\n', pd.DataFrame.from_dict(clf.cv_results_))print('最佳分类器:\n', clf.best_estimator_)print('最佳分数:\n', clf.best_score_)print('最佳参数:\n', clf.best_params_)返回：详细结果:    mean_fit_time  std_fit_time  mean_score_time  std_score_time  param_C  ... split3_test_score split4_test_score  mean_test_score  std_test_score  rank_test_score0       0.000598      0.000489         0.000200        0.000400   6.4538  ...          0.966667               1.0         0.986667        0.016330                11       0.000997      0.000002         0.000000        0.000000  4.99782  ...          0.966667               1.0         0.980000        0.026667                32       0.000798      0.000399         0.000399        0.000488  3.81406  ...          0.966667               1.0         0.980000        0.016330                33       0.000598      0.000488         0.000200        0.000399  5.36286  ...          0.966667               1.0         0.986667        0.016330                1[4 rows x 15 columns]最佳分类器: SVC(C=6.453804509266643)最佳分数:0.9866666666666667最佳参数: {'C': 6.453804509266643, 'kernel': 'rbf'}
+</code></pre>
+
+<p>相比于网格搜索，sklearn随机搜索中主要改变的参数是param_distributions，负责提供超参值分布范围。</p>
+<p><strong>三、贝叶斯优化(Bayesian Optimization)</strong></p>
+<p>我写本文的目的主要是冲着贝叶斯优化来的，一直有所耳闻却未深入了解，所以我就来查漏补缺了。以下内容主要基于Duane Rich在《How does<br />
+Bayesian optimization work?》  [4]  的回答。</p>
+<p>调优的目的是要找到一组最优的超参组合，能使目标函数f达到全局最小值。</p>
+<p>举个例子，若学习率设置过大，模型可能会在代价函数的全局最优点附近不断来回震荡，甚至跳出全局最优点，而设置过小，又可能会陷入局部最优，因此调学习率这一参数，是为了让模型能收敛到代价函数的全局最小值。<br />
+可是在机器学习中， <strong>目标函数 ** 常是被称作 </strong>expensive blackbox function** ，计算开销大且不一定为凸函数。<br />
+为此，贝叶斯优化出现了，它特别适合针对expensive blackbox function找到全局最优。</p>
+<p>假设我们的真实的目标函数  长下图这样：</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXu8coSW76TzDtcgx8WjUvu2mwfvGu8FnNwpZx3L7jwEQJt9xXVGcu6dQ/640?wx_fmt=png" /></p>
+<p>图2: 目标函数f(x)[4]</p>
+<p>注意: 目标函数  的  是指超参数，我们希望找到最优的超参  去得到最小的  。为什么用虚线表示  呢？因为它是黑箱函数(blackbox<br />
+function)。</p>
+<p>现在，我们怎么找到  全局最小值点呢？  我们能不能先在  上随机采样10个点，然后取它们的最小值呢？</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXu1AIUemiaQzjqGFGAu0NqRjTBonHyveIxfMUVMz9QAU5Anl1GWpWbCoA/640?wx_fmt=png" /></p>
+<p>图3: 随机采样10个点的目标函数f(x)[4]</p>
+<p>图3里确实有个点挺靠近全局最优点的，那是不是在它附近再采样几个点，不断重复就行了？没那么简单，万一起始采样点在局部最小值附近，那这种方法会很容易陷入局部最优。关于“如何找到下一个合适的点”这个问题，我们先放一放，因为我们漏掉一个重点：每次尝试一种超参值<br />
+，计算  的代价是昂贵的，为了减轻开销，贝叶斯优化采用了  <strong>代理模型(surrogate model)</strong><br />
+，代理模型可以被看作是一个简单模型去拟合原本复杂且不好理解的模型，简单来说，就是  计算太昂贵了，我们就用代理模型去代替它。</p>
+<p>贝叶斯优化使用了 <strong>高斯过程(gasussian processes, GP)</strong><br />
+去构建代理模型，高斯过程的细节这里暂时不讲，有兴趣的小伙伴可以自行查阅资料了解。  基于给定的输入和输出，GP会推断出一个模型(这里为代理模型)。<br />
+假设我们从昂贵的  采样了4个点，然后我们把这4个点交给GP，它会返回一个代理模型，如下图所示：</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXus9mzEciaWFj3GXfAR5ysXRmc6gZenmicpaPxu7dkr6e7CPoVyun86TSg/640?wx_fmt=png" /></p>
+<p>图4: 目标函数f(x)和代理模型[4]</p>
+<p>** 绿色实线就是GP猜的代理模型，绿色条带是输出分布的标准差(即为Uncertainty)  **<br />
+。我们有了代理模型，后续我们去找下一个合适的超参值，就能带入到计算开销相对较小的代理模型中，评估给定超参值的情况。</p>
+<p>现在，我们来思考回之前提到的问题:" <strong>如何找到下一个合适的点?</strong><br />
+"，这个问题本质是在问:“哪里有全局最小的点？”，为了解决这个问题，我们要关注两个地方:</p>
+<p>(1)  <strong>已开发区域</strong> : 在绿色实线上最低的超参点。  因为很可能它附近存在全局最优点。</p>
+<p>(2) <strong>未探索区域</strong> :<br />
+绿色实线上还未被探索的区域。比如图4，相比于0.15-0.25区间，0.65-0.75区间更具有探索价值(即该区间Uncertainty更大)。探索该区域有利于减少我们猜测的方差。</p>
+<p>为了实现以上 <strong>探索和开发的平衡(exploration-exploitation trade-off)</strong> ，贝叶斯优化使用了<br />
+<strong>采集函数(acquisition function)</strong> ，它能平衡好全局最小值的探索和开发。采集函数有很多选择，其中最常见的是<br />
+<strong>expectated of improvement(EI)</strong> [5]  ，我们先看一个utility function:  </p>
+<p>是目前观察到的最小值，  是超参值，我们希望上述utility function输出越大越好(即找到的  能获得比当前最小值还小)，基于<br />
+，EI采集函数如下所示:</p>
+<p>具有最高的EI的超参值  会被选择。  EI有两部分：</p>
+<p>(1) <strong>减少均值函数</strong> ，提高EI。</p>
+<p>(2) <strong>增加方差</strong> ，提高EI。</p>
+<p>所以EI的提高是建立在均值和方差的trade-off，也是exploration和exploitation的trade-off。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXurjRib4YgZGkXlpnKibzRwObYAadGZnQuecExMwYyyCh0glCUAJoAViaNg/640?wx_fmt=png" /></p>
+<p>图5: 采集函数A(x)</p>
+<p>图5我们可以看到，  时EI最大，所以我们下一个超参值  应该选1。</p>
+<p>讲到这里，我们来看下完整的贝叶斯优化步骤是怎样的：</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXuwTeXP4V8r0VTWPFrOGTEBb0k2d3OXBU6icrzoyOn1yTIEdhhIHpafQA/640?wx_fmt=png" /></p>
+<p>图6: 贝叶斯优化-SMBO</p>
+<p>SMBO是简洁版的贝叶斯优化，伪代码如图6所示，具体如下：  </p>
+<p>(1) 准备输入: expensive blackbox function  ，超参搜索空间  ，采样数据集  (超参组合  ，对应  输出值)，采集函数<br />
+和用数据集  拟合的代理模型M。</p>
+<p>(2) 基于  和  ，采样得到数据集  。</p>
+<p>(3) 循环选  次参数：</p>
+<ol>
+<li>
+<p>用当前数据集  拟合代理模型  ，实现模型更新。 </p>
+</li>
+<li>
+<p>选择使采集函数  最大的超参组合  。 </p>
+</li>
+<li>
+<p>将  带入  中，得到输出值  。(注意这里  的计算开销大) </p>
+</li>
+<li>
+<p>将新的  加入到现有数据集  中。 </p>
+</li>
+</ol>
+<p>目前，Hyperopt  [6]  开源代码库已实现基于 <strong>TPE(Tree-structured Parzen Estimator<br />
+Approach)</strong> 的贝叶斯优化，图6我们能看到GP构建的概率模型是  ，而TPE是  和  ，关于TPE和GP的对比讨论，建议阅读论文  [7]<br />
+。TPE样例代码如下：</p>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li>*</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>​  <br />
+    from sklearn import svm, datasetsfrom sklearn.model_selection import cross_val_scorefrom hyperopt import hp, fmin, tpe, space_evalimport pandas as pd<br />
+    # 导入数据iris = datasets.load_iris()<br />
+    # step1: 定义目标函数def objective(params):      # 初始化模型并交叉验证      svc = svm.SVC(**params)      cv_scores = cross_val_score(svc, iris.data, iris.target, cv=5)      # 返回loss = 1 - accuracy (loss必须被最小化)      loss = 1 - cv_scores.mean()      return loss<br />
+    # step2: 定义超参搜索空间space = {'kernel':hp.choice('kernel', ['linear', 'rbf']),         'C':hp.uniform('C', 1, 10)}<br />
+    # step3: 在给定超参搜索空间下，最小化目标函数best = fmin(objective, space, algo=tpe.suggest, max_evals=100)返回: best_loss: 0.013333333333333308(即accuracy为0.9866666666666667)<br />
+    # step4: 打印结果print(best)返回:{'C': 6.136181888987526, 'kernel': 1}(PS:kernel为0-based index,这里1指rbf)</p>
+<p><strong>四、Hyperband</strong></p>
+<p>除了格子搜索、随机搜索和贝叶斯优化，还有其它自动调参方式。例如 <strong>Hyperband optimization</strong> [8]<br />
+，Hyperband本质上是随机搜索的一种变种，它使用早停策略和Sccessive<br />
+Halving算法去分配资源，结果是Hyperband能评估更多的超参组合，同时在给定的资源预算下，比贝叶斯方法收敛更快，下图展示了Hyperband的早停和资源分配:</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/CcRHkXzUruV0YVWsHkLT7aBon0ibOBibXu6NPPS129hV7tBGbBLmeVo80XicDJvJNSqEKJO68KRfgP54bBkZZquHQ/640?wx_fmt=png" /></p>
+<p>图7: Hyperband的超参选择和评估</p>
+<p>在Hyperband之后，还出现了BOHB，它混合了贝叶斯优化和Hyperband。Hyperband和BOHB的开源代码可参考HpBandSter库<br />
+[9]  ，这里不展开细讲。</p>
+<p><strong>五、总结</strong></p>
+<p>上面我们用Iris鸢尾花数据集试了不同的超参自动调优方法，发现贝叶斯优化和随机搜索都比格子搜索好。从一些论文反映，贝叶斯优化是更香的，但是贝叶斯优化好像在实践中用的不是那么多，网上也有很多分享者，像Nagesh<br />
+Singh Chauhan，说的那样：</p>
+<blockquote>
+<p>As a general rule of thumb, any time you want to optimize tuning<br />
+hyperparameters, think Grid Search and Randomized Search! [10]</p>
+<p>Hyperparameter Optimization for Machine Learning Models - Nagesh Singh<br />
+Chauhan</p>
+</blockquote>
+<p>为什么呢？我想原因是贝叶斯的开销太大了，前面有提到，在每次循环选超参值的时候，贝叶斯优化都需要将  带入昂贵的目标函数<br />
+中，去得到输出值y，当目标函数特别复杂时，这种情况的评估开销是很大的，更何况随着搜索空间和搜索次数的变大，计算会越发昂贵。在知乎《为什么基于贝叶斯优化的自动调参没有大范围使用？》<br />
+[11]  中，很多知乎主也给出了很认真的回复，建议有兴趣的朋友移步阅读。</p>
+<p>写这篇文章的过程中，我主要学到了2点，一是随机搜索在某些时候会比格子搜索好，二是了解贝叶斯优化的机理。<br />
+这里，谈谈我比赛和个人实践中的体会，我很少会花过多时间在超参的调优上，因为它带来的收益是有限的，很多时候比起压榨模型来说，思考和挖掘数据特征能带来更多的收益，所以我想这也是为什么上面说：<br />
+在任何想要调优超参时，先用格子搜索或随机搜索吧。  总之，希望这篇文章对大家有帮助，我们下期再见~</p>
+<p><strong>参考资料</strong></p>
+<p>[1]  sklearn.model_selection.GridSearchCV, 官方文档: https://scikit-<br />
+learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV  </p>
+<p>[2] Bergstra, J., &amp; Bengio, Y. (2012). Random search for hyper-parameter<br />
+optimization. Journal of machine learning research, 13(2).</p>
+<p>[3] sklearn.model_selection.RandomizedSearchCV, 官方文档: https://scikit-<br />
+learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#sklearn.model_selection.RandomizedSearchCV</p>
+<p>[4] Quora: How does Bayesian optimization work? - Duane Rich, 回答:<br />
+https://www.quora.com/How-does-Bayesian-optimization-work</p>
+<p>[5] Bayesian Optimization (2018). - Cse.wustl.edu. 课程Note:<br />
+https://www.cse.wustl.edu/~garnett/cse515t/spring_2015/files/lecture_notes/12.pdf</p>
+<p>[6] Hyperopt: Distributed Hyperparameter Optimization, 代码:<br />
+https://github.com/hyperopt/hyperopt#getting-started</p>
+<p>[7] Bergstra, J., Bardenet, R., Bengio, Y., &amp; Kégl, B. (2011, December).<br />
+Algorithms for hyper-parameter optimization. In 25th annual conference on<br />
+neural information processing systems (NIPS 2011) (Vol. 24). Neural<br />
+Information Processing Systems Foundation.</p>
+<p>[8] Li, L., Jamieson, K., DeSalvo, G., Rostamizadeh, A., &amp; Talwalkar, A.<br />
+(2017). Hyperband: A novel bandit-based approach to hyperparameter<br />
+optimization. The Journal of Machine Learning Research, 18(1), 6765-6816.</p>
+<p>[9] HpBandSter开源代码库, 代码: https://github.com/automl/HpBandSte</p>
+<p>[10] Hyperparameter Optimization for Machine Learning Models - Nagesh Singh<br />
+Chauhan, 文章: [https://www.kdnuggets.com/2020/05/hyperparameter-optimization-<br />
+machine-learning-models.html</p>
+<p>[11] 为什么基于贝叶斯优化的自动调参没有大范围使用？- 知乎, 问答: https://www.zhihu.com/question/33711002</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/vI9nYe94fsGxu3P5YibTO899okS0X9WaLmQCtia4U8Eu1xWCz9t8Qtq9PH6T1bTcxibiaCIkGzAxpeRkRFYqibVmwSw/640?wx_fmt=png" /><br />
+干货学习，  ** 点  ** ** 赞  ** ** 三连  ** ↓</p>
+<p>预览时标签不可点</p>
+<p>微信扫一扫<br />
+关注该公众号</p>
+<hr />
+<hr />
+<p>×  分析</p>
+<p>收藏</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

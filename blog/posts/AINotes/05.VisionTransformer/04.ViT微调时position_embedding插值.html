@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViT 微调时position embedding如何插值（interpolate）【源码解析】</title>
+    <meta name="description" content="ViT 微调时position embedding如何插值（interpolate）【源码解析】 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-问题描述">1. 问题描述</a></li>
+<li><a href="#2positional-embedding如何interpolate">2.positional embedding如何interpolate</a></li>
+<li><a href="#3-输入的sequence-length改变了vit还能正常前向推断">3. 输入的sequence length改变了ViT还能正常前向推断？</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>ViT 微调时position embedding如何插值（interpolate）【源码解析】</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/05.VisionTransformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="vit-微调时position-embedding如何插值interpolate源码解析">ViT 微调时position embedding如何插值（interpolate）【源码解析】<a class="anchor-link" href="#vit-微调时position-embedding如何插值interpolate源码解析" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [好耶]</p>
+<p><strong>Link:</strong> [https://zhuanlan.zhihu.com/p/592580783]</p>
+<h2 id="1-问题描述">1. 问题描述<a class="anchor-link" href="#1-问题描述" title="Permanent link">&para;</a></h2>
+<p>本文适合对Vision Transformer有一定了解（知道内部结构和一些实现细节，最好是精读过ViT这篇论文）的读者阅读，这篇博客不会详细说明ViT的结构和前向推断过程。</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+<td>batch size</td>
+</tr>
+<tr>
+<td>N</td>
+<td>patch size</td>
+</tr>
+<tr>
+<td>H W</td>
+<td>低分辨率图像的高和宽</td>
+</tr>
+<tr>
+<td>H' W'</td>
+<td>高分辨率图像的高和宽</td>
+</tr>
+<tr>
+<td>So</td>
+<td>低分辨率图像的sequence length的长度（o是original的意思）</td>
+</tr>
+<tr>
+<td>Sn</td>
+<td>高分辨率图像的sequence length的长度（n是new的意思）</td>
+</tr>
+<tr>
+<td>h</td>
+<td>hidden dimension，即每个patch经过linear layer后得到的vector的长度，原文是16x16x3=768</td>
+</tr>
+</tbody>
+</table>
+<p>最近在读ViT相关的论文（ViT、DeiT、Swin Transformer），感觉看得比较细致，但ViT中有个细节我一直不太理解：就是在用高分辨率（high resolution）图像做微调时，作者在论文里说：保持patch size不变，直接把position embedding向量进行插值处理（interpolate），原文如下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412211607962.png" /><br />
+作者的意思是：当使用高分辨率（high resolution）图像对预训练好的ViT进行微调（fine-tuning）时，保持patch size <span class="math-inline">(N \times N)</span> 不变（即每个patch中的像素数量不变），但由于image size（ <span class="math-inline">H \times W</span> ，且 <span class="math-inline">H'=W'</span> ）变大了，则sequence length <span class="math-inline">s_n=H'/N</span> 也相应变大了。而预训练好的position embedding是对原先低分辨率（low resolution）图像的位置编码（即原来的sequence length <span class="math-inline">s_o=H/N</span> ），自然无法适应现在的新的sequence length <span class="math-inline">s_n</span> 。作者对此提出的解决方案是对原先的postion embedding进行2D的插值处理。</p>
+<p>这我就很困惑了：position embedding是个1-D的向量，怎么做2D的插值呢？查了好久也没找到满意的解释，最后还是去看了torchvision中ViT的实现才明白怎么回事儿，其实很简单。</p>
+<h2 id="2positional-embedding如何interpolate">2.positional embedding如何interpolate<a class="anchor-link" href="#2positional-embedding如何interpolate" title="Permanent link">&para;</a></h2>
+<p>我们用图来表示想做的事情：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412211607964.jpg" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412211607965.jpg" /><br />
+如何把 <span class="math-inline">s_o</span> 变成 <span class="math-inline">s_n</span> 呢？具体做法如下：</p>
+<p>假设position_embedding_img的shape为 <span class="math-inline">(b, h, s_o)</span> ，其中 <span class="math-inline">b</span> 为batch size，设置 <span class="math-inline">b=1</span> 。 <span class="math-inline">h</span> 和 <span class="math-inline">s_o</span> 的含义见上面的表格。</p>
+<ul>
+<li>首先将position_embedding_img的shape由 <span class="math-inline">(b, h, s_o)</span> reshape成 <span class="math-inline">（b, h, \sqrt{s_o}, \sqrt{s_o}）</span></li>
+<li>然后将后两维 <span class="math-inline">(\sqrt{s_o}, \sqrt{s_o})</span> 使用torch.nn.functinoal.interpolate，插值成： <span class="math-inline">(\sqrt{s_n}, \sqrt{s_n})</span> ，此时position_embedding_img_new的shape为： <span class="math-inline">（b, h, \sqrt{s_n}, \sqrt{s_n}）</span></li>
+<li>最后再把position_embedding_img_new reshape成 <span class="math-inline">（b, h, s_n）</span></li>
+</ul>
+<p>经过上述步骤，我们就将position_embedding_img的 <span class="math-inline">(b, h, s_o)</span> 变成了position_embedding_img_new的 <span class="math-inline">(b, h, s_n)</span> 。示意图如下（这里设 <span class="math-inline">b=1,h=1</span> ）：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412211607966.jpg" />  </p>
+<h2 id="3-输入的sequence-length改变了vit还能正常前向推断">3. 输入的sequence length改变了ViT还能正常前向推断？<a class="anchor-link" href="#3-输入的sequence-length改变了vit还能正常前向推断" title="Permanent link">&para;</a></h2>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412211607967.jpg" /><br />
+其实到了第二步就已经结束了，但可能有些人（包括我之前）还会有个疑问：之前我们预训练时输入给Transformer Encoder（即上图中红色圈出的部分）的tensor的shape为： <span class="math-inline">(b, s_o, h)</span> ，而如果使用高分辨率的img进行微调，那输入到Transformer Encoder的shape变成了： <span class="math-inline">(b, s_n, h)</span> ，还可以前向推断吗？Transformer Encoder不需要改内部结构吗？</p>
+<p>答案是不需要。原因在于微调时hidden dimension <span class="math-inline">h</span> 的值没有变，为什么这么说呢？我们考虑下Transformer Encoder的内部结构，主要是多头自注意力（multi-head self-attention）和MLP。multi-head self-attention其实就是把输入切分成n个头，分别进行self-attention，然后再把结果concat起来，所以我们以单头自注意力、batch size=1为例，self-attention的大致流程为：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202412211607968.jpg" /><br />
+可以看出，Transformer Encoder中训练的参数： <span class="math-inline">W_q、W_k、W_v</span> 的形状都为 <span class="math-inline">(h, h)</span> ，并不会随着sequence length由 <span class="math-inline">s_o</span> 变为 <span class="math-inline">s_n</span> 而发生改变。</p>
+<p>同理，Transformer Encoder中的MLP的input layer的神经元个数也是 <span class="math-inline">h</span> ，和 <span class="math-inline">s_n</span> 无关。</p>
+<p>即Transformer Encoder中参数只和hidden embedding的长度 <span class="math-inline">h</span> 有关，和sequence length <span class="math-inline">s_o、s_n</span> 无关。</p>
+<p>因此，即使我们输入Transformer Encoder的维度由 <span class="math-inline">(b, s_o, h)</span> 变为 <span class="math-inline">(b, s_n, h)</span> ，也不会影响ViT的前向推断过程。</p>
+<p>如果想看Torchvision官方中关于interpolate代码的细节实现，我放在下面：</p>
+<pre><code>def interpolate_embeddings(
+    image_size: int,
+    patch_size: int,
+    model_state: &quot;OrderedDict[str, torch.Tensor]&quot;,
+    interpolation_mode: str = &quot;bicubic&quot;,
+    reset_heads: bool = False,
+) -&gt; &quot;OrderedDict[str, torch.Tensor]&quot;:
+    &quot;&quot;&quot;This function helps interpolating positional embeddings during checkpoint loading,
+    especially when you want to apply a pre-trained model on images with different resolution.
+
+    Args:
+        image_size (int): Image size of the new model.
+        patch_size (int): Patch size of the new model.
+        model_state (OrderedDict[str, torch.Tensor]): State dict of the pre-trained model.
+        interpolation_mode (str): The algorithm used for upsampling. Default: bicubic.
+        reset_heads (bool): If true, not copying the state of heads. Default: False.
+
+    Returns:
+        OrderedDict[str, torch.Tensor]: A state dict which can be loaded into the new model.
+    &quot;&quot;&quot;
+    # Shape of pos_embedding is (1, seq_length, hidden_dim)
+    pos_embedding = model_state[&quot;encoder.pos_embedding&quot;]
+    n, seq_length, hidden_dim = pos_embedding.shape
+    if n != 1:
+        raise ValueError(f&quot;Unexpected position embedding shape: {pos_embedding.shape}&quot;)
+
+    new_seq_length = (image_size // patch_size) ** 2 + 1
+
+    # Need to interpolate the weights for the position embedding.
+    # We do this by reshaping the positions embeddings to a 2d grid, performing
+    # an interpolation in the (h, w) space and then reshaping back to a 1d grid.
+    if new_seq_length != seq_length:
+        # The class token embedding shouldn't be interpolated so we split it up.
+        seq_length -= 1
+        new_seq_length -= 1
+        pos_embedding_token = pos_embedding[:, :1, :]
+        pos_embedding_img = pos_embedding[:, 1:, :]
+
+        # (1, seq_length, hidden_dim) -&gt; (1, hidden_dim, seq_length)
+        pos_embedding_img = pos_embedding_img.permute(0, 2, 1)
+        seq_length_1d = int(math.sqrt(seq_length))
+        if seq_length_1d * seq_length_1d != seq_length:
+            raise ValueError(
+                f&quot;seq_length is not a perfect square! Instead got seq_length_1d * seq_length_1d = {seq_length_1d * seq_length_1d } and seq_length = {seq_length}&quot;
+            )
+
+        # (1, hidden_dim, seq_length) -&gt; (1, hidden_dim, seq_l_1d, seq_l_1d)
+        pos_embedding_img = pos_embedding_img.reshape(1, hidden_dim, seq_length_1d, seq_length_1d)
+        new_seq_length_1d = image_size // patch_size
+
+        # Perform interpolation.
+        # (1, hidden_dim, seq_l_1d, seq_l_1d) -&gt; (1, hidden_dim, new_seq_l_1d, new_seq_l_1d)
+        new_pos_embedding_img = nn.functional.interpolate(
+            pos_embedding_img,
+            size=new_seq_length_1d,
+            mode=interpolation_mode,
+            align_corners=True,
+        )
+
+        # (1, hidden_dim, new_seq_l_1d, new_seq_l_1d) -&gt; (1, hidden_dim, new_seq_length)
+        new_pos_embedding_img = new_pos_embedding_img.reshape(1, hidden_dim, new_seq_length)
+
+        # (1, hidden_dim, new_seq_length) -&gt; (1, new_seq_length, hidden_dim)
+        new_pos_embedding_img = new_pos_embedding_img.permute(0, 2, 1)
+        new_pos_embedding = torch.cat([pos_embedding_token, new_pos_embedding_img], dim=1)
+
+        model_state[&quot;encoder.pos_embedding&quot;] = new_pos_embedding
+
+        if reset_heads:
+            model_state_copy: &quot;OrderedDict[str, torch.Tensor]&quot; = OrderedDict()
+            for k, v in model_state.items():
+                if not k.startswith(&quot;heads&quot;):
+                    model_state_copy[k] = v
+            model_state = model_state_copy
+
+    return model_state
+
+</code></pre>
+<p><strong>参考</strong></p>
+<p><a href="https://arxiv.org/pdf/2010.11929.pdf">https://arxiv.org/pdf/2010.11929.pdf</a></p>
+<p><a href="https://github.com/pytorch/vision/blob/main/torchvision/models/vision_transformer.py">https://github.com/pytorch/vision/blob/main/torchvision/models/vision_transformer.py</a></p>
+<p><a href="https://blog.csdn.net/qq_44166630/article/details/127429697?spm=1001.2014.3001.5501">https://blog.csdn.net/qq_44166630/article/details/127429697?spm=1001.2014.3001.5501</a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

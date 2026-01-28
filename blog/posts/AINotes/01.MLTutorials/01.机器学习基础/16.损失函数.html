@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#loss-functioncost-function">Loss Function/Cost Function</a></li>
+<li><a href="#mean-square-errormse">Mean Square Error(MSE)</a></li>
+<li><a href="#mean-absolute-errormae">Mean Absolute Error(MAE)</a></li>
+<li><a href="#huber-loss">Huber Loss</a></li>
+<li><a href="#0-1-loss">0-1 loss</a></li>
+<li><a href="#quadratic-loss">Quadratic Loss</a></li>
+<li><a href="#logarithmic-loss">Logarithmic Loss</a></li>
+<li><a href="#hinge-loss">Hinge Loss</a></li>
+<li><a href="#perceptron-loss">perceptron loss</a></li>
+<li><a href="#cross-entropy-loss">Cross-entropy loss</a></li>
+<li><a href="#exponential-loss">Exponential Loss</a></li>
+<li><a href="#modified-huber-loss">Modified Huber Loss</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="loss-functioncost-function">Loss Function/Cost Function<a class="anchor-link" href="#loss-functioncost-function" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>损失函数</strong>度量模型<strong>一次预测</strong>的好坏，<strong>风险函数</strong>度量<strong>平均意义</strong>下模型预测的好坏。</p>
+</blockquote>
+<ol>
+<li>
+<p><strong>损失函数</strong>(loss function)或代价函数(cost function)<br />
+   损失函数定义为给定输入<span class="math-inline">X</span> <strong>预测值<span class="math-inline">f(X)</span></strong>和<strong>真实值<span class="math-inline">Y</span></strong>之间的<strong>非负实值</strong>函数，记作<span class="math-inline">L(Y,f(X))</span></p>
+</li>
+<li>
+<p><strong>风险函数</strong>(risk function)或期望损失(expected loss)<br />
+   这个和模型的泛化误差的形式是一样的<br />
+   <span class="math-inline">R_{exp}(f)=E_p[L(Y, f(X))]=\int_{\mathcal X\times\mathcal Y}L(y,f(x))P(x,y)\, {\rm d}x{\rm d}y</span><br />
+   模型<span class="math-inline">f(X)</span> 于联合分布<span class="math-inline">P(X,Y)</span> <strong>平均意义下的</strong>损失(<strong>期望</strong>损失)，但是因为<span class="math-inline">P(X,Y)</span> 未知的，所以前面的用词是<strong>期望</strong>，以及<strong>平均意义下的</strong>。</p>
+</li>
+</ol>
+<p>这个表示其实就是损失的均值，反映了对整个数据的预测效果的好坏，<span class="math-inline">P(x,y)</span> 换成<span class="math-inline">\frac {\nu(X=x, Y=y)}{N}</span> 容易直观理解, 可以参考<a href="../CH09/README.md">CH09</a>，6.2.2 节的部分描述来理解，但是真实的数据 N 是无穷的。</p>
+<ol>
+<li>
+<p><strong>经验风险</strong>(empirical risk)或<strong>经验损失</strong>(empirical loss)<br />
+   <span class="math-inline">R_{emp}(f)=\frac{1}{N}\sum^{N}_{i=1}L(y_i,f(x_i))</span><br />
+   模型<span class="math-inline">f</span> 于<strong>训练样本集</strong>的平均损失<br />
+   根据大数定律，当样本容量 N 趋于无穷大时，经验风险趋于期望风险</p>
+</li>
+<li>
+<p><strong>结构风险</strong>(structural risk)<br />
+   <span class="math-inline">R_{srm}(f)=\frac{1}{N}\sum_{i=1}^{N}L(y_i,f(x_i))+\lambda J(f)</span><br />
+   <span class="math-inline">J(f)</span> 模型复杂度, <span class="math-inline">\lambda \geqslant 0</span>​ 是系数，用以权衡经验风险和模型复杂度。</p>
+</li>
+</ol>
+<h2 id="mean-square-errormse">Mean Square Error(MSE)<a class="anchor-link" href="#mean-square-errormse" title="Permanent link">&para;</a></h2>
+<p>均方误差指的就是模型预测值<span class="math-inline">f(x)</span> 样本真实值<span class="math-inline">y</span> 间距离平方的平均值。</p>
+<p><div class="math-display"><br />
+MSE=\frac{1}{m}\sum\limits_{i=1}^{m}(y_i-f(x_i))^2<br />
+</div></p>
+<p>其中，<span class="math-inline">y_i</span> <span class="math-inline">f(x_i)</span> 别表示第 <span class="math-inline">i</span> 样本的真实值和预测值，<span class="math-inline">m</span> 样本个数。<br />
+为了简化讨论，忽略下标<span class="math-inline">i</span>，<span class="math-inline">m = 1</span>，以<span class="math-inline">y-f(x)</span>​ 为横坐标，MSE 为纵坐标，绘制其损失函数的图<br />
+形：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955561.png"/></div>
+
+<p>特点</p>
+<p>MSE 曲线的特点是光滑连续、可导，便于使用<strong>梯度下降</strong>算法，是比较常用的一种损失函数。而且，MSE 随着误差的减小，梯度也在减小，这有利于函数的收敛，即使固定学习因子，函数也能较快取得最小值。平方误差有个特性，就是当 <span class="math-inline">y_i</span> 与 <span class="math-inline">f(x_i)</span> 的差值大于 1 时，会增大其误差；当 <span class="math-inline">y_i</span> 与<span class="math-inline">f(x_i)</span> 的差值小于 1 时，会减小其误差。这是由平方的特性决定的。也就是说， MSE 会对误差较大（&gt;1）的情况给予更大的惩罚，对误差较小（&lt;1）的情况给予更小的惩罚。从训练的角度来看，模型会更加偏向于惩罚较大的点，赋予其更大的权重。<br />
+如果样本中存在离群点，MSE 会给离群点赋予更高的权重，但是却是以牺牲其他正常数据点的预测效果为代价，这最终会降低模型的整体性能。</p>
+<h2 id="mean-absolute-errormae">Mean Absolute Error(MAE)<a class="anchor-link" href="#mean-absolute-errormae" title="Permanent link">&para;</a></h2>
+<p><div class="math-display"><br />
+MAE=\frac{1}{m}\sum\limits_{i=1}^{m}|y_i-f(x_i)|<br />
+</div></p>
+<p>为了简化讨论，忽略下标<span class="math-inline">i</span>，<span class="math-inline">m = 1</span>，以 <span class="math-inline">y-f(x)</span>​ 为横坐标，MAE 为纵坐标，绘制其损失函数的图<br />
+形：</p>
+<p><img alt="image-20210904205551904" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955072.png" /></p>
+<p>直观上来看，MAE 的曲线呈 V 字型，连续但在 <span class="math-inline">y-f(x)=0</span>​ 处不可导，计算机求解导数比较困难。而且 MAE 大部分情况下梯度都是相等的，这意味着即使对于小的损失值，其梯度也是大的。这不利于函数的收敛和模型的学习。<br />
+值得一提的是，MAE 相比 MSE 有个优点就是 MAE 对离群点不那么敏感，更有包容性。因为 MAE 计算的是误差 <span class="math-inline">y-f(x)</span> 的绝对值，无论是 <span class="math-inline">y-f(x)&gt;1</span> 是<span class="math-inline">y-f(x)&lt;1</span>​，没有平方项的作用，惩罚力度都是一样的，所占权重一样。实际应用中，我们应该选择 MSE 还是 MAE 呢？从计算机求解梯度的复杂度来说，MSE 要优于 MAE，而且梯度也是动态变化的，能较快准确达到收敛。但是从离群点角度来看，如果离群点是实际数据或重要数据，而且是应该被检测到的异常值，那么我们应该使用 MSE。另一方面，离群点仅仅代表数据损坏或者错误采样，无须给予过多关注，那么我们应该选择 MAE 作为损失。</p>
+<h2 id="huber-loss">Huber Loss<a class="anchor-link" href="#huber-loss" title="Permanent link">&para;</a></h2>
+<p><div class="math-display"><br />
+L_\delta(y,f(x))=<br />
+\begin{cases}\frac{1}{2}(y-f(x))^2&amp;\mid y-f(x)\mid \leq \delta\\delta\mid y-f(x) \mid-\frac{1}{2}\delta^2&amp;\mid y-f(x)\mid&gt;\delta\end{cases}<br />
+</div></p>
+<p>Huber Loss 是对二者(MSE/MAE)的综合，包含了一个超参数<span class="math-inline">\delta</span>。<span class="math-inline">\delta</span> 的大小决定了 Huber Loss 对 MSE 和 MAE 的侧重性， 当 <span class="math-inline">\mid y−f(x)\mid\leq \delta</span> 时， 变为 MSE； 当 <span class="math-inline">\mid y−f(x)\mid&gt; \delta</span> 时， 则变成类似于 MAE，因此 Huber Loss 同时具备了 MSE 和 MAE 的优点，减小了对离群点的敏感度问题，实现了处处可导的功能。通常来说，超参数 <span class="math-inline">\delta</span>​ 可以通过交叉验证选取最佳值。下面，分别取 <span class="math-inline">\delta = 0.1</span>、<span class="math-inline">\delta = 10</span>​，绘制相应的 Huber Loss，如下图所示：</p>
+<p><img alt="image-20210904210855521" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955937.png" /></p>
+<p>Huber Loss 在<span class="math-inline">\mid y−f(x)\mid&gt; \delta</span> 时，梯度一直近似为<span class="math-inline">\delta</span>，能够保证模型以一个较快的速度更新参数。当 <span class="math-inline">\mid y−f(x)\mid\leq \delta</span> 时，梯度逐渐减小，能够保证模型更精确地得到全局最优值。因此，Huber Loss 同时具备了前两种损失函数的优点。</p>
+<h2 id="0-1-loss">0-1 loss<a class="anchor-link" href="#0-1-loss" title="Permanent link">&para;</a></h2>
+<p><div class="math-display"><br />
+L(Y,f(X))=\begin{cases}1,&amp; Y \neq f(X) \0, &amp;Y=f(X) \end{cases}<br />
+</div></p>
+<p>特点：</p>
+<p>(1)0-1 损失函数直接对应分类判断错误的个数，但是它是一个非凸函数，不太适用.</p>
+<p>(2)<strong>感知机</strong>就是用的这种损失函数。但是相等这个条件太过严格，因此可以放宽条件，即满足<span class="math-inline">\mid Y-f(X)\mid &lt; T</span>​​ 时认为相等，</p>
+<p><div class="math-display"><br />
+L(Y,f(X))=\begin{cases}1,&amp;\mid Y-f(X)\mid \geq T \0, &amp;\mid Y-f(X)\mid &lt; T \end{cases}<br />
+</div></p>
+<h2 id="quadratic-loss">Quadratic Loss<a class="anchor-link" href="#quadratic-loss" title="Permanent link">&para;</a></h2>
+<p><div class="math-display"><br />
+L(Y,f(X))=(Y-f(X))^2<br />
+</div></p>
+<p>特点：</p>
+<p>经常应用与回归问题</p>
+<h2 id="logarithmic-loss">Logarithmic Loss<a class="anchor-link" href="#logarithmic-loss" title="Permanent link">&para;</a></h2>
+<p><div class="math-display"><br />
+L(Y,P(Y|X))=-\log P(Y|X)<br />
+</div></p>
+<p>这里<span class="math-inline">P(Y|X)\leqslant 1</span>，对应的对数是负值，所以对数损失中包含一个负号.</p>
+<p>(1) log 对数损失函数能非常好的表征概率分布，在很多场景尤其是多分类，如果需要知道结果属于每个类别的置信度，那它非常适合。</p>
+<p>(2)健壮性不强，相比于 hinge loss 对噪声更敏感。</p>
+<p>(3)<strong>逻辑回归</strong>的损失函数就是 log 对数损失函数。</p>
+<h2 id="hinge-loss">Hinge Loss<a class="anchor-link" href="#hinge-loss" title="Permanent link">&para;</a></h2>
+<p>在机器学习中，<strong>hinge loss</strong>作为一个<strong>损失函数(loss function)</strong>，通常被用于最大间隔算法(maximum-margin)，而最大间隔算法又是 SVM(支持向量机 support vector machines)用到的重要算法。<strong>Hinge loss 用于二分类问题</strong>，标签值<span class="math-inline">y=±1</span>​​​，预测值<span class="math-inline">\hat y\in R</span>​​​。当<span class="math-inline">y</span>​​​ 和<span class="math-inline">\hat y</span>​​​ 同号，且<span class="math-inline">\mid \hat y \mid \geq 1</span>​​​ ，此时<span class="math-inline">l(y)=0</span>​​​；而当预测<span class="math-inline">\mid \hat y \mid&lt; 1</span>​​​​​ 时，分类器对分类结果不确定，loss 不为 0。</p>
+<p><div class="math-display"><br />
+l(y) = max(0,1-\hat y y)<br />
+</div></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955937.png" /></p>
+<p><span class="math-inline">\hat y y \geq 1</span>​​​，损失为 0；</p>
+<p><span class="math-inline">\hat y y&lt;1</span>，损失为<span class="math-inline">1-\hat y y</span></p>
+<p>特点：</p>
+<ul>
+<li>
+<p>hinge 损失函数表示如果被分类正确，损失为 0，否则损失就为<span class="math-inline">1-\hat y y</span> 。<strong>SVM</strong>就是使用这个损失函数。</p>
+</li>
+<li>
+<p>健壮性相对较高，对异常点、噪声不敏感，但它没太好的概率解释。</p>
+</li>
+</ul>
+<h2 id="perceptron-loss">perceptron loss<a class="anchor-link" href="#perceptron-loss" title="Permanent link">&para;</a></h2>
+<p><strong>感知损失函数</strong>的标准形式如下：</p>
+<p><div class="math-display"><br />
+L(y,f(x))=max(0,-f(x))<br />
+</div></p>
+<p>特点：</p>
+<p>是 Hinge 损失函数的一个变种，Hinge loss 对判定边界附近的点(正确端)惩罚力度很高。而 perceptron loss<strong>只要样本的判定类别正确的话，它就满意，不管其判定边界的距离</strong>。它比 Hinge loss 简单，因为不是 max-margin boundary，所以<strong>模型的泛化能力没 hinge loss 强</strong>。</p>
+<h2 id="cross-entropy-loss">Cross-entropy loss<a class="anchor-link" href="#cross-entropy-loss" title="Permanent link">&para;</a></h2>
+<p><a href="https://www.hwzhao.cn/pages/52155a/">分布差异度量方式</a></p>
+<h2 id="exponential-loss">Exponential Loss<a class="anchor-link" href="#exponential-loss" title="Permanent link">&para;</a></h2>
+<p>Exponential Loss，又称指数损失，其表达式如下：</p>
+<p><div class="math-display"><br />
+L=e^{-ys}<br />
+</div></p>
+<p><img alt="image-20210904221305171" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955139.png" /></p>
+<p>Exponential Loss 与交叉熵 Loss 类似，但它是指数下降的，因此梯度较其它 Loss 来说，更大一些。Exponential Loss 一般多用于 AdaBoost 中。因为使用 Exponential Loss 能比较方便地利用加法模型推导出 AdaBoost 算法。</p>
+<h2 id="modified-huber-loss">Modified Huber Loss<a class="anchor-link" href="#modified-huber-loss" title="Permanent link">&para;</a></h2>
+<p>在之前介绍回归损失函数，我们介绍过 Huber Loss，它集合了 MSE 和 MAE 的优点。Huber Loss 也能应用于分类问题中，称为 Modified Huber Loss，其表达是如下：</p>
+<p><div class="math-display"><br />
+L(y,s)=\begin{cases}\max(0,1-ys)^2, &amp; ys\geq -1\-4ys,&amp;ys&lt;-1\end{cases}<br />
+</div></p>
+<p><img alt="image-20210904221651667" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955598.png" /></p>
+<p>从表达式和 Loss 图形上看，Modified Huber Loss 结合了 Hinge Loss 和 交叉熵 Loss 的优点。一方面能在<span class="math-inline">ys &gt; 1</span> 时产生稀疏解提高训练效率；另一方面对于 <span class="math-inline">ys &lt; −1</span>​ 样本的惩罚以线性增加，这意味着受异常点的干扰较少。scikit-learn 中的 SGDClassifier 就使用了 Modified<br />
+Huber Loss。</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<p><a href="https://blog.csdn.net/lanchunhui/article/details/51073745">机器学习基础（四十二）—— 常用损失函数的设计（multiclass SVM loss &amp; hinge loss）_https://space.bilibili.com/59807853-CSDN 博客</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/58883095">常见的损失函数(loss function)总结 - 知乎 (zhihu.com)</a></p>
+<p><a href="https://www.cnblogs.com/massquantity/p/8964029.html">常见回归和分类损失函数比较 - massquantity - 博客园 (cnblogs.com)</a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

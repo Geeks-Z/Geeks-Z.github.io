@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#自动编码器autoencoderae">自动编码器（Autoencoder，AE）</a></li>
+<li><a href="#变分自动编码器variational-autoencodervae">变分自动编码器（Variational Autoencoder，VAE）</a></li>
+<li><a href="#cvae">CVAE</a></li>
+<li><a href="#vae的代码实现">VAE的代码实现</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/06.扩散模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>说起生成模型，大家最容易想到的就是GAN，GAN是<strong>通过对抗训练实现的一种隐式生成模型</strong>。虽然GAN很强大，但其实还有很多与GAN不同的生成模型，最常见的就是基于<strong>最大化似然的模型</strong>，<strong>变分自动编码器</strong>（Variational Autoencoder，VAE）就属于这种类型。</p>
+<h3 id="自动编码器autoencoderae">自动编码器（Autoencoder，AE）<a class="anchor-link" href="#自动编码器autoencoderae" title="Permanent link">&para;</a></h3>
+<p>再讲VAE之前，有必要先简单介绍一下<strong>自动编码器AE</strong>，自动编码器是一种<strong>无监督学习</strong>方法，它的原理很简单：先将高维的原始数据映射到一个低维特征空间，然后从低维特征学习重建原始的数据。一个AE模型包含两部分网络：</p>
+<ul>
+<li>
+<p><strong>Encoder</strong>：将原始的高维数据映射到低维特征空间，这个特征维度一般比原始数据维度要小，这样就起到压缩或者降维的目的，这个低维特征也往往成为中间隐含特征（latent representation）；</p>
+</li>
+<li>
+<p><strong>Decoder</strong>：基于压缩后的低维特征来重建原始数据；</p>
+</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017094719.png" style="zoom: 60%;" /></div>
+
+<p>如上图所示，这里<span class="math-inline">g_{\phi}</span> encoder网络的映射函数（网络参数为<span class="math-inline">\phi</span>），而<span class="math-inline">f_{\theta}</span> decoder网络的映射函数（网络参数为<span class="math-inline">\theta</span>）。那么对于输入<span class="math-inline">\mathbf{x}</span>，可以通过encoder得到隐含特征<span class="math-inline">\mathbf{z}=g_{\phi}(\mathbf{x})</span>，然后decoder可以从隐含特征对原始数据进行重建：<span class="math-inline">\mathbf{x}'=f_{\theta}(\mathbf{z})=f_{\theta}(g_{\phi}(\mathbf{x}))</span>。我们希望重建的数据和原来的数据近似一致的，那么AE的训练损失函数可以采用简单的MSE：</p>
+<p><div class="math-display">L_\text{AE}(\theta, \phi) = \frac{1}{n}\sum_{i=1}^n (\mathbf{x}^{(i)} - f_\theta(g_\phi(\mathbf{x}^{(i)})))^2 \</div></p>
+<p>由于训练AE并不需要对数据进行标注，所以AE是一种无监督学习方法。由于压缩后的特征能对原始数据进行重建，所以我们可以用AE的encoder对高维数据进行压缩，这和PCA非常类似，当然得到的隐含特征也可以用来做一些其它工作，比如相似性搜索等。 ​</p>
+<p>AE有很多变种，比如经典的<strong>去噪自编码器（Denoising Autoencoder，DAE）</strong>，与原始AE不同的是，在训练过程先对输入<span class="math-inline">\mathbf{x}</span> 行一定的扰动，比如增加噪音或者随机mask掉一部分特征。相比AE，DAE的重建难度增加，这也使得encoder学习到的隐含特征更具有代表性。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017101053.png" style="zoom: 60%;" /></div>
+
+<p>作为一种无监督学习方法，AE除了可以对数据降维，还可以用来对深度网络进行预训练。在深度学习早期，由于存在数据和算力限制，训练深度模型是比较困难的，所以常常采用无监督学习方法先对网络进行预训练，然后在具体的任务上进行有监督finetune，经典的工作如基于DAE的<strong>堆叠去噪自编码器（Stacked Denoising Autoencoder，SDA）和基于RBM的深度信念网络（Deep Belief Network，DBN）</strong>。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017101621.png" style="zoom: 60%;" /></div>
+
+<p>然而，随着大数据的出现（比如包含1.3M图像的ImageNet数据集）以及网络架构的优化（如ResNet的出现），这种训练方式基本被弃用了，目前的主流方式是<strong>先在大规模有标注数据集上预训练，然后用预训练初始化的模型来训练具体的任务</strong>。由于标注数据存在成本，但收集大规模无标注数据相对容易，所以最近又开始了无监督训练研究的热潮，一些基于对比学习的自监督方法如Moco和SimCLR等已经可以达到和ImageNet有标注监督训练类似的效果。而今年来，随着vision transformer的大爆发，又出现了<strong>基于MIM（mask image modeling)的自监督方法，如MAE和SimMIM</strong>，它们都是采用和AE类似的设计架构，这让基于AE的无监督训练方法再次卷土重来。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017102116.png" style="zoom: 60%;" /></div>
+
+<h3 id="变分自动编码器variational-autoencodervae">变分自动编码器（Variational Autoencoder，VAE）<a class="anchor-link" href="#变分自动编码器variational-autoencodervae" title="Permanent link">&para;</a></h3>
+<p>VAE虽然名字里也带有自动编码器，但这主要是因为VAE和AE有着类似的结构，即encoder和decoder这样的架构设计。实际上，VAE和AE在建模方面存在很大的区别，从本质上讲，VAE是一种基于变分推断（<a href="https://en.wikipedia.org/wiki/Variational_Bayesian_methods">Variational Inference, Variational Bayesian methods</a>）的概率模型（Probabilistic Model），它属于生成模型（当然也是无监督模型）。在变分推断中，除了已知的数据（观测数据，训练数据）外还存在一个隐含变量，这里已知的数据集记为<span class="math-inline">\mathbf{X}={x^{(i)}}_{i=1}^N</span> <span class="math-inline">N</span> 连续变量或者离散变量<span class="math-inline">\mathbf{x}</span> 成，而未观测的随机变量记为<span class="math-inline">\mathbf{z}</span>，那么数据的产生包含两个过程：</p>
+<ol>
+<li>从一个先验分布<span class="math-inline">p_{\theta}(\mathbf{z})</span> 采样一个<span class="math-inline">\mathbf{z}^{(i)}</span>；</li>
+<li>根据条件分布<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span>，用<span class="math-inline">\mathbf{z}^{(i)}</span> 成<span class="math-inline">\mathbf{x}^{(i)}</span>。</li>
+</ol>
+<p>这里的<span class="math-inline">\theta</span> 的是分布的参数，比如对于高斯分布就是均值和标准差。我们希望找到一个参数<span class="math-inline">\theta^*</span> 最大化生成真实数据的概率：</p>
+<p><div class="math-display">\theta^{*} = \arg\max_\theta \prod_{i=1}^n p_\theta(\mathbf{x}^{(i)}) \</div></p>
+<p>这里<span class="math-inline">p_\theta(\mathbf{x}^{(i)})</span> 以通过对<span class="math-inline">\mathbf{z}</span> 分得到：</p>
+<p><div class="math-display">p_\theta(\mathbf{x}^{(i)}) = \int p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z}) p_\theta(\mathbf{z}) d\mathbf{z} \</div></p>
+<p>而实际上要根据上述积分是不现实的，一方面先验分布<span class="math-inline">p_{\theta}(\mathbf{z})</span> 未知的，而且如果分布比较复杂，对<span class="math-inline">\mathbf{z}</span> 举计算也是极其耗时的。为了解决这个难题，变分推断引入后验分布<span class="math-inline">p_\theta(\mathbf{z}\vert\mathbf{x})</span> 联合建模，根据<a href="https://en.wikipedia.org/wiki/Bayes'_theorem">https://en.wikipedia.org/wiki/Bayes'_theorem</a>，后验等于：</p>
+<p><div class="math-display">p_\theta(\mathbf{z}\vert\mathbf{x}) = \frac{p_\theta(\mathbf{x}\vert\mathbf{z})p_{\theta}(\mathbf{z})}{p_{\theta}(\mathbf{x})} \</div></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017104120.png" style="zoom: 60%;" /></div>
+
+<p>这样的联合建模如上图所示，实线代表的是我们想要得到的生成模型<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})p_\theta(\mathbf{z})</span>，其中先验分布<span class="math-inline">p_{\theta}(\mathbf{z})</span> 往是事先定义好的（比如标准正态分布），而<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 以用一个网络来学习，类比AE的话，如果把<span class="math-inline">\mathbf{z}</span> 成隐含特征，那么这个网络就可以看成一个probabilistic decoder。虚线代表的是对后验分布<span class="math-inline">p_\theta(\mathbf{z}\vert\mathbf{x})</span> 变分估计，记为<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span>，它也可以用一个网络来学习，这个网络可以看成一个probabilistic encoder。可以看到，VAE和AE在架构设计上是类似的，只不过这里probabilistic encoder和probabilistic decoder学习的是两个分布。对于VAE来说，最终目标是得到生成模型即decoder，而encoder只是为了辅助建模，但对于AE来说，常常是为了得到encoder来进行特征提取或者压缩。 ​</p>
+<p>建模已经完成，下面我们来推导一下VAE的优化目标。对于估计的后验<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span>，我们希望它接近真实的后验分布<span class="math-inline">p_\theta(\mathbf{z}\vert\mathbf{x})</span>，评估两个分布差异最常用的方式就是计算KL散度（<a href="https://en.wikipedia.org/wiki/Kullback–Leibler_divergence">Kullback-Leibler divergence</a>）。对<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span> <span class="math-inline">p_\theta(\mathbf{z}\vert\mathbf{x})</span> 算KL散度，如下所示： ​</p>
+<p><div class="math-display">\begin{aligned} &amp; D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z}\vert\mathbf{x}) ) &amp; \ &amp;=\int q_\phi(\mathbf{z} \vert \mathbf{x}) \log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z} \vert \mathbf{x})} d\mathbf{z} &amp; \ &amp;=\int q_\phi(\mathbf{z} \vert \mathbf{x}) \log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})p_\theta(\mathbf{x})}{p_\theta(\mathbf{z}, \mathbf{x})} d\mathbf{z} &amp; \scriptstyle{\text{; Because }p(z \vert x) = p(z, x) / p(x)} \ &amp;=\int q_\phi(\mathbf{z} \vert \mathbf{x}) \big( \log p_\theta(\mathbf{x}) + \log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z}, \mathbf{x})} \big) d\mathbf{z} &amp; \ &amp;=\log p_\theta(\mathbf{x}) + \int q_\phi(\mathbf{z} \vert \mathbf{x})\log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z}, \mathbf{x})} d\mathbf{z} &amp; \scriptstyle{\text{; Because }\int q(z \vert x) dz = 1}\ &amp;=\log p_\theta(\mathbf{x}) + \int q_\phi(\mathbf{z} \vert \mathbf{x})\log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{x}\vert\mathbf{z})p_\theta(\mathbf{z})} d\mathbf{z} &amp; \scriptstyle{\text{; Because }p(z, x) = p(x \vert z) p(z)} \ &amp;=\log p_\theta(\mathbf{x}) + \mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z} \vert \mathbf{x})}[\log \frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z})} - \log p_\theta(\mathbf{x} \vert \mathbf{z})] &amp;\ &amp;=\log p_\theta(\mathbf{x}) + D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z})) - \mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x})}\log p_\theta(\mathbf{x}\vert\mathbf{z}) &amp; \end{aligned}\</div></p>
+<p>最终可以得到：</p>
+<p><div class="math-display">D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z}\vert\mathbf{x}) ) =\log p_\theta(\mathbf{x}) + D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z})) - \mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x})}\log p_\theta(\mathbf{x}\vert\mathbf{z}) \</div></p>
+<p>这里我们适当调整一下上述等式中各个项的位置，可以得到：</p>
+<p><div class="math-display">\log p_\theta(\mathbf{x}) - D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z}\vert\mathbf{x}) ) = \mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x})}\log p_\theta(\mathbf{x}\vert\mathbf{z}) - D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z})) \</div></p>
+<p>这里<span class="math-inline">\log p_\theta(\mathbf{x})</span> 生成真实数据的对数似然，对于生成模型，我们希望最大化这个对数似然，而<span class="math-inline">D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z}\vert\mathbf{x}) )</span> 估计的后验分布和真实分布的KL散度，我们希望最小化该KL散度（KL散度为0时两个分布没有差异），所以上述等式的左边就是联合建模的最大化优化目标，这等价于最大化等式的右边。这个等式的右边又称为<strong>Evidence lower bound，简称为ELBO</strong>，这主要是因为<span class="math-inline">p_\theta(\mathbf{x})</span> 般称为evidence，而由于KL散度的非负性，所以有下述不等式：</p>
+<p><div class="math-display">\log p_\theta(\mathbf{x}) \geq  \mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x})}\log p_\theta(\mathbf{x}\vert\mathbf{z}) - D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z})) \</div></p>
+<p>所以<strong>ELBO</strong>是evidence的下限，<a href="https://en.wikipedia.org/wiki/Evidence_lower_bound">https://en.wikipedia.org/wiki/Evidence_lower_bound</a>是变分推断中经常用到的优化目标。对于VAE，ELBO取负就是其要最小化的训练目标：</p>
+<p><div class="math-display">\begin{aligned} L_\text{VAE}(\theta, \phi)  &amp;= - \mathbb{E}<em>{\mathbf{z} \sim q</em>\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z}) + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z}) ) \ \theta^{<em>}, \phi^{</em>} &amp;= \arg\min_{\theta, \phi} L_\text{VAE} \end{aligned}\</div></p>
+<p>对于优化目标的第二项，即计算<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span> <span class="math-inline">p_\theta(\mathbf{z})</span> KL散度，首先我们必须要对两个分布做一定的假设：</p>
+<p><div class="math-display">\begin{aligned} &amp;q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)}) = \mathcal{N}(\mathbf{z}; \boldsymbol{\mu}^{(i)}, \boldsymbol{\sigma}^{2(i)}\boldsymbol{I}) &amp; \ &amp;p_{\theta}(\mathbf{z})  =  \mathcal{N}(\mathbf{z}, 0, \boldsymbol{I})  \end{aligned}\</div></p>
+<p>即<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span> 各分量独立的多元高斯分布（协方差矩阵为对角矩阵），那么encoder网络预测的就是高斯分布的均值<span class="math-inline">\boldsymbol{\mu}</span> 方差<span class="math-inline">\boldsymbol{\sigma}^2</span>（实际处理时预测<span class="math-inline">\log\boldsymbol{\sigma}^2</span>，因为该值是无约束的）。而先验<span class="math-inline">p_\theta(\mathbf{z})</span> 标准正态分布，这样就变成了计算两个多元高斯分布的KL散度。对于多元高斯分布，其概率密度函数为：</p>
+<p><div class="math-display">\begin{equation}p(\mathbf{x})=\frac{1}{\sqrt{(2\pi)^n \det(\boldsymbol{\Sigma})}}\exp\left{-\frac{1}{2}(\mathbf{x}-\boldsymbol{\mu})^{\top}\boldsymbol{\Sigma}^{-1}(\mathbf{x}-\boldsymbol{\mu})\right}\end{equation} \</div></p>
+<p>对于两个多元高斯分布，其KL散度计算推导如下：</p>
+<p><div class="math-display">\begin{aligned} \text{KL}(p_1||p_2) &amp;= \text{E}<em>{p_1}(\log(p_1) - \log(p_2)) \ &amp;= -\frac{1}{2}\text{E}</em>{p_1}[\log(\det(\boldsymbol{\Sigma_1}))+(\mathbf{x}-\boldsymbol{\mu_1})^{\top}\boldsymbol{\Sigma}<em>1^{-1}(\mathbf{x}-\boldsymbol{\mu_1}) - \log(\det(\boldsymbol{\Sigma_2}))-(\mathbf{x}-\boldsymbol{\mu_2})^{\top}\boldsymbol{\Sigma}_2^{-1}(\mathbf{x}-\boldsymbol{\mu_2}) ]\ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} +\frac{1}{2}\text{E}</em>{p_1}[-(\mathbf{x}-\boldsymbol{\mu_1})^{\top}\boldsymbol{\Sigma}<em>1^{-1}(\mathbf{x}-\boldsymbol{\mu_1}) +(\mathbf{x}-\boldsymbol{\mu_2})^{\top}\boldsymbol{\Sigma}_2^{-1}(\mathbf{x}-\boldsymbol{\mu_2})] \ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} +\frac{1}{2}\text{E}</em>{p_1}[-\text{tr}((\mathbf{x}-\boldsymbol{\mu_1})^{\top}\boldsymbol{\Sigma}<em>1^{-1}(\mathbf{x}-\boldsymbol{\mu_1})) +\text{tr}((\mathbf{x}-\boldsymbol{\mu_2})^{\top}\boldsymbol{\Sigma}_2^{-1}(\mathbf{x}-\boldsymbol{\mu_2}))]\ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} +\frac{1}{2}\text{E}</em>{p_1}[-\text{tr}(\boldsymbol{\Sigma}<em>1^{-1}(\mathbf{x}-\boldsymbol{\mu_1})(\mathbf{x}-\boldsymbol{\mu_1})^{\top}) +\text{tr}(\boldsymbol{\Sigma}_2^{-1}(\mathbf{x}-\boldsymbol{\mu_2})(\mathbf{x}-\boldsymbol{\mu_2})^{\top})] \ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} -\frac{1}{2}\text{tr}(\boldsymbol{\Sigma}_1^{-1}\text{E}</em>{p_1}[(\mathbf{x}-\boldsymbol{\mu_1})(\mathbf{x}-\boldsymbol{\mu_1})^{\top}]) +\frac{1}{2}\text{tr}(\boldsymbol{\Sigma}<em>2^{-1}\text{E}</em>{p_1}[(\mathbf{x}-\boldsymbol{\mu_2})(\mathbf{x}-\boldsymbol{\mu_2})^{\top}]) \ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} -\frac{1}{2}\text{tr}(\boldsymbol{\Sigma}<em>1^{-1}\boldsymbol{\Sigma}_1) +\frac{1}{2}\text{tr}(\boldsymbol{\Sigma}_2^{-1}\text{E}</em>{p_1}[(\mathbf{x}\mathbf{x}^{\top}-\mathbf{x}\boldsymbol{\mu_2}^{\top}- \boldsymbol{\mu_2}\mathbf{x}^{\top}+\boldsymbol{\mu_2}\boldsymbol{\mu_2}^{\top}])\ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} -\frac{1}{2}n +\frac{1}{2}\text{tr}(\boldsymbol{\Sigma}_2^{-1}(\boldsymbol{\Sigma}_1+\boldsymbol{\mu_1}\boldsymbol{\mu_1}^{\top}-\boldsymbol{\mu_1}\boldsymbol{\mu_2}^{\top}-\boldsymbol{\mu_2}\boldsymbol{\mu_1}^{\top}+\boldsymbol{\mu_2}\boldsymbol{\mu_2}^{\top})) \ &amp;= \frac{1}{2}\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})} -\frac{1}{2}n +\frac{1}{2}\text{tr}(\boldsymbol{\Sigma}_2^{-1}\boldsymbol{\Sigma}_1)+\frac{1}{2}(\boldsymbol{\mu_2}-\boldsymbol{\mu_1})^{\top}\boldsymbol{\Sigma}_2^{-1}(\boldsymbol{\mu_2}-\boldsymbol{\mu_1}) \ &amp;= \frac{1}{2}(\text{tr}(\boldsymbol{\Sigma}_2^{-1}\boldsymbol{\Sigma}_1)+(\boldsymbol{\mu_2}-\boldsymbol{\mu_1})^{\top}\boldsymbol{\Sigma}_2^{-1}(\boldsymbol{\mu_2}-\boldsymbol{\mu_1})-n+\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})}) \end{aligned}\</div></p>
+<p>上述公式的推导涉及到一些线性代数的知识，如矩阵的迹运算（tr)，如果不明白可以参考<a href="https://kexue.fm/archives/8512">https://kexue.fm/archives/8512</a>。根据上述公式，就可以计算出<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span> <span class="math-inline">p_\theta(\mathbf{z})</span> KL散度：</p>
+<p><div class="math-display">\begin{aligned} \text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)})||p_{\theta}(\mathbf{z})) &amp;=  \text{KL}(\mathcal{N}(\mathbf{z}; \boldsymbol{\mu}^{(i)}, \boldsymbol{\sigma}^{2(i)}\boldsymbol{I})||\mathcal{N}(\mathbf{z}, 0, \boldsymbol{I}) )\ &amp;= \frac{1}{2}\Big(\text{tr}(\boldsymbol{\sigma}^{2(i)}\boldsymbol{I})+(\boldsymbol{\mu}^{(i)})^{\top}\boldsymbol{\mu}^{(i)}-n-\log\det{\boldsymbol{\sigma}^{2(i)}\boldsymbol{I}}\Big) \ &amp;= \frac{1}{2}\sum_{j=0}^{n}\Big( (\sigma^{(i)}_j)^2+ (\mu^{(i)}_j)^2 - 1- \log((\sigma^{(i)}_j)^2) \Big) \end{aligned}\</div></p>
+<p>这里<span class="math-inline">n</span> 的多元高斯分布分量的总数，或者说是隐变量<span class="math-inline">\mathbf{z}</span> 元素数量。实际上由于<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span> 各分量独立的多元高斯分布，这个计算可以简化为先计算单独计算各分量的的KL散度（即一元正态分布），然后对各分量的KL散度求和，因为一元正态分布的KL散度相对容易推导：</p>
+<p><div class="math-display">\begin{aligned}&amp;\text{KL}\Big(\mathcal{N}(\mu,\sigma^2)\Big\Vert \mathcal{N}(0,1)\Big)\  =&amp;\text{E}<em>{x \thicksim\mathcal{N}(\mu,\sigma^2)}\Big[\log \frac{e^{-(x-\mu)^2/2\sigma^2}/\sqrt{2\pi\sigma^2}}{e^{-x^2/2}/\sqrt{2\pi}}\Big]\  =&amp;\text{E}</em>{x \thicksim\mathcal{N}(\mu,\sigma^2)}\Big[\log (\frac{1}{\sqrt{\sigma^2}}\exp(\frac{1}{2}(x^2-(x-\mu)^2/\sigma^2) )\Big]\  =&amp;\frac{1}{2}\text{E}_{x \thicksim\mathcal{N}(\mu,\sigma^2)}\Big[-\log \sigma^2+x^2-(x-\mu)^2/\sigma^2 \Big]\  =&amp; \frac{1}{2}(-\log \sigma^2+\sigma^2 + \mu^2-1) \end{aligned}\</div></p>
+<p>综上，对于训练数据的一个样本<span class="math-inline">\mathbf{x}^{(i)}</span>，其KL散度项的优化目标为：</p>
+<p><div class="math-display">D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)}) | p_\theta(\mathbf{z}) ) =\frac{1}{2}\sum_{j=0}^{n}\Big( (\sigma^{(i)}_j)^2+ (\mu^{(i)}_j)^2 - 1- \log((\sigma^{(i)}_j)^2) \Big) \</div></p>
+<p>现在我们来分析优化目标的第一项<span class="math-inline">-\mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x})}\log p_\theta(\mathbf{x}\vert\mathbf{z})</span>，它一般被称为重建误差（reconstruction error），因为<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 是给定<span class="math-inline">\mathbf{z}</span> 生成真实数据<span class="math-inline">\mathbf{x}</span> 似然（Likelihood）。对于一个给定的训练样本<span class="math-inline">\mathbf{x}^{(i)}</span>，我们可以采蒙特卡洛方法（<a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">https://en.wikipedia.org/wiki/Monte_Carlo_method</a>）来估计这个数学期望，即从<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)})</span> 次采样来估计：</p>
+<p><div class="math-display">-\mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x}^{(i)})}\log p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z})\thickapprox-\frac{1}{L}\sum_{l=1}^{L}(\log p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z}^{(i,l)})) \</div></p>
+<p>这里的<span class="math-inline">L</span> 采样的总次数，实际上在具体实现上往往<span class="math-inline">L=1</span>，即只随机采样一次（VAE论文中说当训练的mini-batch size足够大时，采样一次是有效的）。另外一个困难的地方，从<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)})</span> 样这个操作是无法计算梯度的，VAE采用一种重参数化（reparameterization）技巧来解决这个问题，具体地，通过引入一个额外的独立随机变量<span class="math-inline">\boldsymbol{\epsilon} \thicksim p(\boldsymbol{\epsilon})</span> 将随机变量<span class="math-inline">\mathbf{z}</span> 变成确定变量：<span class="math-inline">\mathbf{z}=g_{\phi}(\mathbf{x},\boldsymbol{\epsilon})</span>。由于<span class="math-inline">q_\phi(\mathbf{z}\vert\mathbf{x})</span> 经假定为多元高斯分布，使用重采样技巧后则为：</p>
+<p><div class="math-display">\begin{aligned} \mathbf{z} &amp;\sim q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)}) = \mathcal{N}(\mathbf{z}; \boldsymbol{\mu}^{(i)}, \boldsymbol{\sigma}^{2(i)}\boldsymbol{I}) &amp; \ \mathbf{z} &amp;= \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon} \text{, where } \boldsymbol{\epsilon} \sim \mathcal{N}(0, \boldsymbol{I}) &amp; \scriptstyle{\text{; Reparameterization trick.}} \end{aligned}\</div></p>
+<p>直观上讲，就是首先从标准正态分布随机采样一个样本，然后乘以encoder预测的标准差，再加上encoder预测的均值，这样就能计算该损失对encoder网络参数的梯度了。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017104635.png" style="zoom: 60%;" /></div>
+
+<p>根据建模的数据类型，<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 布可以是一个高斯分布也可以是一个伯努利分布，这里以更通用的高斯分布为例。假定<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 布也属于一个各分量独立的多元高斯分布：<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z}) = \mathcal{N}(\mathbf{x}; \boldsymbol{\mu}, \boldsymbol{\sigma}^{2}\boldsymbol{I})</span>。由于各个分量独立，所以我们可以单独计算每个分量：</p>
+<p><div class="math-display">\begin{aligned} \log p(x|z) &amp;= \log \frac{1}{\sqrt{2\pi\sigma^2}}\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right) \ &amp;= \log \frac{1}{\sqrt{2\pi\sigma^2}} - \frac{1}{2\sigma^2}(x-\mu)^2 \end{aligned}\</div></p>
+<p>对于这个高斯分布的标准差，我们往往假定它是一个常量，而均值是由decoder预测得出：<span class="math-inline">\boldsymbol{\mu}=f_{\theta}(\mathbf {z})</span>。那么则有：</p>
+<p><div class="math-display">-\log p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z}^{(i,l)}) = C_1+C_2\sum_{d}^{D}(\mathbf{x}^{(i)}<em>d-(f</em>{\theta}(\mathbf{z}^{(i,l)}))_d)^2 \</div></p>
+<p>这里<span class="math-inline">C_1</span> <span class="math-inline">C_2</span> 是常量，而<span class="math-inline">D</span> 变量<span class="math-inline">\mathbf{x}</span> 维度大小。如果忽略常量<span class="math-inline">C_1</span> 话，那么重建误差其实就是L2损失。上面我们是假定<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 布是一个高斯分布，如果<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 一个伯努利分布即0-1分布的话，此时decoder直接预测概率值（sigmoid激活函数），重建误差就是交叉熵，：</p>
+<p><span class="math-inline">\log p_{\theta}(\mathbf{x}|\mathbf{z})=\sum_{d}^{D}\Big(\mathbf{x}<em>d\log(f</em>{\theta}(\mathbf{z})<em>d)+(1-\mathbf{x}_d)\log(1-f</em>{\theta}(\mathbf{z})_d)\Big) \</span></p>
+<p>根据上述分析，对给定的一个训练样本<span class="math-inline">\mathbf{x}^{(i)}</span>，其训练损失（假定是高斯分布）为：</p>
+<p><div class="math-display">\begin{aligned} L_\text{VAE}(\theta, \phi, \mathbf{x}^{(i)})  &amp;= - \mathbb{E}<em>{\mathbf{z} \sim q</em>\phi(\mathbf{z}\vert\mathbf{x}^{(i)})} \log p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z}) + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)}) | p_\theta(\mathbf{z}) ) \ &amp;\thickapprox-\frac{1}{L}\sum_{l=1}^{L}(\log p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z}^{(i,l)})) + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)}) | p_\theta(\mathbf{z}) ) \ &amp;=\frac{C}{L}\sum_{l=1}^{L}\sum_{d}^{D}(\mathbf{x}^{(i)}<em>d-(f</em>{\theta}(\mathbf{z}^{(i,l)}))<em>d)^2 + \frac{1}{2}\sum</em>{j=0}^{n}\Big( (\sigma^{(i)}_j)^2+ (\mu^{(i)}_j)^2 - 1- \log((\sigma^{(i)}_j)^2) \Big) \end{aligned}\</div></p>
+<p>如果把KL散度项看到一个正则化的话，那么VAE的损失函数就是重建误差+正则化，这样VAE就可以看成是一个加了约束的AE。VAE的整个训练流程如下所示：输入<span class="math-inline">\mathbf{x}</span>，encoder首先计算出后验分布的均值和标准差，然后通过重采样方法采样得到隐变量<span class="math-inline">\mathbf{z}</span>，然后送入decoder得到重建的数据<span class="math-inline">\mathbf{x}'</span>。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017104703.png" style="zoom: 60%;" /></div>
+
+<p>训练完成后，我们就得到生成模型<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})p_\theta(\mathbf{z})</span>，其中<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})</span> 是decoder网络，而先验<span class="math-inline">p_\theta(\mathbf{z})</span> 标准正态分布，我们从<span class="math-inline">p_\theta(\mathbf{z})</span> 机采样一个<span class="math-inline">\mathbf{z}</span>，送入decoder网络，就能生成与训练数据<span class="math-inline">\mathbf{X}</span> 似的样本。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017104740.png" style="zoom: 60%;" /></div>
+
+<h3 id="cvae">CVAE<a class="anchor-link" href="#cvae" title="Permanent link">&para;</a></h3>
+<p>条件变分自编码器（Conditional Variational Autoencoder，CVAE）是VAE的一个变种，相比VAE，CVAE要估计的是一个条件分布<span class="math-inline">p_{\theta}(\mathbf{x}|\mathbf{y})</span>，同样地，我们引入隐变量<span class="math-inline">\mathbf{z}</span> 进行变分推断。此时，给定一个输入<span class="math-inline">\mathbf{y}</span>，从先验分布<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{y})</span> 采样一个<span class="math-inline">\mathbf{z}</span>，然后根据分布<span class="math-inline">p_{\theta}(\mathbf{x}|\mathbf{z},\mathbf{y})</span> 成一个样本<span class="math-inline">\mathbf{x}</span>，因而这里要求解的生成模型是<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{y})p_{\theta}(\mathbf{x}|\mathbf{z},\mathbf{y})</span>。这个生成模型可以用两个网络来学习，其中一个网络来学习先验分布<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{y})</span>，另外一个网络来学习条件分布<span class="math-inline">p_{\theta}(\mathbf{x}|\mathbf{z},\mathbf{y})</span>。在VAE，我们假定先验<span class="math-inline">p_{\theta}(\mathbf{z})</span> 标准正态分布，因为不需要单独的网路来学习；而在CVAE中，先验分布<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{y})</span> 一种条件先验，如果假定<span class="math-inline">\mathbf{z}</span> 独立与<span class="math-inline">\mathbf{y}</span> 话，那么此时先验分布<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{y})=p_{\theta}(\mathbf{z})</span>，更进一步地也可以简化认为先验为标准正态分布。 同样地，我们另外采用一个网络<span class="math-inline">q_{\phi}(\mathbf{z}|\mathbf{x},\mathbf{y})</span> 估计后验分布<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{x},\mathbf{y})</span>。同样地，我们可以推导出ELBO：</p>
+<p><div class="math-display">\log p_{\theta}(\mathbf{x}|\mathbf{y}) \geq \mathbb{E}<em>{\mathbf{z}\sim q</em>\phi(\mathbf{z}\vert\mathbf{x},\mathbf{y})}\log p_\theta(\mathbf{x}\vert\mathbf{z},\mathbf{y}) - D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x},\mathbf{y}) | p_\theta(\mathbf{z}\vert \mathbf{y})) \</div></p>
+<p>那么对于CVAE，其优化目标为：</p>
+<p><div class="math-display">\begin{aligned} L_\text{CVAE}(\theta, \phi)  &amp;= - \mathbb{E}<em>{\mathbf{z} \sim q</em>\phi(\mathbf{z}\vert\mathbf{x},\mathbf{y})} \log p_\theta(\mathbf{x}\vert\mathbf{z}, \mathbf{y}) + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}, \mathbf{y}) | p_\theta(\mathbf{z}\vert \mathbf{y}) ) \ \theta^{<em>}, \phi^{</em>} &amp;= \arg\min_{\theta, \phi} L_\text{CVAE} \end{aligned}\</div></p>
+<p>对于上述优化目标的处理，同样地可以采用和VAE一样的分析过程，这里不再详细展开，具体见<a href="https://papers.nips.cc/paper/2015/hash/8d55a249e6baa5c06772297520da2051-Abstract.html">https://papers.nips.cc/paper/2015/hash/8d55a249e6baa5c06772297520da2051-Abstract.html</a>。下图为CVAE的一种实现方式（这里先验简化为标准正态分布）： </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017104803.png" style="zoom: 60%;" /></div>
+<p>​</p>
+<p>对于VAE和CVAE，它们最重要的区别是数据是如何生成的，对于VAE，数据的产生认为是<span class="math-inline">p_\theta(\mathbf{x}\vert\mathbf{z})p_\theta(\mathbf{z})</span>，而对于CVAE，其数据的产生是<span class="math-inline">p_{\theta}(\mathbf{z}|\mathbf{y})p_{\theta}(\mathbf{x}|\mathbf{z},\mathbf{y})</span>，不同的数据产生方式导致了不同的建模方式和ELBO，但两者用的变分推断理论是一致的。 ​</p>
+<h3 id="vae的代码实现">VAE的代码实现<a class="anchor-link" href="#vae的代码实现" title="Permanent link">&para;</a></h3>
+<p>这里以MNIST数据集为例用PyTorch实现一个简单的VAE生成模型，由于MNIST数据集为灰度图，而且大部分像素点为0（黑色背景）或者白色（255，前景），所以这里可以将像素值除以255归一化到[0, 1]，并认为像素值属于伯努利分布，重建误差采用交叉熵。 首先是构建encoder，这里用简单的两层卷积和一个全连接层来实现，encoder给出隐变量的mu和log_var：</p>
+<pre><code class="language-python">class Encoder(nn.Module):
+    &quot;&quot;&quot;The encoder for VAE&quot;&quot;&quot;
+
+    def __init__(self, image_size, input_dim, conv_dims, fc_dim, latent_dim):
+        super().__init__()
+
+        convs = []
+        prev_dim = input_dim
+        for conv_dim in conv_dims:
+            convs.append(nn.Sequential(
+                nn.Conv2d(prev_dim, conv_dim, kernel_size=3, stride=2, padding=1),
+                nn.ReLU()
+            ))
+            prev_dim = conv_dim
+        self.convs = nn.Sequential(*convs)
+
+        prev_dim = (image_size // (2 ** len(conv_dims))) ** 2 * conv_dims[-1]
+        self.fc = nn.Sequential(
+            nn.Linear(prev_dim, fc_dim),
+            nn.ReLU(),
+        )
+        self.fc_mu = nn.Linear(fc_dim, latent_dim)
+        self.fc_log_var = nn.Linear(fc_dim, latent_dim)
+
+    def forward(self, x):
+        x = self.convs(x)
+        x = torch.flatten(x, start_dim=1)
+        x = self.fc(x)
+        mu = self.fc_mu(x)
+        log_var = self.fc_log_var(x)
+        return mu, log_var
+</code></pre>
+<p>对于decoder，基本采用对称的结构，这里用反卷积来实现上采样，decoder根据隐变量重构样本或者生成样本：</p>
+<pre><code class="language-python">class Decoder(nn.Module):
+    &quot;&quot;&quot;The decoder for VAE&quot;&quot;&quot;
+
+    def __init__(self, latent_dim, image_size, conv_dims, output_dim):
+        super().__init__()
+
+        fc_dim = (image_size // (2 ** len(conv_dims))) ** 2 * conv_dims[-1]
+        self.fc = nn.Sequential(
+            nn.Linear(latent_dim, fc_dim),
+            nn.ReLU()
+        )
+        self.conv_size = image_size // (2 ** len(conv_dims))
+
+        de_convs = []
+        prev_dim = conv_dims[-1]
+        for conv_dim in conv_dims[::-1]:
+            de_convs.append(nn.Sequential(
+                nn.ConvTranspose2d(prev_dim, conv_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
+                nn.ReLU()
+            ))
+            prev_dim = conv_dim
+        self.de_convs = nn.Sequential(*de_convs)
+        self.pred_layer = nn.Sequential(
+            nn.Conv2d(prev_dim, output_dim, kernel_size=3, stride=1, padding=1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        x = self.fc(x)
+        x = x.reshape(x.size(0), -1, self.conv_size, self.conv_size)
+        x = self.de_convs(x)
+        x = self.pred_layer(x)
+        return x
+</code></pre>
+<p>有了encoder和decoder，然后就可以构建VAE模型了，这里的实现只对隐变量通过重采样方式采样一次，训练损失为KL散度和重建误差（交叉熵）之和：</p>
+<pre><code>class VAE(nn.Module):
+    &quot;&quot;&quot;VAE&quot;&quot;&quot;
+
+    def __init__(self, image_size, input_dim, conv_dims, fc_dim, latent_dim):
+        super().__init__()
+
+        self.encoder = Encoder(image_size, input_dim, conv_dims, fc_dim, latent_dim)
+        self.decoder = Decoder(latent_dim, image_size, conv_dims, input_dim)
+
+    def sample_z(self, mu, log_var):
+        &quot;&quot;&quot;sample z by reparameterization trick&quot;&quot;&quot;
+        std = torch.exp(0.5 * log_var)
+        eps = torch.randn_like(std)
+        return mu + eps * std
+
+    def forward(self, x):
+        mu, log_var = self.encoder(x)
+        z = self.sample_z(mu, log_var)
+        recon = self.decoder(z)
+        return recon, mu, log_var
+
+    def compute_loss(self, x, recon, mu, log_var):
+        &quot;&quot;&quot;compute loss of VAE&quot;&quot;&quot;
+
+        # KL loss
+        kl_loss = (0.5*(log_var.exp() + mu ** 2 - 1 - log_var)).sum(1).mean()
+
+        # recon loss
+        recon_loss = F.binary_cross_entropy(recon, x, reduction=&quot;none&quot;).sum([1, 2, 3]).mean()
+
+        return kl_loss + recon_loss
+</code></pre>
+<p>模型训练完成，可以从标准正态分布随机采样，然后生成新的样本，下图为一些模型生成的样本： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410170946531.jpg" /><br />
+ VAE虽然主要用于生成，但是作为一种无监督学习方法，也能用于提取特征，下图为从MNIST验证集中提取的中间隐含层特征（encoder属于的mu）的TSNE可视化，可以看到不同类别的隐含特征具有一定的区分度： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410170946532.jpg" /><br />
+ 这里额外要提的一点，VAE模型比较容易出现posterior collapse问题，简单来说，就是由于decoder足够强大，可以不依赖隐变量而直接学习到了数据分布，此时：<span class="math-inline">q_{\phi}(\mathbf{z}|\mathbf{x})=p_{\theta}(\mathbf{z}),p_{\theta}(\mathbf{x}|\mathbf{z})=p_{\theta}(\mathbf{x})</span>。这对生成模型没有太大的问题，但是如果你用VAE提取特征的话，就不行了，因为隐变量和原始数据之间没有联系了。这个问题具体可以看看这篇文章<a href="https://openreview.net/forum?id=r1xaVLUYuE">https://openreview.net/forum?id=r1xaVLUYuE</a>。对于posterior collapse问题，也有很多改进方案来解决或者避免，比如VQ-VAE，后面会有新的文章来讲解。</p>
+<p>代码的实现放在github上，具体见<a href="https://github.com/xiaohu2015/nngen">https://github.com/xiaohu2015/nngen</a></p>
+<h3 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h3>
+<p>这篇文章简单讲述了自动编码器的原理，并重点介绍了VAE模型的原理以及它和AE之间的联系，最后给出了一个具体的VAE代码实例。VAE模型涉及比较复杂的数学建模，理解它需要花费一定的精力，这里特别感谢一些优秀的文章（见参考）。 ​</p>
+<h3 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://lilianweng.github.io/lil-log/2018/08/12/from-autoencoder-to-beta-vae.html">https://lilianweng.github.io/lil-log/2018/08/12/from-autoencoder-to-beta-vae.html</a></li>
+<li><a href="https://arxiv.org/abs/1312.6114">https://arxiv.org/abs/1312.6114</a></li>
+<li><a href="https://arxiv.org/abs/1606.05908">https://arxiv.org/abs/1606.05908</a></li>
+<li><a href="https://spaces.ac.cn/archives/5253">https://spaces.ac.cn/archives/5253</a></li>
+<li><a href="https://spaces.ac.cn/archives/5343">https://spaces.ac.cn/archives/5343</a></li>
+<li><a href="https://spaces.ac.cn/archives/7381">https://spaces.ac.cn/archives/7381</a></li>
+<li><a href="https://blog.evjang.com/2016/08/variational-bayes.html">https://blog.evjang.com/2016/08/variational-bayes.html</a></li>
+<li><a href="https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73">https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73</a></li>
+<li><a href="https://papers.nips.cc/paper/2015/hash/8d55a249e6baa5c06772297520da2051-Abstract.html">https://papers.nips.cc/paper/2015/hash/8d55a249e6baa5c06772297520da2051-Abstract.html</a></li>
+<li><a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/vanilla_vae.py">https://github.com/AntixK/PyTorch-VAE/blob/master/models/vanilla_vae.py</a></li>
+<li><a href="https://keras.io/examples/generative/vae/">https://keras.io/examples/generative/vae/</a></li>
+<li><a href="https://github.com/jojonki/AutoEncoders/blob/master/vae.ipynb">https://github.com/jojonki/AutoEncoders/blob/master/vae.ipynb</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/452743042">生成模型之VAE</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

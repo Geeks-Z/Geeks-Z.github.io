@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用 create_model</title>
+    <meta name="description" content="使用 create_model - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#使用">使用</a></li>
+<li><a href="#pretrained">pretrained</a></li>
+<li><a href="#registry">registry</a></li>
+<li><a href="#register-model">Register model</a></li>
+<li><a href="#default-config">default config</a></li>
+<li><a href="#build-model-with-config">build model with config</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>使用 create_model</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/09.timm</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h3 id="使用">使用<a class="anchor-link" href="#使用" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import timm
+model = timm.create_model(&quot;vit_deit_base_patch16_384&quot;, pretrained=pretrained)
+</code></pre>
+<h3 id="pretrained">pretrained<a class="anchor-link" href="#pretrained" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>True or False</p>
+</blockquote>
+<p>True:timm直接根据对应的URL下载模型权重参数并加载到模型，注意，只有本地没有对应模型参数时才会下载，也就是说，通常在第一次运行时下载对应模型参数，之后会直接从本地加载模型权重参数。</p>
+<h3 id="registry">registry<a class="anchor-link" href="#registry" title="Permanent link">&para;</a></h3>
+<p>create_model主体只有50行左右的代码，那么，如何实现从模型到特征提取器的转换？已知timm.list_models()函数中的每一个模型名字(str)实际上都是一个函数。</p>
+<pre><code class="language-python">###输入
+import timm
+import random 
+from timm.models import registry
+
+m = timm.list_models()[-1]
+print(m)
+registry.is_model(m)
+
+###输出
+xception71
+True
+</code></pre>
+<p>实际上，在 timm 内部，有一个字典称为 _model_entrypoints 包含了所有的模型名称和他们各自的函数。比如说，可以通过 model_entrypoint 函数从 _model_entrypoints 内部得到 xception71 模型的构造函数。</p>
+<pre><code class="language-python">###输入
+constuctor_fn = registry.model_entrypoint(m)
+print(constuctor_fn)
+###输出
+&lt;function timm.models.xception_aligned.xception71(pretrained=False, **kwargs)&gt;
+or
+&lt;function xception71 at 0x7fc0cba0eca0&gt;
+</code></pre>
+<p>在 timm.models.xception_aligned 模块中有一个函数称为 xception71 。类似的，timm 中的每一个模型都有着一个这样的构造函数。事实上，内部的 _model_entrypoints 字典大概长这个样子：</p>
+<pre><code class="language-python">_model_entrypoints
+&gt; &gt; 
+{
+'cspresnet50':&lt;function timm.models.cspnet.cspresnet50(pretrained=False, **kwargs)&gt;,'cspresnet50d': &lt;function timm.models.cspnet.cspresnet50d(pretrained=False, **kwargs)&gt;,
+'cspresnet50w': &lt;function timm.models.cspnet.cspresnet50w(pretrained=False, **kwargs)&gt;,
+'cspresnext50': &lt;function timm.models.cspnet.cspresnext50(pretrained=False, **kwargs)&gt;,
+'cspresnext50_iabn': &lt;function timm.models.cspnet.cspresnext50_iabn(pretrained=False, **kwargs)&gt;,
+'cspdarknet53': &lt;function timm.models.cspnet.cspdarknet53(pretrained=False, **kwargs)&gt;,
+'cspdarknet53_iabn': &lt;function timm.models.cspnet.cspdarknet53_iabn(pretrained=False, **kwargs)&gt;,
+'darknet53': &lt;function timm.models.cspnet.darknet53(pretrained=False, **kwargs)&gt;,
+'densenet121': &lt;function timm.models.densenet.densenet121(pretrained=False, **kwargs)&gt;,
+'densenetblur121d': &lt;function timm.models.densenet.densenetblur121d(pretrained=False, **kwargs)&gt;,
+'densenet121d': &lt;function timm.models.densenet.densenet121d(pretrained=False, **kwargs)&gt;,
+'densenet169': &lt;function timm.models.densenet.densenet169(pretrained=False, **kwargs)&gt;,
+'densenet201': &lt;function timm.models.densenet.densenet201(pretrained=False, **kwargs)&gt;,
+'densenet161': &lt;function timm.models.densenet.densenet161(pretrained=False, **kwargs)&gt;,
+'densenet264': &lt;function timm.models.densenet.densenet264(pretrained=False, **kwargs)&gt;,
+
+}
+</code></pre>
+<p>所以说，在 timm 对应的模块中，每个模型都有一个构造器。比如说 ResNets 系列模型被定义在 timm.models.resnet 模块中。因此，实际上有两种方式来创建一个 resnet34 模型：</p>
+<pre><code class="language-python">import timm
+from timm.models.resnet import resnet34
+
+# 使用 create_model
+m = timm.create_model('resnet34')
+
+# 直接调用构造函数
+m = resnet34()
+</code></pre>
+<p>但使用上，无须调用构造函数。所用模型都可以通过create_model函数来将创建。</p>
+<h3 id="register-model">Register model<a class="anchor-link" href="#register-model" title="Permanent link">&para;</a></h3>
+<p>resnet34构造函数的源码如下：</p>
+<pre><code class="language-python">@register_model
+def resnet34(pretrained=False, **kwargs):
+    &quot;&quot;&quot;Constructs a ResNet-34 model.
+    &quot;&quot;&quot;
+    model_args = dict(block=BasicBlock, layers=[3, 4, 6, 3], **kwargs)
+    return _create_resnet('resnet34', pretrained, **model_args)
+</code></pre>
+<p>会发现 timm 中的每个模型都有一个 register_model 装饰器。最开始， _model_entrypoints 是一个空字典。通过 register_model 装饰器来不断地像其中添加模型名称和它对应的构造函数。该装饰器的定义如下：</p>
+<pre><code class="language-python">def register_model(fn):
+    # lookup containing module
+    mod = sys.modules[fn.__module__]
+    module_name_split = fn.__module__.split('.')
+    module_name = module_name_split[-1] if len(module_name_split) else ''
+
+    # add model to __all__ in module
+    model_name = fn.__name__
+    if hasattr(mod, '__all__'):
+        mod.__all__.append(model_name)
+    else:
+        mod.__all__ = [model_name]
+
+    # add entries to registry dict/sets
+    _model_entrypoints[model_name] = fn
+    _model_to_module[model_name] = module_name
+    _module_to_models[module_name].add(model_name)
+    has_pretrained = False  # check if model has a pretrained url to allow filtering on this
+    if hasattr(mod, 'default_cfgs') and model_name in mod.default_cfgs:
+        # this will catch all models that have entrypoint matching cfg key, but miss any aliasing
+        # entrypoints or non-matching combos
+        has_pretrained = 'url' in mod.default_cfgs[model_name] and 'http' in mod.default_cfgs[model_name]['url']
+    if has_pretrained:
+        _model_has_pretrained.add(model_name)
+    return fn
+</code></pre>
+<p>可以看到， register_model 函数完成了一些比较基础的步骤，但这里需要指出的是这一句：</p>
+<pre><code class="language-python">_model_entrypoints[model_name] = fn
+</code></pre>
+<p>它将给定的 fn 添加到 _model_entrypoints 其键名为 fn.<strong>name</strong>。所以说 resnet34 函数上的装饰器 @register_model 在 _model_entrypoints 中创建一个新的条目，像这样：</p>
+<pre><code class="language-python">{&amp;#8217;resnet34&amp;#8217;: &lt;function timm.models.resnet.resnet34(pretrained=False, **kwargs)&gt;}
+</code></pre>
+<p>同样可以看到在 resnet34 构造函数的源码中，在设置完一些 model_args 之后，它会随后调用 _create_resnet 函数。再来看一下该函数的源码：</p>
+<pre><code class="language-python">def _create_resnet(variant, pretrained=False, **kwargs):
+    return build_model_with_cfg(
+        ResNet, variant, default_cfg=default_cfgs[variant], pretrained=pretrained, **kwargs)
+</code></pre>
+<p>所以在 _create_resnet 函数之中，会再调用 build_model_with_cfg 函数并将一个构造器类 ResNet 、变量名 resnet34、一个 default_cfg 和一些 **kwargs 传入其中。</p>
+<h3 id="default-config">default config<a class="anchor-link" href="#default-config" title="Permanent link">&para;</a></h3>
+<p>timm 中所有的模型都有一个默认的配置，包括指向它的预训练权重参数的URL、类别数、输入图像尺寸、池化尺寸等。resnet34 的默认配置如下：</p>
+<pre><code class="language-python">{'url': 'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet34-43635321.pth',
+'num_classes': 1000,
+'input_size': (3, 224, 224),
+'pool_size': (7, 7),
+'crop_pct': 0.875,
+'interpolation': 'bilinear',
+'mean': (0.485, 0.456, 0.406),
+'std': (0.229, 0.224, 0.225),
+'first_conv': 'conv1',
+'classifier': 'fc'}
+</code></pre>
+<h3 id="build-model-with-config">build model with config<a class="anchor-link" href="#build-model-with-config" title="Permanent link">&para;</a></h3>
+<p>这个 build_model_with_cfg 函数负责：</p>
+<ul>
+<li>真正地实例化一个模型类来创建一个模型</li>
+<li>若 pruned=True，对模型进行剪枝</li>
+<li>若 pretrained=True，加载预训练模型参数</li>
+<li>若 features_only=True，将模型转换为特征提取器</li>
+</ul>
+<pre><code class="language-python">def build_model_with_cfg(
+        model_cls: Callable,
+        variant: str,
+        pretrained: bool,
+        default_cfg: dict,
+        model_cfg: dict = None,
+        feature_cfg: dict = None,
+        pretrained_strict: bool = True,
+        pretrained_filter_fn: Callable = None,
+        pretrained_custom_load: bool = False,
+        **kwargs):
+    pruned = kwargs.pop('pruned', False)
+    features = False
+    feature_cfg = feature_cfg or {}
+
+    if kwargs.pop('features_only', False):
+        features = True
+        feature_cfg.setdefault('out_indices', (0, 1, 2, 3, 4))
+        if 'out_indices' in kwargs:
+            feature_cfg['out_indices'] = kwargs.pop('out_indices')
+
+    model = model_cls(**kwargs) if model_cfg is None else model_cls(cfg=model_cfg, **kwargs)
+    model.default_cfg = deepcopy(default_cfg)
+
+    if pruned:
+        model = adapt_model_from_file(model, variant)
+
+    # for classification models, check class attr, then kwargs, then default to 1k, otherwise 0 for feats
+    num_classes_pretrained = 0 if features else getattr(model, 'num_classes', kwargs.get('num_classes', 1000))
+    if pretrained:
+        if pretrained_custom_load:
+            load_custom_pretrained(model)
+        else:
+            load_pretrained(
+                model,
+                num_classes=num_classes_pretrained, in_chans=kwargs.get('in_chans', 3),
+                filter_fn=pretrained_filter_fn, strict=pretrained_strict)
+
+    if features:
+        feature_cls = FeatureListNet
+        if 'feature_cls' in feature_cfg:
+            feature_cls = feature_cfg.pop('feature_cls')
+            if isinstance(feature_cls, str):
+                feature_cls = feature_cls.lower()
+                if 'hook' in feature_cls:
+                    feature_cls = FeatureHookNet
+                else:
+                    assert False, f'Unknown feature class {feature_cls}'
+        model = feature_cls(model, **feature_cfg)
+        model.default_cfg = default_cfg_for_features(default_cfg)  # add back default_cfg
+
+    return model
+</code></pre>
+<p>可以看到，模型在这一步被创建出来：model = model_cls(**kwargs)。</p>
+<h3 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h3>
+<ul>
+<li>每个模型有不同的构造函数，可以传入不同的参数， _model_entrypoints 字典包括了所有的模型名称及其对应的构造函数</li>
+<li>build_with_model_cfg 函数接收模型构造器类和其中的一些具体参数，真正地实例化一个模型</li>
+<li>load_pretrained 会加载预训练参数</li>
+<li>FeatureListNet 类可以将模型转换为特征提取器</li>
+</ul>
+<p><a href="https://blog.csdn.net/MengYa_Dream/article/details/126690336">【Timm】create_model全面详实概念理解及实践篇</a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

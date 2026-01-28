@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>output = net(fake_img, 'conv', 'prelu')</title>
+    <meta name="description" content="output = net(fake_img, 'conv', 'prelu') - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#模型容器">模型容器</a><ul>
+<li><a href="#nnsequential">nn.Sequential</a></li>
+<li><a href="#nnmodulelist">nn.ModuleList</a></li>
+<li><a href="#nnmoduledict">nn.ModuleDict</a></li>
+</ul>
+</li>
+<li><a href="#容器总结">容器总结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>output = net(fake_img, 'conv', 'prelu')</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/04.模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="模型容器">模型容器<a class="anchor-link" href="#模型容器" title="Permanent link">&para;</a></h2>
+<p>Torch.nn中一个重要的概念是模型容器 (<a href="https://pytorch.org/docs/stable/nn.html#containers">Containers</a>)，常用的容器有 3 个，这些容器都是继承自<code>nn.Module</code>。</p>
+<ul>
+<li>nn.Sequetial：常用于 block 构建，按照顺序包装多个网络层;</li>
+<li>nn.ModuleList：常用于大量重复网络构建，通过 for 循环实现重复构建，像 python 的 list 一样包装多个网络层，可以迭代;</li>
+<li>nn.ModuleDict：常用于可选择的网络层，像 python 的 dict一样包装多个网络层，通过 (key, value) 的方式为每个网络层指定名称;</li>
+</ul>
+<h3 id="nnsequential">nn.Sequential<a class="anchor-link" href="#nnsequential" title="Permanent link">&para;</a></h3>
+<p>在传统的机器学习中，有一个步骤是特征工程，我们需要从数据中人为地提取特征，然后把特征输入到分类器中预测。在深度学习的时代，特征工程的概念被弱化了，特征提取和分类器这两步被融合到了一个神经网络中。在卷积神经网络中，前面的卷积层以及池化层可以认为是特征提取部分，而后面的全连接层可以认为是分类器部分。比如 LeNet 就可以分为<strong>特征提取</strong>和<strong>分类器</strong>两部分，这 2 部分都可以分别使用 <code>nn.Seuqtial</code> 来包装。</p>
+<p><img alt="image-20220912181620491" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209121816574.png" /></p>
+<p>代码如下：</p>
+<pre><code class="language-python">class LeNetSequetial(nn.Module):
+    def __init__(self, classes):
+        super(LeNet2, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 6, 5),
+            nn.ReLU(),
+            nn.AvgPool2d(2, 2),
+            nn.Conv2d(6, 16, 5),
+            nn.ReLU(),
+            nn.AvgPool2d(2, 2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(16*5*5, 120),
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size()[0], -1)
+        x = self.classifier(x)
+        return x
+</code></pre>
+<p>在初始化时，<code>nn.Sequetial</code>会调用<code>__init__()</code>方法，将每一个子 module 添加到自身<code>_modules</code>属性中。这里可以看到，我们传入的参数可以是一个 list，或者一个 OrderDict。如果是一个 OrderDict，那么则使用 OrderDict 里的 key，否则使用数字作为 key (OrderDict 的情况会在下面提及)。</p>
+<pre><code class="language-python">def __init__(self, *args):
+        super(Sequential, self).__init__()
+        if len(args) == 1 and isinstance(args[0], OrderedDict):
+            for key, module in args[0].items():
+                self.add_module(key, module)
+        else:
+            for idx, module in enumerate(args):
+                self.add_module(str(idx), module)
+</code></pre>
+<p>网络初始化完成后有两个子 <code>module</code>：<code>features</code>和<code>classifier</code>。</p>
+<p><img alt="image-20220912181635902" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209121816954.png" /></p>
+<p>而<code>features</code>中的子 module 如下，每个网络层以序号作为 key：</p>
+<p><img alt="image-20220912181654578" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209121816647.png" /></p>
+<p>在进行前向传播时，会进入 LeNet 的<code>forward()</code>函数，首先调用第一个<code>Sequetial</code>容器：<code>self.features</code>，由于<code>self.features</code>也是一个 module，因此会调用<code>__call__()</code>函数，里面调用<code>result = self.forward(*input, **kwargs)</code>，进入<code>nn.Seuqetial</code>的<code>forward()</code>函数，在这里依次调用所有的 module。</p>
+<pre><code class="language-python">def forward(self, input):
+        for module in self:
+            input = module(input)
+        return input
+</code></pre>
+<p>在上面可以看到在<code>nn.Sequetial</code>中，里面的每个子网络层 module 是使用序号来索引的，即使用数字来作为 key。一旦网络层增多，难以查找特定的网络层，这种情况可以使用 OrderDict (有序字典)。代码中使用</p>
+<pre><code class="language-python">class LeNetSequentialOrderDict(nn.Module):
+    def __init__(self, classes):
+        super(LeNetSequentialOrderDict, self).__init__()
+
+        self.features = nn.Sequential(OrderedDict({
+            'conv1': nn.Conv2d(3, 6, 5),
+            'relu1': nn.ReLU(inplace=True),
+            'pool1': nn.MaxPool2d(kernel_size=2, stride=2),
+
+            'conv2': nn.Conv2d(6, 16, 5),
+            'relu2': nn.ReLU(inplace=True),
+            'pool2': nn.MaxPool2d(kernel_size=2, stride=2),
+        }))
+
+        self.classifier = nn.Sequential(OrderedDict({
+            'fc1': nn.Linear(16*5*5, 120),
+            'relu3': nn.ReLU(),
+
+            'fc2': nn.Linear(120, 84),
+            'relu4': nn.ReLU(inplace=True),
+
+            'fc3': nn.Linear(84, classes),
+        }))
+        ...
+        ...
+        ...
+</code></pre>
+<p><strong>小结</strong></p>
+<p><code>nn.Sequetial</code>是<code>nn.Module</code>的容器，用于按顺序包装一组网络层，有以下两个特性。</p>
+<ul>
+<li>顺序性：各网络层之间严格按照顺序构建，我们在构建网络时，一定要注意前后网络层之间输入和输出数据之间的形状是否匹配</li>
+<li>自带<code>forward()</code>函数：在<code>nn.Sequetial</code>的<code>forward()</code>函数里通过 for 循环依次读取每个网络层，执行前向传播运算。这使得我们我们构建的模型更加简洁</li>
+</ul>
+<h3 id="nnmodulelist">nn.ModuleList<a class="anchor-link" href="#nnmodulelist" title="Permanent link">&para;</a></h3>
+<p><code>nn.ModuleList</code>是<code>nn.Module</code>的容器，用于包装一组网络层，以迭代的方式调用网络层。<code>ModuleList</code> 接收一个子模块（或层，需属于<code>nn.Module</code>类）的列表作为输入，然后也可以类似<code>List</code>那样进行append和extend操作。同时，子模块或层的权重也会自动添加到网络中来。主要有以下 3 个方法：</p>
+<ul>
+<li>append()：在 ModuleList 后面添加网络层</li>
+<li>extend()：拼接两个 ModuleList</li>
+<li>insert()：在 ModuleList 的指定位置中插入网络层</li>
+</ul>
+<pre><code class="language-python">net = nn.ModuleList([nn.Linear(784, 256), nn.ReLU()])
+net.append(nn.Linear(256, 10)) # # 类似List的append操作
+print(net[-1])  # 类似List的索引访问
+print(net)
+</code></pre>
+<pre><code class="language-python">Linear(in_features=256, out_features=10, bias=True)
+ModuleList(
+  (0): Linear(in_features=784, out_features=256, bias=True)
+  (1): ReLU()
+  (2): Linear(in_features=256, out_features=10, bias=True)
+)
+</code></pre>
+<p>下面的代码通过列表生成式来循环迭代创建 20 个全连接层，非常方便，只是在 <code>forward()</code>函数中需要手动调用每个网络层。</p>
+<pre><code class="language-python">class ModuleList(nn.Module):
+    def __init__(self):
+        super(ModuleList, self).__init__()
+        self.linears = nn.ModuleList([nn.Linear(10, 10) for i in range(20)])
+
+    def forward(self, x):
+        for i, linear in enumerate(self.linears):
+            x = linear(x)
+        return x
+
+net = ModuleList()
+
+print(net)
+
+fake_data = torch.ones((10, 10))
+
+output = net(fake_data)
+
+print(output)
+</code></pre>
+<pre><code class="language-python">ModuleList(
+  (linears): ModuleList(
+    (0-19): 20 x Linear(in_features=10, out_features=10, bias=True)
+  )
+)
+tensor([[-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515],
+        [-0.1253, -0.1615, -0.3969, -0.2678,  0.2628, -0.0124, -0.0215, -0.0008,
+         -0.1870,  0.1515]], grad_fn=&lt;AddmmBackward0&gt;)
+
+</code></pre>
+<p>要特别注意的是，<code>nn.ModuleList</code> 并没有定义一个网络，它只是将不同的模块储存在一起。<code>ModuleList</code>中元素的先后顺序并不代表其在网络中的真实位置顺序，需要经过forward函数指定各个层的先后顺序后才算完成了模型的定义。具体实现时用for循环即可完成：</p>
+<pre><code class="language-python">class model(nn.Module):
+  def __init__(self, ...):
+    super().__init__()
+    self.modulelist = ...
+    ...
+
+  def forward(self, x):
+    for layer in self.modulelist:
+      x = layer(x)
+    return x
+</code></pre>
+<h3 id="nnmoduledict">nn.ModuleDict<a class="anchor-link" href="#nnmoduledict" title="Permanent link">&para;</a></h3>
+<p><code>nn.ModuleDict</code>是<code>nn.Module</code>的容器，用于包装一组网络层，以索引的方式调用网络层，<code>ModuleDict</code>能够更方便地为神经网络的层添加名称。主要有以下 5 个方法：</p>
+<ul>
+<li>clear()：清空  ModuleDict</li>
+<li>items()：返回可迭代的键值对 (key, value)</li>
+<li>keys()：返回字典的所有 key</li>
+<li>values()：返回字典的所有 value</li>
+<li>pop()：返回一对键值，并从字典中删除</li>
+</ul>
+<p>下面的模型创建了两个<code>ModuleDict</code>：<code>self.choices</code>和<code>self.activations</code>，在前向传播时通过传入对应的 key 来执行对应的网络层。</p>
+<pre><code class="language-python">class ModuleDict(nn.Module):
+    def __init__(self):
+        super(ModuleDict, self).__init__()
+        self.choices = nn.ModuleDict({
+            'conv': nn.Conv2d(10, 10, 3),
+            'pool': nn.MaxPool2d(3)
+        })
+
+        self.activations = nn.ModuleDict({
+            'relu': nn.ReLU(),
+            'prelu': nn.PReLU()
+        })
+
+    def forward(self, x, choice, act):
+        x = self.choices[choice](x)
+        x = self.activations[act](x)
+        return x
+
+net = ModuleDict()
+
+fake_img = torch.randn((4, 10, 32, 32))
+
+output = net(fake_img, 'conv', 'relu')
+# output = net(fake_img, 'conv', 'prelu')
+print(output)
+</code></pre>
+<pre><code class="language-python">tensor([[[[0.0000, 0.0000, 0.0000,  ..., 0.4056, 0.1909, 0.0000],
+          [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.9579, 0.4126],
+          [0.0000, 0.6611, 0.0000,  ..., 0.0000, 0.3082, 0.3409],
+          ...,
+          [0.0000, 0.0000, 0.0000,  ..., 0.5356, 0.5810, 0.4790],
+          [0.0000, 0.4047, 0.0221,  ..., 0.0910, 0.0000, 0.0000],
+          [0.0000, 0.2876, 0.1203,  ..., 0.0000, 0.5455, 0.0000]]]],
+       grad_fn=&lt;ReluBackward0&gt;)
+</code></pre>
+<h2 id="容器总结">容器总结<a class="anchor-link" href="#容器总结" title="Permanent link">&para;</a></h2>
+<p>nn.Sequetial：顺序性，各网络层之间严格按照顺序执行，常用于 block 构建，在前向传播时的代码调用变得简洁</p>
+<p>nn.ModuleList：迭代行，常用于大量重复网络构建，通过 for 循环实现重复构建</p>
+<p>nn.ModuleDict：索引性，常用于可选择的网络层</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#一汇编语言是什么">一、汇编语言是什么？</a></li>
+<li><a href="#二来历">二、来历</a></li>
+<li><a href="#三寄存器">三、寄存器</a></li>
+<li><a href="#四寄存器的种类">四、寄存器的种类</a></li>
+<li><a href="#五内存模型heap">五、内存模型：Heap</a></li>
+<li><a href="#六内存模型stack">六、内存模型：Stack</a></li>
+<li><a href="#七cpu-指令">七、CPU 指令</a><ul>
+<li><a href="#71-一个实例">7.1 一个实例</a></li>
+<li><a href="#72-push-指令">7.2 push 指令</a></li>
+<li><a href="#73-call-指令">7.3 call 指令</a></li>
+<li><a href="#74-mov-指令">7.4 mov 指令</a></li>
+<li><a href="#75-add-指令">7.5 add 指令</a></li>
+<li><a href="#76-pop-指令">7.6 pop 指令</a></li>
+<li><a href="#77-ret-指令">7.7 ret 指令</a></li>
+</ul>
+</li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> ProgramNotes</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>学习编程其实就是学高级语言，即那些为人类设计的计算机语言。</p>
+<p>但是，计算机不理解高级语言，必须通过编译器转成二进制代码，才能运行。学会高级语言，并不等于理解计算机实际的运行步骤。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007588.png" /></p>
+<p>计算机真正能够理解的是低级语言，它专门用来控制硬件。汇编语言就是低级语言，直接描述/控制 CPU 的运行。如果你想了解 CPU 到底干了些什么，以及代码的运行步骤，就一定要学习汇编语言。</p>
+<p>汇编语言不容易学习，就连简明扼要的介绍都很难找到。下面我尝试写一篇最好懂的汇编语言教程，解释 CPU 如何执行代码。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007875.jpg" /></p>
+<h2 id="一汇编语言是什么">一、汇编语言是什么？<a class="anchor-link" href="#一汇编语言是什么" title="Permanent link">&para;</a></h2>
+<p>我们知道，CPU 只负责计算，本身不具备智能。你输入一条指令（instruction），它就运行一次，然后停下来，等待下一条指令。</p>
+<p>这些指令都是二进制的，称为操作码（opcode），比如加法指令就是<code>00000011</code>。<a href="https://www.ruanyifeng.com/blog/2014/11/compiler.html">编译器</a>的作用，就是将高级语言写好的程序，翻译成一条条操作码。</p>
+<p>对于人类来说，二进制程序是不可读的，根本看不出来机器干了什么。为了解决可读性的问题，以及偶尔的编辑需求，就诞生了汇编语言。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007178.jpg" /></p>
+<p><strong>汇编语言是二进制指令的文本形式</strong>，与指令是一一对应的关系。比如，加法指令<code>00000011</code>写成汇编语言就是 ADD。只要还原成二进制，汇编语言就可以被 CPU 直接执行，所以它是最底层的低级语言。</p>
+<h2 id="二来历">二、来历<a class="anchor-link" href="#二来历" title="Permanent link">&para;</a></h2>
+<p>最早的时候，编写程序就是手写二进制指令，然后通过各种开关输入计算机，比如要做加法了，就按一下加法开关。后来，发明了纸带打孔机，通过在纸带上打孔，将二进制指令自动输入计算机。</p>
+<p>为了解决二进制指令的可读性问题，工程师将那些指令写成了八进制。二进制转八进制是轻而易举的，但是八进制的可读性也不行。很自然地，最后还是用文字表达，加法指令写成 ADD。内存地址也不再直接引用，而是用标签表示。</p>
+<p>这样的话，就多出一个步骤，要把这些文字指令翻译成二进制，这个步骤就称为 assembling，完成这个步骤的程序就叫做 assembler。它处理的文本，自然就叫做 aseembly code。标准化以后，称为 assembly language，缩写为 asm，中文译为汇编语言。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007490.jpg" /></p>
+<p>每一种 CPU 的机器指令都是不一样的，因此对应的汇编语言也不一样。本文介绍的是目前最常见的 x86 汇编语言，即 Intel 公司的 CPU 使用的那一种。</p>
+<h2 id="三寄存器">三、寄存器<a class="anchor-link" href="#三寄存器" title="Permanent link">&para;</a></h2>
+<p>学习汇编语言，首先必须了解两个知识点：寄存器和内存模型。</p>
+<p>先来看寄存器。CPU 本身只负责运算，不负责储存数据。数据一般都储存在内存之中，CPU 要用的时候就去内存读写数据。但是，CPU 的运算速度远高于内存的读写速度，为了避免被拖慢，CPU 都自带一级缓存和二级缓存。基本上，CPU 缓存可以看作是读写速度较快的内存。</p>
+<p>但是，CPU 缓存还是不够快，另外数据在缓存里面的地址是不固定的，CPU 每次读写都要寻址也会拖慢速度。因此，除了缓存之外，CPU 还自带了寄存器（register），用来储存最常用的数据。也就是说，那些最频繁读写的数据（比如循环变量），都会放在寄存器里面，CPU 优先读写寄存器，再由寄存器跟内存交换数据。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007738.png" /></p>
+<p>寄存器不依靠地址区分数据，而依靠名称。每一个寄存器都有自己的名称，我们告诉 CPU 去具体的哪一个寄存器拿数据，这样的速度是最快的。有人比喻寄存器是 CPU 的零级缓存。</p>
+<h2 id="四寄存器的种类">四、寄存器的种类<a class="anchor-link" href="#四寄存器的种类" title="Permanent link">&para;</a></h2>
+<p>早期的 x86 CPU 只有8个寄存器，而且每个都有不同的用途。现在的寄存器已经有100多个了，都变成通用寄存器，不特别指定用途了，但是早期寄存器的名字都被保存了下来。</p>
+<blockquote>
+<ul>
+<li>EAX</li>
+<li>EBX</li>
+<li>ECX</li>
+<li>EDX</li>
+<li>EDI</li>
+<li>ESI</li>
+<li>EBP</li>
+<li>ESP</li>
+</ul>
+</blockquote>
+<p>上面这8个寄存器之中，前面七个都是通用的。ESP 寄存器有特定用途，保存当前 Stack 的地址（详见下一节）。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007975.png" /></p>
+<p>我们常常看到 32位 CPU、64位 CPU 这样的名称，其实指的就是寄存器的大小。32 位 CPU 的寄存器大小就是4个字节。</p>
+<h2 id="五内存模型heap">五、内存模型：Heap<a class="anchor-link" href="#五内存模型heap" title="Permanent link">&para;</a></h2>
+<p>寄存器只能存放很少量的数据，大多数时候，CPU 要指挥寄存器，直接跟内存交换数据。所以，除了寄存器，还必须了解内存怎么储存数据。</p>
+<p>程序运行的时候，操作系统会给它分配一段内存，用来储存程序和运行产生的数据。这段内存有起始地址和结束地址，比如从<code>0x1000</code>到<code>0x8000</code>，起始地址是较小的那个地址，结束地址是较大的那个地址。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007277.png" /></p>
+<p>程序运行过程中，对于动态的内存占用请求（比如新建对象，或者使用<code>malloc</code>命令），系统就会从预先分配好的那段内存之中，划出一部分给用户，具体规则是从起始地址开始划分（实际上，起始地址会有一段静态数据，这里忽略）。举例来说，用户要求得到10个字节内存，那么从起始地址<code>0x1000</code>开始给他分配，一直分配到地址<code>0x100A</code>，如果再要求得到22个字节，那么就分配到<code>0x1020</code>。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007508.png" /></p>
+<p>这种因为用户主动请求而划分出来的内存区域，叫做 Heap（堆）。它由起始地址开始，从低位（地址）向高位（地址）增长。Heap 的一个重要特点就是不会自动消失，必须手动释放，或者由垃圾回收机制来回收。</p>
+<h2 id="六内存模型stack">六、内存模型：Stack<a class="anchor-link" href="#六内存模型stack" title="Permanent link">&para;</a></h2>
+<p>除了 Heap 以外，其他的内存占用叫做 Stack（栈）。简单说，Stack 是由于函数运行而临时占用的内存区域。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007749.png" /></p>
+<p>请看下面的例子。</p>
+<blockquote>
+<p><code>clike
+int main() {
+int a = 2;
+int b = 3;
+}</code></p>
+</blockquote>
+<p>上面代码中，系统开始执行<code>main</code>函数时，会为它在内存里面建立一个帧（frame），所有<code>main</code>的内部变量（比如<code>a</code>和<code>b</code>）都保存在这个帧里面。<code>main</code>函数执行结束后，该帧就会被回收，释放所有的内部变量，不再占用空间。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007003.png" /></p>
+<p>如果函数内部调用了其他函数，会发生什么情况？</p>
+<blockquote>
+<p><code>clike
+int main() {
+int a = 2;
+int b = 3;
+return add_a_and_b(a, b);
+}</code></p>
+</blockquote>
+<p>上面代码中，<code>main</code>函数内部调用了<code>add_a_and_b</code>函数。执行到这一行的时候，系统也会为<code>add_a_and_b</code>新建一个帧，用来储存它的内部变量。也就是说，此时同时存在两个帧：<code>main</code>和<code>add_a_and_b</code>。一般来说，调用栈有多少层，就有多少帧。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007254.png" /></p>
+<p>等到<code>add_a_and_b</code>运行结束，它的帧就会被回收，系统会回到函数<code>main</code>刚才中断执行的地方，继续往下执行。通过这种机制，就实现了函数的层层调用，并且每一层都能使用自己的本地变量。</p>
+<p>所有的帧都存放在 Stack，由于帧是一层层叠加的，所以 Stack 叫做栈。生成新的帧，叫做"入栈"，英文是 push；栈的回收叫做"出栈"，英文是 pop。Stack 的特点就是，最晚入栈的帧最早出栈（因为最内层的函数调用，最先结束运行），这就叫做"后进先出"的数据结构。每一次函数执行结束，就自动释放一个帧，所有函数执行结束，整个 Stack 就都释放了。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007524.jpg" /></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007828.jpg" /></p>
+<p>Stack 是由内存区域的结束地址开始，从高位（地址）向低位（地址）分配。比如，内存区域的结束地址是<code>0x8000</code>，第一帧假定是16字节，那么下一次分配的地址就会从<code>0x7FF0</code>开始；第二帧假定需要64字节，那么地址就会移动到<code>0x7FB0</code>。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007123.png" /></p>
+<h2 id="七cpu-指令">七、CPU 指令<a class="anchor-link" href="#七cpu-指令" title="Permanent link">&para;</a></h2>
+<h3 id="71-一个实例">7.1 一个实例<a class="anchor-link" href="#71-一个实例" title="Permanent link">&para;</a></h3>
+<p>了解寄存器和内存模型以后，就可以来看汇编语言到底是什么了。下面是一个简单的程序<code>example.c</code>。</p>
+<blockquote>
+<p>```clike<br />
+int add_a_and_b(int a, int b) {<br />
+return a + b;<br />
+}</p>
+<p>int main() {<br />
+return add_a_and_b(2, 3);<br />
+}<br />
+```</p>
+</blockquote>
+<p>gcc 将这个程序转成汇编语言。</p>
+<blockquote>
+<p><code>bash
+$ gcc -S example.c</code></p>
+</blockquote>
+<p>上面的命令执行以后，会生成一个文本文件<code>example.s</code>，里面就是汇编语言，包含了几十行指令。这么说吧，一个高级语言的简单操作，底层可能由几个，甚至几十个 CPU 指令构成。CPU 依次执行这些指令，完成这一步操作。</p>
+<p><code>example.s</code>经过简化以后，大概是下面的样子。</p>
+<blockquote>
+<p>```clike<br />
+_add_a_and_b:<br />
+push   %ebx<br />
+mov    %eax, [%esp+8] <br />
+mov    %ebx, [%esp+12]<br />
+add    %eax, %ebx <br />
+pop    %ebx <br />
+ret  </p>
+<p>_main:<br />
+push   3<br />
+push   2<br />
+call   _add_a_and_b <br />
+add    %esp, 8<br />
+ret<br />
+```</p>
+</blockquote>
+<p>可以看到，原程序的两个函数<code>add_a_and_b</code>和<code>main</code>，对应两个标签<code>_add_a_and_b</code>和<code>_main</code>。每个标签里面是该函数所转成的 CPU 运行流程。</p>
+<p>每一行就是 CPU 执行的一次操作。它又分成两部分，就以其中一行为例。</p>
+<blockquote>
+<p><code>clike
+push   %ebx</code></p>
+</blockquote>
+<p>这一行里面，<code>push</code>是 CPU 指令，<code>%ebx</code>是该指令要用到的运算子。一个 CPU 指令可以有零个到多个运算子。</p>
+<p>下面我就一行一行讲解这个汇编程序，建议读者最好把这个程序，在另一个窗口拷贝一份，省得阅读的时候再把页面滚动上来。</p>
+<h3 id="72-push-指令">7.2 push 指令<a class="anchor-link" href="#72-push-指令" title="Permanent link">&para;</a></h3>
+<p>根据约定，程序从<code>_main</code>标签开始执行，这时会在 Stack 上为<code>main</code>建立一个帧，并将 Stack 所指向的地址，写入 ESP 寄存器。后面如果有数据要写入<code>main</code>这个帧，就会写在 ESP 寄存器所保存的地址。</p>
+<p>然后，开始执行第一行代码。</p>
+<blockquote>
+<p><code>clike
+push   3</code></p>
+</blockquote>
+<p><code>push</code>指令用于将运算子放入 Stack，这里就是将<code>3</code>写入<code>main</code>这个帧。</p>
+<p>虽然看上去很简单，<code>push</code>指令其实有一个前置操作。它会先取出 ESP 寄存器里面的地址，将其减去4个字节，然后将新地址写入 ESP 寄存器。使用减法是因为 Stack 从高位向低位发展，4个字节则是因为<code>3</code>的类型是<code>int</code>，占用4个字节。得到新地址以后， 3 就会写入这个地址开始的四个字节。</p>
+<blockquote>
+<p><code>clike
+push   2</code></p>
+</blockquote>
+<p>第二行也是一样，<code>push</code>指令将<code>2</code>写入<code>main</code>这个帧，位置紧贴着前面写入的<code>3</code>。这时，ESP 寄存器会再减去 4个字节（累计减去8）。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152007474.png" /></p>
+<h3 id="73-call-指令">7.3 call 指令<a class="anchor-link" href="#73-call-指令" title="Permanent link">&para;</a></h3>
+<p>第三行的<code>call</code>指令用来调用函数。</p>
+<blockquote>
+<p><code>clike
+call   _add_a_and_b</code></p>
+</blockquote>
+<p>上面的代码表示调用<code>add_a_and_b</code>函数。这时，程序就会去找<code>_add_a_and_b</code>标签，并为该函数建立一个新的帧。</p>
+<p>下面就开始执行<code>_add_a_and_b</code>的代码。</p>
+<blockquote>
+<p><code>clike
+push   %ebx</code></p>
+</blockquote>
+<p>这一行表示将 EBX 寄存器里面的值，写入<code>_add_a_and_b</code>这个帧。这是因为后面要用到这个寄存器，就先把里面的值取出来，用完后再写回去。</p>
+<p>这时，<code>push</code>指令会再将 ESP 寄存器里面的地址减去4个字节（累计减去12）。</p>
+<h3 id="74-mov-指令">7.4 mov 指令<a class="anchor-link" href="#74-mov-指令" title="Permanent link">&para;</a></h3>
+<p><code>mov</code>指令用于将一个值写入某个寄存器。</p>
+<blockquote>
+<p><code>clike
+mov    %eax, [%esp+8]</code></p>
+</blockquote>
+<p>这一行代码表示，先将 ESP 寄存器里面的地址加上8个字节，得到一个新的地址，然后按照这个地址在 Stack 取出数据。根据前面的步骤，可以推算出这里取出的是<code>2</code>，再将<code>2</code>写入 EAX 寄存器。</p>
+<p>下一行代码也是干同样的事情。</p>
+<blockquote>
+<p><code>clike
+mov    %ebx, [%esp+12]</code></p>
+</blockquote>
+<p>上面的代码将 ESP 寄存器的值加12个字节，再按照这个地址在 Stack 取出数据，这次取出的是<code>3</code>，将其写入 EBX 寄存器。</p>
+<h3 id="75-add-指令">7.5 add 指令<a class="anchor-link" href="#75-add-指令" title="Permanent link">&para;</a></h3>
+<p><code>add</code>指令用于将两个运算子相加，并将结果写入第一个运算子。</p>
+<blockquote>
+<p><code>clike
+add    %eax, %ebx</code></p>
+</blockquote>
+<p>上面的代码将 EAX 寄存器的值（即2）加上 EBX 寄存器的值（即3），得到结果5，再将这个结果写入第一个运算子 EAX 寄存器。</p>
+<h3 id="76-pop-指令">7.6 pop 指令<a class="anchor-link" href="#76-pop-指令" title="Permanent link">&para;</a></h3>
+<p><code>pop</code>指令用于取出 Stack 最近一个写入的值（即最低位地址的值），并将这个值写入运算子指定的位置。</p>
+<blockquote>
+<p><code>clike
+pop    %ebx</code></p>
+</blockquote>
+<p>上面的代码表示，取出 Stack 最近写入的值（即 EBX 寄存器的原始值），再将这个值写回 EBX 寄存器（因为加法已经做完了，EBX 寄存器用不到了）。</p>
+<p>注意，<code>pop</code>指令还会将 ESP 寄存器里面的地址加4，即回收4个字节。</p>
+<h3 id="77-ret-指令">7.7 ret 指令<a class="anchor-link" href="#77-ret-指令" title="Permanent link">&para;</a></h3>
+<p><code>ret</code>指令用于终止当前函数的执行，将运行权交还给上层函数。也就是，当前函数的帧将被回收。</p>
+<blockquote>
+<p><code>clike
+ret</code></p>
+</blockquote>
+<p>可以看到，该指令没有运算子。</p>
+<p>随着<code>add_a_and_b</code>函数终止执行，系统就回到刚才<code>main</code>函数中断的地方，继续往下执行。</p>
+<blockquote>
+<p><code>clike
+add    %esp, 8</code></p>
+</blockquote>
+<p>上面的代码表示，将 ESP 寄存器里面的地址，手动加上8个字节，再写回 ESP 寄存器。这是因为 ESP 寄存器的是 Stack 的写入开始地址，前面的<code>pop</code>操作已经回收了4个字节，这里再回收8个字节，等于全部回收。</p>
+<blockquote>
+<p><code>clike
+ret</code></p>
+</blockquote>
+<p>最后，<code>main</code>函数运行结束，<code>ret</code>指令退出程序执行。</p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<p>http://www.ruanyifeng.com/blog/2018/01/assembly-language-primer.html</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

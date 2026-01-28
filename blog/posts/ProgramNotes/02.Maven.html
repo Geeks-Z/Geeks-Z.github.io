@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1maven-简介">1.Maven 简介</a></li>
+<li><a href="#2maven-基础概念">2.Maven 基础概念</a></li>
+<li><a href="#3maven-项目">3.Maven 项目</a><ul>
+<li><a href="#手动生成-maven-项目">手动生成 Maven 项目</a></li>
+<li><a href="#idea-生成-maven-项目">IDEA 生成 Maven 项目</a></li>
+</ul>
+</li>
+<li><a href="#4依赖管理">4.依赖管理</a><ul>
+<li><a href="#41-依赖配置">4.1 依赖配置</a></li>
+<li><a href="#42-依赖传递">4.2 依赖传递</a></li>
+<li><a href="#43-可选依赖">4.3 可选依赖</a></li>
+<li><a href="#44-排除依赖">4.4 排除依赖</a></li>
+<li><a href="#45-依赖范围">4.5 依赖范围</a></li>
+</ul>
+</li>
+<li><a href="#5生命周期与插件">5.生命周期与插件</a></li>
+<li><a href="#聚合">聚合</a></li>
+<li><a href="#继承">继承</a><ul>
+<li><a href="#继承与聚合">继承与聚合</a></li>
+</ul>
+</li>
+<li><a href="#属性">属性</a></li>
+<li><a href="#版本管理">版本管理</a></li>
+<li><a href="#资源配置">资源配置</a></li>
+<li><a href="#多环境开发配置">多环境开发配置</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> ProgramNotes</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="1maven-简介">1.Maven 简介<a class="anchor-link" href="#1maven-简介" title="Permanent link">&para;</a></h2>
+<p>Maven 的本质是一个项目管理工具，将项目开发和管理过程抽象成一个项目对象模型(POM)<br />
+POM (Project Object Model)：项目对象模型<br />
+<img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222005434.png" alt="截屏2021-07-17 下午6.51.07" style="zoom:50%;" /></p>
+<p>Maven 的作用：</p>
+<ol>
+<li>项目构建：提供标准的、跨平台的自动化项目构建方式</li>
+<li>依赖管理：方便快捷的管理项目依赖的资源（jar 包），避免资源间的版本冲突问题</li>
+<li>统一开发结构：提供标准的、统一的项目结构</li>
+</ol>
+<h2 id="2maven-基础概念">2.Maven 基础概念<a class="anchor-link" href="#2maven-基础概念" title="Permanent link">&para;</a></h2>
+<p>仓库：用于存储资源，包含各种 jar 包<br />
+仓库分类：本地仓库和远程仓库（私服和中央仓库）</p>
+<p>坐标：Maven 中的坐标用于描述仓库中资源的位置<br />
+坐标的主要组成：<br />
+groupId：定义当前 Maven 项目隶属组织名称（通常是域名反写）<br />
+artifactId：定义当前 Maven 项目名称（通常是模块名称）<br />
+version：定义当前版本号<br />
+packaging：定义该项目的打包方式<br />
+坐标的作用：使用唯一的标识，唯一性定位资源位置，通过该标识可以将资源的识别与下载交由机器完成。</p>
+<p>仓库配置：<br />
+本地仓库配置：默认位置与自定义位置<br />
+远程仓库配置：</p>
+<pre><code class="language-xml">&lt;repositories&gt;
+  &lt;repository&gt;
+        &lt;id&gt;central&lt;/id&gt;
+        &lt;name&gt;Central Repository&lt;/name&gt;
+    &lt;url&gt;https://repo.maven.apache.org/maven2&lt;/url&gt; &lt;layout&gt;default&lt;/layout&gt;
+        &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+    &lt;/snapshots&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;
+</code></pre>
+<p>镜像仓库配置：</p>
+<pre><code class="language-xml">&lt;mirrors&gt;
+    &lt;mirror&gt;
+    &lt;!-- 此镜像的唯一标识符，用来区分不同的mirror元素 --&gt;
+    &lt;id&gt;nexus-aliyun&lt;/id&gt;
+    &lt;!-- 对那种仓库进行镜像（就是替代哪种仓库）--&gt;
+    &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;
+    &lt;!-- 镜像名称 --&gt;
+    &lt;name&gt;Nexus aliyun&lt;/name&gt;
+    &lt;!-- 镜像URL --&gt;
+    &lt;url&gt;http://maven.aliyun.com/nexus/content/groups/public&lt;/url&gt;
+    &lt;/mirror&gt;
+&lt;/mirrors&gt;
+</code></pre>
+<h2 id="3maven-项目">3.Maven 项目<a class="anchor-link" href="#3maven-项目" title="Permanent link">&para;</a></h2>
+<h3 id="手动生成-maven-项目">手动生成 Maven 项目<a class="anchor-link" href="#手动生成-maven-项目" title="Permanent link">&para;</a></h3>
+<p>Maven 工程目录结构<br />
+<img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222005005.png" alt="截屏2021-07-17 下午6.50.36" style="zoom:50%;" /></p>
+<p>Maven 项目构建命令<br />
+Maven 构建命令使用 mvn 开头，后面加功能参数，可以一次执行多个命令，使用空格分隔</p>
+<pre><code class="language-Maven">mvn compile #编译
+mvn clean #清理
+mvn test #测试
+mvn package #打包
+mvn install #安装到本地仓库
+</code></pre>
+<h3 id="idea-生成-maven-项目">IDEA 生成 Maven 项目<a class="anchor-link" href="#idea-生成-maven-项目" title="Permanent link">&para;</a></h3>
+<p>使用原型创建 Maven 项目与不使用原型创建 Maven 项目<br />
+例：使用原型创建 web 项目，选择 archetype-webapp 进行项目创建，添加 Tomcat 插件</p>
+<pre><code class="language-xml">&lt;build&gt;
+  &lt;plugins&gt;
+    &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.tomcat.maven&lt;/groupId&gt;
+            &lt;artifactId&gt;tomcat7-maven-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.1&lt;/version&gt;
+        &lt;configuration&gt;
+            &lt;port&gt;80&lt;/port&gt;
+            &lt;path&gt;/&lt;/path&gt;
+            &lt;/configuration&gt;
+    &lt;/plugin&gt;
+  &lt;/plugins&gt;
+&lt;/build&gt;
+</code></pre>
+<h2 id="4依赖管理">4.依赖管理<a class="anchor-link" href="#4依赖管理" title="Permanent link">&para;</a></h2>
+<h3 id="41-依赖配置">4.1 依赖配置<a class="anchor-link" href="#41-依赖配置" title="Permanent link">&para;</a></h3>
+<p>依赖指的是当前项目运行所需要的 jar，一个项目可以设置多个依赖<br />
+格式：</p>
+<pre><code class="language-xml">&lt;!--设置当前项目所依赖的所有jar--&gt;
+&lt;dependencies&gt;
+  &lt;!--设置具体的依赖--&gt;
+  &lt;dependency&gt;
+    &lt;!--依赖所属群组id--&gt;
+    &lt;groupId&gt;&lt;/groupId&gt;
+    &lt;!--依赖所属项目id--&gt;
+    &lt;artifactId&gt;&lt;/artifactId&gt;
+    &lt;!--依赖版本号--&gt;
+    &lt;version&gt;&lt;/version&gt;
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre>
+<h3 id="42-依赖传递">4.2 依赖传递<a class="anchor-link" href="#42-依赖传递" title="Permanent link">&para;</a></h3>
+<p>依赖具有传递性，包括直接传递和间接传递。<br />
+直接传递：在当前项目中通过依赖配置建立的依赖关系（A 使用 B，A 和 B 就是直接传递）<br />
+间接传递：被依赖的资源如果依赖其他资源，当前项目间接依赖其他资源（比较拗口，意思是如果 A 依赖 B，而 B 依赖 C，那么 A 和 C 之间就是间接传递）</p>
+<p>依赖传递的冲突问题：路径优先：当依赖中出现相同的资源时，层级越深，优先级越低，层级越浅，优先级越高<br />
+声明优先：当资源在相同层级被依赖时，配置顺序靠前的覆盖配置顺序靠后的<br />
+特殊优先：当同级配置了相同资源的不同版本，后配置的覆盖先配置的</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222005322.png" alt="截屏2021-07-17 下午6.49.40" style="zoom:33%;" /></p>
+<h3 id="43-可选依赖">4.3 可选依赖<a class="anchor-link" href="#43-可选依赖" title="Permanent link">&para;</a></h3>
+<p>可选依赖指的是对外隐藏当前所依赖的资源</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;&lt;/groupId&gt;
+  &lt;artifactId&gt;&lt;/artifactId&gt;
+  &lt;version&gt;&lt;/version&gt;
+  &lt;!--添加下面这一行--&gt;
+  &lt;optional&gt;true&lt;/optional&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h3 id="44-排除依赖">4.4 排除依赖<a class="anchor-link" href="#44-排除依赖" title="Permanent link">&para;</a></h3>
+<p>排除依赖指主动断开依赖的资源，被排除的资源无需指定版本</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+  &lt;groupId&gt;&lt;/groupId&gt;
+  &lt;artifactId&gt;&lt;/artifactId&gt;
+  &lt;version&gt;&lt;/version&gt;
+  &lt;exclusions&gt;
+    &lt;exclusion&gt;
+      &lt;groupId&gt;&lt;/groupId&gt;
+      &lt;artifactId&gt;&lt;/artifactId&gt;
+    &lt;/exclusion&gt;
+  &lt;/exclusions&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h3 id="45-依赖范围">4.5 依赖范围<a class="anchor-link" href="#45-依赖范围" title="Permanent link">&para;</a></h3>
+<p>依赖的 jar 包默认情况可以在任何地方使用，可以通过 scope 标签设定其作用范围<br />
+作用范围：<br />
+主程序范围有效（main 文件夹范围内）<br />
+测试程序范围有效（test 文件夹范围内）<br />
+是否参与打包（package 文件夹范围内）</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222005672.png" alt="截屏2021-07-17 下午7.10.15" style="zoom:50%;" /></p>
+<h2 id="5生命周期与插件">5.生命周期与插件<a class="anchor-link" href="#5生命周期与插件" title="Permanent link">&para;</a></h2>
+<p>Maven 项目构建生命周期描述的是一次构建过程经历了多少个事件<br />
+Maven 对项目构建的生命周期划分为 3 套<br />
+clean：清理工作<br />
+default：核心工作，例如编译、测试、打包、部署等<br />
+compile -- test-compile -- test -- packege -- Install<br />
+site：产生报告，发布站点等</p>
+<p>插件：<br />
+插件与生命周期内的阶段绑定，在执行到对应的生命周期时执行对应的插件功能</p>
+<pre><code class="language-xml">&lt;build&gt;
+  &lt;plugins&gt;
+    &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-source-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.2.1&lt;/version&gt;
+        &lt;executions&gt;
+            &lt;execution&gt;
+                    &lt;goals&gt;
+                    &lt;goal&gt;jar&lt;/goal&gt;
+                    &lt;/goals&gt;
+                &lt;phase&gt; generate-test-resources&lt;/phase&gt; &lt;/execution&gt;
+            &lt;/executions&gt;
+        &lt;/plugin&gt;
+  &lt;/plugins&gt;
+&lt;/build&gt;
+</code></pre>
+<h2 id="聚合">聚合<a class="anchor-link" href="#聚合" title="Permanent link">&para;</a></h2>
+<p>作用：聚合用于快速构建 Maven 工程，一次性构建多个项目/模块。<br />
+制作方式：创建一个空模块，打包类型定义为 pom</p>
+<pre><code class="language-xml">&lt;packaging&gt;pom&lt;/packaging&gt;
+</code></pre>
+<p>定义当前模块进行构建操作时关联的其他模块名称</p>
+<pre><code class="language-xml">&lt;modules&gt;
+  &lt;module&gt;模块地址&lt;/module&gt;
+  &lt;module&gt;模块地址&lt;/module&gt;
+  &lt;module&gt;模块地址&lt;/module&gt;
+  &lt;module&gt;模块地址&lt;/module&gt;
+&lt;/modules&gt;
+</code></pre>
+<p>注意：参与聚合操作的模块最终执行顺序与模块间的依赖关系有关，与配置顺序无关</p>
+<h2 id="继承">继承<a class="anchor-link" href="#继承" title="Permanent link">&para;</a></h2>
+<p>作用：通过继承可以实现在子工程中沿用父工程中的配置（与 Java 类似）<br />
+制作方式：在子工程中生命其父工程坐标与对应的位置</p>
+<pre><code class="language-xml">&lt;!--定义该工程的父工程--&gt;
+&lt;parent&gt;
+  &lt;groupId&gt;&lt;/groupId&gt;
+  &lt;artifactId&gt;&lt;/artifactId&gt;
+  &lt;version&gt;&lt;/version&gt;
+  &lt;!--填写父工程的pom文件--&gt;
+  &lt;relativePath&gt;父工程pom文件地址&lt;/relativePath&gt;
+&lt;/parent&gt;
+</code></pre>
+<p>在父工程中定义依赖管理</p>
+<pre><code class="language-xml">&lt;!--声明此处进行依赖管理--&gt;
+&lt;dependencyManagement&gt;
+  &lt;!--具体的依赖--&gt;
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;&lt;/groupId&gt;
+      &lt;artifactId&gt;&lt;/artifactId&gt;
+      &lt;version&gt;&lt;/version&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;
+</code></pre>
+<p>继承依赖使用：在子工程中定义依赖关系，无需声明依赖版本，版本参照父工程中依赖的版本</p>
+<pre><code class="language-xml">&lt;dependencies&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;&lt;/groupId&gt;
+    &lt;artifactId&gt;&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</code></pre>
+<h3 id="继承与聚合">继承与聚合<a class="anchor-link" href="#继承与聚合" title="Permanent link">&para;</a></h3>
+<p>作用：聚合用于快速构建项目，继承用于快速配置<br />
+相同点：<br />
+聚合与继承的 pom.xml 文件打包方式均为 pom，可以将两种关系制作到同一个 pom 文件中<br />
+聚合与继承均属于设计型模块，并无实际的模块内容<br />
+不同点：聚合是在当前模块中配置关系，聚合可以感知到参与聚合的模块有哪些<br />
+继承是在子模块中配置关系，父模块无法感知哪些子模块继承了自己</p>
+<h2 id="属性">属性<a class="anchor-link" href="#属性" title="Permanent link">&para;</a></h2>
+<ol>
+<li>自定义属性</li>
+</ol>
+<p>作用：等同于定义变量，方便统一维护<br />
+   定义格式：</p>
+<p>```xml<br />
+   <!--定义自定义属性--></p>
+<p><properties><br />
+     <spring.version>5.1.9.RELEASE</spring.version><br />
+    <junit.version>4.12</junit.version><br />
+   </properties><br />
+   ```</p>
+<p>调用格式：</p>
+<p><code>xml
+   &lt;dependency&gt;
+     &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+     &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
+     &lt;version&gt;${spring.version}&lt;/version&gt;
+   &lt;/dependency&gt;</code></p>
+<ol start="2">
+<li>内置属性</li>
+</ol>
+<p>作用：使用 Maven 内置属性，快速配置<br />
+   调用格式：</p>
+<p><code>xml
+   ${basedir}
+   ${version}</code></p>
+<ol start="3">
+<li>Setting 属性</li>
+</ol>
+<p>作用：使用 Maven 配置文件 setting.xml 中的标签属性，用于动态配置<br />
+   调用格式：</p>
+<p><code>xml
+   ${settings.localRepository}</code></p>
+<ol start="4">
+<li>Java 系统属性</li>
+</ol>
+<p>作用：读取 Java 系统属性<br />
+   调用格式：</p>
+<p><code>xml
+   ${user.home}</code></p>
+<p>系统属性查询方式：</p>
+<p><code>xml
+   mvn help:system</code></p>
+<ol start="5">
+<li>环境变量属性</li>
+</ol>
+<p>作用：使用 Maven 配置文件 setting.xml 中的标签属性，用于动态配置<br />
+   调用格式：</p>
+<p><code>xml
+   ${env.JAVA_HOME}</code></p>
+<p>环境变量属性查询方式：</p>
+<p><code>xml
+   mvn help:system</code></p>
+<h2 id="版本管理">版本管理<a class="anchor-link" href="#版本管理" title="Permanent link">&para;</a></h2>
+<p>SNAPSHOT（快照版本） RELEASE（发布版本）<br />
+工程版本号约定</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222005492.png" alt="截屏2021-07-17 下午8.24.46" style="zoom:50%;" /></p>
+<h2 id="资源配置">资源配置<a class="anchor-link" href="#资源配置" title="Permanent link">&para;</a></h2>
+<p>配置文件引用 pom 属性<br />
+作用：在任意配置文件中加载 pom 文件中定义的属性<br />
+调用格式</p>
+<pre><code class="language-xml">${地址}
+</code></pre>
+<p>开启配置文件加载 pom 属性</p>
+<pre><code class="language-xml">&lt;!--配置资源文件对应的信息--&gt;
+&lt;resources&gt;
+  &lt;resource&gt;
+    &lt;!--设定配置文件对应的位置目录，支持使用属性动态设定路径--&gt;
+    &lt;directory&gt;地址&lt;/directory&gt;
+    &lt;!--开启对配置文件的资源加载过滤--&gt;
+    &lt;filtering&gt;true&lt;/filtering&gt;
+  &lt;/resource&gt;
+&lt;/resources&gt;
+</code></pre>
+<h2 id="多环境开发配置">多环境开发配置<a class="anchor-link" href="#多环境开发配置" title="Permanent link">&para;</a></h2>
+<pre><code class="language-xml">&lt;!--创建多环境--&gt;
+&lt;profiles&gt;
+  &lt;!--定义具体的环境：生产环境--&gt;
+  &lt;profile&gt;
+    &lt;!--定义环境对应的唯一名称--&gt;
+    &lt;id&gt;开发环境名称1&lt;/id&gt;
+    &lt;!--定义环境中的专用的属性值--&gt;
+    &lt;properties&gt;
+      &lt;jdbc.url&gt;jdbc链接&lt;/jdbc.url&gt;
+    &lt;/properties&gt;
+    &lt;activation&gt;
+      &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
+    &lt;/activation&gt;
+  &lt;/profile&gt;
+  &lt;!--定义具体的环境：开发环境--&gt;
+  &lt;!--格式同上--&gt;
+&lt;/profiles&gt;
+</code></pre>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

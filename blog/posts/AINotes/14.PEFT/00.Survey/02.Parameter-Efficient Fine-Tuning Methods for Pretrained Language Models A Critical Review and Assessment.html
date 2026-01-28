@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0 摘要</a></li>
+<li><a href="#i-引言">I. 引言</a></li>
+<li><a href="#2-理论">2 理论</a><ul>
+<li><a href="#21-transformer">2.1 Transformer</a></li>
+<li><a href="#22-plms的全微调">2.2 PLMs的全微调</a></li>
+</ul>
+</li>
+<li><a href="#iii-参数高效微调方法">III. 参数高效微调方法</a><ul>
+<li><a href="#a-附加式微调">A. 附加式微调</a></li>
+<li><a href="#b-部分微调">B. 部分微调</a></li>
+<li><a href="#c-重新参数化微调">C. 重新参数化微调</a></li>
+<li><a href="#d-混合微调">D. 混合微调</a></li>
+<li><a href="#e-统一微调">E. 统一微调</a></li>
+</ul>
+</li>
+<li><a href="#iv-实验">IV. 实验</a><ul>
+<li><a href="#a-实验设置">A. 实验设置</a></li>
+<li><a href="#b-微调性能和参数效率">B. 微调性能和参数效率</a></li>
+<li><a href="#c-内存效率">C. 内存效率</a></li>
+</ul>
+</li>
+<li><a href="#v-应用">V. 应用</a><ul>
+<li><a href="#a-多任务学习">A. 多任务学习</a></li>
+<li><a href="#b-跨语言迁移">B. 跨语言迁移</a></li>
+<li><a href="#c-后门攻击和防御">C. 后门攻击和防御</a></li>
+</ul>
+</li>
+<li><a href="#vi-进一步的方向">VI. 进一步的方向</a><ul>
+<li><a href="#a-轻量级混合peft方法">A. 轻量级混合PEFT方法</a></li>
+<li><a href="#b-基于lora的peft方法">B. 基于LoRA的PEFT方法</a></li>
+<li><a href="#c-开发peft库">C. 开发PEFT库</a></li>
+<li><a href="#d-peft方法的可解释性">D. PEFT方法的可解释性</a></li>
+<li><a href="#e-在计算机视觉和多模态学习中探索peft方法">E. 在计算机视觉和多模态学习中探索PEFT方法</a></li>
+</ul>
+</li>
+<li><a href="#vii-结论">VII. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/14.PEFT/00.Survey</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>随着基于 Transformer 的预训练语言模型（PLMs）参数数量的不断增长，特别是具有数十亿参数的大型语言模型（LLMs）的出现，许多自然语言处理（NLP）任务展示出了显著的成功。然而，这些模型的巨大规模和计算需求对其适应特定下游任务提出了重大挑战，尤其是在计算资源有限的环境中。参数高效微调（PEFT）通过减少微调参数数量和内存使用量，同时实现与完全微调相当的性能，提供了一种有效的解决方案。对 PLMs，特别是 LLMs 的微调需求导致了 PEFT 方法的快速发展，如图 1 所示。在本文中，我们对 PLMs 的 PEFT 方法进行了全面和系统的回顾。我们总结了这些 PEFT 方法，讨论了它们的应用，并概述了未来的研究方向。此外，我们通过实验使用了几种代表性的 PEFT 方法，以更好地理解它们在参数效率和内存效率方面的有效性。通过提供最新进展和实际应用的见解，本综述为研究人员和从业者提供了宝贵的资源，帮助他们应对 PLMs 上 PEFT 提出的挑战和机遇。</p>
+<h2 id="i-引言">I. 引言<a class="anchor-link" href="#i-引言" title="Permanent link">&para;</a></h2>
+<p>基于变换器的预训练语言模型（PLMs）[1]、[2]、[3]、[4]在广泛的自然语言处理（NLP）任务中表现出了显著的性能。为了充分利用PLMs的潜力，微调被用来使PLMs适应特定任务的数据，以提高在下游任务上的表现。然而，传统的微调需要更新PLMs的所有预训练参数，这既耗时又计算成本高昂。随着PLMs规模的不断扩大，从BERT[1]的1.1亿参数到T5[4]的7.7亿参数，计算资源需求成为一个显著的挑战。大型语言模型（LLMs）的出现，如Falcon[8]拥有惊人的1800亿参数，进一步加剧了计算需求。对Falcon-180B进行特定任务的全参数微调，至少需要5120GB的计算资源[1]。巨大的计算资源需求使得除了超级玩家外，其他人几乎无法利用LLMs进行特定任务的微调。为了解决这一挑战，一种名为PEFT[9]的突出方法作为可行的解决方案出现，以补偿全参数微调的巨大计算成本。PEFT通过使用各种深度学习技术[9]、[10]、[11]来减少可训练参数的数量，同时保持与全微调相当的性能。此外，PEFT仅更新少量额外的参数或更新预训练参数的一个子集，保留PLM捕获的知识，同时将其适应目标任务，并减少灾难性遗忘的风险。此外，由于微调数据集的规模通常比预训练数据集小得多，执行全微调以更新所有预训练参数可能导致过拟合，而PEFT通过选择性地或不更新预训练参数来避免这种情况。</p>
+<p>最近，对PEFT方法的兴趣显著增加，如图1所示的研究数量不断增长。这也导致了一些关于PLMs的PEFT方法的综述。然而，现有的综述存在某些局限性。Ding等人[12]对PEFT方法进行了全面研究，但这项综述没有涵盖该领域中最新的工作，并且只有四种PEFT方法进行了定量实验。Lialin等人[13]详细探讨了PEFT方法的思想和操作实现，但没有进行相关实验。在这项工作中，我们全面地解决了这些差距。我们仔细地对PEFT方法进行了分类，提供了每种方法的思想和具体实现的详细解释。我们比较了各种类型的PEFT方法之间的相似之处和差异，有助于更好地理解PEFT的发展格局。此外，我们对11种代表性的PEFT方法进行了广泛的微调实验。</p>
+<p>在本文中，我们旨在全面系统地研究 NLP 中 PLM 的 PEFT 方法。我们对这些PEFT方法进行了深入探讨，并在第三部分提出了一个全面的分类方案。通过将PEFT方法分为加法微调、部分微调、重参数化微调、混合微调和统一微调，我们建立了一个理解这些PEFT方法的结构化框架，如图2所示。在第四部分，我们将进行定量研究和分析，以评估这些 PEFT 方法的性能、参数效率和内存使用情况。我们的定量研究主要侧重于自然语言理解（NLU）、机器翻译（MT）和自然语言生成（NLG）任务。此外，我们还广泛探讨了 PEFT 在多任务学习、跨语言转移以及后门攻击和防御中的应用，强调了它的有效性。此外，我们的研究还揭示了这一快速发展领域未来研究的潜在方向。概括而言，本研究的主要贡献如下：</p>
+<ul>
+<li>我们全面分析和回顾了基于Transformer的 PLM 的 PEFT 方法。</li>
+<li>我们确定了 PEFT 方法中采用的关键技术和方法，并将其分为添加法、部分法、重新参数化法、混合法和统一微调法。</li>
+<li>我们进行了大量实验，评估了几种具有代表性的 PEFT 方法的有效性，特别考察了它们对参数效率和内存使用的影响。</li>
+</ul>
+<h2 id="2-理论">2 理论<a class="anchor-link" href="#2-理论" title="Permanent link">&para;</a></h2>
+<h3 id="21-transformer">2.1 Transformer<a class="anchor-link" href="#21-transformer" title="Permanent link">&para;</a></h3>
+<p>Transformer[66] 已成为众多 PLMs 的基础架构，它采用编码器 - 解码器架构，由多层编码器和解码器堆叠而成，每层都配备了自注意力机制。Transformer 架构中的编码器和解码器都由多头自注意力层和前馈网络（FFN）层组成，它们通过残差连接 [67] 相连，随后是层归一化 [68]。残差连接允许模型在不失重要信息的情况下，将信息从一个层有效传递到下一个层。层归一化通过归一化每层的输入来进一步稳定训练过程。多头自注意力层并行使用具有 h 个头的自注意力函数。对于输入序列<span class="math-inline">X \in \mathbb{R}^{n \times d}</span><br />
+，其中 n 为句子长度，d 为隐藏维度大小。查询（Q）、键（K）和值（V）向量是输入序列 X 的变换，<br />
+<div class="math-display"><br />
+    K = XW_k + b_k, \quad Q = XW_q + b_q, \quad V = XW_v + b_v,<br />
+</div><br />
+其中 <span class="math-inline">Q, K, V \in \mathbb{R}^{n \times d}</span>，<span class="math-inline">b_k, b_q, b_v</span> 通常是可学习的参数向量，它们帮助模型更好地捕获输入向量 X 中的特定信息，并调整查询向量 Q 的值，以便更好地匹配键向量 K，从而提高自注意力机制的性能。输入 X 的自注意力输出计算为：<br />
+<div class="math-display"><br />
+    \text{Attn}(Q, K, V) = \text{Softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V,<br />
+</div><br />
+然后多头自注意力可以描述为：<br />
+<div class="math-display"><br />
+    \text{MHA}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W_O,<br />
+</div></p>
+<p><div class="math-display"><br />
+    \text{head}_i = \text{Attn}(QW_i^Q, KW_i^K, V W_i^V).<br />
+</div><br />
+同时，FFN 由两个带有非线性 ReLU 激活函数的线性变换组成：<br />
+<div class="math-display"><br />
+    \text{FFN}(X) = \text{ReLU}(XW_1 + b_1)W_2 + b_2,<br />
+</div><br />
+其中 <span class="math-inline">W_1, b_1, W_2, b_2</span> 是两个线性变换的权重矩阵。大多数 PEFT 方法主要关注自注意力层和 FFN 层，允许像基于编码器的 RoBERTa[2]、基于编码器 - 解码器的 T5[4] 和基于解码器的 LLaMA[7] 这样的模型利用相关技术进行参数减少。</p>
+<h3 id="22-plms的全微调">2.2 PLMs的全微调<a class="anchor-link" href="#22-plms的全微调" title="Permanent link">&para;</a></h3>
+<p>基于变换器的PLMs的完整微调涉及在特定下游任务上使用任务特定数据训练整个模型，包括所有层和参数。最初，PLMs在大规模数据集上进行训练，使用无监督学习目标，如语言建模或掩码语言建模，以学习通用语言表示[1]、[2]、[4]、[7]。然而，这些PLMs在应用于特定任务（如情感分析、问答或翻译）时可能无法发挥最佳性能，因为它们缺乏适当的领域知识[69]、[70]、[71]。完整的微调为解决这一局限性提供了有效的解决方案。在完整的微调过程中，PLM以预训练权重初始化，然后使用反向传播和梯度下降等技术在任务特定数据上进行训练[72]、[73]。所有模型参数，包括预训练权重，都会更新，以最小化任务特定损失，该损失量化了预测输出与真实标签之间的差异。这样，完整的微调使模型能够从标记数据中学习任务特定的模式和细微差别，从而促进针对目标任务的预测或输出[74]。值得注意的是，完整的微调需要大量的计算资源和标记数据，因为模型是从头开始针对特定目标任务进行训练的。此外，随着PLMs规模的增长和包含数十亿参数的LLMs的出现，完整的微调对计算资源的要求更高。相比之下，PEFT方法旨在通过选择性更新或修改PLMs的特定部分来减轻这些需求，同时仍然实现与完整微调相当的性能[34]、[39]。此外，当任务特定数据集较小或PLM已经非常适合目标任务时，完整的微调可能会导致过拟合[19]、[75]。</p>
+<h2 id="iii-参数高效微调方法">III. 参数高效微调方法<a class="anchor-link" href="#iii-参数高效微调方法" title="Permanent link">&para;</a></h2>
+<h3 id="a-附加式微调">A. 附加式微调<a class="anchor-link" href="#a-附加式微调" title="Permanent link">&para;</a></h3>
+<p>附加式微调方法涉及引入新的额外可训练参数用于特定任务的微调。我们将附加式微调分为三组：基于适配器的微调 [9]、[14]、[15]、[16]、[17]、[18]、[19]、[20]、[21]、[22]、[76]，适配器模块被集成到变换器中，允许在不修改预训练参数的情况下进行微调；基于软提示的微调 [10]、[23]、[24]、[25]、[26]、[27]、[28]，其中软提示或前缀向量在微调期间附加到输入嵌入或隐藏状态；其他 [29]、[30]、[31]、[32]、[33]，其中各种引入补充参数进行模型微调的方法归入这一类。</p>
+<ol>
+<li>
+<p>基于适配器的微调：适配器的概念最初在多领域图像分类 [77] 中提出，允许跨多个视觉领域高效转移知识。顺序适配器 [9] 通过在变换器块中插入可训练模块来扩展并应用于 NLP 任务，微调适配器的参数使 PLM 适应下游任务。具体来说，适配器网络顺序地插入变换器的自注意力层和前馈层之后。每个适配器都是一个低秩模块，由一个下投影、一个非线性激活函数和一个上投影以及一个残差连接组成。对于输入 <span class="math-inline">X</span>，带有 ReLU 非线性激活函数的顺序适配器的输出可以定义为公式 (6)。在微调期间，只需要更新适配器网络的参数 <span class="math-inline">W_{\text{up}}</span> 和 <span class="math-inline">W_{\text{down}}</span> 来使 PLM 适应特定的下游任务。顺序适配器的具体架构在图 3 中展示。<br />
+<div class="math-display"><br />
+    X = (\text{ReLU}(XW_{\text{down}}))W_{\text{up}} + X, \quad W_{\text{down}} \in \mathbb{R}^{d \times k}, W_{\text{up}} \in \mathbb{R}^{k \times d}.<br />
+</div><br />
+受顺序适配器启发，许多基于适配器的 PEFT 方法被提出。残差适配器 [14] 通过仅在前馈和层归一化后插入适配器模块进一步提高效率。并行适配器 [16]、[76] 在自注意力层和前馈层的并行位置插入适配器网络，允许适配器模块更有效地集成到变换器中。适配器丢弃 [17] 通过在每层的变换器中移除对给定任务不重要的适配器来提高推理效率。而 CoDA（条件适配器）[15] 使用并行适配器进行特定任务的参数微调，并保持大多数预训练参数不变。然而，与所有输入标记都使用预训练变换器的先前方法不同，CoDA 使用路由器函数选择 k 个重要输入标记进行条件计算。通过这种方式，CoDA 不仅提高了参数效率，还提高了推理效率。Tiny-Attn 适配器（Tiny-Attention Adapter）[18] 在下投影和上投影之间引入了一个点积注意力模块，也可以看作是多头注意力模块，其每个头的维度非常小。此外，Tiny-Attn 适配器将其多个注意力头视为专家的混合，并平均它们的权重以进一步降低推理成本。与顺序适配器类似，Tiny-Attn 适配器也被注入到多头注意力层之后。适配器融合 [19] 将多个特定任务的适配器集成到一个适配器模块中，允许在不修改原始预训练模型的情况下跨相关任务有效转移知识。适配器融合为任务组合提供了一种实用高效的方法，实现了预训练模型在多个任务之间的可转移性，同时最小化了微调整个模型的计算成本。然而，适配器融合需要在组合层中引入额外的可训练参数，增加了计算成本。MerA（合并预训练适配器）[20] 采用求和和平均策略来合并预训练适配器的参数，而无需引入额外的可训练参数。它采用最优传输方法 [78]、[79] 根据权重和激活对适配器的参数进行对齐，这比适配器融合在更少的可训练参数下提供了更好的性能。Hyperformer++[21] 利用共享的超网络 [80] 学习特定于任务和层的适配器参数，这些参数依赖于任务和层 ID 嵌入。通过超网络共享知识，同时使模型能够通过特定于任务的适配器适应每个任务，显著减少了可训练参数的数量。适配器汤 [22] 是为解决跨领域任务适应性而开发的，它首先基于不同领域训练多个适配器，然后使用领域聚类 [81] 为新领域选择最合适的 top-k 适配器。适配器汤中新领域的微调参数是通过计算所选 k 个适配器的加权平均值来确定的。除了跨领域任务适应性，适配器汤也可以通过在相同领域但不同超参数训练的适配器的权重平均来加强领域内结果。</p>
+</li>
+<li>
+<p>基于软提示的微调：软提示微调是一类方法，其中可训练的连续向量，称为软提示，被插入到模型的输入或隐藏状态中。与基于任务特定训练数据搜索提示的离散标记空间中手动设计的硬提示不同，软提示更具灵活性和适应性，在微调期间，这些提示可以根据特定任务和训练数据进行优化和调整。WARP（单词级对抗性重新编程）[23] 在依赖于提示模板的句子前后插入特殊的提示标记 [P1]、[P2]、...、[Pl] 和 [Mask] 标记。训练目标是最小化 MLM 的输出和类别{1, 2, ..., c}的 verbalizer 标记 [V1]、[V2]、...、[Vc] 之间的交叉熵损失。只有 [P1]、[P2]、...、[Pl] 和 [V1]、[V2]、...、[Vc] 的参数是可训练的，从而显著减少了微调参数的数量。提示调整 [24] 在模型输入 <span class="math-inline">X \in \mathbb{R}^{n \times d}</span> 中合并了额外的 l 个可学习的提示标记 P = [P1]、[P2]、...、[Pl]，然后将其连接以生成最终输入，新输入可以用公式 (7) 表示。在微调期间，只有提示参数 P 通过梯度下降进行更新，而预训练参数保持不变。因此，提示调整的参数成本由提示长度乘以标记嵌入维度决定，扩展提示长度超过单个标记对于获得良好性能至关重要。<br />
+<div class="math-display"><br />
+    \hat{X} = \text{Concat}(P, X) = [P, X] \in \mathbb{R}^{(l+n) \times d}.<br />
+</div><br />
+前缀调整 [10] 提议将软提示 P = [P1]、[P2]、...、[Pl]（l 表示前缀的长度）附加到多头注意力层的隐藏状态，与将软提示添加到输入的提示调整不同。为了确保稳定的训练，引入了一个 FFN 来参数化软提示，因为直接优化软提示可能导致不稳定。两组前缀向量 <span class="math-inline">\hat{P}<em>k</span> 和 <span class="math-inline">\hat{P}_v</span> 被连接到注意力层的原始键 (K) 和值 (V) 向量。带有前缀调整的自注意力机制可以由公式 (8) 表示。在训练期间，只有 <span class="math-inline">\hat{P}_k, \hat{P}_v</span> 和 FFN 的参数被优化，而 PLM 的所有其他参数都保持不变。前缀调整的结构在图 3 中说明。训练完成后，FFN 被丢弃，只使用 Pk 和 Pv 进行推理。<br />
+<div class="math-display"><br />
+    \text{head} = \text{Attn}(XW_q, [\hat{P}_k, XW_k], [\hat{P}_v, XW_v]), \quad \hat{P}_k = \text{FFN}(P_k), \quad \hat{P}_v = \text{FFN}(P_v).<br />
+</div><br />
+SPOT（软提示转移）[26] 是一种多任务提示方法，它建立在提示调整的基础上，在 PLMs 和目标任务的提示调整之间引入了“提示相关性”。SPOT 有两种变体：通用 SPOT 和目标 SPOT。通用 SPOT 首先在一个或多个源任务上学习一个通用提示，然后使用学到的提示初始化特定目标任务的目标提示。目标 SPOT 为各种源任务学习单独的提示，创建一个源提示库。随后，检索出与目标任务嵌入相似度更高的最佳源提示，并将其用于初始化目标任务的目标提示。ATTEMPT（注意力混合提示调整）[27] 首先在大规模源任务上预训练可转移的软提示（源提示），这些任务拥有适用于其他任务的宝贵知识。新的靶提示专门为给定的目标任务初始化。ATTEMPT 采用一个共享的轻量级网络，同时训练以学习源提示和目标提示的注意力加权组合。这使得模块化多任务学习成为可能，因为预训练的软提示可以灵活地组合、重用或移除，以利用不同任务的知识。MPT（多任务提示调整）[28] 使用多任务数据来分解和提取源提示中的知识，学习一个单一的共享提示。然后，MPT 学习一个乘法低秩矩阵来更新共享提示，有效地将其适应每个下游目标任务。具体来说，MPT 假设第 k 个源任务的软提示，表示为 <span class="math-inline">\hat{P}_k</span>，可以分解为跨所有源任务的共享提示 <span class="math-inline">P</em><em></span> 和特定于任务的低秩矩阵 <span class="math-inline">W_k</span>。分解由下式给出：<br />
+<div class="math-display"><br />
+    \hat{P}<em>k = P</em></em> \odot W_k = P_* \odot (u_k \otimes v_k^T),<br />
+</div><br />
+其中 <span class="math-inline">\odot</span> 表示 Hadamard 积，<span class="math-inline">\otimes</span> 表示 Kronecker 积，<span class="math-inline">u_k</span> 和 <span class="math-inline">v_k</span> 是任务 k 的特定向量。</p>
+</li>
+<li>
+<p>其他：除了适配器家族和软提示微调方法外，还有一些其他方法在微调期间也引入了额外的可训练参数。它们涉及添加一个梯度侧网络与变换器并行操作，引入一个额外的 diff 向量来重新调整注意力，将一个额外的向量合并到特殊标记表示中，使用晚期融合技术整合来自不同任务或层的特征或表示，或为每个标记表示组合一个额外的联合重要性权重。</p>
+</li>
+</ol>
+<p>梯度侧调整 [29] 与预训练网络一起训练一个梯度侧网络，并通过从预训练网络接收中间激活的快捷连接，称为梯子。由于所有训练参数都存储在梯度侧网络中，反向传播是通过侧网络和梯子连接而不是预训练网络来实现的，从而减少了微调参数的数量。此外，梯度侧调整通过使用结构性剪枝 [82] 检索较小的剪枝网络来初始化侧网络，并丢弃侧网络的某些层，进一步提高了参数效率。(IA)^3（通过抑制和放大内部激活注入适配器）[30] 利用学习到的向量来缩放激活，引入相对少量的新参数，同时提高性能。(IA)^3 引入了三个学习到的向量 <span class="math-inline">l_k</span>、<span class="math-inline">l_v</span> 和 <span class="math-inline">l_{\text{ff}}</span>，用于重新调整注意力网络中的键 (K) 和值 (V) 向量以及位置感知 FFN 中的隐藏激活。因此，注意力输出和隐藏激活输出可以使用以下表达式重新调整：<br />
+<div class="math-display"><br />
+    \text{Attn}(Q, K, V) = (Q (l_k \odot K^T))_{d} (l_v \odot V),<br />
+</div></p>
+<p><div class="math-display"><br />
+    \text{FFN}(X) = (l_{\text{ff}} \odot \gamma(XW_1))W_2,<br />
+</div><br />
+其中 <span class="math-inline">\odot</span> 表示逐元素乘法，<span class="math-inline">W_1</span> 和 <span class="math-inline">W_2</span> 是 FFN 的权重矩阵，<span class="math-inline">\gamma</span> 是激活函数。(IA)^3 只为每个变换器块优化三个学习到的向量 <span class="math-inline">l_k</span>、<span class="math-inline">l_v</span> 和 <span class="math-inline">l_{\text{ff}}</span>，从而实现了极大的参数效率。值得注意的是，(IA)^3 的开销很小，因为 <span class="math-inline">l_k</span> 和 <span class="math-inline">l_v</span> 可以无缝集成到相应的线性层中，唯一的额外开销来自 <span class="math-inline">l_{\text{ff}}</span>。PASTA（具有特殊标记适应的参数高效调整）[31] 通过在变换器层的自注意力层之前用额外的特殊可训练向量修改特殊标记表示（例如 BERT 中的 [SEP] 和 [CLS]），提高了参数效率。假设变换器层的输入表示为 <span class="math-inline">H = {h_i}<em>{i=1}^{N}</span>，PASTA 修改输入如下：<br />
+<div class="math-display"><br />
+    H</em>{\text{mod}} = {h_i + m_i}_{i=1}^{N},<br />
+</div><br />
+其中当 i 是第 p 个特殊标记时，<span class="math-inline">m_i = e(v_p)</span>；否则，<span class="math-inline">m_i = 0</span>，</p>
+<p><span class="math-inline">m_i</span> 是特殊标记适应。PASTA 通过仅训练可训练向量 <span class="math-inline">e(v_p)</span> 来更新特殊标记的表示，从而显著减少了可训练参数的数量。使用 [CLS] 和 [SEP] 作为 PASTA 中的特殊标记的原因是 [CLS] 表示提供了输入文本的全局表示，并且 PLMs 中的注意力分数主要分配给跨注意力头的 [CLS] 或 [SEP] 标记 [83]、[84]。AttentionFusion[32] 引入了晚期融合技术，它涉及从不同的任务或层组合特征或表示以生成最终的联合表示，以调整每个标记表示的重要性。对于给定的任务 t，假设注意力查询向量表示为 <span class="math-inline">Q_t</span>，令第 j 层的标记 i 的表示为 <span class="math-inline">V_{j,i}</span>，则任务 t 下标记 i 的表示 <span class="math-inline">\hat{V}<em>{j,i}</span> 可以表示为：<br />
+<div class="math-display"><br />
+    \hat{V}</em>{j,i} = \sum_{j} \alpha_{j,i}(t) V_{j,i}, \quad \alpha_{j,i}(t) = \frac{\exp(Q_t V_{j,i})}{\sum_{k} \exp(Q_t V_{j,k})},<br />
+</div><br />
+其中 <span class="math-inline">\alpha_{j,i}(t)</span> 表示任务 t 下第 j 层标记 i 的注意力权重。在 AttentionFusion 中需要更新的额外参数数量由查询向量 <span class="math-inline">Q_t</span> 的大小决定，它与预训练编码器的隐藏维度相同。通过使用注意力权重作为额外的可训练参数，AttentionFusion 动态调整每个标记表示的重要性。Hadamard 适配器 [33] 是一种附加式微调方法，它在每个变换器中引入了与多头注意力模块输出尺寸相同的权重向量和偏置向量，用于微调。在多头注意力层之后立即注入权重向量和偏置向量，与多头注意力输出执行逐元素乘法（Hadamard 积）。值得注意的是，Hadamard 适配器的数量与 PLM 中的变换器层数相同。在微调期间，仅更新 Hadamard 适配器、层归一化和分类器中的参数。</p>
+<h3 id="b-部分微调">B. 部分微调<a class="anchor-link" href="#b-部分微调" title="Permanent link">&para;</a></h3>
+<p>部分微调方法旨在通过选择对下游任务至关重要的预训练参数子集，同时丢弃不重要的参数，从而减少微调参数的数量。我们将部分微调方法分为三组：偏差更新 [34]、[35]，其中只更新注意力层、前馈层和变换器的层归一化中的偏差项；预训练权重掩码 [36]、[37]，使用各种剪枝标准来衡量预训练权重的重要性，构建权重掩码的二进制掩码矩阵；以及增量权重掩码 [38]、[39]、[40]、[41]，通过剪枝技术和优化近似来掩码增量权重。预训练权重和增量权重掩码的详细分析见表 I。</p>
+<ol>
+<li>
+<p><strong>偏差更新</strong>：BitFit（偏差项微调）[34] 通过仅更新偏差项和任务特定的分类层，同时保持变换器基础 PLMs 中的大多数参数不变，实现参数效率。偏差参数参与注意力层的计算，涉及查询、键、值以及组合多个注意力头，以及前馈和层归一化层。此外，U/S-BitFit[35] 结合了 NAS 算法 [85] 和剪枝技术，以自动确定基于 BitFit 需要微调的网络参数。U-BitFit（无结构 BitFit）根据剪枝 PEFT 参数 W 时训练损失变化的一阶近似来决定剪枝哪些 PEFT 参数，即 <span class="math-inline">-W \cdot \nabla_W L(W)</span>。而 S-BitFit（结构化 BitFit）则对整体偏差更新 <span class="math-inline">\Delta b</span>（b 是偏差项）求和。</p>
+</li>
+<li>
+<p><strong>预训练权重掩码</strong>：预训练权重掩码使用阈值和 Fisher 信息等剪枝标准来衡量预训练权重的重要性，构建一个二进制掩码矩阵进行权重掩码。Threshold-Mask[36] 使用阈值来构建二进制掩码矩阵，通过元素级乘法选择注意力和 FFN 层的预训练权重 W，表示为 <span class="math-inline">\hat{W} = W \odot M</span>（<span class="math-inline">\odot</span> 表示 Hadamard 积）。首先，创建一个与 W 和 M 尺寸相同的随机均匀实值矩阵 S。然后，如果 S 中的元素超过预定的全局阈值τ，则二进制掩码矩阵中的相应位置被赋予值 1；否则，赋予 0。FISH Mask（Fisher-Induced Sparse uncHanging）[37] 使用预训练权重的 Fisher 信息来衡量它们的重要性，并构建稀疏的二进制掩码。FISH Mask 选择具有最大 Fisher 信息的 top-k 参数来构建稀疏的二进制掩码，其中对应 top-k 参数的位置被设置为 1，其余为 0。注意 k 是根据掩码稀疏度水平预设的，得到的稀疏二进制掩码可以在许多后续迭代中重复使用。</p>
+</li>
+<li>
+<p><strong>增量权重掩码</strong>：增量权重掩码也使用各种剪枝技术和标准来构建二进制掩码矩阵以减少可训练参数。然而，增量权重剪枝通常涉及每次迭代的更新。LT-SFT（Lottery Ticket Sparse Fine-Tuning）[38] 是一种新颖的 PEFT 方法，受到 Lottery Ticket 假设 [86] 的启发。LT-SFT 首先使用预训练参数 W0 对 PLM 在目标数据上进行微调，以获得完全微调的参数 W1，然后识别具有最大绝对差异（|W1 − W0|）的 top-k 预训练参数。选择的 top-k 参数使用二进制掩码 M 进行进一步微调，在 M 中，对应选定的 k 个参数的位置被设置为 1，其余位置为 0。LT-SFT 然后将模型参数重置为原始预训练权重 W0，但仅微调选定的 k 个参数，同时保持其余参数冻结，可以表示为 <span class="math-inline">\delta = M \odot \Delta W (\Delta W = \nabla_W L(W))</span>。通过重复这个过程，该方法逐渐只微调模型的一小部分参数。Child-Tuning[39] 将待更新参数形成的网络称为子网络，并屏蔽非子网络的梯度以提高参数效率。Child-Tuning 的参数更新表示为 <span class="math-inline">\delta = M \odot \Delta W (\Delta W = \eta \nabla_W L(W))</span>，其中η表示学习率。Child-Tuning 提供两种变体：Child-TuningF（F 代表 Task-Free）和 Child-TuningD（D 代表 Task-Driven）。Child-TuningF 使用 Bernoulli 分布生成二进制掩码矩阵 M，概率表示为 <span class="math-inline">p_F</span>。增加 <span class="math-inline">p_F</span> 的值会更新更多的参数，当 <span class="math-inline">p_F = 1</span> 时，Child-TuningF 等同于全参数微调。相比之下，Child-TuningD 使用 Fisher 信息估计来识别与特定下游任务高度相关的参数子集（即子网络）。Child-TuningD 中的二进制掩码矩阵通过将子网络的位置设置为 1，非子网络的位置设置为 0 来构建。Diff Pruning[40] 在微调期间引入了一个稀疏的任务特定“diff”向量δ，同时保持预训练模型参数固定。为了使 diff 向量δ稀疏，Diff Pruning 引入了一个可学习的二进制掩码 M 在 Delta 权重上，并分解δ = M ⊙ ∆W。二进制掩码 M 是可学习的，并在微调期间用作正则化器。它作为 diff 向量δ的 L0 范数的可微分近似。这种方法非常适合在存储有限的边缘（移动）应用中进行多任务部署。值得注意的是，与传统微调相比，Diff Pruning 会产生更高的内存消耗，这可能随着模型大小的增长而成为问题。SAM（二阶近似方法）[41] 也使用稀疏掩码矩阵来更新增量权重。然而，SAM 直接优化近似函数以获得掩码矩阵的解析解，然后使用它来更新预训练权重。具体来说，SAM[41] 将 PEFT 方法视为 p- 稀疏微调模型，通过表示微调参数为 W = W0 + M∆W，其中 M 是掩码矩阵，优化问题为：<br />
+<div class="math-display"><br />
+    \min_{\Delta W, M} L(W_0 + M \Delta W), \text{s.t.} \quad |M|<em>0 = \lfloor m p \rfloor, \quad M</em>{i,j} = 0, \forall i \neq j; \quad M_{i,i} \in {0, 1}.<br />
+</div><br />
+SAM 近似损失函数使用其二阶泰勒展开：<br />
+<div class="math-display"><br />
+    L(W_0 + M \Delta W) \approx L(W_0) + \Delta L(W_0)^T M \Delta W + \frac{1}{2} (M \Delta W)^T H (M \Delta W),<br />
+</div><br />
+其中 H 是 Hessian 矩阵。在实践中，SAM 首先获得第 i 个参数 Wi 的梯度 <span class="math-inline">\nabla L(W_0)_i</span>，然后计算 <span class="math-inline">\nabla L(W_0)_i^2</span>，并选择 top ⌊mp⌋个增量权重进行优化。</p>
+</li>
+</ol>
+<h3 id="c-重新参数化微调">C. 重新参数化微调<a class="anchor-link" href="#c-重新参数化微调" title="Permanent link">&para;</a></h3>
+<p>重新参数化微调方法利用低秩变换来减少可训练参数的数量，同时允许使用高维矩阵（例如，预训练权重）。我们将重新参数化微调方法分为两类：低秩分解 [11]、[42]、[43]，其中使用各种低秩分解技术来重新参数化更新矩阵；以及 LoRA 衍生物 [44]、[45]、[46]、[47]、[48]、[49]、[50]、[51]、[52]、[53]、[54]、[55]、[56]、[57]，其中一系列 PEFT 方法基于 LoRA 进行了开发。各种方法中∆W 参数重新参数化的详细信息见表 II。</p>
+<ol>
+<li>
+<p><strong>低秩分解</strong>：这涉及找到一个低秩矩阵，该矩阵捕获原始矩阵的关键信息，同时通过重新参数化更新的增量权重来降低计算复杂性和内存使用。重新参数化包括使用诸如 Fastfood 变换、低秩下 - 上投影或 Kronecker 积投影等方法将增量权重矩阵转换为低秩表示。Intrinsic SAID（Structure-Aware Intrinsic Dimension）[42] 利用内在维度的概念，在微调期间减少参数数量。内在维度指的是解决高维优化问题的最小维度。在 PLMs 的背景下，测量内在维度有助于估计适应新任务所需的最小参数数量。Intrinsic SAID 不是在原始参数化中优化经验损失，而是通过在低维空间中重新参数化模型来进行微调，即 <span class="math-inline">\Delta W = F(W_r)</span>，其中 <span class="math-inline">W_r</span> 是要优化的参数，<span class="math-inline">F : \mathbb{R}^r \rightarrow \mathbb{R}^d</span> 是 Fastfood 变换 [87]，它将参数从低维 r 投影到高维 d。然而，由于 Fastfood 变换的 O(d) 内存复杂性和需要更新模型的所有参数，Intrinsic SAID 并不适用于大型网络的微调。受 Intrinsic SAID 启发，LoRA（Low-Rank Adaptation）[11] 引入了两个可训练的低秩矩阵用于权重更新。在 LoRA 中，一个下投影矩阵和一个上投影矩阵与变换器注意力层中的查询（Q）、键（K）和值（V）矩阵并行使用，如图 3 所示。对于预训练权重矩阵 <span class="math-inline">W \in \mathbb{R}^{d \times k}</span>，LoRA 使用低秩分解 <span class="math-inline">\Delta W = W_{\text{down}} W_{\text{up}}</span> 进行更新。在训练期间，PLM 的权重被冻结，只有 LoRA 的低秩矩阵，即 <span class="math-inline">W_{\text{down}} \in \mathbb{R}^{d \times r}</span> 和 <span class="math-inline">W_{\text{up}} \in \mathbb{R}^{r \times k}</span> 被微调（r ≪ {d, k}）。在推理过程中，LoRA 权重与 PLMs 的原始权重矩阵合并，而不增加推理时间。实际上，LoRA 模块增加了一个缩放因子（s = 1/r）。KronA（Kronecker Adapter）[43] 在结构上类似于 LoRA，但是用 Kronecker 积分解替换了 LoRA 中的低秩分解，<span class="math-inline">\Delta W = W_{\text{down}} \otimes W_{\text{up}}</span>。Kronecker 积分解保持了输入矩阵的秩（即 rank(A ⊗ B) = rank(A) × rank(B)），确保在适应过程中保留重要信息。此外，Kronecker 积可以加速计算并减少所需的浮点运算次数（FLOPS），避免了 Kronecker 积矩阵的显式重构。KronA 有两个变体：KronAB 和 KronAB res。KronAB 将 KronA 模块并行插入到 FFN 层，而 KronAB res 将 KronA 模块与 FFN 层一起插入，并结合了一个可学习的残差连接。</p>
+</li>
+<li>
+<p><strong>LoRA 衍生物</strong>：LoRA 衍生物指的是一系列基于 LoRA 改进的 PEFT 方法，包括低秩调整 [44]、[45]、[46]，其中开发了不同的方法来动态调整 LoRA 的秩；LoRA 引导的预训练权重更新 [47]、[48]，其中使用 LoRA 指导预训练权重的更新；量化调整 [49]、[50]、[51]，提出了各种量化技术来改善 LoRA 的高精度微调和推理；基于 LoRA 的改进 [52]、[53]、[54]，其中将几种新技术整合到 LoRA 中以改进；以及基于 LoRA 的多任务微调 [55]、[56]、[57]，其中结合了多个 LoRA 模块进行跨任务传输，以在新任务上微调模型。</p>
+</li>
+</ol>
+<p><strong>低秩调整</strong>。DyLoRA（Dynamic LoRA）[44] 被引入以克服 LoRA 的两个限制：(a) LoRA 的秩是固定的，训练后无法更改；(b) 确定 LoRA 的最佳秩需要耗尽搜索和相当的努力。DyLoRA 在一系列秩上训练 LoRA 模块，而不是单一秩，允许适应性。DyLoRA 通过在各种秩上排序来学习的表现来解决这些限制。具体来说，DyLoRA 在表示为 r ∈ [r_{\text{min}}, r_{\text{max}}] 的一系列迭代中操作。在每次迭代中，DyLoRA 从{r_{\text{min}}, ..., r_{\text{max}}}中随机选择一个特定的秩 b。然后，它将下投影矩阵截断为 <span class="math-inline">W_{\text{down}}^{b} = W_{\text{down}}[: b, :]</span> 和上投影矩阵截断为 <span class="math-inline">W_{\text{up}}^{b} = W_{\text{up}}[:, : b]</span> 并仅更新截断的参数矩阵 <span class="math-inline">W_{\text{down}}^{b}</span> 和 <span class="math-inline">W_{\text{up}}^{b}</span>。DyLoRA 在每次迭代中的参数更新可以表示为 <span class="math-inline">\Delta W = W_{\text{down}}^{b} W_{\text{up}}^{b}</span>。通过允许动态低秩适应和无搜索低秩适应，DyLoRA 减少了确定特定任务最佳秩所需的计算成本和训练时间。AdaLoRA（Adaptive Low-Rank Adaptation）[45] 通过动态调整矩阵的秩来控制分配预算，扩展了 LoRA。在 AdaLoRA 中，增量更新 <span class="math-inline">\Delta W</span> 使用奇异值分解（SVD）重新参数化，然后截断最小的奇异值，即 <span class="math-inline">\Delta W = P \Lambda Q</span>。P 和 Q 是正交矩阵，Λ是一个对角矩阵，包含奇异值{σ1, σ2, ..., σr}。这里，r 代表矩阵Λ的秩。在训练期间，P 和 Q 用高斯分布初始化，并使用正则器确保正交性，而Λ用零初始化并迭代修剪以调整秩。AdaLoRA 使用基于敏感性的重要性评分 [88]、[89]，并通过新指标修剪不重要更新的奇异值来更新Λ。通过这样做，AdaLoRA 有效地提高了参数效率和分配预算。IncreLoRA[46] 通过在训练期间根据分配给每个模块的重要性分数动态地增加它们的秩，将可训练参数动态地纳入 LoRA。分配过程为较不重要的模块分配较低的秩，可能为 0 表示没有参数更新，而为较重要的模块分配较高的秩。IncreLoRA 中的参数更新可以表示为 <span class="math-inline">\Delta W = W_{\text{down}} \Lambda W_{\text{up}}</span>，其中 <span class="math-inline">\Lambda = [\lambda_1, \lambda_2, \ldots, \lambda_r]</span> 是一个对角矩阵，<span class="math-inline">\lambda_i</span> 可以是任意常数，r 是每个 LoRA 模块的秩。此外，为每个模块设置了秩的上限，以控制参数增长。此外，IncreLoRA 引入了一种称为“提前学习”的独特预训练技术，确保每个模块中新添加的参数从有利的初始状态开始。这样，它防止了随后添加的参数训练不足，允许有效利用增量参数分配。与 LoRA 不同，后者在注意力层的查询（Q）、键（K）和值（V）投影模块上操作，IncreLoRA 将参数更新应用于所有线性层。</p>
+<p><strong>LoRA 引导的预训练权重更新</strong>。Delta-LoRA[47] 更新预训练权重 W 以及两个低秩矩阵 Wdown 和 Wup，同时使用与原始 LoRA 相同的内存。两个低秩矩阵 Wdown 和 Wup 通常会自动更新。然而，预训练权重利用数学属性 <span class="math-inline">\nabla_W L(W, W_{\text{down}}, W_{\text{up}}) = \nabla_{W_{\text{down}}} W_{\text{up}} L(W, W_{\text{down}}, W_{\text{up}})</span>（通过在原始 LoRA 模块中移除 dropout 层来实现）进行参数更新。具体来说，W 使用连续迭代中两个低秩矩阵乘积的增量进行更新，即 <span class="math-inline">W \leftarrow W + \Delta W_{\text{down}} W_{\text{up}} = W + (W_{\text{down}}^{(t + 1)} W_{\text{up}}^{(t + 1)} - W_{\text{down}}^{(t)} W_{\text{up}}^{(t)})</span>。LoRAPrune[48] 引入了 LoRA 引导的剪枝标准，它使用 LoRA 的权重和梯度而不是预训练权重的梯度进行重要性估计，以剪枝 LoRA 和预训练权重的参数。为了解决非结构化剪枝和依赖感知结构化剪枝带来的大量内存开销问题，LoRAPrune 设计了一种结构化迭代剪枝过程，选择性地消除冗余的通道和头。LoRA 引导的剪枝标准涉及使用低秩矩阵 Wdown 和 Wup 及其对应的梯度 <span class="math-inline">\nabla_{W_{\text{down}}}</span> 和 <span class="math-inline">\nabla_{W_{\text{up}}}</span> 来计算重要性得分 4。这个得分决定了哪些权重被认为是不重要的，随后被移除。值得注意的是，LoRAPrune 不仅剪枝了预训练权重中的结构化权重，如头和通道，而且还剪枝了 LoRA 中的相应权重，即 <span class="math-inline">\delta = (W + W_{\text{down}} W_{\text{up}}) \odot M</span>，其中 M ∈ {0, 1}^{1 \times G}，G 是组数。二进制掩码 M 在相应的组不重要时设置为 0，在重要时设置为 1。因此，在剪枝和微调之后，LoRA 权重可以无缝地与预训练权重合并，确保在推理过程中不需要额外的计算。</p>
+<p><strong>量化调整</strong>。QLoRA[49] 是 LoRA 的量化变体，通过将变换器模型量化到 4 位 NormalFloat（NF4）精度，并使用分页优化器处理内存峰值，有效解决了 LoRA 在微调 LLMs 时的有限计算资源问题。NF4 是理论上适合正态分布权重的新数据类型。尽管 QLoRA 将预训练权重 W 从 FP16 量化到 NF4，以便 LLMs 可以使用较少的 GPU 进行微调，但 LoRA 矩阵 WdownWup 的辅助权重使最终权重在微调后再次回到 FP16。为此，QA-LoRA（Quantization-Aware Low-rank Adaption）[50] 采用分组量化和低秩适应到预训练权重 W，其中 W 的每一列被划分为 L 组进行量化。这样，QA-LoRA 确保预训练权重 W 和辅助权重在微调后以量化形式集成，从而在推理过程中实现更快、更准确的计算。而 LOFTQ（LoRA-Fine-Tuning-aware Quantization）[51] 应用 N 位量化权重 Q 和低秩近似 <span class="math-inline">W_{\text{down}} \in \mathbb{R}^{d_1 \times r}, W_{\text{up}} \in \mathbb{R}^{d_2 \times r}</span> 来近似原始高精度预训练权重 <span class="math-inline">W \in \mathbb{R}^{d_1 \times d_2}</span> 作为 LoRA 微调的初始化。这样的初始化减轻了 QLoRA 中的量化差异，并显著提高了下游任务的泛化性。</p>
+<p><strong>基于 LoRA 的改进</strong>。Kernel-wise Adapter[52] 将变换器中的不同注意力头视为独立的核估计器，并利用自注意力中的核结构指导可调参数的分配。LoRA 用作底层模型，结合 Kernel-wise 适应性，因其在不同权重矩阵的参数分配灵活性。Kernel-wise adapter 有两个变体：Kernel-mix-lite (qv) 和 Kernel-mix-lite (qvo)。Kernel-mix-lite (qv) 为参数预算有限的场景提供了轻量级解决方案，而 Kernel-mix (qvo) 适用于具有中等参数预算的场景。后缀 (qv) 表示该方法将调整 <span class="math-inline">W_q</span> 和 <span class="math-inline">W_v</span>，而后缀 (qvo) 表示该方法将修改 <span class="math-inline">W_q, W_v,</span> 和 <span class="math-inline">W_o</span>。Laplace-LoRA[53] 将贝叶斯推断整合到 LoRA 参数中，以解决过度自信问题并改善校准。一个关键挑战在于获得贝叶斯推断的后验分布，这通过使用拉普拉斯近似 [90] 来解决。Laplace-LoRA 可以被视为使用拉普拉斯近似对 LoRA 参数的后验分布的近似。因此，Laplace-LoRA 在保持现有的预训练和微调过程的同时，降低了贝叶斯推断的维度。LoRA-FA (LoRA with Frozen-A)[54] 被提出来减少 LoRA 的昂贵激活内存，而无需引入任何计算开销。LoRA-FA 保持预训练权重 W 和下投影矩阵 Wdown 冻结，只更新上投影矩阵 Wup。Wdown 通过 QR 分解分解为 Q 和 R，<span class="math-inline">\Delta W = W_{\text{down}} W_{\text{up}} = QR W_{\text{up}} = Q \hat{W}<em>{\text{up}} = \sum</em>{i=1}^r Q_{:,i} \hat{W}<em>{\text{up},i,:}</span>，其中 <span class="math-inline">Q</em>{:,i}</span> 是正交单位向量（r 是 Wdown 的秩）。因此，<span class="math-inline">\Delta W</span> 是 r 个正交向量的组合，限制了权重变化在低秩空间内。因此，不需要同时存储全秩输入激活，减轻了与激活存储相关的内存负担。</p>
+<p><strong>基于 LoRA 的多任务微调</strong>。LoRAHub[55] 利用多个训练有素的 LoRA 模块的组合进行跨任务传输，以在新任务上微调模型。具体来说，LoRAHub 在多种任务中训练特定任务的 LoRA 模块，以获得综合模块 <span class="math-inline">\hat{m} = (w_1 W_1^{\text{down}} + \ldots + w_N W_N^{\text{down}})(w_1 W_1^{\text{up}} + \ldots + w_N W_N^{\text{up}})</span>，然后将其与 LLMs 结合起来适应新任务。因此，LoRAHub 的目标是找到最佳权重集{w1, w2, ..., wN}，这是通过无梯度组合优化方法 Shiwa[91] 实现的。MOELoRA[56] 将 LoRA 与专家混合（MoE）结合用于多任务微调，其中每个专家都是一个学习特定任务知识的 LoRA 模块。此外，MOELoRA 设计了一个任务驱动的门控函数，为不同任务产生不同的微调参数。L-LoRA (Linearized LoRA)[57] 是一种线性化的 PEFT 方法，通过使用四阶泰勒展开构建线性函数，如图 15 所示。在 L-LoRA 中，只有线性化的 LoRA 模块在切线空间中被微调，与 LoRA 相比，可训练参数更少。对于多任务融合方法，采用了简单平均、任务算术 [92]、[93]、tie-merging[94] 和 LoRAhub[55]。<br />
+<div class="math-display"><br />
+    f_{\theta_0}(x; \phi(t)) \approx f_{\text{lin}}\theta_0 (x; \phi(t)) = f_{\theta_0}(x; \phi(0)) + \nabla_{\phi} f_{\theta_0}(x; \phi(0))^T (\phi(t) - \phi(0)).<br />
+</div><br />
+(15)</p>
+<h3 id="d-混合微调">D. 混合微调<a class="anchor-link" href="#d-混合微调" title="Permanent link">&para;</a></h3>
+<p>混合微调方法旨在结合不同的 PEFT 方法，例如适配器、前缀调整和 LoRA，以利用每种方法的优势并弥补它们的不足。通过整合 PEFT 方法的不同特性，混合微调实现了比单一 PEFT 方法更好的整体性能。这些工作被分类为两种方法：手动组合 [16]、[35]、[58]、[59]，其中多种 PEFT 方法通过精心设计进行手动整合；以及自动组合 [60]、[61]、[62]，其中各种 PEFT 方法通过结构搜索自动整合。</p>
+<ol>
+<li><strong>手动组合</strong>：手动组合主要涉及将一个 PEFT 方法的结构或特性整合到另一个 PEFT 方法中，以提高性能并实现参数效率。MAM 适配器（MixAnd-Match Adapter）[16] 是缩放并行适配器和前缀调整的结合，它在注意力层使用瓶颈尺寸较小的前缀调整，并分配更多的参数预算来修改 FFN 的表示，使用缩放并行适配器。缩放并行适配器表示具有缩放因子的并行适配器，用于调整适配器输出。具体来说，MAM 适配器的输出 h 可以表示为 <span class="math-inline">h = \text{LN}(X + \text{scale} \times \text{FFN}(\text{LN}(\text{Attn}([P_k, X]) + [P_v, X])))</span> 对于输入 X。进一步地，U-MAM（无结构 MAM）和 S-MAM（结构化 MAM）[35] 通过结合 NAS 算法 [85] 和剪枝技术，自动确定基于 MAM 适配器需要微调的网络参数。NAS 算法以 PEFT 架构所需的最大参数数量为输入，并应用剪枝操作以减少可训练参数。决定剪枝哪些 PEFT 参数的标准基于剪枝 PEFT 参数 W 时训练损失变化的一阶近似，即 <span class="math-inline">-W \cdot \nabla_W L(W)</span>。U-MAM 直接使用这个标准来剪枝 MAM 中的参数，而 S-MAM 则在 Wdown 的每一列上求和标准。Compacter[58] 是基于适配器、低秩优化和参数化超复数乘法（PHM）层 [95] 开发的。它具有与适配器相似的结构，包括一个下投影、一个非线性激活函数和一个上投影。然而，Compacter 用低秩参数化超复数乘法（LPHM）层替换了适配器中的下投影和上投影，这是将低秩优化整合到 PHM 的扩展。从结构上看，PHM 层类似于全连接层，但是学习到的 W 表示为 Kronecker 积的和，即 <span class="math-inline">W = \sum_{i=1}^{n} A_i \otimes B_i</span>。值得注意的是，当下投影和上投影的权重计算为 PHM 层中的权重时，Ai 是跨所有适配器层共享的参数，而 Bi 代表适配器特定的参数。这种适配器称为 PHM 适配器。类似地，Compacter 使用 Kronecker 积的和获得每个 LPHM 层的权重矩阵，但是 Compacter 将 Bi 重新参数化为两个独立的秩乘以一个权重，Compacter 中的权重矩阵计算如下：<br />
+<div class="math-display"><br />
+    W = \sum_{i=1}^{n} A_i \otimes (s_i t_i^T)<br />
+</div></li>
+</ol>
+<p><div class="math-display"><br />
+    W \in \mathbb{R}^{k \times d}, A_i \in \mathbb{R}^{n \times n}, B_i \in \mathbb{R}^{k \times n \times d}, s_i \in \mathbb{R}^{k \times n \times r}, t_i \in \mathbb{R}^{r \times d}<br />
+</div><br />
+Compacter++ 是 Compacter 的一个变体，它在每个变换器模块的 FFN 层后插入一个 Compacter 层，并且需要更新的参数少于 Compacter。</p>
+<p>UniPELT[59] 通过门控机制整合了顺序适配器、前缀调整和 LoRA。在 UniPELT 中，适配器添加在前馈层之后，前缀调整用于多头注意力层的键（K）和值（V）向量，LoRA 用于变换器的 Wq 和 Wv 的注意力矩阵。每个 PEFT 模块都配备了一个由线性函数、sigmoid 函数和均值函数组成的门控机制。门控机制控制每个子模块的激活，动态地为对给定任务做出积极贡献的子模块分配更高的权重。可训练参数包括低秩 LoRA 矩阵 Wdown 和 Wup、前缀调整参数 Pk 和 Pv、适配器参数以及门控功能的权重。因此，UniPELT 需要的参数和推理时间比适配器、前缀调整和 LoRA 多，但与最好的单一 PEFT 方法相比，性能更好。</p>
+<ol start="2">
+<li><strong>自动组合</strong>：自动组合探索如何自动使用结构搜索和优化方法配置 PEFT 方法，如适配器、前缀调整、BitFit 和 LoRA，到变换器的不同层。然而，由于需要在模型或结构中执行优化搜索，它通常需要更多的时间和成本。AutoPEFT[60] 将顺序适配器、并行适配器和前缀调整整合到变换器块中。顺序适配器接收 FFN 输出的隐藏状态作为输入，而并行适配器将 FFN 层之前的隐藏状态作为其输入。此外，前缀调整模块将两个前缀向量 Pk 和 Pv 分别与原始的键和值向量连接，使多头注意力能够适应特定的目标任务。受到 NAS 算法成功的启发，AutoPEFT 提出使用贝叶斯优化方法自动搜索适当的神经网络架构，选择性地激活某些层以整合这些 PEFT 模块。贝叶斯优化不仅样本效率高、零阶，而且适合多目标设置，实现成本效益优化，并促进性能和成本之间的权衡。此外，它在搜索期间更易于并行化，可以减少内存使用。S3Delta-M（Search for Sparse Structure of Delta Tuning Mix）[61] 是 LoRA、Compacter（低秩适配器）、BitFit 和 LNFit 的混合。与简单整合 PEFT 技术不同，S3Delta-M 是通过进行可微分的 Delta 调整结构搜索开发的。它明确控制稀疏性，并在统一的搜索空间中搜索这些技术的最优组合。在 S3Delta-M 中，每个 PEFT 模块（LoRA、Compacter、BitFit 和 LNFit）被插入到 PLM 的相应层中，以确保实现最佳性能。这些模块的具体组合和放置是通过结构搜索过程确定的，该过程由显式稀疏性控制指导。S4[62] 是顺序适配器、前缀调整、BitFit 和 LoRA 的组合。与之前在变换器的所有层中统一使用相同 PEFT 模块的方法不同，S4 是通过搜索不同的层分组、可训练参数分配、可调组和 PEFT 模块分配来设计的。在 S4 中，PLM 的层被划分为四个组，G1、G2、G3、G4，形成“纺锤形”模式。这意味着更多的层被分配给中间组（G2 和 G3），而顶层和底层组（G1 和 G4）被分配的层较少。然而，所有可训练参数都均匀分配，即每层中的可训练参数数量在所有组中保持相同。不同的组配备了不同组合的顺序适配器、前缀调整、BitFit 和 LoRA。广泛的实验结果表明，当每个组配备以下 PEFT 方法组合时，可以实现更好的性能。A 表示顺序适配器，P 表示前缀调整，B 表示 BitFit，L 表示 LoRA。</li>
+</ol>
+<p>G1: (A, L); G2: (A, P);<br />
+G3: (A, P, B); G4: (P, B, L)。</p>
+<h3 id="e-统一微调">E. 统一微调<a class="anchor-link" href="#e-统一微调" title="Permanent link">&para;</a></h3>
+<p>统一微调提出了一个统一的框架用于微调，它将不同的微调方法整合到一个协调的架构中，确保在模型的适应和优化过程中的一致性和效率。与混合微调方法不同，统一微调方法通常使用单一的 PEFT 方法，而不是各种 PEFT 方法的组合。AdaMix[63] 利用适应模块方法的混合来获得微调的统一框架。受稀疏激活 MoE[96] 的启发，AdaMix 将每个适应模块视为单独的专家，并使用随机路由随机选择下投影矩阵和上投影矩阵进行权重更新。这种随机路由允许适应模块为给定任务学习多个视图，但也在决定推理期间使用哪个适应模块时带来了挑战。为此，AdaMix 使用一致性正则化和适应模块合并（即所有下投影和上投影矩阵的平均权重）来选择训练好的适应模块，并实现与单一模块相同的计算成本。值得注意的是，AdaMix 中的适应模块可以是适配器，如顺序适配器 [9]，或低秩分解矩阵，如 LoRA[11]。</p>
+<p>SparseAdapter[64] 利用网络剪枝技术构建了一个统一框架，其中各种 PEFT 方法，包括适配器家族和 LoRA[9]、[11]、[16]，可以进一步剪枝以提高参数效率。SparseAdapter 设置了一个目标稀疏度，表示为 <span class="math-inline">s</span>，并为适配器和 LoRA 的所有参数分配了一个分数，表示为 <span class="math-inline">z</span>。得分低于阈值 <span class="math-inline">z_s</span>（对应于 <span class="math-inline">z</span> 的第 <span class="math-inline">s</span> 低百分位数）的参数被认为是冗余的并被移除。分数 <span class="math-inline">z</span> 可以使用剪枝方法计算，如随机剪枝、幅度剪枝 [97]、Erdos-Renyi[98]、SNIP[99] 或 GraSP[100]，基于适配器权重 <span class="math-inline">W</span>，基于 SNIP 的 SparseAdapter 提供了最佳结果。此外，SparseAdapter 在“Large-Sparse”设置下，即使用更大的瓶颈尺寸和更高的稀疏比率时，表现出比全参数微调更好的性能。值得注意的是，SparseAdapter 中提出的网络剪枝技术是一种插件方法，可以应用于任何适配器变体，如 LoRA[11]、MAM 适配器 [16] 和 AdapterFusion[19]。SparseAdapter 中的优化参数可以表示为 <span class="math-inline">\hat{W} = W \odot M</span>，其中 <span class="math-inline">M</span> 是一个二进制掩码矩阵，<span class="math-inline">M = I{z \geq z_s}</span> 并且 <span class="math-inline">z = \text{score}(W)</span>。</p>
+<p>ProPELT[65] 在整个层和任务中引入了一个单一的原型网络（例如适配器、前缀调整和 LoRA），并使用各种二进制掩码为每个层构建不同的子网络。受 ALBERT[101] 启发，ProPELT 利用变换器每层的原型网络模块中的参数共享，提高参数效率并减少存储需求。在 ProPELT 中，引入了二进制掩码 <span class="math-inline">M \in {0, 1}^n</span>，在变换器的每层中，其中 <span class="math-inline">n</span> 是单个 PEFT 模块中的参数数量。每个掩码对应于共享原型网络的特定子网络。通过这样做，尽管每层共享同一原型网络的参数，但每层都有不同的子网络来捕获有意义的语义表示。PLMs 的任务适应的最终目标可以表示为：<br />
+<div class="math-display"><br />
+    \max_{\theta_{\text{pro}}, m_1, m_2, \ldots, m_L} \sum_{i=0}^N \log P(Y_i | X_i; \theta_{\text{lm}}, \theta_{\text{sub}}),<br />
+</div></p>
+<p><div class="math-display"><br />
+    \theta_{\text{sub}} = [\theta_{\text{pro}} \odot m_1, \theta_{\text{pro}} \odot m_2, \ldots, \theta_{\text{pro}} \odot m_L].<br />
+</div><br />
+这里，<span class="math-inline">\theta_{\text{lm}}</span> 表示 PLMs 的冻结预训练参数，<span class="math-inline">m_i</span>（<span class="math-inline">i = 1, 2, \ldots, L</span>）是二进制掩码矩阵，<span class="math-inline">\theta_{\text{sub}}</span> 表示要优化的参数。</p>
+<h2 id="iv-实验">IV. 实验<a class="anchor-link" href="#iv-实验" title="Permanent link">&para;</a></h2>
+<h3 id="a-实验设置">A. 实验设置<a class="anchor-link" href="#a-实验设置" title="Permanent link">&para;</a></h3>
+<p>1) <strong>PLMs和数据集</strong>：我们使用编码器模型RoBERTa-base (125M) 和 RoBERTa-large (355M) [2] 在 GLUE 基准 [100] 上进行评估，使用编码器-解码器模型 T5-base (220M) 和 T5-large (770M) [4] 在 WMT16 En-Ro 数据集上进行评估，使用解码器模型 LLaMA-7B 和 LLaMA-13B [7] 结合 Alpaca 数据集 [102] 在 MMLU 基准 [103] 上进行评估。所有这些不同类型和规模的PLMs 都是基于变换器架构的编码器、解码器或编码器-解码器。我们使用的实验数据集涵盖了从自然语言理解（NLU）到机器翻译（MT）和自然语言生成（NLG）的各种任务。GLUE 基准包括单句分类和句子对分类任务的集合。WMT16 En-Ro 数据集由平行数据对组成，每对包括一个英文句子及其对应的罗马尼亚语翻译。Alpaca [102] 是一个包含 52k 样本的指令数据集。MMLU 基准包括 57 个学科的广泛范围，涵盖了从初级到高级的专业知识和问题解决能力的测试。</p>
+<p>2) <strong>PEFT方法</strong>：选择了十一种代表性的PEFT方法：顺序适配器（AdapterS）[9]、提示调整（prompt-tuning）[24]、前缀调整（prefix-tuning）[10]、(IA)3 [30]、BitFit [34]、Child-Tuning [39]、LoRA [11]、AdaLoRA [45]、QLoRA [49]、MAM适配器[16] 和 ProPELT [65]。由于GLUE 基准由一系列NLU任务组成，因此它是大多数PLMs验证PEFT方法有效性的优选评估数据集。除了QLoRA之外的十种代表性PEFT方法被选来微调RoBERTa-base/large。对于T5-base/large，我们使用(IA)3和LoRA进行微调。至于LLaMA-7B/13B，我们使用(IA)3、LoRA和QLoRA进行微调。</p>
+<p>3) <strong>实现细节</strong>：由于“提示调整、前缀调整、(IA)3、LoRA 和 AdaLoRA”已经被集成到PEFT库中7，因此我们直接使用PEFT库来调用这些PEFT方法进行微调。对于BitFit、Child-tuingD、MAM适配器、QLoRA和ProPELT，我们使用它们的原始代码进行实验。值得注意的是，我们使用MAM适配器的代码来实验顺序适配器。对于RoBERTa-base/large，除了(IA)3使用批大小8进行微调外，所有PEFT方法都使用批大小32和序列长度128进行微调。我们对T5-base使用批大小64，对T5-large使用批大小32。对于LLaMA-7B/13B，我们使用批大小16进行微调。所有实验都在A800 GPU上实现。</p>
+<h3 id="b-微调性能和参数效率">B. 微调性能和参数效率<a class="anchor-link" href="#b-微调性能和参数效率" title="Permanent link">&para;</a></h3>
+<p>1) <strong>RoBERTa Base/Large 在 GLUE 上的表现</strong>：表III展示了在 GLUE 基准上，使用 RoBERTa-base/large 进行全参数微调和 11 种代表性 PEFT 方法的实验结果，观察到以下发现：</p>
+<ul>
+<li>
+<p>所有 PEFT 方法都减少了可训练参数的数量，大多数 PEFT 方法在 GLUE 基准上实现与全参数微调相匹配甚至更好的性能。对于 RoBERTa-base，prompt-tuning、prefix-tuning、IA3、AdaLoRA、ProPELTprefix 和 ProPELTLoRA 在 GLUE 上的平均性能均低于全参数微调，而顺序适配器、BitFit、Child-TuningD、LoRA、MAM 适配器和 ProPELTAdapter 的性能优于全参数微调。对于 RoBERTa-large，prompt-tuning、prefix-tuning、IA3、AdaLoRA、ProPELTprefix 和 Child-TuningD 在 GLUE 上的平均性能低于全参数微调，而顺序适配器、BitFit、LoRA、MAM 适配器、ProPELTAdapter 和 ProPELTLoRA 的性能优于全参数微调。</p>
+</li>
+<li>
+<p>ProPELTadapter 是一种统一的微调方法，采用 AdapterFusion 作为后端，仅使用了 RoBERTa-base 和 RoBERTa-large 的 1.50% 可训练参数，但在 GLUE 基准上实现了最佳的平均性能，分别比 RoBERTa-base (FT) 高出约 1.30% 和 RoBERTa-large (FT) 高出约 1.65%。</p>
+</li>
+<li>
+<p>MAM 适配器是一种混合微调方法，结合了并行适配器和前缀调整，其性能优于前缀调整，但也需要更多的可训练参数。</p>
+</li>
+<li>
+<p>顺序适配器所需的可训练参数多于 prompt-tuning、prefix-tuning、(IA)3、BitFit、ChildTuningD、LoRA 和 AdaLoRA，但在 GLUE 基准上的性能优于它们。</p>
+</li>
+<li>
+<p>设置虚拟标记长度为 20 的 prompt-tuning 拥有最小的可训练参数，但性能也最差，其在 GLUE 基准上的平均性能比全参数微调低约 10%。</p>
+</li>
+<li>
+<p>Child-TuningD 在 RoBERTa-base 上进行 GLUE 基准微调时表现良好，并且比全参数微调获得更好的性能，但在对 RoBERTa-large 在 MNLI 数据集上进行微调时表现不佳，我们猜测这可能是由于学习率引起的。</p>
+</li>
+</ul>
+<p>2) <strong>T5 Base/Large 在 WMT16 En-Ro 数据集上的表现</strong>：表IV 描述了在 WMT16 En-Ro 数据集上使用 (IA)3 和 LoRA 进行 T5-base/large 微调的性能，它们与全参数微调相比显著减少了可训练参数的数量，同时保持了相当的性能。具体来说，(IA)3 仅使用了可训练参数的 0.03%，在 T5-base 上比全参数微调的 BLEU 分数高 0.16，在 T5-large 上低 0.01。LoRA 在 T5-base 上仅使用了可训练参数的 0.39%，BLEU 分数比全参数微调高 0.36，在 T5-large 上使用了可训练参数的 0.32%，BLEU 分数比全参数微调低 0.01。</p>
+<p>3) <strong>LLaMA 在 MMLU 上的表现</strong>：我们首先追踪了使用 LoRA、QLoRA 和 (IA)3 方法对 LLaMA-7B-Alpaca 和 LLaMA-13B-Alpaca 进行 5-shot MMLU 开发准确度的全参数微调和 PEFT 方法的表现，遵循了 [49] 中的工作。如图 4 所示，在整个模型训练过程中，特别是在 LoRA 和 QLoRA 中，5-shot MMLU 开发准确度有显著的波动。此外，我们发现 LLaMA-7B-Alpaca 在 MMLU 基准上的全参数微调表现对学习率极为敏感，如表 V 所示。随后，我们选择了在开发集上表现最佳的检查点，并在 MMLU 基准的测试集上进行了 5-shot 准确度实验。如表 VI 所示，LLaMA7B 和 LLaMA-13B 的全参数微调比其他 PEFT 方法产生了更好的 5-shot MMLU 测试准确度。(IA)3、LoRA 和 QLoRA 方法都大幅减少了可训练参数的数量，其中 (IA)3 的表现最佳。尽管 (IA)3 仅使用了全参数微调参数的 0.02%，但其性能比全参数微调低 2-4%。LoRA 和 QLoRA 需要大约 2% 的全参数微调参数，实现了比全参数微调低约 2% 的 5-shot MMLU 准确度。特别是，QLoRA 仅使用了 LoRA 一半数量的可训练参数，但实现了相当的表现。QLoRA 中参数数量的减少可以归因于其结合了 4 位 NormalFloat 量化。</p>
+<h3 id="c-内存效率">C. 内存效率<a class="anchor-link" href="#c-内存效率" title="Permanent link">&para;</a></h3>
+<p>已经证明 PEFT 方法有效地减少了可训练参数的数量。然而，它们是否也能减少 GPU 内存使用量仍不清楚。为了评估 PEFT 方法对 GPU 内存的影响，我们比较了在不同模型和基准上全参数微调和 PEFT 方法的 GPU 内存成本。具体的实验设置可以在实现细节部分看到。如表 VII 所示，RoBERTa、T5 和 LLaMA 中的全参数微调的内存使用与总模型参数量正相关。特别是 RoBERTa，RoBERTa-base 消耗的内存较少，仅需要 5.38GB。相比之下，LLaMA 需要显著更大的内存，特别是 LLaMA-13B，需要大约 290GB 进行全参数微调。在 RoBERTa-base/large 中，prompt-tuning、prefix-tuning、(IA)3、LoRA 和 AdaLoRA（使用 PEFT 库实现）以及 BitFit 与全参数微调相比显著减少了 GPU 内存占用。令人惊讶的是，顺序适配器、MAM 适配器、Child-TuningD 和 ProPELT 都比全参数微调使用更多的内存。顺序适配器和 MAM 适配器表现出更高的内存消耗，大约是全参数微调的三倍，MAM 适配器消耗的内存甚至更多。对于 T5-base/large 模型，(IA)3 和 LoRA 都在微调期间展示了有效的内存减少，LoRA 的性能优于 (IA)3。值得注意的是，(IA)3 在 RoBERTa-base/large 中比 LoRA 消耗更少的 GPU 内存，这是由于 (IA)3 微调期间的较小批量大小（(IA)3 将批量大小设置为 8）。同样，(IA)3、LoRA 和 QLoRA 都显著减少了与全参数微调相比的 GPU 占用量，在 LLaMA7B/13B 中。此外，我们发现当模型参数数量较大时，PEFT 方法在减少内存使用方面更有效。例如，在 LLaMA7B-Alpaca 中，与全参数微调相比，IA3、LoRA 和 QLoRA 分别减少了 24.08%、26.30% 和 66.66% 的内存使用；而在 LLaMA-13B-Alpaca 中，与全参数微调相比，IA3、LoRA 和 QLoRA 分别减少了 33.55%、39.46% 和 76.86% 的内存使用。值得注意的是，QLoRA 显著降低了 GPU 内存消耗，微调 LLaMA-7B 只需要全参数微调所需内存的 1/3，而微调 LLaMA-13B 则需要不到全参数微调所需内存的 1/4。这一进步为在计算资源受限的情况下对各种下游任务进行 LLMs 的微调提供了可能性。</p>
+<h2 id="v-应用">V. 应用<a class="anchor-link" href="#v-应用" title="Permanent link">&para;</a></h2>
+<h3 id="a-多任务学习">A. 多任务学习<a class="anchor-link" href="#a-多任务学习" title="Permanent link">&para;</a></h3>
+<p>多任务学习是一种训练方法，它涉及在多个相关任务上训练模型，并利用它们之间共享和传递的信息来提高每个任务的性能。像适配器、提示调整和LoRA这样的PEFT方法使用可以插入PLMs的额外模块，因此可以用于特定任务的微调，以改善多任务学习的泛化能力。例如，[19]、[21]、[22]、[75]中的研究利用特定任务的适配器来学习存储在多个任务中的信息，以实现对新任务的更强大的迁移学习。一些工作[26]、[27]、[28]采用提示调整进行多任务学习。它们要么利用来自多个源任务的预训练软提示来初始化目标任务的软提示，基于源任务和目标任务之间的相似性；要么使用多任务数据来学习一个单一的共享提示，并将其转移到目标任务。与适配器类似，多个特定任务的LoRA模块的组合也被用来将知识转移到新任务[55]、[56]。L-LoRA[57]通过防止特定任务表示之间的负面推理来增强多任务学习的融合能力。此外，[93]利用算术运算符，如加法和否定运算符，将不同任务上训练的各种PEFT方法的参数合并，用于多任务学习。</p>
+<h3 id="b-跨语言迁移">B. 跨语言迁移<a class="anchor-link" href="#b-跨语言迁移" title="Permanent link">&para;</a></h3>
+<p>跨语言迁移涉及将知识或模型从一个语言转移到另一个语言。许多工作利用了PEFT方法，如适配器，进行跨语言迁移，因为它们具有独特的模块化设计。Bapna和Firat[105]使用顺序适配器[9]对高资源语言上的多语种神经机器翻译模型进行微调和性能恢复。Artetxe等人[106]使用顺序适配器[9]将预训练的单语模型转移到一个未见过的语种。MAD-X[75]、[107]使用语言特定、任务特定和可逆适配器以模块化的方式学习语言和任务特定的转换，同时解决多语种和目标语言之间的词汇不匹配问题，使预训练的多语种模型适应目标语言。MAD-G[108]基于语言的类型学特征生成语言适配器，允许跨语言共享语言知识以进行跨语言迁移。LT-SFT[38]使用稀疏微调在源语言上训练模型，并学习特定任务的稀疏差向量用于跨语言迁移。而BAD-X[109]在源语言和目标语言上训练双语对适配器，用于零样本跨语言迁移。</p>
+<h3 id="c-后门攻击和防御">C. 后门攻击和防御<a class="anchor-link" href="#c-后门攻击和防御" title="Permanent link">&para;</a></h3>
+<p>后门攻击是对安全性的重大威胁，其中一小部分训练样本被恶意后门触发器污染。当在这些被污染的数据集上训练时，模型在良性样本上表现正常，但在包含预定义触发器的样本上预测攻击者选择的标签。PLMs对后门攻击的脆弱性给现实世界的应用带来了巨大的风险[110]。基于预训练权重的脆弱性，Gu等人[111]利用PEFT方法构建后门攻击，其中后门攻击直接注入到PEFT模块中。然而，Zhu等人[112]发现PEFT可以作为后门防御解决方案，通过仅优化少量参数来减少模型容量。[113]的研究结果也证实了PEFT可以轻微削弱后门攻击，并为PEFT范式设计了一种新的木马攻击。</p>
+<h2 id="vi-进一步的方向">VI. 进一步的方向<a class="anchor-link" href="#vi-进一步的方向" title="Permanent link">&para;</a></h2>
+<h3 id="a-轻量级混合peft方法">A. 轻量级混合PEFT方法<a class="anchor-link" href="#a-轻量级混合peft方法" title="Permanent link">&para;</a></h3>
+<p>存在许多方法[16]、[35]、[58]、[59]、[60]、[61]、[62]来组合多个PEFT方法，旨在利用每种PEFT方法的独特优势，实现增强的性能。然而，探索仅限于PEFT方法如适配器、LoRA、前缀调整和BitFit，留下了进一步利用其他PEFT方法组合的空间。此外，虽然一些PEFT方法[60]、[61]受到NAS算法的启发，已经使用不同的优化技术进行了研究，以探索配置这些PEFT方法的最佳神经网络架构，但仍有潜力继续探索使用其他优化方法自动搜索神经网络架构，并在特定层配置特定的PEFT模块组合。另外，使用多种PEFT方法通常会导致参数和内存使用量的增加，尽管它提高了性能。因此，一个有趣的研究方向是探索如何利用多种PEFT方法在提高性能的同时，最小化可训练参数的数量。</p>
+<h3 id="b-基于lora的peft方法">B. 基于LoRA的PEFT方法<a class="anchor-link" href="#b-基于lora的peft方法" title="Permanent link">&para;</a></h3>
+<p>最近，出现了许多基于LoRA的PEFT方法，如图1所示。这些方法通过结合自适应秩调整、无结构剪枝技术、权重量化和多任务集成，进一步增强了LoRA。这鼓励未来的研究开发更多基于LoRA的PEFT方法。特别应注重剪枝技术和权重量化。剪枝技术的应用不仅可以扩展到AdaLoRA[45]进行秩调整，还可以扩展到LoRAPrune[48]对预训练和LoRA权重进行剪枝。值得注意的是，剪枝和权重量化技术有效地减少了可训练参数的数量，压缩了模型大小，优化了PLMs（特别是LLMs）的存储和计算需求，并增强了它们在下游任务中的实用性和可扩展性。这些技术可以与LoRA进一步探索，以发挥协同效益。</p>
+<h3 id="c-开发peft库">C. 开发PEFT库<a class="anchor-link" href="#c-开发peft库" title="Permanent link">&para;</a></h3>
+<p>已经出现了许多PEFT方法，但使用它们并不是一件简单的事情。为了解决这个挑战，已经开发了PEFT库[8]和AdapterHub[9]。这些库集成了常用的PEFT方法，如前缀调整、LoRA和AdaLoRA。用户只需几行代码，就可以直接调用这些PEFT方法，简化了它们的使用。此外，PEFT和AdapterHub库都提供了一系列的示例，说明如何将这些PEFT方法应用于各种PLMs和LLMs进行微调下游任务。然而，并非所有的PEFT方法目前都集成在这两个库中。未来的工作可以朝着整合更多方法的方向努力，进一步推动PEFT方法的应用开发。</p>
+<h3 id="d-peft方法的可解释性">D. PEFT方法的可解释性<a class="anchor-link" href="#d-peft方法的可解释性" title="Permanent link">&para;</a></h3>
+<p>尽管已经提出了许多PEFT方法，但缺乏全面研究探索它们实现相当性能和减少可训练参数背后的原因。[41]的工作在稀疏微调模型的概念下统一了PEFT方法，并提供了理论分析，证明稀疏性可以作为原始模型的正则化技术，有效控制稳定性的上限。而[114]探索并分析了LoRA在全连接神经网络和变换器网络中的表达能力，展示了存在有效的低秩适配器给定任务的条件。这些研究揭示了某些PEFT方法的工作机制和有效性，但仍然缺乏普遍性。未来的研究工作可以专注于推进理论研究，以揭开PEFT方法背后的工作机制。</p>
+<h3 id="e-在计算机视觉和多模态学习中探索peft方法">E. 在计算机视觉和多模态学习中探索PEFT方法<a class="anchor-link" href="#e-在计算机视觉和多模态学习中探索peft方法" title="Permanent link">&para;</a></h3>
+<p>尽管PEFT方法已在NLP中进行了广泛研究，但它们在计算机视觉和多模态学习中的应用也显示出很大的潜力，值得进一步探索。NLP中的顺序适配器最初受到多领域图像分类[77]、[115]的启发，为PLMs的PEFT方法的快速发展铺平了道路。此外，研究人员越来越多地研究计算机视觉[116]、[117]以及语言-图像和图像-音频多模态学习[118]、[119]中的各种PEFT技术，这些技术建立在NLP中的PEFT方法[9]、[11]、[58]之上。然而，在这些领域中仍有大量空间需要进一步探索和利用。特别是，PEFT方法有助于促进多模态学习中的跨模态转移。通过使用PEFT技术对预训练模型进行微调，从一种模态获得的知识可以有效地转移到另一种模态，从而在多模态任务中提高性能。因此，PEFT方法在计算机视觉和多模态学习中的应用是一个极有前景的未来研究方向。</p>
+<h2 id="vii-结论">VII. 结论<a class="anchor-link" href="#vii-结论" title="Permanent link">&para;</a></h2>
+<p>本文提供了对NLP中PLMs的PEFT方法的全面和结构化研究。通过在NLP中对PEFT方法进行分类，我们确定了它们的主要技术和挑战。我们在各种下游任务上使用几种代表性的PEFT方法对基于编码器的RoBERTa、基于编码器-解码器的T5和基于解码器的LLaMA进行了微调。实验结果表明，大多数PEFT方法显著提高了参数效率，并与全参数微调相比实现了相当甚至更好的性能。此外，大多数PEFT方法降低了内存占用，其中QLoRA大幅减少了计算内存需求，缓解了微调LLMs时的内存挑战。我们介绍了PEFT方法的常见应用，并概述了未来的研究方向。随着LLMs的持续发展，有必要开发能够有效减少微调期间计算资源需求和内存使用的PEFT方法。本综述旨在为PLMs的PEFT方法提供一个鸟瞰视角，并激励该领域的进一步研究。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

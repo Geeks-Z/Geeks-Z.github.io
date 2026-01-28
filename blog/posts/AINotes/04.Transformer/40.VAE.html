@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>变分自编码器VAE：原来是这么一回事 | 附开源代码</title>
+    <meta name="description" content="变分自编码器VAE：原来是这么一回事 | 附开源代码 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-introduction">1. Introduction</a></li>
+<li><a href="#2-motivation">2. Motivation</a></li>
+<li><a href="#3-derivation">3. Derivation</a><ul>
+<li><a href="#31-decoder">3.1 Decoder</a></li>
+<li><a href="#32-objective">3.2 Objective</a></li>
+<li><a href="#33-encoder">3.3 Encoder</a></li>
+<li><a href="#34-architecture">3.4 Architecture</a></li>
+<li><a href="#35-reparameterization-trick">3.5 Reparameterization Trick</a></li>
+<li><a href="#36-evidence-lower-bound">3.6 Evidence Lower Bound</a></li>
+<li><a href="#37-loss-function">3.7 Loss Function</a></li>
+</ul>
+</li>
+<li><a href="#4-conditional-vae">4. Conditional VAE</a></li>
+<li><a href="#5-implementation">5. Implementation</a></li>
+<li><a href="#6-discussion">6. Discussion</a></li>
+<li><a href="#7-references">7. References</a></li>
+<li><a href="#分布变换">分布变换</a></li>
+<li><a href="#vae慢谈">VAE慢谈</a></li>
+<li><a href="#后续分析">后续分析</a></li>
+<li><a href="#代码">代码</a></li>
+<li><a href="#终点站">终点站</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>变分自编码器VAE：原来是这么一回事 | 附开源代码</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/04.Transformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>文章来源：<a href="https://zhuanlan.zhihu.com/p/348498294">机器学习方法—优雅的模型（一）：变分自编码器（VAE）</a></p>
+</blockquote>
+<h2 id="1-introduction">1. Introduction<a class="anchor-link" href="#1-introduction" title="Permanent link">&para;</a></h2>
+<h2 id="2-motivation">2. Motivation<a class="anchor-link" href="#2-motivation" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240711202222.png"/></div>
+
+<p>在说 VAE 之前，自然要先说到传统的自编码器 (Autoencoder)。上图即是一个自编码的实例。自编码器类似于一个非线性的 PCA，是一个利用神经网络来给复杂数据降维的模型。现在我们记<span class="math-inline">X</span> 整个数据集的集合，<span class="math-inline">x_i</span> 数据集中的一个样本。</p>
+<p>自编码器包含一个编码器<span class="math-inline">z = g(X)</span>，它的输出<span class="math-inline">z</span> 们称作编码，<span class="math-inline">z</span> 维度往往远远小于输入<span class="math-inline">X</span> 维度。它还包含一个解码器<span class="math-inline">\tilde{X} = f(z)</span>，这个解码器能够通过编码<span class="math-inline">z</span> 到<span class="math-inline">\tilde{X}。</span></p>
+<p>我们希望解码器解码得到的<span class="math-inline">\tilde{X}</span> 够尽可能的接近<span class="math-inline">X，</span> 以自编码器一个常用的损失函数是<span class="math-inline">\ell = |X - \tilde{X}|^2。</span> 样一来，模型训练结束后，我们就可以认为编码<span class="math-inline">z</span> 括了输入数据<span class="math-inline">X</span> 大部分信息，也因此我们可以直接利用<span class="math-inline">z</span> 达原始数据，从而达到数据降维的目的。</p>
+<p>出于方便，假设现在我们的输入<span class="math-inline">X \in \mathbb{R}^{C \times H \times W}</span> 一些图片，我们可以训练一个自编码器。它的编码器<span class="math-inline">z = g(X)</span> 每个图片编码成<span class="math-inline">z \in \mathbb{R}^d，</span> 的解码器<span class="math-inline">\tilde{X} = f(z)</span> 用<span class="math-inline">z</span> 输入的图片重建为<span class="math-inline">\tilde{X} \in \mathbb{R}^{C \times H \times W}</span>。</p>
+<p>我们现在仔细研究一下这个模型的解码器<span class="math-inline">g: \mathbb{R}^d  \rightarrow \mathbb{R}^{C \times H \times W}。</span> 个解码器只需要输入某些低维向量<span class="math-inline">z，</span> 能够输出高维的图片数据<span class="math-inline">X。</span> 我们能否把这个模型直接当做生成模型，在低维空间<span class="math-inline">\mathbb{R}^d</span> 随机生成某些向量<span class="math-inline">z</span>，再喂给解码器<span class="math-inline">f(z)</span> 生成图片呢？</p>
+<p>答案是，我们可以这么做，运气好的话我们可以得到一些有用的图片，但是对绝大多数随机生成的<span class="math-inline">z</span>，<span class="math-inline">f(z)</span> 会生成一些没有意义的噪声。</p>
+<p>为什么会这样呢？这是因为我们没有显性的对<span class="math-inline">z</span> 分布<span class="math-inline">p(z)</span> 行建模，我们并不知道哪些<span class="math-inline">z</span> 够生成有用的图片。我们用来训练<span class="math-inline">f(z)</span> 数据是有限的，<span class="math-inline">f</span> 能只会对极有限的<span class="math-inline">z</span> 响应。而<span class="math-inline">\mathbb{R}^d</span> 是一个太大的空间，如果我们只在这个空间上随机采样的话，我们自然不能指望总能恰好采样到能够生成有用的图片的<span class="math-inline">z。</span></p>
+<p>在 Autoencoder 的基础上，显性的对<span class="math-inline">z</span> 分布<span class="math-inline">p(z)</span> 行建模，使得自编码器成为一个合格的生成模型，我们就得到了 Variational Autoencoders，即今天的主题，变分自编码器。</p>
+<h2 id="3-derivation">3. Derivation<a class="anchor-link" href="#3-derivation" title="Permanent link">&para;</a></h2>
+<p>我们在这一章正式对 VAE 进行推导。对于自编码器来说，<span class="math-inline">z</span> 分布是不确定的，因此只能在<span class="math-inline">\mathbb{R}^d</span> 采样、碰运气。我们为什么不给定<span class="math-inline">z</span> 个简单的分布，将采样的空间缩的很小呢？</p>
+<p>我们不妨假设<span class="math-inline">z \sim \mathcal{N}(0, I)，</span> 中<span class="math-inline">I</span> 表一个单位矩阵。也就是说，我们将<span class="math-inline">z</span> 作是一个服从标准多元高斯分布的多维随机变量。</p>
+<p>现在我们记<span class="math-inline">z</span>、<span class="math-inline">X</span> 随机变量，<span class="math-inline">z_i</span>、<span class="math-inline">x_i</span> 表随机变量的样本。</p>
+<p>在这个架构下，我们可以认为数据集是由某个随机过程生成的，而<span class="math-inline">z</span> 这个随机过程中的一个不可观测到的隐变量。这个生成数据的随机过程包含两个步骤：</p>
+<ol>
+<li>从先验分布<span class="math-inline">p(z)</span> 采样得到一个<span class="math-inline">z_i</span></li>
+<li>根据<span class="math-inline">z_i，</span> 条件分布<span class="math-inline">p(X \mid z_i)</span> 采样得到一个数据点<span class="math-inline">x_i</span></li>
+</ol>
+<p>如果我们能基于这个随机过程进行建模，那么我们可能可以更轻易的得到一个生成模型。</p>
+<h3 id="31-decoder">3.1 Decoder<a class="anchor-link" href="#31-decoder" title="Permanent link">&para;</a></h3>
+<p>首先，让我们从生成模型的角度来考虑 Decoder 的架构。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240711204417.png"/></div>
+
+<p>上图是一个 Decoder 架构的示意图。我们给 Decoder 输入一个从<span class="math-inline">\mathcal{N}(0, I)</span> 采样得到的<span class="math-inline">z_i，</span> 实是希望由<span class="math-inline">\theta</span> 数化的 Decoder 能够学会一个映射，输出<span class="math-inline">z_i</span> 应的<span class="math-inline">X</span> 分布，即<span class="math-inline">p_{\theta}(X \mid z_i)。</span></p>
+<p>让我们假设，给定任意<span class="math-inline">z_i</span> ，<span class="math-inline">X</span> 服从某个各维度独立的多元高斯分布，即：</p>
+<p><div class="math-display">p_{\theta}(X \mid z_i) = \mathcal{N}(X \mid \mu_i^{\prime}(z_i; \theta), \sigma_i^{\prime2}(z_i; \theta) * I).\ \</div></p>
+<p>这样一来，我们只需要输入<span class="math-inline">z_i</span>  Decoder，然后让它拟合出<span class="math-inline">\mu_i^{\prime}和\sigma_i^{\prime2}，</span> 们就能知道<span class="math-inline">X \mid z_i </span> 具体分布了。</p>
+<p>我们举个例子来更直观的理解这个过程。我们根据分布<span class="math-inline">p(z)</span> 样出一个<span class="math-inline">z_i，</span> 个<span class="math-inline">z_i</span> 当对应图片集<span class="math-inline">X</span> 的某一部分类似的图片。比如说，我们的图片集<span class="math-inline">X</span> 能是世界上所有的猫，那么抽样得到的一个<span class="math-inline">z_i</span> 能代表颜色为橘色，耳朵为立耳的猫；而下次抽样得到的另一个<span class="math-inline">z_j</span> 能代表颜色为白色，耳朵为折耳的猫。</p>
+<p>我们再假设，在这个<span class="math-inline">z_i</span> ，这类立耳橘猫的图片像素值的分布<span class="math-inline">X\mid z_i</span> 从一个多元高斯分布<span class="math-inline">\mathcal{N}(\mu_i^{\prime}, \sigma_i^{\prime2} * I)。</span> 样一来，我们的 Decoder 只需要通过神经网络，将<span class="math-inline">z_i</span> 换为适当的<span class="math-inline">{\mu}_i^{\prime}和 {\sigma}_i^{\prime2}，</span> 们就得到了这个多元高斯分布。之后我们就可以从<span class="math-inline">\mathcal{N}(\mu_i^{\prime}, \sigma_i^{\prime2} * I)</span> 采样，得到立耳橘猫的图片了！</p>
+<h3 id="32-objective">3.2 Objective<a class="anchor-link" href="#32-objective" title="Permanent link">&para;</a></h3>
+<p>因为本质上我们希望训练一个生成模型，我们也不妨以一个更加统计的视角来看一个生成模型的目标函数。</p>
+<p>对于一个生成模型，我们的终极目标是什么？对，我们就是想对数据本身的分布<span class="math-inline">p(X)</span> 行建模。如果能成功得到一个逼近真实分布<span class="math-inline">p(X)</span> <span class="math-inline">p_{\theta}(X)，</span> 么我们就能从中进行采样，生成一些可能的数据点。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240711204725.png"/></div>
+
+<p>如上图，我们举个当<span class="math-inline">X</span> 表所有宝可梦的图片的例子。在得到<span class="math-inline">p_{\theta}(X)</span> ，我们就可以生成一些令<span class="math-inline">p_{\theta}(x_i)</span> 较大的<span class="math-inline">x_i</span>，这些<span class="math-inline">x_i</span> 很可能会是正常的宝可梦的图片。</p>
+<p>现在的问题就是，我们怎么对<span class="math-inline">p_{\theta}(X)</span> 行建模呢？</p>
+<p>有了之前的铺垫，现在我们有<div class="math-display">p(z) = \mathcal{N}(0, I)，p_{\theta}(X \mid z) = \mathcal{N}(X \mid \mu_i^{\prime}(z; \theta), \sigma_i^{\prime2}(z; \theta) * I)。</div> 得，</p>
+<p><div class="math-display">\begin{aligned} p_{\theta}(X) &amp;= \int_z p_{\theta}(X \mid z) p(z) d z \      &amp;\approx \frac{1}{m} \sum_{j=1}^m p_{\theta}(X \mid z_j). \end{aligned}\</div></p>
+<p>这样问题是不是就解决了呢？我们只要从<span class="math-inline">p(z) = \mathcal{N}(z \mid 0, I)</span> 采样许多<span class="math-inline">z_i</span> 来，就能算出<span class="math-inline">p_{\theta}(X)。</span> 之前的文章<a href="https://zhuanlan.zhihu.com/p/345024301">机器学习理论—统计：MLE 与 MAP</a>中，我们已经介绍过了 MLE。在这里，我们就可以利用 MLE 的思想，让数据集出现的概率最大化，也就是：</p>
+<p><div class="math-display">\begin{aligned} \theta^* &amp;=  \operatorname{argmin}<em>{\theta} - \sum</em>{i=1}^n \log p_{\theta}(x_i) \          &amp;=  \operatorname{argmin}<em>{\theta} - \sum</em>{i=1}^n \log \left( \frac{1}{m} \sum_{j=1}^m p_{\theta}(x_i \mid z_j) \right). \end{aligned}\</div></p>
+<p>我们确实可以这样做，但是这样做的代价是极大的。因为往往<span class="math-inline">x_i</span> 维度会很大，<span class="math-inline">z_i</span> 维度也不会很低，并且，对于某个<span class="math-inline">x_i</span> 言，与之强相关的<span class="math-inline">z_i</span> 数量是相对有限的，但是为了找到这些有限的<span class="math-inline">z_i，</span> 们可能要进行大量的采样。</p>
+<p>所以如果我们希望较为准确的估计<span class="math-inline">p_{\theta}(X)</span> 话，我们可能需要采样<strong>极大量</strong>的<span class="math-inline">z_i</span>，只有这样，我们才能让模型知道究竟哪一些<span class="math-inline">z_i</span> 与哪一些<span class="math-inline">x_i</span> 应着的。</p>
+<p>因此，直接从<span class="math-inline">p(z)</span> 采样<span class="math-inline">z_i，</span> 来估计<span class="math-inline">p_{\theta}(X)</span> 策略几乎是不可行的。不过解决这个问题的思路也很直觉，那就是在 Encoder 中引入后验分布<span class="math-inline">p_{\theta}(z \mid x_i)。</span></p>
+<h3 id="33-encoder">3.3 Encoder<a class="anchor-link" href="#33-encoder" title="Permanent link">&para;</a></h3>
+<p>具体来说，我们怎么在 Encoder 中利用后验分布呢？假设我们现在有后验分布<span class="math-inline">p_{\theta}(z \mid x_i)，</span> 样的话，如下图，每次前向传播的时候，我们可以先将<span class="math-inline">x_i</span> 给 Encoder，算出<span class="math-inline">z\mid x_i</span> 从的分布。之后，我们就可以直接在这个分布中采样出<span class="math-inline">z_i，</span> 给 Decoder，然后得到<span class="math-inline">X\mid z_i</span> 分布，最后基于 MLE 优化模型。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240711205509.png"/></div>
+
+<p>在这个策略下，从<span class="math-inline">p_{\theta}(z \mid x_i)</span> 采样出来的<span class="math-inline">z_i</span> 乎都会和<span class="math-inline">x_i</span> 关的，对比之前，我们可能就省去了很多采样的步骤，极大的提高了效率。</p>
+<p>那现在的问题就是，我们怎么计算<span class="math-inline">p_{\theta}(z \mid x_i)</span> ？我们不妨先尝试下贝叶斯公式：</p>
+<p><div class="math-display">\begin{aligned} p_{\theta}(z \mid x_i) &amp;= \frac{p_{\theta}(x_i \mid z) p(z)}{p_{\theta}(x_i)} \                        &amp;= \frac{p_{\theta}(x_i \mid z) p(z)}{\int_{\hat{z}} p_{\theta}(x_i \mid \hat{z}) p(\hat{z}) d \hat{z}}. \end{aligned}\</div></p>
+<p>辛运的是，我们之前已经假设了<span class="math-inline">p_{\theta}(X \mid z)和p(z)</span> 分布，所以对于上式的分子，我们是可以直接算出来的。不幸的是，上式的分母又有一个积分，如果去估计这个积分的话，又会需要从<span class="math-inline">p(z)</span> 采样大量的<span class="math-inline">z_i。</span> 显然是代价极大，不太可行的。</p>
+<p>这时候我们就可以应用变分贝叶斯算法了！我们不妨令由<span class="math-inline">\phi</span> 数化的 Encoder 去拟合对任意<span class="math-inline">x_i</span> 分布<span class="math-inline">q_{\phi}(z \mid x_i)，</span> 们希望这个分布能够尽可能的逼近真实的后验分布<span class="math-inline">p_{\theta}(z \mid x_i)。</span> 果<span class="math-inline">q_{\phi}(z \mid x_i)</span> 够足够逼近真实的后验分布的话，我们就可以直接通过 Encoder 得到<span class="math-inline">z \mid x_i</span> 分布了！</p>
+<p>我们怎么用神经网络去拟合后验分布呢？和之前一样，我们只要知道这个后验是服从的什么分布，然后让模型拟合这个分布所需的参数就行了。举个例子，如果这个后验分布本质上是一个多元高斯分布，那么我们让 Encoder 输出<span class="math-inline">\mu</span> <span class="math-inline">\Sigma^2</span> 能拟合这个分布了。</p>
+<p>回忆一下，我们之前已经对似然<span class="math-inline">p_{\theta}(X \mid z)</span> 先验<span class="math-inline">p(z)</span> 分布做了假设——它们都服从高斯分布。在这种情况下，不难证明，真实的后验分布<span class="math-inline">p_{\theta}(z \mid X)</span> 服从高斯分布。</p>
+<p>那不妨令近似后验分布对任意<span class="math-inline">x_i</span> 有</p>
+<p><div class="math-display">q_{\phi}(z \mid x_i) = \mathcal{N}(z \mid \mu(x_i; \phi), \sigma^2(x_i; \phi) * I)</div></p>
+<p>即，它也是一个各维度独立的多元高斯分布。这样一来，整个 VAE 的架构就非常明了了。</p>
+<h3 id="34-architecture">3.4 Architecture<a class="anchor-link" href="#34-architecture" title="Permanent link">&para;</a></h3>
+<p>下图即是 VAE 的架构示例。其中<span class="math-inline">x_i^{(j)}</span> 表第<span class="math-inline">i</span> 数据点的第<span class="math-inline">j</span> 特征。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240711205841.png"/></div>
+
+<p>总结一下 VAE 的架构：</p>
+<ol>
+<li>我们首先给 Encoder 输入一个数据点<span class="math-inline">x_i，</span> 过神经网络，我们得到隐变量<span class="math-inline">z</span> 从的近似后验分布<span class="math-inline">q_{\phi}(z \mid x_i)</span> 参数。我们往往认为后验分布是一个各维度独立的高斯分布，因此令 Encoder 输出<span class="math-inline">z\mid x_i</span> 从的高斯分布的参数<span class="math-inline">\sigma_i^2</span> <span class="math-inline">\mu_i</span> 可。</li>
+<li>有了<span class="math-inline">z \mid x_i</span> 布的参数<span class="math-inline">\sigma_i^2</span> <span class="math-inline">\mu_i</span> ，我们从对应的高斯分布中采样出一个<span class="math-inline">z_i，</span> 个<span class="math-inline">z_i</span> 当代表与<span class="math-inline">x_i</span> 似的一类样本。</li>
+<li>我们令 Decoder 拟合似然的分布<span class="math-inline">p_{\theta}(X \mid z_i)。</span> 给 Decoder 一个<span class="math-inline">z_i，</span> 应当返回<span class="math-inline">X \mid z_i</span> 从的分布的参数。我们往往认为似然也服从一个各维度独立的高斯分布，因此令 Decoder 输出<span class="math-inline">X\mid z_i</span> 从的高斯分布的参数<span class="math-inline">\sigma^{\prime2}_i</span> <span class="math-inline">\mu^{\prime}_i</span> 可。</li>
+<li>在得到<span class="math-inline">X\mid z_i</span> 分布的参数后，理论上我们需要从这个分布中进行采样，来生成可能的数据点<span class="math-inline">x_i</span>。</li>
+</ol>
+<p>上述第四点中值得注意的是，在大部分实现中，人们往往不进行采样，而是直接将模型输出的<span class="math-inline">\mu^{\prime}_i</span> 作是给定<span class="math-inline">z_i</span> 成的数据点<span class="math-inline">x_i。</span></p>
+<p>除此之外，人们也往往认为<span class="math-inline">p_{\theta}(X \mid z_i)</span> 一个固定方差的各维度独立的多元高斯分布，即<span class="math-inline">p_{\theta}(X \mid z_i) = \mathcal{N}(X \mid \mu_i^{\prime}(z_i; \theta), \sigma^{\prime2} * I)，</span> 中<span class="math-inline">\sigma^{\prime2}</span> 一个人为给定的超参数。这意味着我们实际中并不真的让模型输出<span class="math-inline">\sigma^{\prime2}_i，</span> 型只要输出<span class="math-inline">\mu_i^{\prime}</span> 行了。</p>
+<h3 id="35-reparameterization-trick">3.5 Reparameterization Trick<a class="anchor-link" href="#35-reparameterization-trick" title="Permanent link">&para;</a></h3>
+<p>上述 VAE 的架构应该是比较清晰的，但让我们再仔细研究一下这个架构。尽管现在我们还没有推导得到最终的损失函数，但让我们先假设，在上述步骤 4 后，我们会接某个损失函数<span class="math-inline">\mathcal{L}</span> 训练神经网络。</p>
+<p>这样的话，从神经网络训练的角度来看，这个架构的前向传播过程是没有问题的，上述步骤 1-4 均可顺利的进行前向传播，然后计算出损失的值。</p>
+<p>然而，令人在意的一个问题是：我们在前向传播的第 2 步，居然调用了一个"采样函数"，从<span class="math-inline">z\mid x_i</span> 采样出来了<span class="math-inline">z_i</span> 给 Decoder！那采样函数能够进行反向传播吗？</p>
+<p>答案显然是不能的。因此，为了让整个网络能够正常的训练，作者们提出了 Reparameterization Trick。这一技巧将上述第 2 步改为：</p>
+<ol>
+<li>有了<span class="math-inline">z \mid x_i</span> 布的参数<span class="math-inline">\sigma_i^2</span> <span class="math-inline">\mu_i</span> ，我们先从<span class="math-inline">\mathcal{N}(0,I)</span> 采样得到一个<span class="math-inline">\epsilon_i</span>，然后我们令<span class="math-inline">z_i = \mu_i + \sigma_i \odot \epsilon_i，</span> 个<span class="math-inline">z_i</span> 当代表与<span class="math-inline">x_i</span> 似的一类样本。</li>
+</ol>
+<p>其中，<span class="math-inline">\odot</span> 表逐元素相乘操作。不难证明，此时<span class="math-inline">z_i</span> 后的分布依然是由<span class="math-inline">\sigma_i^2</span> <span class="math-inline">\mu_i</span> 数化的一个高斯分布。</p>
+<p>利用了 Reparameterization Trick 后，VAE 的架构变成了下图中的模样，其中<span class="math-inline">\epsilon_i</span> 以看作是伴随<span class="math-inline">z_i</span> 给 Decoder 的一个特征。这样一来，这个架构的前向、反向传播就都能跑通了。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240711205857.png"/></div>
+
+<h3 id="36-evidence-lower-bound">3.6 Evidence Lower Bound<a class="anchor-link" href="#36-evidence-lower-bound" title="Permanent link">&para;</a></h3>
+<p>好了，我们已经把 VAE 的架构定下来了。现在我们只要顺着 3.2 节中 MLE 的思想，然后在最大化<span class="math-inline">\log p_{\theta}(X)</span> ，加入变分推断的思想，引入 ELBO (Evidence Lower Bound)，我们就能得到一个靠谱的目标函数了。</p>
+<p>让我们来推一下：</p>
+<p><div class="math-display">\begin{aligned} \log p_{\theta}(X) &amp;=\int_{z} q_{\phi}(z \mid X) \log p_{\theta}(X) dz \quad 全概率定理\                    &amp;=\int_{z} q_{\phi}(z \mid X) \log \frac{p_{\theta}(X, z)}{p_{\theta}(z \mid X)} dz \quad 贝叶斯定理\                    &amp;=\int_{z} q_{\phi}(z \mid X) \log \left(\frac{p_{\theta}(X, z)}{q_{\phi}(z \mid X)} \cdot \frac{q_{\phi}(z \mid X)}{p_{\theta}(z \mid X)}\right) dz\                    &amp;=\int_{z} q_{\phi}(z \mid X) \log \frac{p_{\theta}(X, z)}{q_{\phi}(z \mid X)} dz + \int_{z} q_{\phi}(z \mid X) \log \frac{q_{\phi}(z \mid X)}{p_{\theta}(z \mid X)} dz\                    &amp;=\ell\left(p_{\theta}, q_{\phi}\right)+D_{K L}\left(q_{\phi}, p_{\theta}\right) \                    &amp; \geq \ell\left(p_{\theta}, q_{\phi}\right) \quad KL散度非负. \end{aligned}\</div></p>
+<p>我们已经在之前的文章<strong><a href="https://zhuanlan.zhihu.com/p/345025351">机器学习理论—信息论：自信息、熵、交叉熵与 KL 散度</a></strong>中的第四章证明了 KL 散度是恒大于等于零的，因此显然上式中<span class="math-inline">\ell\left(p_{\theta}, q_{\phi}\right)</span> <span class="math-inline">\log p_{\theta}(X)</span> 一个下界，也因此我们称<span class="math-inline">\ell</span>  ELBO (Evidence Lower Bound)。</p>
+<p>我们不妨在把上式变换一下，易得：</p>
+<p><div class="math-display">\ell\left(p_{\theta}, q_{\phi}\right) = \log p_{\theta}(X) - D_{K L}\left(q_{\phi}, p_{\theta}\right).\ \</div></p>
+<p>这个式子实在是太完美了！这个式子告诉我们，我们只需要最大化<span class="math-inline">\ell，</span> 能最大化<span class="math-inline">\log p_{\theta}(X)，</span> 且最小化<span class="math-inline">D_{K L}\left(q_{\phi}, p_{\theta}\right)。</span></p>
+<p>最大化<span class="math-inline">\log p_{\theta}(X)</span> 理由是显然的，因为我们希望最大化似然。我们为什么希望最小化<span class="math-inline">D_{K L}\left(q_{\phi}, p_{\theta}\right)</span> ？其实原因也是显然的，因为我们希望近似后验<span class="math-inline">q_{\phi}(z\mid X)</span> 够逼近真实后验<span class="math-inline">p_{\theta}(z \mid X)，</span> 则的话 Encoder 可能只能输出一些无意义的分布。</p>
+<p>既然我们希望最大化<span class="math-inline">\ell，</span> 在我们进一步对其进行展开，不难得到：</p>
+<p><div class="math-display">\begin{aligned} \ell\left(p_{\theta}, q_{\phi}\right) &amp;= \int_{z} q_{\phi}(z \mid X) \log \frac{p_{\theta}(X, z)}{q_{\phi}(z \mid X)} dz \         &amp;=\int_{z} q_{\phi}(z \mid X) \log \frac{p_{\theta}(X \mid z) p(z)}{q_{\phi}(z \mid X)} dz \quad 贝叶斯定理 \         &amp;=\int_{z} q_{\phi}(z \mid X) \log \frac{p(z)}{q_{\phi}(z \mid X)} dz + \int_{z} q_{\phi}(z \mid X) \log p_{\theta}(X \mid z) dz \         &amp;=-D_{K L}\left(q_{\phi}, p\right)+\mathbb{E}<em>{q</em>{\phi}}\left[\log p_{\theta}(X \mid z)\right]. \end{aligned}</div></p>
+<p>让我们再将上述两项分别展开。</p>
+<p>首先，让我们看下<span class="math-inline">-D_{K L}\left(q_{\phi}, p\right)</span> 一项。人们通常称这一项为 Latent Loss 或者将其看做一个正则项。回忆一下，我们之前已经假设了<span class="math-inline">q_{\phi}(z \mid X) </span> <span class="math-inline">p(z)</span> 服从高斯分布，辛运的是，在这种情况下，我们能够得到<span class="math-inline">D<em>{K L}\left(q</em>{\phi}, p\right)</span> 解析解。</p>
+<p>更加幸运的是，我们把它们都设成了各维度独立的高斯分布，所以我们可以直接从一维的情况进行推导：</p>
+<p><div class="math-display">\begin{aligned} D_{K L}(\mathcal{N}\left(\mu, \sigma^{2}\right)| \mathcal{N}(0,1))     &amp;=\int_{z} \frac{1}{\sqrt{2 \pi \sigma^{2}}} \exp \left(-\frac{\left(z-\mu\right)^{2}}{2 \sigma^{2}}\right) \log \frac{\frac{1}{\sqrt{2 \pi \sigma^{2}}} \exp \left(-\frac{\left(z-\mu\right)^{2}}{2 \sigma^{2}}\right)}{\frac{1}{\sqrt{2 \pi}} \exp \left(-\frac{z^{2}}{2}\right)} d z \ &amp;=\int_{z}\left(\frac{-\left(z-\mu\right)^{2}}{2 \sigma^{2}}+\frac{z^{2}}{2}-\log \sigma\right) \mathcal{N}\left(\mu, \sigma^{2}\right) d z \     &amp;=-\int_{z} \frac{\left(z-\mu\right)^{2}}{2 \sigma^{2}} \mathcal{N}\left(\mu, \sigma^{2}\right) d z+\int_{z} \frac{z^{2}}{2} \mathcal{N}\left(\mu, \sigma^{2}\right) d z-\int_{z} \log \sigma \mathcal{N}\left(\mu, \sigma^{2}\right)  d z \     &amp;=-\frac{\mathbb{E}\left[\left(z-\mu\right)^{2}\right]}{2 \sigma^{2}}+\frac{\mathbb{E}\left[z^{2}\right]}{2}-\log \sigma \     &amp;= \frac{1}{2}(-1 + \sigma^2 + \mu^2 - \log \sigma^2). \end{aligned}</div></p>
+<p>当它们都是<span class="math-inline">d</span> 高斯分布时，易得：</p>
+<p><div class="math-display">D_{K L}\left(q_{\phi}(z\mid X), p(z)\right) = \sum_{j=1}^d \frac{1}{2}(-1 + {\sigma^{(j)}}^{2} + {\mu^{(j)}}^{2} - \log {\sigma^{(j)}}^{2}).\ \</div></p>
+<p>其中<span class="math-inline">{a^{(j)}}^{2}</span> 表向量<span class="math-inline">a</span> 第<span class="math-inline">j</span> 元素的平方。</p>
+<p>至此，最后的问题就是，<span class="math-inline">\mathbb{E}<em>{q</em>{\phi}}\left[\log p_{\theta}(X \mid z)\right]</span> 么求呢？这一项往往被称为 Reconstruction Loss，人们通常从<span class="math-inline">q_{\phi}(z\mid X)</span> 采样多个<span class="math-inline">z_i</span> 近似求解这一项，即：</p>
+<p><div class="math-display">\mathbb{E}<em>{q</em>{\phi}}\left[\log p_{\theta}(X \mid z)\right] \approx \frac{1}{m} \sum_{i=1}^{m} \log p_{\theta}\left(X \mid z_{i}\right), </div></p>
+<p>其中，<span class="math-inline">z_{i} \sim q_{\phi}\left(z \mid x_{i}\right)=\mathcal{N}\left(z \mid \mu\left(x_{i} ; \phi\right), \sigma^2\left(x_{i} ; \phi\right) * I\right)。</span></p>
+<p>现在我们来看<span class="math-inline">\log p_{\theta}\left(X \mid z_{i}\right)</span> 一项怎么展开。我们之前已经假设过<span class="math-inline">X\mid z_i</span> 从一个固定方差的各维度独立的多元高斯分布，即<span class="math-inline">p_{\theta}(X \mid z_i) = \mathcal{N}(X \mid \mu_i^{\prime}(z_i; \theta), \sigma^{\prime2} * I)。</span></p>
+<p>有了之前的文章<a href="https://zhuanlan.zhihu.com/p/346935187">损失函数（二）：MSE、0-1 Loss 与 Logistic Loss</a>中的 2.2 节的基础后，我们知道，若假设数据为固定方差的高斯分布，MLE 后得到的目标函数，等价于 MSE。但我们这里还是先把它写开，设每个数据点<span class="math-inline">x_i</span> 维度为<span class="math-inline">K</span>，即<span class="math-inline">X\mid z_i</span> 从一个<span class="math-inline">K</span> 高斯分布，易得：</p>
+<p><div class="math-display">\begin{aligned} \log p_{\theta}\left(X \mid z_{i}\right) &amp;= \log \frac{\exp \left(-\frac{1}{2}(X-\mu^{\prime})^{\mathrm{T}} {\Sigma}^{\prime-1}({X}-{\mu^{\prime}})\right)}{\sqrt{(2 \pi)^{k}|{\Sigma^{\prime}}|}} \     &amp;= -\frac{1}{2}(X-\mu^{\prime})^{\mathrm{T}} {\Sigma}^{\prime-1}({X}-{\mu^{\prime}}) - \log \sqrt{(2 \pi)^{k}|\Sigma^{\prime}|} \     &amp;= -\frac{1}{2} \sum_{k=1}^K \frac{(X^{(k)}-\mu^{\prime(k)})^2}{\sigma^{\prime(k)}}  - \log \sqrt{(2 \pi)^{K}\prod_{k=1}^{K} \sigma^{\prime(k)}}. \end{aligned}</div></p>
+<p>这样，我们就有了最终的损失函数所需要的所有模块了。</p>
+<h3 id="37-loss-function">3.7 Loss Function<a class="anchor-link" href="#37-loss-function" title="Permanent link">&para;</a></h3>
+<p>让我们把上一节中的推导整合起来。现在希望最小化损失函数：</p>
+<p><div class="math-display">\begin{aligned} \mathcal{L} &amp;= - \frac{1}{n} \sum_{i=1}^n \ell(p_{\theta}, q_{\phi}) \             &amp;= \frac{1}{n} \sum_{i=1}^nD_{K L}\left(q_{\phi}, p\right) - \frac{1}{n} \sum_{i=1}^n \mathbb{E}<em>{q</em>{\phi}}\left[\log p_{\theta}(x_i \mid z)\right] \             &amp;= \frac{1}{n} \sum_{i=1}^nD_{K L}\left(q_{\phi}, p\right) - \frac{1}{nm} \sum_{i=1}^n \sum_{j=1}^{m} \log p_{\theta}\left(x_i \mid z_{j}\right). \end{aligned}</div></p>
+<p>上式即是通过从<span class="math-inline">q_{\phi}(z \mid x_i)</span> 采样<span class="math-inline">m</span> <span class="math-inline">z_j，</span> 逼近<span class="math-inline">\mathbb{E}<em>{q</em>{\phi}}\left[\log p_{\theta}(x_i \mid z)\right]。</span> 许我们会好奇，之前两次我们都说积分太难求了，采样逼近代价太大了，所以不能采样逼近，为什么这里又可以采样逼近了呢？</p>
+<p>答案就是：之前我们都只能从<span class="math-inline">p(z)</span> 采样<span class="math-inline">z_j，</span> 样的话，采样到和<span class="math-inline">x_i</span> 关联的<span class="math-inline">z_j</span> 概率实在是很低，所以为了更好的逼近积分只能采样大量的<span class="math-inline">z_j</span>，这样的代价自然是极大的；然而，在上式中，我们其实是从<span class="math-inline">q_{\phi}(z \mid x_i)</span> 采样得到<span class="math-inline">z_j。</span> 着网络的训练，近似后验<span class="math-inline">q_{\phi}(z \mid x_i)，</span> 快就会比较接近真实的后验分布。这样一来，我们有很大可能能够在有限次数的采样中，采样到与<span class="math-inline">x_i</span> 联的<span class="math-inline">z_j。</span></p>
+<p>事实上，从经验来看，从<span class="math-inline">q_{\phi}(z \mid x_i)</span> 采样<span class="math-inline">z_j</span> 计<span class="math-inline">\mathbb{E}<em>{q</em>{\phi}}\left[\log p_{\theta}(x_i \mid z)\right]</span> 比较高效的。在实践中我们往往对一个<span class="math-inline">x_i</span> 采样一个<span class="math-inline">z_j</span>，即<span class="math-inline">m=1，</span> 能达到可观的效果。所以我们可以将损失改写，并继续往下展开：</p>
+<p><div class="math-display">\begin{aligned} \mathcal{L} &amp;= \frac{1}{n} \sum_{i=1}^nD_{K L}\left(q_{\phi}, p\right) - \frac{1}{n} \sum_{i=1}^n  \log p_{\theta}\left(x_i \mid z_{i}\right) \             &amp;= \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^d \frac{1}{2}(-1 + {\sigma_i^{(j)}}^{2} + {\mu_i^{(j)}}^{2} - \log {\sigma_i^{(j)}}^{2}) \             &amp;\quad\quad\quad - \frac{1}{n} \sum_{i=1}^n \left( -\frac{1}{2} \sum_{k=1}^K \frac{(x_i^{(k)}-\mu_i^{\prime(k)})^2}{\sigma_i^{\prime(k)}}  - \log \sqrt{(2 \pi)^{K}\prod_{k=1}^{K} \sigma_i^{\prime(k)}} \right). \end{aligned}</div></p>
+<p>值得注意的是，我们已经假设了<span class="math-inline">p_{\theta}(X \mid z_i)</span> 任意<span class="math-inline">z_i</span> 是方差固定的各维度独立的<span class="math-inline">K</span> 高斯分布，我们不妨令超参数<span class="math-inline">\sigma^{\prime}</span> 元素值全为<span class="math-inline">\frac{1}{2}</span> <span class="math-inline">K</span> 向量。这样一来，损失可以改写为：</p>
+<p><div class="math-display">\mathcal{L} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^d \frac{1}{2}(-1 + {\sigma_i^{(j)}}^{2} + {\mu_i^{(j)}}^{2} - \log {\sigma_i^{(j)}}^{2}) + \frac{1}{n} \sum_{i=1}^n  |x_i - \mu_i^{\prime}|^2. \tag{1}\ </div></p>
+<p>其中，<span class="math-inline">x_i</span> 表第<span class="math-inline">i</span> 样本，是 Encoder 的输入。<span class="math-inline">\mu_i</span> <span class="math-inline">\sigma_i^2</span>  Encoder 的输出，代表<span class="math-inline">z \mid x_i</span> 分布的参数。<span class="math-inline">z_i</span> 从<span class="math-inline">z\mid x_i</span> 采样得到的一个样本，它是 Decoder 的输入。<span class="math-inline">\mu_i^{\prime}</span>  Decoder 的输出，代表利用<span class="math-inline">z_i</span> 码后对应的数据点<span class="math-inline">\tilde{x}_i。</span></p>
+<p>到这里，我们终于得到了在假设先验、后验、似然均是高斯分布的情况下，VAE 最终的损失函数。值得一提的是，通常人们采用高斯分布只是因为其简便性。我们也可以根据数据的情况，假设更加复杂分布来推导、训练 VAE。在这种情况下，VAE 可能计算会更加复杂，但也可能会得到更强的表达能力。</p>
+<h2 id="4-conditional-vae">4. Conditional VAE<a class="anchor-link" href="#4-conditional-vae" title="Permanent link">&para;</a></h2>
+<p>根据上面的推导，我们已经可以训练得到一个原版的 VAE 了。模型训练结束后，我们从<span class="math-inline">p(z)</span> 采样得到<span class="math-inline">z_i</span>，再喂给 Decoder，就能生成可能的数据点了。</p>
+<p>但这里有个问题，尽管现在我们几乎可以确保从<span class="math-inline">p(z)</span> 采样得到的<span class="math-inline">z_i，</span> 能重建出某个<span class="math-inline">x_i，</span> 是我们无法控制生成的是哪一类<span class="math-inline">x_i。</span></p>
+<p>举个 MNIST 手写数字的例子，原版 VAE 只能采样得到<span class="math-inline">z_i</span> 随机生成数字。然而，更多的时候我们可能会希望模型能够生成我们<strong>指定</strong>的数字。这就引出了 CVAE (Conditional VAE)。</p>
+<p>假设我们现在的数据集为<span class="math-inline">X，</span> 们现在希望利用它的标注<span class="math-inline">Y</span> 控制生成的结果。在 MNIST 的场景下，就是我们希望能够告诉 Decoder：我现在想生成一个标注为"7"的数字，你帮我生成一个看看。</p>
+<p>CVAE 的思路非常简单，这里我们简单介绍一下。</p>
+<ol>
+<li>原来 MLE 是最大化数据集出现的概率，也就是对<span class="math-inline">p_{\theta}(X)</span> 模，那么现在我们需要对<span class="math-inline">p_{\theta}(X|Y)</span> 模。</li>
+<li>原来我们对<span class="math-inline">p(z)</span> 行建模，现在对<span class="math-inline">p(z\mid y_i)</span> 模。</li>
+<li>原来 Decoder 是对似然<span class="math-inline">p_{\theta}\left(X \mid z_{i}\right)</span> 模，现在即是对<span class="math-inline">p_{\theta}\left(X \mid z_{i}, y_i\right)</span> 模。</li>
+<li>原来 Encoder 是对近似后验<span class="math-inline">q_{\phi}\left(z \mid x_{i}\right)</span> 模，现在则需要对<span class="math-inline">q_{\phi}\left(z \mid x_{i}, y_i\right)</span> 模。</li>
+</ol>
+<p>顺着推导，到最后我们其实只需要让 Encoder 和 Decoder 由<span class="math-inline">y_i</span>"参数化"就好。这里做法就很多了，一个直观的做法是将<span class="math-inline">y_i</span> 为 Encoder 和 Decoder 的输入，这样它们不就等于被<span class="math-inline">y_i</span>"参数化"了嘛。</p>
+<h2 id="5-implementation">5. Implementation<a class="anchor-link" href="#5-implementation" title="Permanent link">&para;</a></h2>
+<p>我们在<a href="https://github.com/siqim/Machine-Learning-with-Graphs/blob/main/examples/MLMath/VAE.py">VAE.py</a>中实现了 VAE 和 CVAE。VAE 的实现非常简单，主要就是损失函数的实现。我们在代码中的变量名与该文章中的符号是一致的。</p>
+<p>下图是我在 MNIST 上跑的一组示例。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202407112017229.jpg" /><br />
+也许我们会注意到，VAE 的实现中，人们往往令 Encoder 输出<span class="math-inline">\log \sigma^2，</span> 不直接输出<span class="math-inline">\sigma。</span> 是因为根据定义，我们必须让模型输出<span class="math-inline">\sigma \geq 0。</span> 于方便，我们通过取对数后再取指数的方法，获得<span class="math-inline">\sigma。</span> 取平方只是为了计算损失的时候不再需要取平方。</p>
+<p>除此之外，在 VAE 损失函数的实现中，有一个更需要注意的地方。我们先把之前推的损失函数抄下来：</p>
+<p><div class="math-display">\mathcal{L} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^d \frac{1}{2}(-1 + {\sigma_i^{(j)}}^{2} + {\mu_i^{(j)}}^{2} - \log {\sigma_i^{(j)}}^{2}) + \frac{1}{n} \sum_{i=1}^n  |x_i - \mu_i^{\prime}|^2</div></p>
+<p>可见，上式中第二部分有一个类似 MSE 的项<span class="math-inline">\frac{1}{n} \sum_{i=1}^n  |x_i - \mu_i^{\prime}|^2。</span> 因此，很多基于 Pytorch 实现 VAE 的 Repo，直接采用<code>F.mse_loss(mu_prime, x, reduction='mean')</code>来计算这一项。这是<strong>错误</strong>的！</p>
+<p>设<span class="math-inline">x_i</span> 维度为<span class="math-inline">K，</span>Pytorch 中的<code>F.mse_loss</code>等价于：</p>
+<p><div class="math-display">\frac{1}{nK} \sum_{i=1}^n  |x_i - \mu_i^{\prime}|^2</div></p>
+<p>如果单纯的使用 MSE 损失训练模型的话，常数项的改变并不会影响模型的结果。但是在 VAE 中，Reconstruction Loss 这一项的常数项是有意义的。</p>
+<p>直观的来说，这一的常数项控制 Reconstruction Loss 和 Latent Loss 之间的权重。如果利用<code>F.mse_loss</code>实现的话，等价于将 Reconstruction Loss 的权重降的很低，Decoder 将无法准确重建<span class="math-inline">x_i。</span></p>
+<p>抽象的来说，这一常数项代表 Decoder 拟合的分布<span class="math-inline">p_{\theta}\left(X \mid z_{i}\right)</span> 方差<span class="math-inline">\sigma^{\prime2}</span>。对于图片生成模型，<span class="math-inline">K</span> 往非常大，比如 MNIST 里<span class="math-inline">K=28 \times 28。</span> 白无故的多除以了个<span class="math-inline">K</span> 价于我们将<span class="math-inline">p_{\theta}\left(X \mid z_{i}\right)</span> 方差设的非常大，那它生成的图片全都是噪声也不会令人惊讶。也因此，我们往往在设置超参数<span class="math-inline">\sigma^{\prime}</span> 时候，必然将其设置的较小。</p>
+<h2 id="6-discussion">6. Discussion<a class="anchor-link" href="#6-discussion" title="Permanent link">&para;</a></h2>
+<p>VAE 中最老生常谈的问题就是，它为什么生成的图片是模糊的？</p>
+<p>我在寻找这个问题的答案的时候，从 Reddit 的一个<a href="https://www.reddit.com/r/MachineLearning/comments/9t712f/dwhy_are_images_created_by_gan_sharper_than/">Post</a>上看到一个高赞回答：</p>
+<blockquote>
+<p>Vanilla VAEs with Gaussian posteriors / priors and factorized pixel distributions aren't blurry, they're noisy. People tend to show the mean value of p(x|z) rather than drawing samples from it. Hence the reported blurry samples aren't actually samples from the model, and they don't reveal the extent to which variability is captured by pixel noise. Real samples would typically demonstrate salt and pepper noise due to independent samples from the pixel distributions.</p>
+</blockquote>
+<p>知乎上也有引用这段话的关于 VAE 的<a href="https://zhuanlan.zhihu.com/p/52974147">文章</a>。</p>
+<p>这一类回答的意思是：高斯分布假设下，VAE 生成的图像并不模糊，而是因为有噪声。为什么呢？因为我们本应该利用 Decoder 拟合一个高斯分布，然后从这个分布中采样得到<span class="math-inline">x_i</span> 。但是人们偷懒，直接认为拟合出的高斯分布的均值<span class="math-inline">\mu^{\prime}</span> 是生成的数据<span class="math-inline">x_i。</span> 想，本来 Decoder 告诉你的是给定<span class="math-inline">z_i</span> <span class="math-inline">X</span> 能的<strong>分布</strong>，你到好，直接把这个分布的<strong>均值</strong>作为生成的图像了，那能不模糊吗？</p>
+<p>知乎上另一类回答说，VAE 产生的图像之所以模糊，就是因为高斯分布的假设，比如<a href="https://www.zhihu.com/question/317623081/answer/1062727034">回答 1</a>、<a href="https://www.zhihu.com/question/368413722/answer/991708331">回答 2</a>。这类回答的点在于：如果对<span class="math-inline">p_{\theta}\left(X \mid z_{i}\right)</span> 行高斯分布的假设，那么我们等同于假设数据是一个单峰分布，但是现实中数据往往的多峰 (Multimodal) 的，你用单峰的分布去拟合多峰的分布，那模型只能把多峰进行平均来降低损失了，这样一来，拟合的分布对应的图像，自然也就是模糊的了。</p>
+<p>这两类回答看问题的角度是不一样的。但我觉得它们都存在一定的问题，至少不能把我完全说服，我列一下各自可能的疑点：</p>
+<ol>
+<li>对于第一类回答：确实，本来让你采样，现在你直接拿分布的均值出来，似乎图片注定会变得模糊。但是给你一个模糊的均值，再给你一个高斯的方差，你去采样不依然很可能是模糊的？</li>
+<li>对于第二类答案：我数据肯定是多峰的，但我假设<span class="math-inline">p_{\theta}\left(X \mid z_{i}\right)</span> 单峰的为什么不行？只要我能确保每个<span class="math-inline">z_i</span> 应的<span class="math-inline">X</span> 分布是单峰的不就行了？那这样来看，这个问题的本质是因为模型拟合能力不行，输出隐变量无法捕捉充分的信息，而高斯分布也只是受害者？</li>
+</ol>
+<p>综上，目前最能说服我的观点是这样的：</p>
+<p>模型拟合能力就是没那么强，模型习得的隐变量就是无法完全对应出单峰的<span class="math-inline">X</span> 。在这种前提下，你再假设是高斯分布，那模型只能把多峰的分布给平均了。所以一个更成功的生成模型，就是允许<span class="math-inline">X\mid z_i</span> 一个更复杂的分布，从而使得模型容错率变高：就算你<span class="math-inline">z_i</span> 应的<span class="math-inline">X</span> 多峰的，我这个复杂的分布也能拟合这个多峰的分布。</p>
+<p>至于直接取均值而不采样，故而导致模糊的观点，我觉得只能是非常次要的原因。毕竟你输出的均值就已经是模糊的了，再采样也没有意义。</p>
+<h2 id="7-references">7. References<a class="anchor-link" href="#7-references" title="Permanent link">&para;</a></h2>
+<p>[1] Doersch, Carl. "Tutorial on variational autoencoders." arXiv preprint arXiv:1606.05908 (2016).</p>
+<p>[2] Slides from UIUC CS446: Machine Learning</p>
+<p>[3] <strong><a href="https://www.youtube.com/watch?v=8zomhgKrsmQ">https://www.youtube.com/watch?v=8zomhgKrsmQ</a></strong></p>
+<p>[4] Zhao, Shengjia, Jiaming Song, and Stefano Ermon. "Towards deeper understanding of variational autoencoding models." arXiv preprint arXiv:1702.08658 (2017).</p>
+<p>TODO</p>
+<h1 id="变分自编码器vae原来是这么一回事--附开源代码">变分自编码器VAE：原来是这么一回事 | 附开源代码<a class="anchor-link" href="#变分自编码器vae原来是这么一回事--附开源代码" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [PaperWeekly]</p>
+<p><strong>Link:</strong> [https://zhuanlan.zhihu.com/p/34998569]</p>
+<p><strong>作者丨苏剑林</strong></p>
+<p><strong>单位丨广州火焰信息科技有限公司</strong></p>
+<p><strong>研究方向丨NLP，神经网络</strong></p>
+<p><strong>个人主页丨kexue.fm</strong></p>
+<p>过去虽然没有细看，但印象里一直觉得变分自编码器（Variational Auto-Encoder，VAE）是个好东西。趁着最近看概率图模型的三分钟热度，我决定也争取把 VAE 搞懂。</p>
+<p>于是乎照样翻了网上很多资料，无一例外发现都很含糊，主要的感觉是公式写了一大通，还是迷迷糊糊的，最后好不容易觉得看懂了，再去看看实现的代码，又感觉实现代码跟理论完全不是一回事啊。 </p>
+<p>终于，东拼西凑再加上我这段时间对概率模型的一些积累，并反复对比原论文 <em>Auto-Encoding Variational Bayes</em>，最后我觉得我应该是想明白了。</p>
+<p>其实真正的 VAE，跟很多教程说的的还真不大一样，很多教程写了一大通，都没有把模型的要点写出来。于是写了这篇东西，希望通过下面的文字，能把 VAE 初步讲清楚。</p>
+<h2 id="分布变换">分布变换<a class="anchor-link" href="#分布变换" title="Permanent link">&para;</a></h2>
+<p>通常我们会拿 VAE 跟 GAN 比较，的确，它们两个的目标基本是一致的——希望构建一个从隐变量 <em>Z</em> 生成目标数据 <em>X</em> 的模型，但是实现上有所不同。</p>
+<p>更准确地讲，它们是假设了服从某些常见的分布（比如正态分布或均匀分布），然后希望训练一个模型 <em>X</em>=<em>g</em>(<em>Z</em>)，这个模型能够将原来的概率分布映射到训练集的概率分布，也就是说，<strong>它们的目的都是进行分布之间的变换</strong>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154331.jpg" />  </p>
+<p>生成模型的难题就是判断生成分布与真实分布的相似度，因为我们只知道两者的采样结果，不知道它们的分布表达式。</p>
+<p>那现在假设服从标准的正态分布，那么我就可以从中采样得到若干个 Z1,Z2,…,Zn，然后对它做变换得到 X̂1=g(Z1),X̂2=g(Z2),…,X̂n=g(Zn)，<strong>我们怎么判断这个通过 f 构造出来的数据集，它的分布跟我们目标的数据集分布是不是一样的呢？</strong></p>
+<p>有读者说不是有 KL 散度吗？当然不行，因为 KL 散度是根据两个概率分布的表达式来算它们的相似度的，然而目前我们并不知道它们的概率分布的表达式。</p>
+<p>我们只有一批从构造的分布采样而来的数据 {X̂1,X̂2,…,X̂n}，还有一批从真实的分布采样而来的数据 {X1,X2,…,Xn}（也就是我们希望生成的训练集）。我们只有样本本身，没有分布表达式，当然也就没有方法算 KL 散度。</p>
+<p>虽然遇到困难，但还是要想办法解决的。<strong>GAN 的思路很直接粗犷：既然没有合适的度量，那我干脆把这个度量也用神经网络训练出来吧</strong>。</p>
+<p>就这样，WGAN 就诞生了，详细过程请参考<a href="http://mp.weixin.qq.com/s?__biz=MzIwMTc4ODE0Mw==&amp;mid=2247484880&amp;idx=1&amp;sn=4b2e976cc715c9fe2d022ff6923879a8&amp;chksm=96e9da50a19e5346307b54f5ce172e355ccaba890aa157ce50fda68eeaccba6ea05425f6ad76&amp;scene=21#wechat_redirect">http://mp.weixin.qq.com/s?__biz=MzIwMTc4ODE0Mw==&amp;mid=2247484880&amp;idx=1&amp;sn=4b2e976cc715c9fe2d022ff6923879a8&amp;chksm=96e9da50a19e5346307b54f5ce172e355ccaba890aa157ce50fda68eeaccba6ea05425f6ad76&amp;scene=21#wechat_redirect</a>。而 VAE 则使用了一个精致迂回的技巧。</p>
+<h2 id="vae慢谈">VAE慢谈<a class="anchor-link" href="#vae慢谈" title="Permanent link">&para;</a></h2>
+<p>这一部分我们先回顾一般教程是怎么介绍 VAE 的，然后再探究有什么问题，接着就自然地发现了 VAE 真正的面目。</p>
+<p><strong>经典回顾</strong></p>
+<p>首先我们有一批数据样本 {<em>X</em>1,…,<em>X</em>n}，其整体用 <em>X</em> 来描述，我们本想根据 {<em>X</em>1,…,<em>X</em>n} 得到 <em>X</em> 的分布 <em>p</em>(<em>X</em>)，如果能得到的话，那我直接根据 <em>p</em>(<em>X</em>) 来采样，就可以得到所有可能的 <em>X</em> 了（包括 {<em>X</em>1,…,<em>X</em>n} 以外的），这是一个终极理想的生成模型了。</p>
+<p>当然，这个理想很难实现，于是我们将分布改一改：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154332.jpg" />  </p>
+<p>这里我们就不区分求和还是求积分了，意思对了就行。此时 <em>p</em>(<em>X</em>|<em>Z</em>) 就描述了一个由 <em>Z</em> 来生成 <em>X</em>的模型，而我们假设 <em>Z</em> 服从标准正态分布，也就是 <em>p</em>(<em>Z</em>)=<em>N</em>(0,<em>I</em>)。<strong>如果这个理想能实现，那么我们就可以先从标准正态分布中采样一个</strong> <strong><em>Z</em>，然后根据</strong> <strong><em>Z</em></strong> <strong>来算一个</strong> <strong><em>X</em>，也是一个很棒的生成模型</strong>。</p>
+<p>接下来就是结合自编码器来实现重构，保证有效信息没有丢失，再加上一系列的推导，最后把模型实现。框架的示意图如下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154334.jpg" />  </p>
+<p><strong>▲</strong> VAE的传统理解</p>
+<p>看出了什么问题了吗？如果像这个图的话，我们其实完全不清楚<strong>：究竟经过重新采样出来的<em>Zk<em>，是不是还对应着原来的</em>* </em></strong>Xk<em>，所以我们如果直接最小化</em><em> </em><strong>D<em>(<em>X̂ k</em>,<em>Xk</em>)^2（这里** </em></strong>D<em> 代表某种距离函数）是很不科学的，而事实上你看代码也会发现根本不是这样实现的</em>*。</p>
+<p>也就是说，很多教程说了一大通头头是道的话，然后写代码时却不是按照所写的文字来写，可是他们也不觉得这样会有矛盾。</p>
+<p><strong>VAE初现</strong></p>
+<p>其实，<strong>在整个 VAE 模型中，我们并没有去使用</strong> <strong><em>p</em>(<em>Z</em>)（先验分布）是正态分布的假设，我们用的是假设</strong> <strong><em>p</em>(<em>Z</em>|<em>X</em>)（后验分布）是正态分布</strong>。</p>
+<p>具体来说，给定一个真实样本 <em>Xk</em>，我们假设存在<strong>一个专属于</strong> <strong><em>Xk</em></strong> <strong>的分布</strong> <strong><em>p</em>(<em>Z</em>|<em>Xk</em>)</strong>（学名叫后验分布），并进一步假设这个分布是（独立的、多元的）正态分布。</p>
+<p>为什么要强调“专属”呢？因为我们后面要训练一个生成器 <em>X</em>=<em>g</em>(<em>Z</em>)，希望能够把从分布 <em>p</em>(<em>Z</em>|<em>Xk</em>) 采样出来的一个 <em>Zk</em> 还原为 <em>Xk</em>。</p>
+<p>如果假设 <em>p</em>(<em>Z</em>) 是正态分布，然后从 <em>p</em>(<em>Z</em>) 中采样一个 <em>Z</em>，那么我们怎么知道这个 <em>Z</em> 对应于哪个真实的 <em>X</em> 呢？<strong>现在</strong> <strong><em>p</em>(<em>Z</em>|<em>Xk</em>) 专属于</strong> <strong><em>Xk</em>，我们有理由说从这个分布采样出来的</strong> <strong><em>Z</em></strong> <strong>应该要还原到<em>Xk</em></strong> <strong>中去</strong>。</p>
+<p>事实上，在论文 <em>Auto-Encoding Variational Bayes</em> 的应用部分，也特别强调了这一点：</p>
+<blockquote>
+<p><em>In this case, we can let the variational approximate posterior be a multivariate Gaussian with a diagonal covariance structure:</em></p>
+</blockquote>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154335.jpg" />  </p>
+<p>论文中的式 (9) 是实现整个模型的关键，不知道为什么很多教程在介绍 VAE 时都没有把它凸显出来。尽管论文也提到 <em>p</em>(<em>Z</em>) 是标准正态分布，然而那其实并不是本质重要的。</p>
+<p>再次强调，这时候每一个 <em>Xk</em> 都配上了一个专属的正态分布，才方便后面的生成器做还原。但这样有多少个 <em>X</em> 就有多少个正态分布了。我们知道正态分布有两组参数：均值 <em>μ</em> 和方差 <em>σ</em>^2（多元的话，它们都是向量）。</p>
+<p><strong>那我怎么找出专属于</strong> <strong><em>Xk</em></strong> <strong>的正态分布</strong> <strong><em>p</em>(<em>Z</em>|<em>Xk</em>) 的均值和方差呢？</strong>好像并没有什么直接的思路。</p>
+<p>那好吧，<strong>我就用神经网络来拟合出来</strong>。这就是神经网络时代的哲学：难算的我们都用神经网络来拟合，在 WGAN 那里我们已经体验过一次了，现在再次体验到了。</p>
+<p>于是我们构建两个神经网络 <em>μk</em>=<em>f</em>1(<em>Xk</em>)，log<em>σ</em>^2=<em>f</em>2(<em>Xk</em>) 来算它们了。我们选择拟合 log<em>σ</em>^2 而不是直接拟合 <em>σ</em>^2，是因为 <em>σ</em>^2 总是非负的，需要加激活函数处理，而拟合 log<em>σ</em>^2 不需要加激活函数，因为它可正可负。</p>
+<p>到这里，我能知道专属于 <em>Xk</em> 的均值和方差了，也就知道它的正态分布长什么样了，然后从这个专属分布中采样一个 <em>Zk</em> 出来，然后经过一个生成器得到 <em>X̂k</em>=<em>g</em>(<em>Zk</em>)。</p>
+<p>现在我们可以放心地最小化 <em>D</em>(<em>X̂k</em>,<em>Xk</em>)^2，因为 <em>Zk</em> 是从专属 <em>Xk</em> 的分布中采样出来的，这个生成器应该要把开始的 <em>Xk</em> 还原回来。<strong>于是可以画出 VAE 的示意图</strong>：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154336.jpg" />  </p>
+<p>事实上，VAE 是为每个样本构造专属的正态分布，然后采样来重构。</p>
+<p><strong>分布标准化</strong></p>
+<p>让我们来思考一下，根据上图的训练过程，最终会得到什么结果。 </p>
+<p>首先，我们希望重构 <em>X</em>，也就是最小化 <em>D</em>(<em>X̂k</em>,<em>Xk</em>)^2，但是这个重构过程受到噪声的影响，因为<em>Zk</em> 是通过重新采样过的，不是直接由 encoder 算出来的。</p>
+<p>显然噪声会增加重构的难度，不过好在这个噪声强度（也就是方差）通过一个神经网络算出来的，所以最终模型为了重构得更好，肯定会想尽办法让方差为0。</p>
+<p>而方差为 0 的话，也就没有随机性了，所以不管怎么采样其实都只是得到确定的结果（也就是均值），只拟合一个当然比拟合多个要容易，而均值是通过另外一个神经网络算出来的。 </p>
+<p>说白了，<strong>模型会慢慢退化成普通的 AutoEncoder，噪声不再起作用</strong>。 </p>
+<p>这样不就白费力气了吗？说好的生成模型呢？ </p>
+<p>别急别急，<strong>其实 VAE 还让所有的</strong> <strong><em>p</em>(<em>Z</em>|<em>X</em>) 都向标准正态分布看齐</strong>，这样就防止了噪声为零，同时保证了模型具有生成能力。</p>
+<p>怎么理解“保证了生成能力”呢？如果所有的 <em>p</em>(<em>Z</em>|<em>X</em>) 都很接近标准正态分布 <em>N</em>(0,<em>I</em>)，那么根据定义：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154337.jpg" />  </p>
+<p>这样我们就能达到我们的先验假设：<em>p</em>(<em>Z</em>) 是标准正态分布。然后我们就可以放心地从 <em>N</em>(0,<em>I</em>) 中采样来生成图像了。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154338.jpg" />  </p>
+<p>为了使模型具有生成能力，VAE 要求每个 p(Z_X) 都向正态分布看齐。</p>
+<p>那怎么让所有的 <em>p</em>(<em>Z</em>|<em>X</em>) 都向 <em>N</em>(0,<em>I</em>) 看齐呢？如果没有外部知识的话，其实最直接的方法应该是在重构误差的基础上中加入额外的 loss：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154339.jpg" />  </p>
+<p>因为它们分别代表了均值 <em>μk</em> 和方差的对数 log<em>σ</em>^2，达到 <em>N</em>(0,<em>I</em>) 就是希望二者尽量接近于 0 了。不过，这又会面临着这两个损失的比例要怎么选取的问题，选取得不好，生成的图像会比较模糊。</p>
+<p>所以，原论文直接算了一般（各分量独立的）正态分布与标准正态分布的 KL 散度<em>KL</em>(<em>N</em>(<em>μ</em>,<em>σ</em>^2)‖<em>N</em>(0,<em>I</em>))作为这个额外的 loss，计算结果为：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154340.jpg" />  </p>
+<p>这里的 <em>d</em> 是隐变量 <em>Z</em> 的维度，而 <em>μ</em>(<em>i</em>) 和 σ_{(i)}^{2} 分别代表一般正态分布的均值向量和方差向量的第 <em>i</em> 个分量。直接用这个式子做补充 loss，就不用考虑均值损失和方差损失的相对比例问题了。</p>
+<p>显然，这个 loss 也可以分两部分理解：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154341.jpg" />  </p>
+<p><strong>推导</strong></p>
+<p>由于我们考虑的是各分量独立的多元正态分布，因此只需要推导一元正态分布的情形即可，根据定义我们可以写出：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154342.jpg" />  </p>
+<p>整个结果分为三项积分，第一项实际上就是 −log<em>σ^</em>2 乘以概率密度的积分（也就是 1），所以结果是 −log<em>σ^</em>2；第二项实际是正态分布的二阶矩，熟悉正态分布的朋友应该都清楚正态分布的二阶矩为 <em>μ</em>^2+<em>σ</em>^2；而根据定义，第三项实际上就是“-方差除以方差=-1”。所以总结果就是：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154343.jpg" />  </p>
+<p><strong>重参数技巧</strong></p>
+<p>最后是实现模型的一个技巧，英文名是 Reparameterization Trick，我这里叫它做重参数吧。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154344.jpg" />  </p>
+<p><strong>▲</strong> 重参数技巧</p>
+<p>其实很简单，就是我们要从 <em>p</em>(<em>Z</em>|<em>Xk</em>) 中采样一个 <em>Zk</em> 出来，尽管我们知道了 <em>p</em>(<em>Z</em>|<em>Xk</em>) 是正态分布，但是均值方差都是靠模型算出来的，我们要靠这个过程反过来优化均值方差的模型，但是“采样”这个操作是不可导的，而采样的结果是可导的，于是我们利用了一个事实：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154345.jpg" />  </p>
+<p>所以，我们将从 <em>N</em>(<em>μ</em>,<em>σ</em>^2) 采样变成了从 <em>N</em>(<em>μ</em>,<em>σ</em>^2) 中采样，然后通过参数变换得到从<em>N</em>(<em>μ</em>,<em>σ</em>^2) 中采样的结果。这样一来，“采样”这个操作就不用参与梯度下降了，改为采样的结果参与，使得整个模型可训练了。</p>
+<p>具体怎么实现，大家把上述文字对照着代码看一下，一下子就明白了。</p>
+<h2 id="后续分析">后续分析<a class="anchor-link" href="#后续分析" title="Permanent link">&para;</a></h2>
+<p>即便把上面的所有内容都搞清楚了，面对 VAE，我们可能还存有很多疑问。</p>
+<p><strong>本质是什么</strong></p>
+<p>VAE 的本质是什么？VAE 虽然也称是 AE（AutoEncoder）的一种，但它的做法（或者说它对网络的诠释）是别具一格的。</p>
+<p>在 VAE 中，它的 Encoder 有两个，一个用来计算均值，一个用来计算方差，这已经让人意外了：Encoder 不是用来 Encode 的，是用来算均值和方差的，这真是大新闻了，还有均值和方差不都是统计量吗，怎么是用神经网络来算的？ </p>
+<p>事实上，我觉得 <strong>VAE 从让普通人望而生畏的变分和贝叶斯理论出发，最后落地到一个具体的模型中</strong>，虽然走了比较长的一段路，但最终的模型其实是很接地气的。</p>
+<p><strong>它本质上就是在我们常规的自编码器的基础上，对 encoder 的结果（在VAE中对应着计算均值的网络）加上了“高斯噪声”，使得结果 decoder 能够对噪声有鲁棒性；而那个额外的 KL loss（目的是让均值为 0，方差为 1），事实上就是相当于对 encoder 的一个正则项，希望 encoder 出来的东西均有零均值。</strong> </p>
+<p>那另外一个 encoder（对应着计算方差的网络）的作用呢？它是用来<strong>动态调节噪声的强度</strong>的。</p>
+<p>直觉上来想，<strong>当 decoder 还没有训练好时（重构误差远大于 KL loss），就会适当降低噪声（KL loss 增加），使得拟合起来容易一些（重构误差开始下降）</strong>。</p>
+<p>反之，<strong>如果 decoder 训练得还不错时（重构误差小于 KL loss），这时候噪声就会增加（KL loss 减少），使得拟合更加困难了（重构误差又开始增加），这时候 decoder 就要想办法提高它的生成能力了</strong>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154346.jpg" />  </p>
+<p><strong>▲</strong> VAE的本质结构</p>
+<p>说白了，<strong>重构的过程是希望没噪声的，而 KL loss 则希望有高斯噪声的，两者是对立的。所以，VAE 跟 GAN 一样，内部其实是包含了一个对抗的过程，只不过它们两者是混合起来，共同进化的</strong>。</p>
+<p>从这个角度看，VAE 的思想似乎还高明一些，因为在 GAN 中，造假者在进化时，鉴别者是安然不动的，反之亦然。当然，这只是一个侧面，不能说明 VAE 就比 GAN 好。</p>
+<p>GAN 真正高明的地方是：它连度量都直接训练出来了，而且这个度量往往比我们人工想的要好（然而 GAN 本身也有各种问题，这就不展开了）。</p>
+<p><strong>正态分布？</strong></p>
+<p>对于 <em>p</em>(<em>Z</em>|<em>X</em>) 的分布，读者可能会有疑惑：是不是必须选择正态分布？可以选择均匀分布吗？</p>
+<p>首先，这个本身是一个实验问题，两种分布都试一下就知道了。但是从直觉上来讲，正态分布要比均匀分布更加合理，因为正态分布有两组独立的参数：均值和方差，而均匀分布只有一组。</p>
+<p>前面我们说，<strong>在 VAE 中，重构跟噪声是相互对抗的，重构误差跟噪声强度是两个相互对抗的指标，而在改变噪声强度时原则上需要有保持均值不变的能力，不然我们很难确定重构误差增大了，究竟是均值变化了（encoder的锅）还是方差变大了（噪声的锅）</strong>。</p>
+<p>而均匀分布不能做到保持均值不变的情况下改变方差，所以正态分布应该更加合理。 </p>
+<p><strong>变分在哪里</strong></p>
+<p>还有一个有意思（但不大重要）的问题是：VAE 叫做“变分自编码器”，它跟变分法有什么联系？在VAE 的论文和相关解读中，好像也没看到变分法的存在？ </p>
+<p>其实如果读者已经承认了 KL 散度的话，那 VAE 好像真的跟变分没多大关系了，因为 KL 散度的定义是：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154347.jpg" />  </p>
+<p>如果是离散概率分布就要写成求和，我们要证明<strong>：已概率分布</strong> <strong><em>p</em>(<em>x</em>)（或固定<em>q</em>(<em>x</em>)）的情况下，对于任意的概率分布 <em>q</em>(<em>x</em>)（或</strong> <strong><em>p</em>(<em>x</em>)），都有</strong> <strong><em>KLp</em>(<em>x</em>)‖<em>q</em>(<em>x</em>))≥0，而且只有当<em>p</em>(<em>x</em>)=<em>q</em>(<em>x</em>)时才等于零</strong>。</p>
+<p>因为 <em>KL</em>(<em>p</em>(<em>x</em>)‖<em>q</em>(<em>x</em>))实际上是一个泛函，要对泛函求极值就要用到变分法，当然，这里的变分法只是普通微积分的平行推广，还没涉及到真正复杂的变分法。而 VAE 的变分下界，是直接基于 KL 散度就得到的。所以直接承认了 KL 散度的话，就没有变分的什么事了。</p>
+<p>一句话，VAE 的名字中“变分”，是因为它的推导过程用到了 KL 散度及其性质。</p>
+<p><strong>条件VAE</strong></p>
+<p>最后，因为目前的 VAE 是无监督训练的，因此很自然想到：如果有标签数据，那么能不能把标签信息加进去辅助生成样本呢？</p>
+<p>这个问题的意图，往往是希望能够实现控制某个变量来实现生成某一类图像。当然，这是肯定可以的，我们把这种情况叫做 <strong>Conditional VAE</strong>，或者叫 CVAE（相应地，在 GAN 中我们也有个 CGAN）。</p>
+<p>但是，CVAE 不是一个特定的模型，而是一类模型，总之就是把标签信息融入到 VAE 中的方式有很多，目的也不一样。这里基于前面的讨论，给出一种非常简单的 VAE。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154348.jpg" />  </p>
+<p><strong>▲</strong> 一个简单的CVAE结构</p>
+<p>在前面的讨论中，我们希望 <em>X</em> 经过编码后，<em>Z</em> 的分布都具有零均值和单位方差，这个“希望”是通过加入了 KL loss 来实现的。</p>
+<p>如果现在多了类别信息 <em>Y</em>，<strong>我们可以希望同一个类的样本都有一个专属的均值</strong> <strong><em>μ^Y</em>（方差不变，还是单位方差），这个</strong> <strong><em>μ^Y</em></strong> <strong>让模型自己训练出来</strong>。</p>
+<p>这样的话，有多少个类就有多少个正态分布，而在生成的时候，我们就可以<strong>通过控制均值来控制生成图像的类别</strong>。</p>
+<p>事实上，这样可能也是在 VAE 的基础上加入最少的代码来实现 CVAE 的方案了，因为这个“新希望”也只需通过修改 KL loss 实现：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154349.jpg" />  </p>
+<p>下图显示这个简单的 CVAE 是有一定的效果的，不过因为 encoder 和 decoder 都比较简单（纯 MLP），所以控制生成的效果不尽完美。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154350.jpg" />  </p>
+<p>用这个 CVAE 控制生成数字 9，可以发现生成了多种样式的 9，并且慢慢向 7 过渡，所以初步观察这种 CVAE 是有效的。</p>
+<p>更完备的 CVAE 请读者自行学习了，最近还出来了 CVAE 与 GAN 结合的工作 <em>CVAE-GAN: Fine-Grained Image Generation through Asymmetric Training</em>，模型套路千变万化。</p>
+<h2 id="代码">代码<a class="anchor-link" href="#代码" title="Permanent link">&para;</a></h2>
+<p>我把 Keras 官方的 VAE 代码复制了一份，然后微调并根据前文内容添加了中文注释，也把最后说到的简单的 CVAE 实现了一下，供读者参考。</p>
+<p>代码：<a href="https://github.com/bojone/vae">https://github.com/bojone/vae</a></p>
+<h2 id="终点站">终点站<a class="anchor-link" href="#终点站" title="Permanent link">&para;</a></h2>
+<p>磕磕碰碰，又到了文章的终点了。不知道讲清楚了没，希望大家多提点意见。</p>
+<p>总的来说，VAE 的思路还是很漂亮的。倒不是说它提供了一个多么好的生成模型（因为事实上它生成的图像并不算好，偏模糊），而是它提供了一个将概率图跟深度学习结合起来的一个非常棒的案例，这个案例有诸多值得思考回味的地方。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202409012154351.jpg" />  </p>
+<p><strong>点击以下标题查看相关内容</strong>： </p>
+<ul>
+<li>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzIwMTc4ODE0Mw==&amp;mid=2247484093&amp;idx=1&amp;sn=bea0ab9171f2e1ad581ca7869e590dca&amp;chksm=96e9dd3da19e542b17343b0ea30543bd262e92ce26f74491bd509223f5b5d853459981d0f4c7&amp;scene=21#wechat_redirect">http://mp.weixin.qq.com/s?__biz=MzIwMTc4ODE0Mw==&amp;mid=2247484093&amp;idx=1&amp;sn=bea0ab9171f2e1ad581ca7869e590dca&amp;chksm=96e9dd3da19e542b17343b0ea30543bd262e92ce26f74491bd509223f5b5d853459981d0f4c7&amp;scene=21#wechat_redirect</a></p>
+</li>
+<li>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzIwMTc4ODE0Mw==&amp;mid=2247484486&amp;idx=1&amp;sn=d1d84b08626a940bae99db0028e55aae&amp;chksm=96e9dbc6a19e52d02123842cd8c5fa68eeb74bc14142bb3101d7f597699a7d2f3ddf7aba76dd&amp;scene=21#wechat_redirect">http://mp.weixin.qq.com/s?__biz=MzIwMTc4ODE0Mw==&amp;mid=2247484486&amp;idx=1&amp;sn=d1d84b08626a940bae99db0028e55aae&amp;chksm=96e9dbc6a19e52d02123842cd8c5fa68eeb74bc14142bb3101d7f597699a7d2f3ddf7aba76dd&amp;scene=21#wechat_redirect</a></p>
+</li>
+</ul>
+<p><strong>本文由 AI 学术社区 PaperWeekly 精选推荐，社区目前已覆盖自然语言处理、计算机视觉、人工智能、机器学习、数据挖掘和信息检索等研究方向，</strong><a href="http://www.paperweekly.site/">http://www.paperweekly.site/</a><strong>！</strong></p>
+<p><strong>关于PaperWeekly</strong></p>
+<p>PaperWeekly 是一个推荐、解读、讨论、报道人工智能前沿论文成果的学术平台。如果你研究或从事 AI 领域，欢迎在公众号后台点击<strong>「交流群」</strong>，小助手将把你带入 PaperWeekly 的交流群里。</p>
+<p><strong>微信公众号：PaperWeekly</strong></p>
+<p><strong>新浪微博：@PaperWeekly</strong></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

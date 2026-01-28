@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#inflora-interference-free-low-rank-adaptation-for-continual-learning">InfLoRA-Interference-Free Low-Rank Adaptation for Continual Learning</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作和预备知识">2. 相关工作和预备知识</a><ul>
+<li><a href="#21-相关工作">2.1 相关工作</a></li>
+<li><a href="#22-预备知识">2.2 预备知识</a></li>
+</ul>
+</li>
+<li><a href="#3-methodology">3. Methodology</a><ul>
+<li><a href="#31-inflora-与微调预训练权重的关系">3.1. InfLoRA 与微调预训练权重的关系</a></li>
+<li><a href="#32-消除新任务对旧任务的干扰">3.2. 消除新任务对旧任务的干扰</a><ul>
+<li><a href="#321-理想特性">3.2.1 理想特性</a></li>
+<li><a href="#322-设计降维矩阵">3.2.2 设计降维矩阵</a></li>
+</ul>
+</li>
+<li><a href="#33-inflora-的完整流程">3.3. InfLoRA 的完整流程</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-实验设置">4.1. 实验设置</a><ul>
+<li><a href="#数据集与评估指标">数据集与评估指标</a></li>
+<li><a href="#基线方法">基线方法</a></li>
+<li><a href="#架构与训练细节">架构与训练细节</a></li>
+</ul>
+</li>
+<li><a href="#42-实验结果">4.2. 实验结果</a><ul>
+<li><a href="#准确率">准确率</a></li>
+<li><a href="#扩展参数的分析">扩展参数的分析</a></li>
+<li><a href="#消融实验">消融实验</a></li>
+<li><a href="#预训练模型的变化">预训练模型的变化</a></li>
+<li><a href="#与分类器对齐结合">与分类器对齐结合</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a><ul>
+<li><a href="#致谢">致谢</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="inflora-interference-free-low-rank-adaptation-for-continual-learning"><a href="https://arxiv.org/abs/2404.00228">InfLoRA-Interference-Free Low-Rank Adaptation for Continual Learning</a><a class="anchor-link" href="#inflora-interference-free-low-rank-adaptation-for-continual-learning" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>持续学习要求模型能够顺序学习多个任务。在持续学习中，模型应具备保持其在旧任务上表现（稳定性）和不断适应新任务（可塑性）的能力。最近，参数高效微调（PEFT）方法在持续学习中越来越受欢迎，这种方法通过冻结预训练模型并注入少量可学习参数来适应下游任务。尽管现有的基于 PEFT 的持续学习方法在性能上优于未基于 PEFT 的方法，但大多数方法没有考虑如何消除新任务对旧任务的干扰，从而使模型难以在稳定性和可塑性之间进行良好的权衡。在本文中，我们提出了一种新的 PEFT 方法，称为无干扰低秩适应（InfLoRA），用于持续学习。InfLoRA 通过注入少量参数来重新参数化预训练的权重，并证明微调这些注入的参数相当于在子空间中微调预训练的权重。此外，InfLoRA 设计了这个子空间，以消除新任务对旧任务的干扰，实现了稳定性与可塑性之间的良好平衡。实验结果表明，InfLoRA 在多个数据集上优于现有的最先进的持续学习方法。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>持续学习要求模型能够顺序地学习多个任务【33】。为了实现持续学习，模型应具备两个基本能力：保持其在旧任务上的表现（稳定性）和不断适应新任务的能力（可塑性）【33】。此外，持续学习中通常考虑两种不同的场景，包括任务增量场景【32】和类增量场景【41】。任务增量场景允许模型在推理过程中获得任务身份信息。相反，类增量场景不允许模型在推理过程中获得任务身份信息，这使得模型必须学习区分所有任务中的所有类别。</p>
+<p>最近，参数高效微调（PEFT）方法【15,16,18】逐渐流行起来，这种方法通过冻结预训练模型并注入少量可学习参数来适应下游任务，特别是在类增量场景中。具体而言，基于 PEFT 的现有持续学习方法【21,43】使用一些流行的 PEFT 方法（如提示微调【25】或低秩适应（LoRA）【16】）将可学习参数注入到预训练模型中。随后，这些方法冻结预训练的权重，并在整个持续学习过程中对注入的参数进行顺序微调。</p>
+<p>虽然基于 PEFT 的持续学习方法在性能上优于未基于 PEFT 的方法【44】，但大多数方法没有考虑如何消除新任务对旧任务的干扰，从而使模型难以在稳定性和可塑性之间进行良好的权衡。具体而言，当学习一个新任务时，现有基于 PEFT 的持续学习方法要么重用先前学习的参数来适应新任务【12,44】，要么首先随机扩展一些参数，然后再适应新任务【38,42,43】。在这个过程中，由于新旧任务之间共享参数，新任务对旧任务的干扰依然存在，这意味着在新任务上微调预训练模型可能会干扰模型在旧任务上的表现。因此，模型很难在稳定性和可塑性之间取得良好的平衡。</p>
+<p>在本文中，我们提出了一种新的 PEFT 方法，称为无干扰低秩适应（InfLoRA），用于持续学习。本文的贡献如下：</p>
+<ol>
+<li>InfLoRA 通过注入少量参数来重新参数化预训练的权重，并证明微调这些注入的参数相当于在子空间中微调预训练的权重。</li>
+<li>InfLoRA 设计了这个子空间，以消除新任务对旧任务的干扰，实现了稳定性与可塑性之间的良好平衡。</li>
+<li>实验结果表明，InfLoRA 在多个数据集上优于现有的最先进的持续学习方法。</li>
+</ol>
+<h2 id="2-相关工作和预备知识">2. 相关工作和预备知识<a class="anchor-link" href="#2-相关工作和预备知识" title="Permanent link">&para;</a></h2>
+<h3 id="21-相关工作">2.1 相关工作<a class="anchor-link" href="#21-相关工作" title="Permanent link">&para;</a></h3>
+<p><strong>参数高效微调（PEFT）</strong>：PEFT 方法通过冻结预训练模型并注入少量可学习参数来适应下游任务。通过这种方式，PEFT 方法减少了全量微调方法的低效性，后者需要微调预训练模型的所有参数以学习下游任务。例如，Adapter【15】在 Transformers 的不同层中添加小模块，并且仅调整这些添加的模块以适应下游任务。提示微调【25】和前缀微调【27】在 Transformer 层的输入中插入一组可学习的 tokens，并且仅调整这些 tokens 以适应下游任务。低秩适应（LoRA）【16】通过低秩分支重新参数化预训练的权重，并且仅调整这些分支以适应下游任务。尽管这些方法调整的可学习参数比全量微调要少得多，但它们总是表现出与全量微调相当甚至更优的性能【11,16,31,45】。早期的 PEFT 方法主要关注自然语言处理（NLP）。最近，PEFT 方法也被提出用于计算机视觉（CV）。例如，视觉提示微调（VPT）【18】和 AdapterFormer【6】分别将提示微调和 Adapter 技术应用于 CV 任务。它们都表现出与全量微调相当的性能。</p>
+<p><strong>持续学习</strong>：早期的持续学习通常被认为是从头开始学习的背景下进行的。提出了三种类型的持续学习方法，包括基于正则化的方法【1,20,23,46】、基于记忆的方法【2,3,7,28,39】和基于扩展的方法【17,26,35】。基于正则化的方法采用惩罚损失（正则化）来防止旧任务的重要参数发生过多变化。基于记忆的方法维护一个记忆缓冲区，以存储有关旧任务的信息。基于扩展的方法动态扩展模型的结构以适应每个新任务。</p>
+<p>最近，随着预训练模型的进展【9,10,13】，使用预训练模型进行持续学习逐渐流行起来。一些持续学习方法完全微调预训练模型【4,49】，这种方法被证明是低效的。其他方法在持续学习中探索了 PEFT 方法。例如，一些现有的持续学习方法【21,38,43,44】在持续学习中引入了提示微调，在类增量场景中取得了远高于以前从头学习的方法的性能。文献【12】中的方法在持续学习中引入了一个框架，该框架可以与许多现有的 PEFT 方法（如提示微调、LoRA 和 Adapter）结合。然而，所有这些方法都没有考虑如何消除新任务对旧任务的干扰，这抑制了模型在稳定性和可塑性之间进行良好权衡。</p>
+<h3 id="22-预备知识">2.2 预备知识<a class="anchor-link" href="#22-预备知识" title="Permanent link">&para;</a></h3>
+<p>我们首先介绍低秩适应（LoRA）【16】，这是与我们的方法相关的流行 PEFT 方法。接下来，我们给出持续学习的问题定义。</p>
+<p><strong>低秩适应</strong> LoRA【16】是最流行的 PEFT 方法之一。它假设当模型在下游任务上进行全量微调时，参数的变化位于低秩空间中。具体而言，对于输入维度为 <span class="math-inline">d_I</span> 和输出维度为 <span class="math-inline">d_O</span> 的线性层，我们用 <span class="math-inline">W \in \mathbb{R}^{d_O \times d_I}</span> 表示其权重。然后，LoRA 通过两个矩阵 <span class="math-inline">A \in \mathbb{R}^{d_O \times r}</span> 和 <span class="math-inline">B \in \mathbb{R}^{r \times d_I}</span> 扩展了预训练权重 <span class="math-inline">W</span>。通常，<span class="math-inline">r</span> 远小于输入维度 <span class="math-inline">d_I</span> 和输出维度 <span class="math-inline">d_O</span>，使得 <span class="math-inline">A</span> 成为增维矩阵，<span class="math-inline">B</span> 成为降维矩阵。最终，LoRA 修改了此线性层中的前向传播：<span class="math-inline">e = W h + A B h</span>。其中，<span class="math-inline">h</span> 和 <span class="math-inline">e</span> 分别表示此层的输入和输出。LoRA 将 <span class="math-inline">A</span> 初始化为零，并使用高斯分布初始化 <span class="math-inline">B</span>。在学习下游任务的过程中，LoRA 冻结预训练的权重 <span class="math-inline">W</span>，仅微调参数 <span class="math-inline">A</span> 和 <span class="math-inline">B</span>。</p>
+<p><strong>问题定义</strong> 在持续学习中，存在一系列具有不同分布的任务。我们将任务序列定义为 <span class="math-inline">D = {D_1, \dots, D_T}</span>，其中第 <span class="math-inline">t</span> 个任务 <span class="math-inline">D_t = {(x_{i,t}, y_{i,t})}<em>{i=1}^{n_t}</span>。这里，<span class="math-inline">x</em>{i,t}</span> 表示输入样本，<span class="math-inline">y_{i,t}</span> 表示其标签。持续学习的目标是依次在这些任务上训练模型，并确保模型在所有任务上表现良好。</p>
+<p>我们遵循现有的基于参数高效微调（PEFT）的持续学习方法 [43, 44]，并假设模型是一个预训练的视觉 Transformer（ViT）[10]。具体来说，假设模型为 <span class="math-inline">h_\Phi(f_\Theta(\cdot))</span>，其中 <span class="math-inline">h_\Phi(\cdot)</span> 是带有参数 <span class="math-inline">\Phi</span> 的分类器，<span class="math-inline">f_\Theta(\cdot)</span> 是带有预训练参数 <span class="math-inline">\Theta</span> 的预训练 ViT 主干。与现有工作 [43] 类似，我们主要关注类增量场景，其中在推理过程中任务身份未知。此外，我们专注于无样本设置 [43, 51]，其中无法获取历史数据进行复习。</p>
+<h2 id="3-methodology">3. Methodology<a class="anchor-link" href="#3-methodology" title="Permanent link">&para;</a></h2>
+<p>图 1(a) 展示了我们提出的 InfLoRA 在一个线性层中的架构。在学习第 <span class="math-inline">t</span> 个新任务之前，InfLoRA 扩展了一个类似于 LoRA 的分支，该分支包括一个降维矩阵 <span class="math-inline">B_t \in \mathbb{R}^{r \times d_I}</span> 和一个升维矩阵 <span class="math-inline">A_t \in \mathbb{R}^{d_O \times r}</span>。然后，该线性层的前向传播被修改为：<br />
+<div class="math-display"><br />
+    e = Wh + \sum_{j=1}^t A_j B_j h = W_{t-1} h + A_t B_t h = W_t h \tag{1}<br />
+</div><br />
+这里，<span class="math-inline">W_t = W_{t-1} + A_t B_t = W + \sum_{i=1}^t A_i B_i</span>。与 LoRA 类似，我们的 InfLoRA 也将升维矩阵 <span class="math-inline">A_t</span> 初始化为 0。然而，与 LoRA 使用高斯分布初始化降维矩阵 <span class="math-inline">B</span> 不同，我们的 InfLoRA 在学习第 <span class="math-inline">t</span> 个任务之前设计降维矩阵 <span class="math-inline">B_t</span>。</p>
+<p>在学习第 <span class="math-inline">t</span> 个任务的过程中，InfLoRA 微调 <span class="math-inline">A_t</span> 以学习新任务，同时冻结预训练权重 <span class="math-inline">W</span>、所有旧分支以及矩阵 <span class="math-inline">B_t</span>。在学习第 <span class="math-inline">t</span> 个任务之后，对于属于已学习任务的任何测试样本，模型使用 <span class="math-inline">W_t</span> 和公式 (1) 来推断其标签。这种设计确保我们的方法与类增量场景兼容，其中在推理过程中任务身份未知。</p>
+<p>在以下小节中，我们首先建立 InfLoRA 与微调预训练权重方法之间的关系。具体来说，我们证明微调参数 <span class="math-inline">A_t</span> 等价于在由 <span class="math-inline">B_t</span> 的行张成的子空间中微调预训练权重 <span class="math-inline">W</span>。需要注意的是，<span class="math-inline">B_t</span> 是在学习第 <span class="math-inline">t</span> 个任务之前设计的，因此该子空间是预先设计的。然后，基于这一关系，我们介绍 InfLoRA 如何设计该子空间以消除新任务对旧任务的干扰，并在稳定性和可塑性之间取得良好的平衡。</p>
+<h3 id="31-inflora-与微调预训练权重的关系">3.1. InfLoRA 与微调预训练权重的关系<a class="anchor-link" href="#31-inflora-与微调预训练权重的关系" title="Permanent link">&para;</a></h3>
+<p>当第 <span class="math-inline">t</span> 个任务到达并且我们的方法扩展了一个新分支时，该层的前向传播可以表示为公式 (1)。此时，我们可以证明以下命题：</p>
+<p><strong>命题 1.</strong> 当使用公式 (1) 表示的前向传播学习第 <span class="math-inline">t</span> 个任务时，微调 <span class="math-inline">A_t</span> 等价于在子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 中微调预训练权重 <span class="math-inline">W</span>。这里，<span class="math-inline">b_{t,i}</span> (<span class="math-inline">1 \leq i \leq r</span>) 表示 <span class="math-inline">B_t</span> 的第 <span class="math-inline">i</span> 个行向量。</p>
+<p><strong>证明.</strong> 当微调预训练权重 <span class="math-inline">W</span> 以学习第 <span class="math-inline">t</span> 个任务时，我们可以基于链式法则计算 <span class="math-inline">W</span> 的梯度：<br />
+<div class="math-display"><br />
+    \frac{\partial L}{\partial W} = \frac{\partial L}{\partial e} \frac{\partial e}{\partial W} = \frac{\partial L}{\partial e} h^T \tag{2}<br />
+</div><br />
+这里，<span class="math-inline">L</span> 表示损失函数。此时，<span class="math-inline">W</span> 的变化可以表示为 <span class="math-inline">\Delta W = -\alpha \frac{\partial L}{\partial W}</span>，其中 <span class="math-inline">\alpha</span> 是学习率。然后，我们可以计算组合矩阵 <span class="math-inline">W_t = W + \sum_{j=1}^t A_j B_j</span> 的变化：<br />
+<div class="math-display"><br />
+    \Delta_W W_t = \left[ W + \Delta W + \sum_{j=1}^t A_j B_j \right] - \left( W + \sum_{j=1}^t A_j B_j \right) = \Delta W = -\alpha \frac{\partial L}{\partial e} h^T \tag{3}<br />
+</div><br />
+这里，我们使用 <span class="math-inline">\Delta_W W_t</span> 表示由 <span class="math-inline">W</span> 的变化引起的组合矩阵 <span class="math-inline">W_t</span> 的变化。</p>
+<p>类似地，当微调扩展权重 <span class="math-inline">A_t</span> 时，我们可以基于链式法则计算 <span class="math-inline">A_t</span> 的梯度：<br />
+<div class="math-display"><br />
+    \frac{\partial L}{\partial A_t} = \frac{\partial L}{\partial e} \frac{\partial e}{\partial A_t} = \frac{\partial L}{\partial e} h^T B_t^T \tag{4}<br />
+</div><br />
+此时，<span class="math-inline">A_t</span> 的变化可以表示为 <span class="math-inline">\Delta A_t = -\alpha \frac{\partial L}{\partial A_t}</span>。然后，我们可以计算组合矩阵 <span class="math-inline">W_t = W_{t-1} + A_t B_t</span> 的变化：<br />
+<div class="math-display"><br />
+    \Delta_{A_t} W_t = \left[ W_{t-1} + (A_t + \Delta A_t) B_t \right] - \left( W_{t-1} + A_t B_t \right) = \Delta A_t B_t = -\alpha \frac{\partial L}{\partial e} h^T B_t^T B_t = \Delta_W W_t B_t^T B_t \tag{5}<br />
+</div><br />
+这里，我们使用 <span class="math-inline">\Delta_{A_t} W_t</span> 表示由 <span class="math-inline">A_t</span> 的变化引起的组合矩阵 <span class="math-inline">W_t</span> 的变化。公式 (5) 中的第四个等式成立是因为公式 (4)，而第五个等式成立是因为公式 (2)。公式 (5) 表明 <span class="math-inline">\Delta_{A_t} W_t</span> 等于 <span class="math-inline">\Delta_W W_t</span> 乘以一个投影矩阵 <span class="math-inline">B_t^T B_t</span>。由于 <span class="math-inline">B_t^T B_t</span> 将 <span class="math-inline">\Delta_W W_t</span> 的每一行向量投影到子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span>，因此命题 1 成立。</p>
+<p>命题 1 表明，使用我们的 InfLoRA 训练模型等价于在由 <span class="math-inline">B_t</span> 的行张成的子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 中直接微调预训练权重 <span class="math-inline">W</span>。因此，在学习第 <span class="math-inline">t</span> 个任务之前，我们可以设计矩阵 <span class="math-inline">B_t</span>，使得在该子空间中学习第 <span class="math-inline">t</span> 个任务不会干扰模型在旧任务上的表现。</p>
+<h3 id="32-消除新任务对旧任务的干扰">3.2. 消除新任务对旧任务的干扰<a class="anchor-link" href="#32-消除新任务对旧任务的干扰" title="Permanent link">&para;</a></h3>
+<p>我们首先介绍 InfLoRA 希望子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 具备的理想特性。通过这些特性，InfLoRA 可以消除新任务对旧任务的干扰，并在稳定性和可塑性之间取得良好的平衡。然后，我们介绍如何设计降维矩阵 <span class="math-inline">B_t</span>，使得子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 具备这些特性。</p>
+<h4 id="321-理想特性">3.2.1 理想特性<a class="anchor-link" href="#321-理想特性" title="Permanent link">&para;</a></h4>
+<p>首先，InfLoRA 希望子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 与所有旧任务的梯度正交。通过这种方式，根据命题 1，InfLoRA 的更新（可以表示为 <span class="math-inline">\Delta_{A_t} W_t</span>）也将与旧任务的梯度正交。需要注意的是，使新任务的更新与旧任务的梯度正交以消除新任务对旧任务的干扰的想法已经在许多现有的持续学习方法中提出 [30, 36]。然而，这些现有方法都是为从头开始的持续学习设计的，涉及更新模型的所有参数，这与 PEFT 的设置不兼容。相反，我们的方法是一种 PEFT 方法，仅微调 <span class="math-inline">A_t</span> 中的参数。</p>
+<p>除了消除新任务对旧任务的干扰外，我们的 InfLoRA 还进一步使子空间 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 位于新任务梯度所在的子空间中，以在稳定性和可塑性之间取得良好的平衡。具体来说，现有工作 [19] 表明，在微调过程中，预训练 ViT 的权重增量在权重秩方面表现出冗余性。因此，新任务的梯度位于一个低维子空间中。我们的方法使 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}}</span> 不仅与旧任务的梯度正交，还位于新任务 <span class="math-inline">t</span> 的梯度所在的子空间中。通过这种方式，我们的方法在消除新任务对旧任务的干扰的同时，使模型专注于新任务，从而在稳定性和可塑性之间取得良好的平衡。第 4.2 节验证了这两个特性的有效性。</p>
+<h4 id="322-设计降维矩阵">3.2.2 设计降维矩阵<a class="anchor-link" href="#322-设计降维矩阵" title="Permanent link">&para;</a></h4>
+<p>InfLoRA 首先近似新任务和旧任务的梯度空间。这里，我们使用 <span class="math-inline">N_t</span> 表示 InfLoRA 近似的新任务的梯度空间。类似地，我们使用 <span class="math-inline">M_t</span> 表示 InfLoRA 近似的先前 <span class="math-inline">t-1</span> 个旧任务的梯度空间。我们还使用 <span class="math-inline">M_t^\perp</span> 表示与 <span class="math-inline">M_t</span> 正交的残差梯度空间。然后，为了满足第 3.2.1 节中描述的特性，InfLoRA 确保 <span class="math-inline">B_t</span> 的每一行位于 <span class="math-inline">N_t \cap M_t^\perp</span> 中。换句话说，InfLoRA 使 <span class="math-inline">\text{span}{b_{t,1}, \dots, b_{t,r}} \subseteq N_t \cap M_t^\perp</span>。</p>
+<p>现有工作 [29, 36] 表明，线性层的梯度更新位于输入的张成空间中。有关此命题的详细解释，请参阅补充材料。因此，InfLoRA 使用新任务 <span class="math-inline">t</span> 的输入矩阵来近似新任务的梯度空间。具体来说，InfLoRA 计算输入矩阵 <span class="math-inline">H_t = [h_{t,1}, \dots, h_{t,n}]</span>，其中 <span class="math-inline">H_t</span> 的每一列表示第 <span class="math-inline">t</span> 个任务的输入向量。然后，InfLoRA 将 <span class="math-inline">N_t</span> 视为由矩阵 <span class="math-inline">H_t</span> 的列张成的子空间。</p>
+<p>然而，InfLoRA 不能使用旧任务的输入矩阵来近似旧任务的梯度空间，因为模型在学习新任务时无法获取来自旧任务的数据。相反，现有方法如梯度投影记忆（GPM）[36] 和双重梯度投影记忆（DualGPM）[29] 可以学习一个矩阵来保留旧任务的梯度信息。InfLoRA 结合了 DualGPM 来保留梯度信息。在 DualGPM 的帮助下，模型可以学习一个矩阵 <span class="math-inline">M_t \in \mathbb{R}^{d_I \times k_t}</span> 或一个矩阵 <span class="math-inline">M_t^\perp \in \mathbb{R}^{d_I \times (d_I - k_t)}</span>。这里，<span class="math-inline">M_t</span> 的列构成了 <span class="math-inline">M_t</span> 的正交基，而 <span class="math-inline">M_t^\perp</span> 的列构成了 <span class="math-inline">M_t^\perp</span> 的正交基。<span class="math-inline">k_t</span> 表示 <span class="math-inline">M_t</span> 的维度。有关 DualGPM 如何维护正交基 <span class="math-inline">M_t</span> 或 <span class="math-inline">M_t^\perp</span> 的详细信息，请参阅补充材料或原始论文 [29]。</p>
+<p>在近似新任务和旧任务的梯度空间后，InfLoRA 获取 <span class="math-inline">N_t</span> 中位于 <span class="math-inline">M_t^\perp</span> 中的部分。具体来说，当模型维护 <span class="math-inline">M_t</span> 时，InfLoRA 执行以下操作：<br />
+<div class="math-display"><br />
+    \hat{H}_t = H_t - M_t M_t^T H_t \tag{6}<br />
+</div><br />
+类似地，当模型维护 <span class="math-inline">M_t^\perp</span> 时，InfLoRA 执行以下操作：<br />
+<div class="math-display"><br />
+    \hat{H}_t = M_t^\perp (M_t^\perp)^T H_t \tag{7}<br />
+</div><br />
+需要注意的是，当 <span class="math-inline">t = 1</span> 时，<span class="math-inline">M_t</span> 是一个空空间，因此 <span class="math-inline">\hat{H}_t = H_t</span>。显然，<span class="math-inline">\hat{H}_t</span> 的每一列都位于 <span class="math-inline">N_t \cap M_t^\perp</span> 中。然而，由于 <span class="math-inline">\hat{H}_t^T \in \mathbb{R}^{n \times d_I}</span> 和 <span class="math-inline">B_t \in \mathbb{R}^{r \times d_I}</span> 具有不同的形状，InfLoRA 不能直接将 <span class="math-inline">B_t</span> 定义为 <span class="math-inline">\hat{H}_t^T</span>。由于 <span class="math-inline">n \gg r</span>，InfLoRA 使用 <span class="math-inline">\hat{H}_t^T</span> 的主成分来设置 <span class="math-inline">B_t</span>。具体来说，对 <span class="math-inline">\hat{H}_t^T</span> 进行奇异值分解（SVD）：<br />
+<div class="math-display"><br />
+    \hat{H}_t^T = V_t \Sigma_t U_t \tag{8}<br />
+</div><br />
+然后，InfLoRA 通过以下方式设计 <span class="math-inline">B_t</span>：<br />
+<div class="math-display"><br />
+    B_t = (U_t)_r \tag{9}<br />
+</div><br />
+这里，<span class="math-inline">(U_t)_r</span> 表示 <span class="math-inline">U_t</span> 中对应于前 <span class="math-inline">r</span> 个奇异值的行。图 1(b) 展示了设计矩阵 <span class="math-inline">B_t</span> 的流程。</p>
+<p>需要注意的是，DualGPM 在任务数量增加时扩展子空间 <span class="math-inline">M_t</span> 并减少子空间 <span class="math-inline">M_t^\perp</span>。由于 InfLoRA 将模型的更新约束在子空间 <span class="math-inline">N_t \cap M_t^\perp \subseteq M_t^\perp</span> 中，因此随着任务数量的增加，学习新任务的空间会减少。然而，通过调整对旧任务梯度的近似误差，DualGPM 可以缓慢扩展 <span class="math-inline">M_t</span> 并缓慢减少 <span class="math-inline">M_t^\perp</span>。因此，InfLoRA 的约束不会过度影响模型对新任务的学习。有关详细解释，请参阅补充材料。</p>
+<h3 id="33-inflora-的完整流程">3.3. InfLoRA 的完整流程<a class="anchor-link" href="#33-inflora-的完整流程" title="Permanent link">&para;</a></h3>
+<p>算法 1 概述了 InfLoRA 在持续学习中的完整流程。当第 <span class="math-inline">t</span> 个新任务到达时，InfLoRA 首先通过公式 (9) 设计 <span class="math-inline">B_t</span> 并扩展一个新分支。然后，InfLoRA 通过微调新扩展的分支来学习第 <span class="math-inline">t</span> 个任务。请注意，基于现有方法 [12, 38] 的经验发现，我们采用局部交叉熵（CE）损失作为学习目标，因为它通常在基于 PEFT 的持续学习方法中表现优于全局 CE 损失。局部 CE 是约束在当前新任务类别上的 CE 损失，可以表示为：<br />
+<div class="math-display"><br />
+    L(D_t) = \frac{1}{|D_t|} \sum_{(x, y) \in D_t} L_{\text{ce}}(\text{mask}(h_\Phi(f_\Theta(x))), y) \tag{9}<br />
+</div></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250322144224.png" style="zoom: 80%;" /></div>
+
+<p>这里，<span class="math-inline">\text{mask}(\cdot)</span> 是一个过滤掉旧类别 logits 的函数，<span class="math-inline">L_{\text{ce}}</span> 表示标准的交叉熵损失。在学习第 <span class="math-inline">t</span> 个新任务后，InfLoRA 遵循 DualGPM 保留第 <span class="math-inline">t</span> 个任务的梯度信息。</p>
+<p>需要注意的是，一旦模型学习了第 <span class="math-inline">t</span> 个任务，对应的分支将被冻结。由于扩展的分支是线性变换，我们可以将旧分支集成到预训练权重中，以减少扩展的参数。具体来说，在学习第一个任务后，InfLoRA 将第一个分支集成到预训练权重中，并获得权重 <span class="math-inline">W_1 = W + A_1 B_1</span>。在学习第 <span class="math-inline">t</span> 个新任务之前（<span class="math-inline">t &gt; 1</span>），InfLoRA 维护权重 <span class="math-inline">W_{t-1}</span>。在学习第 <span class="math-inline">t</span> 个任务后，InfLoRA 将第 <span class="math-inline">t</span> 个分支集成到 <span class="math-inline">W_{t-1}</span> 中，并获得 <span class="math-inline">W_t = W_{t-1} + A_t B_t</span>。通过这种方式，<span class="math-inline">A_t</span> 和 <span class="math-inline">B_t</span> 中的参数不需要在后续任务的学习中维护。因此，在整个学习过程中，InfLoRA 扩展的参数数量等于单个分支中的参数数量。由于单个分支包含 <span class="math-inline">(d_I + d_O)r</span> 个参数，因此 InfLoRA 扩展的参数数量始终为 <span class="math-inline">(d_I + d_O)r</span>。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<h3 id="41-实验设置">4.1. 实验设置<a class="anchor-link" href="#41-实验设置" title="Permanent link">&para;</a></h3>
+<h4 id="数据集与评估指标">数据集与评估指标<a class="anchor-link" href="#数据集与评估指标" title="Permanent link">&para;</a></h4>
+<p>与现有的基于 PEFT 的持续学习方法 [12, 44] 类似，我们使用 ImageNet-R [14]、CIFAR100 [24] 和 DomainNet [34] 来训练和评估模型。ImageNet-R 是通过对 ImageNet [8] 中的 200 个类别进行艺术处理生成的。该数据集被现有工作 [43] 引入持续学习，并已成为基于 PEFT 的持续学习方法的标准基准。CIFAR100 是现有持续学习工作中常用的数据集。DomainNet 包含 345 个类别，并被一些现有工作 [38, 42] 引入持续学习。遵循现有的持续学习工作 [38]，我们将 ImageNet-R 划分为 5 个、10 个和 20 个任务，每个任务分别包含 40、20 和 10 个类别。我们将 CIFAR100 划分为 10 个任务，每个任务包含 10 个类别。我们将 DomainNet 划分为 5 个任务，每个任务包含 69 个类别。</p>
+<p>遵循现有的持续学习方法 [12, 44]，我们通过两个流行的指标评估模型的性能，包括最终准确率 <span class="math-inline">\text{ACC}<em>T</span> 和平均准确率 <span class="math-inline">\text{ACC}_T = \frac{1}{T} \sum</em>{i=1}^T \text{ACC}<em>i</span>，其中 <span class="math-inline">T</span> 表示任务总数，<span class="math-inline">\text{ACC}_i</span> 定义为：<br />
+<div class="math-display"><br />
+    \text{ACC}_i = \frac{1}{i} \sum</em>{j=1}^i a_{i,j} \tag{11}<br />
+</div><br />
+这里，<span class="math-inline">a_{i,j}</span> 表示模型在学习第 <span class="math-inline">i</span> 个任务后对第 <span class="math-inline">j</span> 个任务的准确率。</p>
+<h4 id="基线方法">基线方法<a class="anchor-link" href="#基线方法" title="Permanent link">&para;</a></h4>
+<p>我们将我们的 InfLoRA 与最先进的基于 PEFT 的持续学习方法进行比较，包括学习提示（L2P）[44]、DualPrompt [43]、持续分解注意力提示（CODA-P）[38]、学习累积集成（LAE）[12]、持续低秩适应（C-LoRA）[37]。对于 LAE，我们使用 LoRA [16] 实现。遵循现有工作 [12, 38]，我们在比较中还包含两种不进行持续学习的方法，即联合学习（joint）和顺序学习（sequential）。这里，joint 表示联合学习所有任务的方法，而 sequential 表示按顺序学习所有任务而不采取任何操作来克服模型遗忘的方法。joint 的准确率可以被视为准确率的上限，而 sequential 的准确率可以被视为准确率的下限。</p>
+<h4 id="架构与训练细节">架构与训练细节<a class="anchor-link" href="#架构与训练细节" title="Permanent link">&para;</a></h4>
+<p>我们遵循现有工作 [12, 43] 进行实验。具体来说，我们使用在 ImageNet 21K 上监督预训练的 ViT-B/16 主干 [10] 作为预训练模型。</p>
+<p>对于所有方法，我们遵循现有工作 [12, 38, 44] 并使用 Adam [22] 优化器，其梯度及其平方的运行平均值（<span class="math-inline">\beta_1 = 0.9</span>，<span class="math-inline">\beta_2 = 0.999</span>）。每个任务在 ImageNet-R 上训练 50 个 epoch，在 CIFAR100 上训练 20 个 epoch，在 DomainNet 上训练 5 个 epoch。所有实验的批量大小设置为 128。由于我们的 InfLoRA 与 LoRA 的架构相似，我们遵循现有工作 [12] 并将 InfLoRA 的架构插入到注意力模块的键和值中。此外，现有方法 DualPrompt [43] 将插入的块视为超参数，并搜索其提示的最佳位置。相反，我们将 InfLoRA 的架构插入到所有 Transformer 块中，以避免搜索。我们还实现了一个变体，该变体像现有方法 DualPrompt 和 CODA-P 一样插入底部 5 个 Transformer 块。我们称该变体为 InfLoRA-b5。</p>
+<p>关于超参数 <span class="math-inline">r</span>，我们通过在验证数据集上进行网格搜索来确定其值。</p>
+<h3 id="42-实验结果">4.2. 实验结果<a class="anchor-link" href="#42-实验结果" title="Permanent link">&para;</a></h3>
+<h4 id="准确率">准确率<a class="anchor-link" href="#准确率" title="Permanent link">&para;</a></h4>
+<p>表 1 展示了不同方法在 ImageNet-R 上不同任务数量下的结果。表 2 展示了不同方法在 CIFAR100 和 DomainNet 上的结果。我们可以发现，我们的方法 InfLoRA 和 InfLoRA-b5 优于现有的持续学习方法。</p>
+<p>图 2 展示了不同持续学习方法在 ImageNet-R 和 CIFAR100 上准确率的变化。我们可以发现，我们的方法不仅在学习的最后阶段优于现有方法，而且在整个学习过程中都表现更好。这表明我们的 InfLoRA 消除了新任务对旧任务的干扰，因此我们的方法的准确率下降速度比其他方法慢。</p>
+<h4 id="扩展参数的分析">扩展参数的分析<a class="anchor-link" href="#扩展参数的分析" title="Permanent link">&para;</a></h4>
+<p>图 3 展示了不同方法在 ImageNet-R 和 CIFAR100 上扩展的参数数量和准确率。对于 L2P、DualPrompt 和 CODA-P，其扩展参数包括添加的提示及其对应的键。对于 LAE，其扩展参数是插入的 LoRA 模块和一个额外的副本。对于 C-LoRA，其扩展参数是插入的 LoRA 模块。对于我们的方法，扩展参数是 <span class="math-inline">B_t</span> 和 <span class="math-inline">A_t</span>。有关计算不同方法扩展参数数量的详细信息，请参阅补充材料。我们可以发现，CODA-P 和 C-LoRA 扩展的参数数量远多于其他方法。此外，我们的方法 InfLoRA 和 InfLoRA-b5 扩展的参数数量与 L2P、DualPrompt 和 LAE 相当，但性能优于这些方法。</p>
+<h4 id="消融实验">消融实验<a class="anchor-link" href="#消融实验" title="Permanent link">&para;</a></h4>
+<p>我们进行实验以验证通过公式 (9) 设计降维矩阵 <span class="math-inline">B_t</span> 的有效性。具体来说，我们探索了三种不同的变体来设计 <span class="math-inline">B_t</span>。第一种变体使用高斯分布随机设计 <span class="math-inline">B_t</span>。我们称该变体为“Random → <span class="math-inline">B_t</span>”。第二种变体丢弃公式 (6) 或 (7) 中的操作，并直接设置 <span class="math-inline">\hat{H}_t = H_t</span>。通过这种方式，该变体确保 <span class="math-inline">B_t</span> 的每一行位于 <span class="math-inline">N_t</span> 中，而忽略 <span class="math-inline">M_t^\perp</span>。我们称该变体为“<span class="math-inline">N_t</span> → <span class="math-inline">B_t</span>”。第三种变体不计算输入矩阵，而是在应用公式 (6) 或 (7) 之前使用高斯分布初始化 <span class="math-inline">H_t</span>。通过这种方式，该变体确保 <span class="math-inline">B_t</span> 的每一行位于 <span class="math-inline">M_t^\perp</span> 中，而忽略 <span class="math-inline">N_t</span>。我们称该变体为“<span class="math-inline">M_t^\perp</span> → <span class="math-inline">B_t</span>”。由于我们的方法同时关注 <span class="math-inline">M_t^\perp</span> 和 <span class="math-inline">N_t</span>，因此我们使用“<span class="math-inline">N_t \cap M_t^\perp</span> → <span class="math-inline">B_t</span>”来表示我们的方法。</p>
+<p>表 3 展示了我们的方法及其变体的结果。我们可以发现，所有这些变体的表现都不如我们的方法。为了进一步展示不同变体的性能，我们在图 4 中展示了模型学习所有任务后不同任务的相对准确率。这里，相对准确率是不同变体的准确率减去我们的 InfLoRA 的准确率。需要注意的是，图 4 中的最后一个任务是新任务，而其他任务是旧任务。正如我们所看到的，“Random → <span class="math-inline">B_t</span>”和“<span class="math-inline">N_t</span> → <span class="math-inline">B_t</span>”在新任务上优于“<span class="math-inline">M_t^\perp</span> → <span class="math-inline">B_t</span>”，但在旧任务上的准确率远低于“<span class="math-inline">M_t^\perp</span> → <span class="math-inline">B_t</span>”和我们的 InfLoRA。这意味着这两种变体未能消除新任务对旧任务的干扰，导致模型的稳定性较低。相反，“<span class="math-inline">M_t^\perp</span> → <span class="math-inline">B_t</span>”在新任务上的表现最差。这意味着“<span class="math-inline">M_t^\perp</span> → <span class="math-inline">B_t</span>”忽略了模型的可塑性。我们的方法在大多数任务上优于所有变体。这表明我们的方法能够消除新任务对旧任务的干扰，并在稳定性和可塑性之间取得更好的平衡。</p>
+<h4 id="预训练模型的变化">预训练模型的变化<a class="anchor-link" href="#预训练模型的变化" title="Permanent link">&para;</a></h4>
+<p>我们还遵循现有方法 [40]，使用两种不同的自监督方法（包括 DINO [5] 和 iBOT [50]）预训练的 ViT-B/16 进行实验。除了预训练模型的选择外，所有实验设置均与第 4.1 节中概述的细节保持一致。</p>
+<p>表 4 展示了不同方法在使用各种自监督预训练模型时在 ImageNet-R 上的结果。将这些结果与表 1 中的结果进行比较，我们可以发现，所有使用自监督预训练模型的方法的性能均低于使用监督预训练模型的相应方法。然而，我们的方法仍然优于所有其他方法。</p>
+<h4 id="与分类器对齐结合">与分类器对齐结合<a class="anchor-link" href="#与分类器对齐结合" title="Permanent link">&para;</a></h4>
+<p>慢学习者与分类器对齐（SLCA）[48] 利用特征统计量对齐分类器，展示了优于未对齐分类器方法的性能。我们的 InfLoRA 可以与分类器对齐（CA）结合以获得更好的性能。具体来说，在学习第 <span class="math-inline">t</span> 个任务并更新参数 <span class="math-inline">A_t</span> 和 <span class="math-inline">B_t</span> 以及损失函数 (10) 后，我们收集第 <span class="math-inline">t</span> 个任务的特征 <span class="math-inline">F_t = {r_{i,t}}<em>{i=1}^{n_t}</span>。这里，<span class="math-inline">r</em>{i,t} = f(x_{i,t})</span> 表示主干 <span class="math-inline">f_\Theta(\cdot)</span> 提取的特征。然后，计算并保存每个类别特征的均值和协方差。之后，对于模型在持续学习过程中见过的每个类别 <span class="math-inline">c</span>，从高斯分布 <span class="math-inline">\mathcal{N}(\mu_c, \Sigma_c)</span> 中采样 <span class="math-inline">S</span> 个样本。这里，<span class="math-inline">\mu_c</span> 和协方差 <span class="math-inline">\Sigma_c</span> 分别表示类别 <span class="math-inline">c</span> 的均值和协方差。最后，我们使用标准交叉熵和这些样本对齐分类器。有关该实验的详细信息，请参阅补充材料。</p>
+<p>表 5 展示了我们的方法 InfLoRA+CA 优于 SLCA。需要注意的是，SLCA 微调模型的所有参数，而我们的方法 InfLoRA 仅微调 <span class="math-inline">A_t</span> 中的参数。因此，我们的 InfLoRA+CA 比 SLCA 更加高效。</p>
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>在本工作中，我们提出了一种新的方法，称为无干扰低秩适应（InfLoRA），用于持续学习。InfLoRA 注入少量参数以重新参数化预训练权重，并表明微调这些注入的参数等价于在子空间中微调预训练权重。此外，InfLoRA 设计该子空间以消除新任务对旧任务的干扰，从而在稳定性和可塑性之间取得良好的平衡。实验结果表明，InfLoRA 在多个数据集上优于现有的最先进的持续学习方法。</p>
+<h3 id="致谢">致谢<a class="anchor-link" href="#致谢" title="Permanent link">&para;</a></h3>
+<p>本工作得到了国家自然科学基金（No.62192783）、国家重点研发计划（No.2020YFA0713901）和中央高校基本科研业务费专项资金（No.020214380108）的支持。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

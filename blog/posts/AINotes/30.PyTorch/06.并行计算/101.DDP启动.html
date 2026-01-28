@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nproc_per_node: 这个参数是指你使用这台服务器上面的几张显卡</title>
+    <meta name="description" content="nproc_per_node: 这个参数是指你使用这台服务器上面的几张显卡 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#torchdistributedlaunch-启动器">torch.distributed.launch 启动器</a></li>
+<li><a href="#torchrun">torchrun</a><ul>
+<li><a href="#torchrun-的基本用法">torchrun 的基本用法</a><ul>
+<li><a href="#命令行示例">命令行示例</a></li>
+</ul>
+</li>
+<li><a href="#分布式脚本的基本结构">分布式脚本的基本结构</a><ul>
+<li><a href="#关键点说明">关键点说明</a></li>
+</ul>
+</li>
+<li><a href="#多机多卡的命令行示例">多机多卡的命令行示例</a></li>
+<li><a href="#与命令行参数的混合使用">与命令行参数的混合使用</a></li>
+<li><a href="#常见问题与注意事项">常见问题与注意事项</a></li>
+<li><a href="#小结">小结</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>nproc_per_node: 这个参数是指你使用这台服务器上面的几张显卡</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/06.并行计算</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>下面将对 <strong><code>torchrun</code></strong> 的使用做一个较为详细的介绍，包括命令行参数如何指定，以及在脚本里如何获取分布式相关信息并进行初始化。</p>
+<hr />
+<h2 id="torchdistributedlaunch-启动器">torch.distributed.launch 启动器<a class="anchor-link" href="#torchdistributedlaunch-启动器" title="Permanent link">&para;</a></h2>
+<p>对于单机多卡的情况：</p>
+<pre><code class="language-python">CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=4 main.py
+# nproc_per_node: 这个参数是指你使用这台服务器上面的几张显卡
+</code></pre>
+<h2 id="torchrun">torchrun<a class="anchor-link" href="#torchrun" title="Permanent link">&para;</a></h2>
+<h3 id="torchrun-的基本用法"><code>torchrun</code> 的基本用法<a class="anchor-link" href="#torchrun-的基本用法" title="Permanent link">&para;</a></h3>
+<p>PyTorch 从 <strong>1.10</strong> 版本开始推荐使用 <code>torchrun</code> 来启动分布式训练，取代之前的 <code>torch.distributed.launch</code> 脚本。其优点是：</p>
+<ol>
+<li>默认使用 “env://” 方式传递分布式所需的信息（<code>MASTER_ADDR</code>, <code>MASTER_PORT</code>, <code>RANK</code>, <code>LOCAL_RANK</code> 等），不再强制注入 <code>--local_rank=...</code> 命令行参数。</li>
+<li>提供了更简洁、清晰的命令行参数，如 <code>--nproc_per_node</code>, <code>--nnodes</code>, <code>--node_rank</code> 等。</li>
+<li>与后续 PyTorch 版本更兼容，且官方文档更推荐。</li>
+</ol>
+<h4 id="命令行示例">命令行示例<a class="anchor-link" href="#命令行示例" title="Permanent link">&para;</a></h4>
+<pre><code class="language-bash"># 单机多卡示例
+torchrun --standalone \
+         --nproc_per_node=4 \
+         your_script.py \
+         --other_arg1=xxx \
+         --other_arg2=yyy
+</code></pre>
+<ul>
+<li><code>--standalone</code>：表示单机模式下自动分配一个可用端口给分布式进程组；若多机训练，需要显式指定 <code>--master_addr</code> 和 <code>--master_port</code>。</li>
+<li><code>--nproc_per_node=4</code>：表示在当前节点（机器）上启动 4 个进程（一般对应 4 张 GPU）。</li>
+<li><code>your_script.py</code>：你的训练脚本，可以在脚本中通过环境变量获取 <code>LOCAL_RANK</code>、<code>RANK</code>、<code>WORLD_SIZE</code> 等信息。</li>
+<li><code>--other_arg1=xxx</code>、<code>--other_arg2=yyy</code>：你自定义的脚本参数。</li>
+</ul>
+<hr />
+<h3 id="分布式脚本的基本结构">分布式脚本的基本结构<a class="anchor-link" href="#分布式脚本的基本结构" title="Permanent link">&para;</a></h3>
+<p>下面以一个最简化的示例脚本 <code>train.py</code> 为例，说明如何在程序中获取分布式信息并初始化。</p>
+<pre><code class="language-python"># train.py
+import os
+import torch
+import torch.distributed as dist
+import torch.nn as nn
+import torch.optim as optim
+
+def main():
+    # 1. 获取环境变量
+    local_rank = int(os.environ[&quot;LOCAL_RANK&quot;])   # 当前进程在本机的进程号，从 0 开始
+    rank = int(os.environ[&quot;RANK&quot;])               # 当前进程在所有进程中的全局 rank
+    world_size = int(os.environ[&quot;WORLD_SIZE&quot;])   # 总进程数（所有机器、所有卡的进程总和）
+
+    # 2. 初始化进程组
+    #    backend 通常在 GPU 上用 'nccl'，若 CPU 上可以用 'gloo'。
+    dist.init_process_group(backend=&quot;nccl&quot;)
+
+    # 3. 设置当前进程要使用的 GPU
+    torch.cuda.set_device(local_rank)
+
+    # 4. 构建模型并移动到本地进程对应的 GPU
+    model = nn.Linear(10, 1).cuda(local_rank)
+
+    # 5. 构建分布式数据并行(DDP)模型 (可选)
+    #    如果想让多个进程并行训练同一个模型，需要使用 DDP。
+    from torch.nn.parallel import DistributedDataParallel as DDP
+    model = DDP(model, device_ids=[local_rank], output_device=local_rank)
+
+    # 6. 数据加载、优化器设置等
+    optimizer = optim.SGD(model.parameters(), lr=0.001)
+    # dataset = ...
+    # sampler = ...
+    # dataloader = DataLoader(dataset, batch_size=..., sampler=sampler)
+
+    # 7. 训练循环 (示意)
+    # for epoch in range(num_epochs):
+    #     for batch in dataloader:
+    #         optimizer.zero_grad()
+    #         outputs = model(batch)
+    #         loss = ...
+    #         loss.backward()
+    #         optimizer.step()
+
+    # 8. 训练完成后（可选）销毁进程组
+    dist.destroy_process_group()
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<h4 id="关键点说明">关键点说明<a class="anchor-link" href="#关键点说明" title="Permanent link">&para;</a></h4>
+<ol>
+<li>获取环境变量<br />
+   - <code>LOCAL_RANK</code>：在单机多卡时，表示当前进程对应第几张 GPU（0 ~ nproc_per_node-1）。<br />
+   - <code>RANK</code>：在所有进程（包括多机）中的全局排名。<br />
+   - <code>WORLD_SIZE</code>：所有进程的总数。<br />
+   - 若是多机训练，还会有 <code>MASTER_ADDR</code>、<code>MASTER_PORT</code> 等环境变量，由 <code>torchrun</code> 自动设置。</li>
+<li>初始化进程组<br />
+   - 使用 <code>dist.init_process_group(backend='nccl')</code>（GPU 上一般选 <code>nccl</code>）。<br />
+   - 不需要再手动指定 <code>init_method</code>，<code>torchrun</code> 会默认用 “env://” 并自动设置主节点地址和端口。</li>
+<li>设置当前进程使用的 GPU<br />
+   - <code>torch.cuda.set_device(local_rank)</code> 可以让本进程只操作对应的 GPU。</li>
+<li>分布式数据并行 (DDP)<br />
+   - 如果你想真正并行训练，需要用 <code>DistributedDataParallel</code> 包装模型。<br />
+   - <code>device_ids=[local_rank]</code>、<code>output_device=local_rank</code> 可以确保梯度在本卡上做同步。</li>
+<li>训练结束<br />
+   - 建议调用 <code>dist.destroy_process_group()</code> 结束分布式环境。</li>
+</ol>
+<hr />
+<h3 id="多机多卡的命令行示例">多机多卡的命令行示例<a class="anchor-link" href="#多机多卡的命令行示例" title="Permanent link">&para;</a></h3>
+<p>如果有多台机器（节点），可以用以下参数指定：</p>
+<pre><code class="language-bash">torchrun --nnodes=2 \               # 总共 2 台机器
+         --nproc_per_node=4 \       # 每台机器上 4 张 GPU
+         --node_rank=0 \            # 当前机器是第 0 台（另一台是 1）
+         --master_addr=&quot;10.0.0.1&quot; \ # 主节点 IP
+         --master_port=12345 \      # 通信端口
+         your_script.py
+</code></pre>
+<p>在另一台机器上也启动相同命令，但把 <code>--node_rank=1</code> 改对即可。</p>
+<hr />
+<h3 id="与命令行参数的混合使用">与命令行参数的混合使用<a class="anchor-link" href="#与命令行参数的混合使用" title="Permanent link">&para;</a></h3>
+<p>除了分布式必需的环境变量外，你的脚本还可以有自己的命令行参数。例如：</p>
+<pre><code class="language-bash">torchrun --standalone \
+         --nproc_per_node=4 \
+         your_script.py \
+         --config ./myconfig.yaml \
+         --epochs 100
+</code></pre>
+<p>脚本里可以用 <code>argparse</code> 解析自定义参数，然后再用 <code>os.environ</code> 获取分布式信息：</p>
+<pre><code class="language-python"># train.py
+import argparse
+import os
+import torch.distributed as dist
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(&quot;--config&quot;, type=str, default=None)
+    parser.add_argument(&quot;--epochs&quot;, type=int, default=10)
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
+
+    local_rank = int(os.environ[&quot;LOCAL_RANK&quot;])
+    dist.init_process_group(backend=&quot;nccl&quot;)
+    # ... 后面跟分布式训练逻辑
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<hr />
+<h3 id="常见问题与注意事项">常见问题与注意事项<a class="anchor-link" href="#常见问题与注意事项" title="Permanent link">&para;</a></h3>
+<ol>
+<li>“Unrecognized arguments: --local-rank=xxx”<br />
+   - 在 <code>torchrun</code> 下不会自动注入 <code>--local_rank</code> 命令行参数；该问题常见于使用旧版 <code>torch.distributed.launch</code>。<br />
+   - <code>torchrun</code> 会改用环境变量的形式传递本地进程号，不会出现这个冲突。</li>
+<li>显式指定端口<br />
+   - 如果不想用 <code>--standalone</code>，可以用 <code>--master_addr</code> 和 <code>--master_port</code> 来指定 IP 和端口。</li>
+<li>多机训练网络通信<br />
+   - 所有节点都要能通过 <code>MASTER_ADDR</code> 和 <code>MASTER_PORT</code> 通信。<br />
+   - 确保端口没被占用、防火墙没拦截。</li>
+<li>梯度同步<br />
+   - DDP 训练时，每一步都会在进程间做梯度同步，所以总的 batch size = 单卡 batch size × 卡数。<br />
+   - 注意调整学习率，以适应更大的 batch size。</li>
+<li>性能调优<br />
+   - 可能需要设置 <code>OMP_NUM_THREADS</code>、<code>torch.backends.cudnn.benchmark = True</code> 等来获得更好性能。</li>
+</ol>
+<hr />
+<h3 id="小结">小结<a class="anchor-link" href="#小结" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>编写脚本</strong>：<br />
+   - 在脚本里用 <code>os.environ</code> 读取 <code>LOCAL_RANK</code>、<code>RANK</code>、<code>WORLD_SIZE</code>；<br />
+   - 调用 <code>dist.init_process_group(backend='nccl')</code>；<br />
+   - 设置 GPU 设备并（可选）用 DDP 封装模型；<br />
+   - 进行正常的训练逻辑。</li>
+<li><strong>使用 <code>torchrun</code> 启动</strong>：<br />
+   - 单机多卡：<code>torchrun --standalone --nproc_per_node=4 your_script.py</code>；<br />
+   - 多机多卡：指定 <code>--nnodes</code>, <code>--node_rank</code>, <code>--master_addr</code>, <code>--master_port</code> 等；<br />
+   - 自定义的脚本参数直接在 <code>your_script.py</code> 后面追加。</li>
+<li><strong>优势</strong>：<br />
+   - 不需要在脚本里处理 <code>--local_rank</code> 命令行；<br />
+   - 环境变量方式更统一、更简洁；<br />
+   - 未来版本 PyTorch 官方会移除老的 <code>torch.distributed.launch</code>，因此推荐迁移到 <code>torchrun</code>。</li>
+</ol>
+<p>通过以上步骤，你就可以在本地或多机环境中顺利使用 <code>torchrun</code> 进行分布式训练。祝训练顺利！</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

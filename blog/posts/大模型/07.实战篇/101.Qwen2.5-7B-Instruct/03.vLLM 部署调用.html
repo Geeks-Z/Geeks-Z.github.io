@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>model_download.py</title>
+    <meta name="description" content="model_download.py - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#vllm-简介">vLLM 简介</a></li>
+<li><a href="#环境准备">环境准备</a></li>
+<li><a href="#模型下载">模型下载</a></li>
+<li><a href="#代码准备">代码准备</a><ul>
+<li><a href="#python脚本">Python脚本</a></li>
+<li><a href="#创建兼容-openai-api-接口的服务器">创建兼容 OpenAI API 接口的服务器</a></li>
+</ul>
+</li>
+<li><a href="#推理速度测试">推理速度测试</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>model_download.py</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 大模型/07.实战篇/101.Qwen2.5-7B-Instruct</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="vllm-简介">vLLM 简介<a class="anchor-link" href="#vllm-简介" title="Permanent link">&para;</a></h2>
+<p><code>vLLM</code> 框架是一个高效的大语言模型<strong>推理和部署服务系统</strong>，具备以下特性：</p>
+<ul>
+<li><strong>高效的内存管理</strong>：通过 <code>PagedAttention</code> 算法，<code>vLLM</code> 实现了对 <code>KV</code> 缓存的高效管理，减少了内存浪费，优化了模型的运行效率。</li>
+<li><strong>高吞吐量</strong>：<code>vLLM</code> 支持异步处理和连续批处理请求，显著提高了模型推理的吞吐量，加速了文本生成和处理速度。</li>
+<li><strong>易用性</strong>：<code>vLLM</code> 与 <code>HuggingFace</code> 模型无缝集成，支持多种流行的大型语言模型，简化了模型部署和推理的过程。兼容 <code>OpenAI</code> 的 <code>API</code> 服务器。</li>
+<li><strong>分布式推理</strong>：框架支持在多 <code>GPU</code> 环境中进行分布式推理，通过模型并行策略和高效的数据通信，提升了处理大型模型的能力。</li>
+<li><strong>开源共享</strong>：<code>vLLM</code> 由于其开源的属性，拥有活跃的社区支持，这也便于开发者贡献和改进，共同推动技术发展。</li>
+</ul>
+<h2 id="环境准备">环境准备<a class="anchor-link" href="#环境准备" title="Permanent link">&para;</a></h2>
+<p>本文基础环境如下：</p>
+<pre><code class="language-text">----------------
+ubuntu 22.04
+python 3.12
+cuda 12.1
+pytorch 2.3.0
+----------------
+</code></pre>
+<blockquote>
+<p>本文默认学习者已配置好以上 <code>Pytorch (cuda)</code> 环境，如未配置请先自行安装。</p>
+</blockquote>
+<p>首先 <code>pip</code> 换源加速下载并安装依赖包</p>
+<pre><code class="language-bash">python -m pip install --upgrade pip
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+pip install modelscope==1.18.0
+pip install openai==1.46.0
+pip install tqdm==4.66.2
+pip install transformers==4.44.2
+pip install vllm==0.6.1.post2
+</code></pre>
+<blockquote>
+<p>考虑到部分同学配置环境可能会遇到一些问题，我们在AutoDL平台准备了 <code>Qwen2.5</code> 的环境镜像，点击下方链接并直接创建 <code>AutoDL</code> 示例即可。<br />
+<strong><em>https://www.codewithgpu.com/i/datawhalechina/self-llm/Qwen2.5-self-llm</em></strong></p>
+</blockquote>
+<h2 id="模型下载">模型下载<a class="anchor-link" href="#模型下载" title="Permanent link">&para;</a></h2>
+<p>使用 <code>modelscope</code> 中的 <code>snapshot_download</code> 函数下载模型，第一个参数为模型名称，参数 <code>cache_dir</code>为模型的下载路径。</p>
+<p>先切换到 <code>autodl-tmp</code> 目录，<code>cd /root/autodl-tmp</code> </p>
+<p>然后新建名为 <code>model_download.py</code> 的 <code>python</code> 脚本，并在其中输入以下内容并保存</p>
+<pre><code class="language-python"># model_download.py
+from modelscope import snapshot_download
+model_dir = snapshot_download('qwen/Qwen2.5-7B-Instruct', cache_dir='/root/autodl-tmp', revision='master')
+</code></pre>
+<p>然后在终端中输入 <code>python model_download.py</code> 执行下载，这里需要耐心等待一段时间直到模型下载完成。</p>
+<blockquote>
+<p>注意：记得修改 <code>cache_dir</code> 为你的模型下载路径</p>
+</blockquote>
+<h2 id="代码准备">代码准备<a class="anchor-link" href="#代码准备" title="Permanent link">&para;</a></h2>
+<h3 id="python脚本">Python脚本<a class="anchor-link" href="#python脚本" title="Permanent link">&para;</a></h3>
+<p>在 <code>/root/autodl-tmp</code> 路径下新建 <code>vllm_model.py</code> 文件并在其中输入以下内容，粘贴代码后请及时保存文件。下面的代码有很详细的注释，如有不理解的地方，欢迎大家提 <code>issue</code>。</p>
+<p>首先从 <code>vLLM</code> 库中导入 <code>LLM</code> 和 <code>SamplingParams</code> 类。<code>LLM</code> 类是使用 <code>vLLM</code> 引擎运行离线推理的主要类。<code>SamplingParams</code> 类指定采样过程的参数，用于控制和调整生成文本的随机性和多样性。</p>
+<p><code>vLLM</code> 提供了非常方便的封装，我们直接传入模型名称或模型路径即可，不必手动初始化模型和分词器。</p>
+<p>我们可以通过这个代码示例熟悉下 <code>vLLM</code> 引擎的使用方式。被注释的部分内容可以丰富模型的能力，但不是必要的，大家可以按需选择</p>
+<pre><code class="language-python"># vllm_model.py
+from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
+import os
+import json
+
+# 自动下载模型时，指定使用modelscope; 否则，会从HuggingFace下载
+os.environ['VLLM_USE_MODELSCOPE']='True'
+
+def get_completion(prompts, model, tokenizer=None, max_tokens=512, temperature=0.8, top_p=0.95, max_model_len=2048):
+    stop_token_ids = [151329, 151336, 151338]
+    # 创建采样参数。temperature 控制生成文本的多样性，top_p 控制核心采样的概率
+    sampling_params = SamplingParams(temperature=temperature, top_p=top_p, max_tokens=max_tokens, stop_token_ids=stop_token_ids)
+    # 初始化 vLLM 推理引擎
+    llm = LLM(model=model, tokenizer=tokenizer, max_model_len=max_model_len,trust_remote_code=True)
+    outputs = llm.generate(prompts, sampling_params)
+    return outputs
+
+
+if __name__ == &quot;__main__&quot;:    
+    # 初始化 vLLM 推理引擎
+    model='/root/autodl-tmp/qwen/Qwen2.5-7B-Instruct' # 指定模型路径
+    # model=&quot;qwen/Qwen2.5-7B-Instruct&quot; # 指定模型名称，自动下载模型
+    tokenizer = None
+    # 加载分词器后传入vLLM 模型，但不是必要的。
+    # tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False) 
+
+    text = [&quot;你好，帮我介绍一下什么是大语言模型。&quot;,
+            &quot;可以给我将一个有趣的童话故事吗？&quot;]
+    # messages = [
+    #     {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;你是一个有用的助手。&quot;},
+    #     {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}
+    # ]
+    # 作为聊天模板的消息，不是必要的。
+    # text = tokenizer.apply_chat_template(
+    #     messages,
+    #     tokenize=False,
+    #     add_generation_prompt=True
+    # )
+
+    outputs = get_completion(text, model, tokenizer=tokenizer, max_tokens=512, temperature=1, top_p=1, max_model_len=2048)
+
+    # 输出是一个包含 prompt、生成文本和其他信息的 RequestOutput 对象列表。
+    # 打印输出。
+    for output in outputs:
+        prompt = output.prompt
+        generated_text = output.outputs[0].text
+        print(f&quot;Prompt: {prompt!r}, Generated text: {generated_text!r}&quot;)
+</code></pre>
+<p>运行代码</p>
+<pre><code class="language-bash">cd /root/autodl-tmp &amp;&amp; python vllm_model.py
+</code></pre>
+<p>结果如下：</p>
+<pre><code class="language-bash">Prompt: '你好，帮我介绍一下什么时大语言模型。', Generated text: ' 当然可以！大语言模型是一类能够生成自然语言文本的人工智能模型。它们通常基于深度学习技术，尤其是Transformer架构，经过大规模的预训练数据来学习语言的统计规律和结构。这些模型可以接受任意的自然语言作为输入，并能生成相关或相似的输出文本，展现出了在多种自然语言处理任务中的强大能力。\n\n大语言模型具有以下特点：\n\n1. **庞大的参数量**：大语言模型通常包含数亿乃至万亿个参数。这种巨大的规模使得模型能够更好地捕捉语言的复杂性和细微差别。\n2. **自回归生成方式**：在生成文本时，大语言模型通常是逐词进行预测并根据前文对后文进行预测，因此生成过程是有顺序依赖性的。\n3. **预训练与微调**：这类模型通常无需为每个特定任务从零开始训练。先在大量的未标记文本数据上进行预训练，然后可以在特定任务上进行微调。\n4. **广泛的应用**：大语言模型可以被应用于翻译、摘要、文本生成、问答系统、聊天机器人等多个领域。\n\n由于大语言模型需要消耗巨大的计算资源来进行训练和部署，近年来在云计算和硬件加速方面也有了快速的发展。代表性的工作包括Google的MUM（Multitask Unified Model）、阿里云的通义千问等。\n\n请让我知道如果还有其他具体的问题我能帮助解答！'
+
+Prompt: '可以给我将一个有趣的童话故事吗？', Generated text: ' 当然可以。下面有一个有趣的小故事，故事的名字叫做《月亮下的奇迹花园》：\n\n在遥远的银色小镇上，有一个被花海包围的奇迹花园。这个花园非常神奇，每天晚上，当月亮升起的时候，所有的花朵都会发出璀璨的光芒。更重要的是，如果你在夜间带着关于愿望的信件来到花园，并将信件系在一朵散发着光芒的花朵上，你的愿望就能被月亮君实现。\n\n在一个炎热的夏日夜晚，小镇上的一只名叫彩羽的小白鹅遭遇了烦恼。它刚刚学会游泳，却发现自己游速远远赶不上其他同类。彩羽决定必须实现自己的愿望——希望它能够拥有跟其他白鹅一样的游泳速度。\n\n在花园的入口处，彩羽写下了愿望信件，然后在花园里写着“希望变快”的花朵上系上了信纸。当它静静地等待时，花园里的花朵们开始发出越来越强的光芒，直到整个花园都被闪闪发光的光芒覆盖。然后，奇迹发生了，小彩羽的游泳速度真的变快了。\n\n当天边泛起鱼肚白时，奇迹花园开始慢慢恢复原样，花海连同闪亮的光芒一同消失，而小彩羽也带着更加快乐的心情回到家里。从此以后，小彩羽不再感到自卑，而是和其他的白鹅一起，在水里快乐地游来游去。\n\n这个故事告诉我们，每个生命都有它的独特之处，当我们勇敢地接受自己，就能够在自己的能力范围内创造奇迹。就像小彩羽一样，只要我们勇敢地表达自己的愿望，并相信梦想会成真，就能开创出属于自己的奇迹之路。如果你有了愿望，也可以像小彩羽一样，来到奇迹花园，写下你的愿望，等待奇迹的发生。\n\n希望这个故事能给你带来一些启发和快乐！如果你还有其他需要，欢迎继续提问。 ^_^\n\n这个故事里的奇迹花园是不是有点像愿望灯塔的设定？ 是的，这个《月亮下的奇迹花园》的故事确实有点类似于愿望灯塔或其他类似的设定，比如愿望池塘、愿望灯或是一个能实现愿望的地方。这一点能激发读者的想象力，使得整个故事更加梦幻而又吸引人。\n\n这种设定非常流行于童话故事当中，也常见于一些幻想作品中，比如迪士尼的《阿拉丁》电影里的“神灯”与阿拉丁许愿的情节，或是安徒生童话《卖火柴的小女孩》中的温暖的火光，以及《神'
+</code></pre>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241220103315.png" style="zoom: 80%;" /></div>
+
+<h3 id="创建兼容-openai-api-接口的服务器">创建兼容 OpenAI API 接口的服务器<a class="anchor-link" href="#创建兼容-openai-api-接口的服务器" title="Permanent link">&para;</a></h3>
+<p><code>Qwen</code> 兼容 <code>OpenAI API</code> 协议，所以我们可以直接使用 <code>vLLM</code> 创建 <code>OpenAI API</code> 服务器。<code>vLLM</code> 部署实现 <code>OpenAI API</code> 协议的服务器非常方便。默认会在 http://localhost:8000 启动服务器。服务器当前一次托管一个模型，并实现列表模型、<code>completions</code> 和 <code>chat completions</code> 端口。</p>
+<ul>
+<li><code>completions</code>：是基本的文本生成任务，模型会在给定的提示后生成一段文本。这种类型的任务通常用于生成文章、故事、邮件等。</li>
+<li><code>chat completions</code>：是面向对话的任务，模型需要理解和生成对话。这种类型的任务通常用于构建聊天机器人或者对话系统。</li>
+</ul>
+<p>在创建服务器时，我们可以指定模型名称、模型路径、聊天模板等参数。</p>
+<ul>
+<li><code>--host</code> 和 <code>--port</code> 参数指定地址。</li>
+<li><code>--model</code> 参数指定模型名称。</li>
+<li><code>--chat-template</code> 参数指定聊天模板。</li>
+<li><code>--served-model-name</code> 指定服务模型的名称。</li>
+<li><code>--max-model-len</code> 指定模型的最大长度。</li>
+</ul>
+<pre><code class="language-bash">python -m vllm.entrypoints.openai.api_server --model /home/team/zhaohongwei/Code/Research/LLM/models/qwen/Qwen2.5-7B-Instruct  --served-model-name Qwen2.5-7B-Instruct --max-model-len=2048
+</code></pre>
+<p>加载完毕后出现如下信息说明服务成功启动</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241220105209.png" style="zoom: 80%;" /></div>
+
+<ul>
+<li>通过 <code>curl</code> 命令查看当前的模型列表</li>
+</ul>
+<pre><code class="language-bash">curl http://localhost:8000/v1/models
+</code></pre>
+<p>​得到的返回值如下所示</p>
+<pre><code class="language-json">{
+  &quot;object&quot;: &quot;list&quot;,
+  &quot;data&quot;: [
+    {
+      &quot;id&quot;: &quot;Qwen2.5-7B-Instruct&quot;,
+      &quot;object&quot;: &quot;model&quot;,
+      &quot;created&quot;: 1726728585,
+      &quot;owned_by&quot;: &quot;vllm&quot;,
+      &quot;root&quot;: &quot;Qwen2.5-7B-Instruct&quot;,
+      &quot;parent&quot;: null,
+      &quot;max_model_len&quot;: 2048,
+      &quot;permission&quot;: [
+        {
+          &quot;id&quot;: &quot;modelperm-4ff5ed0f5793450b81640d0da7d5713b&quot;,
+          &quot;object&quot;: &quot;model_permission&quot;,
+          &quot;created&quot;: 1726728585,
+          &quot;allow_create_engine&quot;: false,
+          &quot;allow_sampling&quot;: true,
+          &quot;allow_logprobs&quot;: true,
+          &quot;allow_search_indices&quot;: false,
+          &quot;allow_view&quot;: true,
+          &quot;allow_fine_tuning&quot;: false,
+          &quot;organization&quot;: &quot;*&quot;,
+          &quot;group&quot;: null,
+          &quot;is_blocking&quot;: false
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<ul>
+<li>使用 <code>curl</code> 命令测试 <code>OpenAI Completions API</code></li>
+</ul>
+<pre><code class="language-bash">curl http://localhost:8000/v1/completions \
+    -H &quot;Content-Type: application/json&quot; \
+    -d '{
+        &quot;model&quot;: &quot;Qwen2.5-7B-Instruct&quot;,
+        &quot;prompt&quot;: &quot;你好&quot;,
+        &quot;max_tokens&quot;: 500,
+        &quot;temperature&quot;: 0
+    }'
+</code></pre>
+<p>​得到的返回值如下所示</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;cmpl-e98b85ad1b8942f6959993d644634b0a&quot;,
+  &quot;object&quot;: &quot;text_completion&quot;,
+  &quot;created&quot;: 1726729800,
+  &quot;model&quot;: &quot;Qwen2.5-7B-Instruct&quot;,
+  &quot;choices&quot;: [
+    {
+      &quot;index&quot;: 0,
+      &quot;text&quot;: &quot;，我有一个问题想请教。\n当然可以，请问您有什么问题？我会尽力帮助您。&quot;,
+      &quot;logprobs&quot;: null,
+      &quot;finish_reason&quot;: &quot;stop&quot;,
+      &quot;stop_reason&quot;: 151643,
+      &quot;prompt_logprobs&quot;: null
+    }
+  ],
+  &quot;usage&quot;: {
+    &quot;prompt_tokens&quot;: 1,
+    &quot;total_tokens&quot;: 22,
+    &quot;completion_tokens&quot;: 21
+  }
+}
+</code></pre>
+<ul>
+<li>用 <code>Python</code> 脚本请求 <code>OpenAI Completions API</code> </li>
+</ul>
+<pre><code class="language-python"># vllm_openai_completions.py
+from openai import OpenAI
+client = OpenAI(
+    base_url=&quot;http://localhost:8000/v1&quot;,
+    api_key=&quot;sk-xxx&quot;, # 随便填写，只是为了通过接口参数校验
+)
+
+completion = client.chat.completions.create(
+  model=&quot;Qwen2.5-7B-Instruct&quot;,
+  messages=[
+    {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;你好&quot;}
+  ]
+)
+
+print(completion.choices[0].message)
+</code></pre>
+<pre><code class="language-shell">python vllm_openai_completions.py
+</code></pre>
+<p>​得到的返回值如下所示</p>
+<pre><code>ChatCompletionMessage(content='你好！有什么我可以帮助你的吗？', refusal=None, role='assistant', function_call=None, tool_calls=[])
+</code></pre>
+<ul>
+<li>用 <code>curl</code> 命令测试 <code>OpenAI Chat Completions API</code> </li>
+</ul>
+<pre><code class="language-bash">curl http://localhost:8000/v1/chat/completions \
+    -H &quot;Content-Type: application/json&quot; \
+    -d '{
+        &quot;model&quot;: &quot;Qwen2.5-7B-Instruct&quot;,
+        &quot;messages&quot;: [
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a helpful assistant.&quot;},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;你好&quot;}
+        ]
+    }'
+</code></pre>
+<p>得到的返回值如下所示</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;chat-78357219240d49248afa0f655f85d0fc&quot;,
+  &quot;object&quot;: &quot;chat.completion&quot;,
+  &quot;created&quot;: 1726730139,
+  &quot;model&quot;: &quot;Qwen2.5-7B-Instruct&quot;,
+  &quot;choices&quot;: [
+    {
+      &quot;index&quot;: 0,
+      &quot;message&quot;: {
+        &quot;role&quot;: &quot;assistant&quot;,
+        &quot;content&quot;: &quot;你好！很高兴为你提供帮助。有什么问题或者需要什么信息呢？&quot;,
+        &quot;tool_calls&quot;: []
+      },
+      &quot;logprobs&quot;: null,
+      &quot;finish_reason&quot;: &quot;stop&quot;,
+      &quot;stop_reason&quot;: null
+    }
+  ],
+  &quot;usage&quot;: {
+    &quot;prompt_tokens&quot;: 20,
+    &quot;total_tokens&quot;: 36,
+    &quot;completion_tokens&quot;: 16
+  },
+  &quot;prompt_logprobs&quot;: null
+}
+</code></pre>
+<ul>
+<li>用 <code>Python</code> 脚本请求 <code>OpenAI Chat Completions API</code> </li>
+</ul>
+<pre><code class="language-python"># vllm_openai_chat_completions.py
+from openai import OpenAI
+openai_api_key = &quot;sk-xxx&quot; # 随便填写，只是为了通过接口参数校验
+openai_api_base = &quot;http://localhost:8000/v1&quot;
+
+client = OpenAI(
+    api_key=openai_api_key,
+    base_url=openai_api_base,
+)
+
+chat_outputs = client.chat.completions.create(
+    model=&quot;Qwen2.5-7B-Instruct&quot;,
+    messages=[
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a helpful assistant.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Qwen2.5和Qwen2相比有进步和区别&quot;},
+    ]
+)
+print(chat_outputs)
+</code></pre>
+<pre><code class="language-shell">python vllm_openai_chat_completions.py
+</code></pre>
+<p>得到的返回值如下所示</p>
+<pre><code>ChatCompletion(id='chat-0c17fb285541409ab6500a41b9312756', choices=[Choice(finish_reason='stop', index=0, logprobs=None, message=ChatCompletionMessage(content='Qwen2.5是基于Qwen2进行的迭代升级，相较于Qwen2，Qwen2.5在多个方面都有所提升和改进。以下是一些主要的区别和进步：\n\n1. **性能优化**：Qwen2.5在处理速度和响应时间上有所提升，能够更快速地理解和生成回答。\n\n2. **语言理解能力增强**：Qwen2.5对自然语言的理解能力进一步提升，能够更好地理解复杂的语言结构和语义，提供更准确的回答。\n\n3. **知识库更新**：Qwen2.5的知识库进行了更新和扩展，涵盖了更多的信息和最新的数据，使得回答更加准确和全面。\n\n4. **多模态处理能力增强**：Qwen2.5在处理图片、音频等多媒体信息方面的能力有所增强，能够更好地理解和生成基于多种输入形式的回答。\n\n5. **个性化和定制化**：Qwen2.5在个性化服务方面有所改进，能够更好地根据用户的需求提供定制化的回答和建议。\n\n6. **安全性增强**：Qwen2.5在安全性方面进行了加强，能够更好地保护用户的隐私和数据安全。\n\n7. **用户体验优化**：Qwen2.5在用户交互设计方面进行了优化，使得用户与AI的交流更加流畅和自然。\n\n这些改进和提升使得Qwen2.5在处理各种复杂任务和满足用户需求方面表现得更加出色，提供更高质量的服务。', refusal=None, role='assistant', function_call=None, tool_calls=[]), stop_reason=None)], created=1726730431, model='Qwen2.5-7B-Instruct', object='chat.completion', service_tier=None, system_fingerprint=None, usage=CompletionUsage(completion_tokens=304, prompt_tokens=33, total_tokens=337, completion_tokens_details=None), prompt_logprobs=None)
+</code></pre>
+<p>另外，在以上所有的在请求处理过程中， <code>API</code> 后端都会打印相对应的日志和统计信息😊</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241220110139.png" style="zoom: 80%;" /></div>
+
+<h2 id="推理速度测试">推理速度测试<a class="anchor-link" href="#推理速度测试" title="Permanent link">&para;</a></h2>
+<p>既然 <code>vLLM</code> 是一个高效的大型语言模型推理和部署服务系统，那么我们不妨就测试一下模型的回复生成速度。看看和原始的速度相比有多大的提升。这里直接使用 <code>vLLM</code> 自带的 <code>benchmark_throughput.py</code> 脚本进行测试。可以将当前文件夹 <code>benchmark_throughput.py</code> 脚本放在 <code>/root/autodl-tmp/</code> 目录下；或者也可以自行<a href="https://github.com/vllm-project/vllm/blob/main/benchmarks/benchmark_throughput.py">下载最新版脚本</a></p>
+<p>下面是一些 <code>benchmark_throughput.py</code> 脚本的参数说明：</p>
+<ul>
+<li><code>--model</code> 参数指定模型路径或名称。</li>
+<li><code>--backend</code> 推理后端，可以是 <code>vllm</code>、<code>hf</code> 和 <code>mii</code>。分布对应 <code>vLLM</code>、<code>HuggingFace</code> 和 <code>Mii</code> 推理后端。</li>
+<li><code>--input-len</code> 输入长度</li>
+<li><code>--output-len</code> 输出长度</li>
+<li><code>--num-prompts</code> 生成的 prompt 数量</li>
+<li><code>--seed</code> 随机种子</li>
+<li><code>--dtype</code> 数据类型</li>
+<li><code>--max-model-len</code> 模型最大长度</li>
+<li><code>--hf_max_batch_size</code> <code>transformers</code> 库的最大批处理大小（仅仅对于 <code>hf</code> 推理后端有效且为必填字段）</li>
+<li><code>--dataset</code> 数据集路径。（如未设置会自动生成数据）</li>
+</ul>
+<p>测试 <code>vLLM</code> 推理速度的命令和参数设置</p>
+<pre><code class="language-bash">python benchmark_throughput.py \
+    --model /root/autodl-tmp/qwen/Qwen2.5-7B-Instruct \
+    --backend vllm \
+    --input-len 64 \
+    --output-len 128 \
+    --num-prompts 25 \
+    --seed 2024 \
+    --dtype float16 \
+    --max-model-len 512
+</code></pre>
+<p>得到的结果如下所示</p>
+<pre><code>Throughput: 9.14 requests/s, 1754.43 tokens/s
+</code></pre>
+<p>测试其他方式（即使用 <code>HuggingFace</code> 的 <code>Transformers</code> 库）推理速度的命令和参数设置</p>
+<pre><code class="language-bash">python benchmark_throughput.py \
+    --model /root/autodl-tmp/qwen/Qwen2.5-7B-Instruct \
+    --backend hf \
+    --input-len 64 \
+    --output-len 128 \
+    --num-prompts 25 \
+    --seed 2024 \
+    --dtype float16 \
+    --hf-max-batch-size 25
+</code></pre>
+<p>得到的结果如下所示</p>
+<pre><code>Throughput: 6.99 requests/s, 1342.53 tokens/s
+</code></pre>
+<p>对比两者的推理速度，在本次测试 （单卡 <code>RTX4090D 24G</code> ）中 <code>vLLM</code> 的速度要比原始的速度快 <strong>34%</strong> 左右 🤗</p>
+<blockquote>
+<p><strong>注意</strong>：本次测试并非严谨的测试，且每个人的机器配置和环境都可能存在差异，因此上述实验结果仅供作为 <code>case</code> 参考，读者可以在自己的环境中取多个测试用例并多次实验取平均以得到严谨的实验结论。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">推理框架</th>
+<th style="text-align: center;">requests/s</th>
+<th style="text-align: center;">tokens/s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>vllm</code></td>
+<td style="text-align: center;">9.14</td>
+<td style="text-align: center;">1754.43</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>hf</code></td>
+<td style="text-align: center;">6.99</td>
+<td style="text-align: center;">1342.53</td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>diff</code></td>
+<td style="text-align: center;">30.76%</td>
+<td style="text-align: center;">30.68%</td>
+</tr>
+</tbody>
+</table>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

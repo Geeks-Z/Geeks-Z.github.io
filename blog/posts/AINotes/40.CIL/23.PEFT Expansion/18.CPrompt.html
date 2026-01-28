@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-持续学习">2.1 持续学习</a></li>
+<li><a href="#22-持续学习中的基于提示的方法">2.2 持续学习中的基于提示的方法</a></li>
+</ul>
+</li>
+<li><a href="#3-一致提示">3. 一致提示</a><ul>
+<li><a href="#31-先决条件">3.1 先决条件</a></li>
+<li><a href="#32-分类器一致性学习">3.2 分类器一致性学习</a></li>
+<li><a href="#33-提示一致性学习">3.3 提示一致性学习</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-实验细节">4.1 实验细节</a></li>
+<li><a href="#42-主要结果">4.2 主要结果</a></li>
+<li><a href="#43-消融研究">4.3 消融研究</a></li>
+<li><a href="#44-详细分析">4.4 详细分析</a></li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>持续学习使模型能够自主适应不断变化的环境或数据流，而不会忘记旧知识。基于提示的方法建立在冻结的预训练模型上，以高效地学习任务特定的提示和分类器。现有的基于提示的方法在训练和测试之间存在不一致，限制了其有效性。本文揭示了两种类型的不一致性。测试预测是从所有分类器中得出的，而训练仅关注当前任务分类器，缺乏整体对齐，导致<strong>分类器不一致</strong>。<strong>提示不一致</strong>表明测试期间选择的提示可能不对应于训练期间与此任务相关的提示。本文提出了一种新的基于提示的方法，称为<strong>一致提示（CPrompt）</strong>，以实现更对齐的训练和测试。具体来说，所有现有的分类器都参与提示训练，从而实现<strong>分类器一致性学习</strong>。此外，提出<strong>提示一致性学习</strong>以增强预测的鲁棒性并提高提示选择的准确性。我们的一致提示方法超越了其他基于提示的方法，并在多个持续学习基准上实现了最先进的性能。详细分析表明，改进来自于更一致的训练和测试。我们的代码可在 <a href="https://github.com/Zhanxin-Gao/CPrompt">https://github.com/Zhanxin-Gao/CPrompt</a> 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>持续学习旨在使深度模型具备持续获取新知识的能力，例如学习识别新的对象类别，同时处理旧知识的灾难性遗忘。基于重放的方法通过存储在内存缓冲区中的少量先前任务的样本并在训练期间与新任务数据一起回放，来缓解遗忘问题。然而，由于数据隐私或内存限制等约束，先前任务的样本可能不可用。因此，无重放的持续学习方法引起了广泛关注。</p>
+<p>基于提示的模型在无重放的持续学习中表现出色。这些模型基于在大规模数据集上预训练的冻结骨干网络，通过仅训练少量参数（即提示和全连接分类器）来高效适应新任务。然而，现有方法的训练和测试缺乏一致性，因为提示和分类器仅在当前任务内进行优化。如图 1 所示，本文讨论了两种类型的不一致性。首先，<strong>分类器不一致</strong>表明测试预测是从所有分类器而非仅从训练的分类器中得出的。其次，<strong>提示不一致</strong>指的是训练和测试期间提示的不匹配。现有的基于提示的方法未能识别或处理这些不一致问题，导致性能欠佳。</p>
+<p>为了使提示和分类器的训练与测试对齐，我们提出了一种新的训练方法，称为<strong>一致提示（CPrompt）</strong>，它超越了现有的基于提示的方法。CPrompt 包含两个模块：<strong>分类器一致性学习（CCL）</strong>和<strong>提示一致性学习（PCL）</strong>。具体来说，CCL 通过将当前任务提示训练暴露给所有已见过的分类器来解决分类器不一致问题。另一方面，PCL 用于处理提示不一致问题。当前任务的分类器通过从池中随机选择的提示进行训练，使分类器能够更好地适应不同的提示，从而实现更鲁棒的预测。此外，提出了一种<strong>多键机制</strong>来提高 PCL 中提示选择的准确性。图 2 展示了现有基于提示的方法与我们的一致提示方法的对比。我们在四个具有挑战性的持续学习基准数据集上评估了所提出的方法，并提供了详细的分析，以展示 CPrompt 的优越性能主要来自于其一致的训练和测试。本文的贡献总结为以下三点：</p>
+<ol>
+<li>本文首次识别并讨论了基于提示的无重放持续学习方法在训练和测试之间的不一致问题，并提出了一种新的一致提示（CPrompt）以实现更好的一致性。</li>
+<li>为了在测试时保持分类器一致性，提示应在训练期间暴露给所有已见过的分类器，如 CPrompt 中的分类器一致性学习（CCL）所提出的那样。</li>
+<li>我们在 CPrompt 中提出了提示一致性学习（PCL），其具有两个互补的目的。为了实现更鲁棒的测试预测，当前分类器应在不同的提示下进行训练。为了更精确地选择提示，利用了多键机制。</li>
+</ol>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-持续学习">2.1 持续学习<a class="anchor-link" href="#21-持续学习" title="Permanent link">&para;</a></h3>
+<p>持续学习方法旨在减少在适应新知识时对旧知识的灾难性遗忘。基于不同的视角，提出了三种类型的管道。基于正则化的方法旨在防止对重要属性进行显著更改，以保护先前学到的知识免受过度干扰。作为一种流行的正则化方法，知识蒸馏被广泛用于将先前模型（作为教师）中保留的知识转移到当前学生模型中。参数隔离方法冻结特定参数，同时分配其余参数用于后续任务或扩展网络以学习新知识。这种方法直观，并且在扩展足够数量的参数时可以产生有希望的结果。然而，这些技术通常会导致模型复杂性增加，带来维护挑战。重放是持续学习中的一种流行策略，允许模型部分访问先前的样本。这些方法可以有效缓解对先前知识的遗忘。然而，它们需要额外的内存和计算开销，并且还引发了数据隐私问题。上述范式高度互补，可以结合使用以增强持续学习性能。</p>
+<h3 id="22-持续学习中的基于提示的方法">2.2 持续学习中的基于提示的方法<a class="anchor-link" href="#22-持续学习中的基于提示的方法" title="Permanent link">&para;</a></h3>
+<p>提示是自然语言处理（NLP）中的一种基本技术。它作为一种迁移方法或为下游任务提供特定指令。最近的基于提示的持续学习方法通过将任务特定知识编码到提示中来处理无重放的设置。这使得网络能够通过查询适当的提示来高效检索先前信息，并消除了对重放缓冲区的需求。L2P<br />
+提出学习一个提示池，并使用查询 - 键机制来选择提示。然而，由于整个提示池始终是可训练的，提示池中先前知识的遗忘是不可避免的。与跨任务使用相同的提示池不同，DualPrompt<br />
+提出了两个互补的池，G-Prompt 和 E-Prompt，分别用于编码任务不变和任务特定的知识。CODAPrompt引入了一种基于分解注意力的提示方法，并根据不同的任务扩展提示组件。</p>
+<p>为了处理持续学习中分类器的扩展，ESN提出了一种基于提示的方法，采用能量自归一化。这是通过添加一个自注意力块来实现的，该块为任务内数据生成一致且高置信度的分数。</p>
+<p>现有的基于提示的方法在阐明新优化的提示与先前学习的提示之间的关系方面存在困难。这导致训练过程中不同提示或组件之间的干扰。此外，这些提示与输入图像或整体分类器并未完全对齐，导致训练 - 测试不一致。为了解决这些挑战，我们提出了一致提示作为增强持续学习效果的一种解决方案。</p>
+<h2 id="3-一致提示">3. 一致提示<a class="anchor-link" href="#3-一致提示" title="Permanent link">&para;</a></h2>
+<h3 id="31-先决条件">3.1 先决条件<a class="anchor-link" href="#31-先决条件" title="Permanent link">&para;</a></h3>
+<p><strong>持续学习设置</strong>：持续学习旨在从由 <span class="math-inline">T</span> 个非重叠的顺序数据集组成的数据流中获取知识，记为 <span class="math-inline">D = {D_1, D_2, \ldots, D_T}</span>。每个数据集 <span class="math-inline">D_t</span> 对应于特定任务 <span class="math-inline">t</span>，可以表示为各个类数据集的并集，即 <span class="math-inline">D_t = \bigcup_j D_{t,j}</span>，其中 <span class="math-inline">j</span> 表示任务 <span class="math-inline">t</span> 中的第 <span class="math-inline">j</span> 个类。目标是训练一个映射函数 <span class="math-inline">f</span>，能够为每个输入 <span class="math-inline">x \in D_{t,j}</span> 预测 <span class="math-inline">f(x) \in Y_{t,j}</span>，其中 <span class="math-inline">Y_{t,j}</span> 表示任务 <span class="math-inline">t</span> 中的第 <span class="math-inline">j</span> 个类。在本研究中，我们专注于类增量学习（CIL），其中在测试期间不提供任务身份。此外，采用无重放的 CIL 设置禁止使用任何先前任务的样本。</p>
+<p><strong>基于提示的方法</strong>：预训练的视觉变换器（ViT）包含一个嵌入层 <span class="math-inline">f_e</span> 和多个自注意力层 <span class="math-inline">f_i</span>，<span class="math-inline">i = 1, 2, \ldots, N</span>。每个图像 <span class="math-inline">x \in D_{t,k}</span> 首先通过嵌入层 <span class="math-inline">f_e</span> 处理，生成序列特征 <span class="math-inline">\xi_e = f_e(x) \in \mathbb{R}^{L \times D}</span>，其中 <span class="math-inline">L</span> 表示补丁数量，即标记长度，<span class="math-inline">D</span> 表示嵌入维度。在训练期间，我们保持预训练模型 <span class="math-inline">f_i</span> 和 <span class="math-inline">f_e</span> 的参数冻结，并仅更新额外的可学习参数，称为提示 <span class="math-inline">P \in \mathbb{R}^{L_P \times D}</span>，其中 <span class="math-inline">L_P</span> 表示提示的长度。具体来说，提示 <span class="math-inline">P</span> 可以通过将 <span class="math-inline">P</span> 分成 <span class="math-inline">s</span> 个段来同时适应 <span class="math-inline">s</span> 个自注意力层，每个段 <span class="math-inline">p_i \in \mathbb{R}^{(L_P/s) \times D}</span>，<span class="math-inline">i = 1, 2, \ldots, s</span>。为了将段 <span class="math-inline">p_j</span> 插入到其对应的自注意力层 <span class="math-inline">f_i</span> 中，我们将前一层 <span class="math-inline">f_{i-1}</span> 的输出 <span class="math-inline">\xi_{i-1}</span> 扩展为 <span class="math-inline">[p_j; \xi_{i-1}]</span>，作为 <span class="math-inline">f_i</span> 的输入。在测试期间，预训练模型与学习的提示协作。然而，在持续学习中，跨任务学习任务特定的提示。因此，需要额外的提示选择机制。</p>
+<h3 id="32-分类器一致性学习">3.2 分类器一致性学习<a class="anchor-link" href="#32-分类器一致性学习" title="Permanent link">&para;</a></h3>
+<p>基于提示的方法通常在测试时使用所有任务分类器进行推理。然而，不同的分类器是在相应的任务中学习的。它们的行为之间的一致性无法保证。提出的分类器一致性学习（CCL）旨在通过将当前任务提示训练暴露给所有已见过的分类器来处理这一问题，这是直接且有效的。为了实现准确的预测，我们需要确保每个输入在所有已见过的分类器中对其对应类别的响应最高。然而，我们观察到，没有正则化的分类器自然偏向于先前部分，导致旧任务分类器的 logit 值高于当前任务的 logit 值。因此，提出了一种新的正则化损失，以鼓励旧任务分类器的最大 logit 值低于当前类别的 logit 值一个预定义的余量。此正则化应用于当前任务提示，以减轻偏差并实现模型训练。假设预训练网络为 <span class="math-inline">f_\theta</span>，我们可以通过使用 [class]：<br />
+<div class="math-display"><br />
+    h = f_\theta(x, P_t)[0], \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">x \in D_t</span> 是当前训练任务 <span class="math-inline">t</span> 的输入图像，<span class="math-inline">0</span> 表示索引第一个 [class] 标记。提取的特征 <span class="math-inline">h</span> 随后被输入到所有任务分类器中，并通过以下公式获得相应的 logit 值：<br />
+<div class="math-display"><br />
+    \ell_i = C_i(h), \quad i \in {1, \ldots, t}. \tag{2}<br />
+</div><br />
+提出的平滑正则化基于先前任务的熵。对于第 <span class="math-inline">i</span> 个任务，<span class="math-inline">i \in {1, \ldots, t-1}</span>，基于 logit <span class="math-inline">\ell_i</span> 计算自适应熵：<br />
+<div class="math-display"><br />
+    L_e(i) = -\langle \sigma(\ell_i / \tau), \log(\sigma(\ell_i)) \rangle, \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">\sigma</span> 是 softmax 函数，<span class="math-inline">\langle \cdot, \cdot \rangle</span> 是内积运算符。我们还发现，阻止从 <span class="math-inline">\sigma(\ell_i / \tau)</span> 传播梯度可以稳定优化。温度 <span class="math-inline">\tau</span> 根据以下公式选择：<br />
+<div class="math-display"><br />
+    \tau =<br />
+    \begin{cases}<br />
+    \tau_1, &amp; \text{如果 } \max(\ell_i) + m \geq \max(\ell_t), \<br />
+    1, &amp; \text{否则}.<br />
+    \end{cases} \tag{4}<br />
+</div><br />
+当先前任务分类器的最大 logit 值 <span class="math-inline">\max(\ell_i)</span> 超过当前任务分类器的最大 logit 值 <span class="math-inline">\max(\ell_t)</span> 一个余量 <span class="math-inline">m \geq 0</span> 时，需要平滑正则化。因此，<span class="math-inline">\tau</span> 等于预定义的 <span class="math-inline">\tau_1 &gt; 1</span> 并启用正则化。否则，平滑正则化不必要，只需将 <span class="math-inline">\tau</span> 设置为 1 即可将其关闭。补充材料中提供了相关的理论分析和证明。为了更好地理解，图 3 展示了平滑正则化过程的示意图。</p>
+<p>分类器一致性学习的损失 <span class="math-inline">L_{CCL}</span> 由以下公式给出：<br />
+<div class="math-display"><br />
+    L_{CCL} = \frac{\alpha}{t-1} \sum_{i=1}^{t-1} L_e(i), \tag{5}<br />
+</div><br />
+其中 <span class="math-inline">\alpha</span> 表示正则化的强度，<span class="math-inline">t-1</span> 用于归一化持续学习中的任务增长。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172120.png" style="zoom: 80%;" /></div>
+
+<h3 id="33-提示一致性学习">3.3 提示一致性学习<a class="anchor-link" href="#33-提示一致性学习" title="Permanent link">&para;</a></h3>
+<p>基于提示的持续学习的另一个显著问题是模型在推理时选择正确提示的不确定性。因此，提出的提示一致性学习（PCL）旨在建立更鲁棒的提示 - 分类器关系，确保即使使用错误的提示也能正确输出。在训练期间，从当前提示池中随机选择一个任务特定的提示 <span class="math-inline">P_i</span>：<br />
+<div class="math-display"><br />
+    P_i, \quad i \sim \text{Uni}(1, t), \tag{6}<br />
+</div><br />
+其中 <span class="math-inline">\text{Uni}(1, t)</span> 是整数 <span class="math-inline">1, 2, \ldots, t</span> 上的均匀分布。除 <span class="math-inline">P_t</span> 外的所有提示都被冻结，以保留编码的知识并防止灾难性遗忘。然后可以通过以下公式获得当前任务分类器 <span class="math-inline">C_t</span> 的输出 logit：<br />
+<div class="math-display"><br />
+    \ell_t = C_t(f_\theta(x, P_i)[0]). \tag{7}<br />
+</div><br />
+相应的损失计算如下：<br />
+<div class="math-display"><br />
+    L_{ce} = \text{CrossEntropy}(\ell_t, y), \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">y</span> 是输入图像 <span class="math-inline">x</span> 的真实类别标签。通过这种方式，分类器被训练为即使基于错误的提示也能做出正确的预测，这与测试更加一致。图 3 展示了此训练过程。</p>
+<p>值得注意的是，当前任务特定的提示 <span class="math-inline">P_t</span> 仅以 <span class="math-inline">1/t</span> 的概率被选中，这导致对 <span class="math-inline">P_t</span> 的训练不足。因此，我们使用一个辅助分类器 <span class="math-inline">C_{aux}</span> 来辅助 <span class="math-inline">P_t</span> 的训练，如下所示：<br />
+<div class="math-display"><br />
+    L_{aux} = \text{CrossEntropy}(C_{aux}(h), y). \tag{9}<br />
+</div><br />
+其中 <span class="math-inline">h</span> 是由公式 (1) 计算得到的提取特征。需要注意的是，我们在 <span class="math-inline">C_{aux}</span> 上使用辅助分类器，而不是在 <span class="math-inline">C_t</span> 上。在 <span class="math-inline">C_t</span> 上使用辅助分类器会导致 <span class="math-inline">C_t</span> 更倾向于适应当前提示 <span class="math-inline">P_t</span>，而不是像公式 (8) 那样以相等的概率适应任何任务提示。这可能导致在测试期间选择其他提示时 <span class="math-inline">C_t</span> 缺乏鲁棒性，并损害训练 - 测试一致性。关于 <span class="math-inline">C_{aux}</span> 的必要性的更多讨论和结果在第 4.4 节中提供。</p>
+<p><strong>多键机制用于提示选择</strong>：为了更准确地选择提示并增强持续学习性能，提出了一种新的多键机制。查询特征从预训练网络中提取，其（对应于[class]</p>
+<p>标记的特征向量)可以表示为：<br />
+<div class="math-display"><br />
+    q = f_\theta(x)[0]. \tag{10}<br />
+</div><br />
+从同一类别的预训练网络中提取的查询特征往往相似，而在同一任务中不同类别的查询特征可能表现出多样性。因此，像之前的基于提示的方法那样，依赖单个键来表示每个任务是不够的。提出的多键机制在提示中使用多个键来映射每个任务，从而更精确地表示每个任务中的各种类别，如图 3 所示。具体来说，任务中的每个类别被分配一个唯一的键，结果键的数量与类别数量相同。然后使用余弦相似度来测量查询与其对应键之间的差异：<br />
+<div class="math-display"><br />
+    d_{i,j} = \cos(q, k_{i,j}), \tag{11}<br />
+</div><br />
+其中 <span class="math-inline">k_{i,j}</span> 表示任务 <span class="math-inline">i</span> 中第 <span class="math-inline">j</span> 个类的键。查询检索最接近的键，并选择相应的提示：<br />
+<div class="math-display"><br />
+    i = \arg \max_{i \in {1:t}, j \in {1:|Y_i|}} d_{i,j}, \tag{12}<br />
+</div><br />
+其中 <span class="math-inline">|Y_i|</span> 是任务 <span class="math-inline">i</span> 中的类别数。在训练期间，使用 softmax 交叉熵来最大化查询与其对应键之间的相似性，同时最小化其他相似性：<br />
+<div class="math-display"><br />
+    L_{mk} = -\log\left(\frac{e^{d_{t,y}(x)}}{\sum_{i \in {1:t}, j \in {1:|Y_i|}} e^{d_{i,j}(x)}}\right), \tag{13}<br />
+</div><br />
+其中 <span class="math-inline">y</span> 表示当前任务 <span class="math-inline">t</span> 中输入图像 <span class="math-inline">x</span> 的类别标签。提示一致性学习的总损失函数为：<br />
+<div class="math-display"><br />
+    L_{PCL} = L_{ce} + L_{aux} + L_{mk}. \tag{14}<br />
+</div><br />
+最后，提出的 CPrompt 的整体学习目标为：<br />
+<div class="math-display"><br />
+    L = L_{CCL} + L_{PCL}. \tag{15}<br />
+</div></p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<h3 id="41-实验细节">4.1 实验细节<a class="anchor-link" href="#41-实验细节" title="Permanent link">&para;</a></h3>
+<p><strong>数据集和协议</strong>：为了全面比较不同的持续学习方法，我们在四个基准数据集上进行了广泛的实验。遵循类增量设置，所有测试样本都没有任务身份。</p>
+<ul>
+<li><strong>StanfordCars</strong> 是一个细粒度汽车数据集，包含 196 个类别和 16,185 张图像。其中有 8,144 张训练图像，其余用于测试。所有类别被随机分为 10 任务（每任务 20 类）和 20 任务（每任务 10 类）的持续学习设置，分别称为 Split StanfordCars。由于图像风格独特且细粒度类别难以区分，这对持续学习方法具有挑战性。</li>
+<li><strong>ImageNet-R</strong> 包含 30,000 张图像，覆盖 200 个 ImageNet 类别。每个类别的图像表现出多种风格，包括艺术、卡通、Deviant-Art、涂鸦和来自原始 ImageNet 数据集的困难样本。由于各种风格与预训练数据显著不同，这一基准具有挑战性。持续学习基准 Split ImageNet-R 包括 10 任务（每任务 20 类）和 20 任务（每任务 10 类）设置。</li>
+<li><strong>DomainNet</strong>是一个跨领域数据集，包含来自 6 个不同领域的 345 个常见对象，包括 Clipart、Real、Sketch、Infograph、Painting 和 Quickdraw。由于不同类别的图像数量差异较大，我们选择了图像数量最多的 200 个类别。其持续学习设置包括 10 任务（每任务 10 类）。不同类别被随机分配到不同任务中。此外，每个任务包含来自多个领域的图像，而不是像现有拆分那样仅来自单一领域。</li>
+<li><strong>CIFAR-100</strong>包含 60,000 张 32 × 32 的彩色图像，涵盖 100 个类别。每个类别有 500 张训练图像和 100 张测试图像。它被广泛用作持续学习基准，包含 10 任务（每任务 10 类）。</li>
+</ul>
+<p><strong>评估指标</strong>：分类模型的持续学习性能主要通过两个指标进行评估：学习完最后一个任务后所有类别的平均准确率（记为 Last-acc）和所有已学习任务的平均增量准确率（记为 Avg-acc）。平均遗忘率（记为 FF）提供了关于任务性能下降的额外上下文。我们更关注 Last-acc 和 Avg-acc，因为它们是更全面的指标。</p>
+<p><strong>实现细节</strong>：我们的模型训练使用 SGD 优化器，动量为 0.9，初始学习率为 0.01。初始学习率逐渐减少至零，遵循余弦退火调度器。小批量大小为 16。实践中，不同损失的平衡超参数均固定为 1，未进行调整。公式 (4) 中的超参数 <span class="math-inline">(\tau_1, m)</span> 在 DomainNet 上为 <span class="math-inline">(1.02, 0.05)</span>，在 CIFAR-100 上为 <span class="math-inline">(1.2, 0)</span>，其他情况下为 <span class="math-inline">(1.15, 0.1)</span>。这些值通过交叉验证选择。根据之前的设置，使用 ImageNet 预训练的 ViT-B/16作为骨干网络。此外，ViT-B/16 架构包含 12 个自注意力层。我们将每个任务特定提示分成两段，分别插入到第一个和中间的第六个自注意力层中。所有结果均通过 3 次运行的平均值报告，并提供相应的标准偏差以减轻随机因素的影响。</p>
+<p><strong>竞争对手</strong>：我们专注于将我们的模型与最先进的基于提示的方法进行比较，即 L2P、DualPrompt、ESN和 CODAprompt。为了公平比较，我们还在我们的实验设置下复现了它们的最佳结果。上限（UB）性能是通过联合微调所有任务数据的提示和分类器实现的。</p>
+<h3 id="42-主要结果">4.2 主要结果<a class="anchor-link" href="#42-主要结果" title="Permanent link">&para;</a></h3>
+<p>在 Split StanfordCars 基准上，我们的 Consistent Prompting (CPrompt) 与最先进的竞争对手的比较如表 1 所示。Split StanfordCars 基准对持续学习方法具有挑战性，因为其结果远低于联合学习的上限，并且存在不可忽视的遗忘问题。然而，提出的 CPrompt 在其竞争对手中表现最佳。具体来说，CPrompt 显著超越了最先进的 CODAprompt，在 10 任务设置下分别实现了 4.53% 和 3.53% 的更高 Last-acc 和 Avg-acc。随着任务数量的增加，这种改进更加明显。在 20 任务设置下，CPrompt 的 Last-acc 和 Avg-acc 分别比 CODAprompt 高出 6.22% 和 4.96%。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172142.png" style="zoom: 80%;" /></div>
+
+<p>我们的 CPrompt 和最先进的方法在 Split ImageNet-R 上也进行了比较，如表 2 所示。在 10 任务设置下，我们的方法仍然优于 CODAprompt，在 Last-acc 和 Avg-acc 上分别实现了约 1.60% 的改进。在更具挑战性的 20 任务设置下，CPrompt 也实现了 2.54% 的更高 Last-acc 和 3.33% 的更高 Avg-acc，与上述趋势类似。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172200.png" style="zoom: 80%;" /></div>
+
+<p>表 3 和表 4 分别展示了 Split CIFAR-100 和 Split DomainNet 在 10 任务持续学习中的结果。提出的 CPrompt 在两种基准的所有标准上均一致优于其他基于提示的方法。此外，CPrompt 的改进是显著的，与所有竞争对手相比，Last-acc 和 Avg-acc 大多提高了 1% 以上。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172209.png" style="zoom: 80%;" /></div>
+
+<p>图 4 展示了不同方法在持续学习过程中的详细比较，展示了我们方法的优越性。CPrompt 的曲线始终高于其竞争对手的曲线，跨越不同任务。通常，随着任务变得更加复杂且涉及更多类别，这些性能差距往往会扩大。这一发现表明，CPrompt 比其最先进的竞争对手更能抵抗灾难性遗忘。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172224.png" style="zoom: 80%;" /></div>
+
+<h3 id="43-消融研究">4.3 消融研究<a class="anchor-link" href="#43-消融研究" title="Permanent link">&para;</a></h3>
+<p>提出的 CPrompt 包含两个主要组件：分类器一致性学习（CCL）和包含多键机制（MK）的提示一致性学习（PCL）。通过消融实验评估了每个组件的有效性，实验在两个大规模持续学习基准 Split StanfordCars 和 Split ImageNet-R 上进行。结果如表 5 所示。我们完整的 CPrompt（包含所有三个组件）的性能显著优于原始骨干网络（第一行结果）。例如，在 Split StanfordCars 10 任务设置下，CPrompt 的 Last-acc 和 Avg-acc 分别比骨干网络高出 4.81% 和 3.71%。此外，单独包含每个组件通常可以在两个标准上带来超过 1% 的显著改进。因此，每个提出组件的有效性得到了证明。最后，结合 CCL 和 PCL（无 MK）可以改善每个单独组件的性能。这种组合显然将所有设置的性能提升到第二高。这表明这两个组件服务于不同的目的并相互补充。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172239.png" style="zoom: 80%;" /></div>
+
+<h3 id="44-详细分析">4.4 详细分析<a class="anchor-link" href="#44-详细分析" title="Permanent link">&para;</a></h3>
+<p><strong>分类器一致性学习（CCL）的详细分析</strong>：在训练阶段，CCL 旨在规范所有分类器的行为，以实现训练和测试之间更好的一致性。为了展示仅由一致分类器带来的优势，在测试期间为每个输入提供相应的提示。表 6 展示了使用和不使用 CCL 训练的 CPrompt 之间的比较。我们的完整方法（带有 CCL）显著优于不包含 CCL 的 CPrompt，Last-acc 和 Avg-acc 分别提高了 3.36% 和 3.17%。此外，CCL 可以应用于其他基于提示的持续学习方法，并为它们带来显著改进。例如，DualPrompt 的 Last-acc 提高了 4.52%，如表 7 所示。更多关于 CODAprompt 和 L2P 与我们方法结合的结果见补充材料。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172253.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172305.png" style="zoom: 80%;" /></div>
+
+<p><strong>提示一致性学习（PCL）的详细分析</strong>：为了展示 PCL 带来的鲁棒预测优势，开发了一种新的实验流程。在测试期间，我们始终选择初始任务的提示，该提示与任何后续任务都不对应。使用此提示，我们计算从第二个任务到最后一个任务的模型性能，然后取平均值。此设置展示了模型在处理不匹配提示时的鲁棒性，而现有方法在此方面可能存在困难。表 8 展示了使用和不使用 PCL 训练的 CPrompt 之间的比较。我们完整的使用 PCL 训练的 CPrompt 显著优于其对应版本，Last-acc 和 Avg-acc 分别提高了 10.92% 和 7.54%。这清楚地表明了 PCL 在提出的 CPrompt 中的必要性。此外，将 PCL 与 DualPrompt 方法结合也带来了显著改进，如表 9 所示。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172323.png" style="zoom: 80%;" /></div>
+
+<p><strong>多键机制（MK）的详细分析</strong>：提出的多键机制为每个任务提示分配多个键，以处理不同类别的固有多样性。与每个任务提示使用单键（OK）映射相比，这种方法在任务特定提示选择上的准确率提高了 20% 以上，从而改善了持续学习性能，如表 10 所示。准确提示选择的重要性还可以通过任务增量学习（TIL）设置下的上限性能来证明。在 TIL 中，由于提供了任务身份，可以始终选择适当的输入提示（100% Task-acc）。因此，其性能明显优于 CIL 对应版本。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172349.png" style="zoom: 80%;" /></div>
+
+<p><strong>辅助分类器 <span class="math-inline">C_{aux}</span> 的详细分析</strong>：辅助分类器 <span class="math-inline">C_{aux}</span> 及其对应损失 <span class="math-inline">L_{aux}</span> 的影响在表 11 中进行了评估。<span class="math-inline">\text{w/o } L_{aux}</span> 表示在训练 CPrompt 时不使用辅助分类器。<span class="math-inline">\text{w/o } C_{aux}</span> 表示在 <span class="math-inline">C_t</span> 上使用辅助损失 <span class="math-inline">L_{aux}</span> 而不是在 <span class="math-inline">C_{aux}</span> 上。这两种变体均不如完整的 CPrompt，证明了辅助分类器 <span class="math-inline">C_{aux}</span> 及其目标 <span class="math-inline">L_{aux}</span> 的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212172358.png" style="zoom: 80%;" /></div>
+
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>本文首次揭示了现有基于提示的持续学习方法在训练和测试之间的不一致问题，并进行了深入讨论。我们提出了一种新方法，即一致提示（CPrompt），以解决这一重要问题。我们的 CPrompt 包含两个互补的组件：分类器一致性学习（CCL）和提示一致性学习（PCL）。CCL 通过在所有分类器上进行训练来解决分类器不一致问题，而 PCL 则通过增强预测鲁棒性和提示选择准确性来缓解提示不一致问题。通过其最先进的性能，我们证明了所提出方法的有效性。我们还进行了广泛的分析，以展示基于提示方法中训练 - 测试一致性的重要性。</p>
+<p><strong>局限性</strong>：多键机制用于提高测试期间的提示选择准确性。如表 10 所示，其提示选择准确性提高了 20% 以上。然而，其准确率仍然相对较低，即不到 40%。进一步提高提示选择准确性可以显著提升持续学习性能，如 TIL 的优越性能所示。我们将在这一方向上进一步改进提出的一致提示方法。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

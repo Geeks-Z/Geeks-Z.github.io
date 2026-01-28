@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Representation layer</title>
+    <meta name="description" content="Representation layer - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#timm库-vision_transformerpy代码解读">timm库 vision_transformer.py代码解读</a></li>
+<li><a href="#vision_transformerpy">vision_transformer.py</a><ul>
+<li><a href="#1-导入必要的库和模型">1 导入必要的库和模型：</a></li>
+<li><a href="#2-定义字典代表标准的模型">2 定义字典，代表标准的模型</a></li>
+<li><a href="#3-default_cfgs">3 default_cfgs</a></li>
+<li><a href="#4-ffn实现">4 FFN实现</a></li>
+<li><a href="#5-attention实现">5 Attention实现</a></li>
+<li><a href="#6-包含attention和add--norm的block实现">6 包含Attention和Add &amp; Norm的Block实现</a></li>
+<li><a href="#7-图片转换成patch">7 图片转换成Patch</a></li>
+<li><a href="#8-visiontransformer-类的实现">8 VisionTransformer 类的实现</a><ul>
+<li><a href="#81-传入的变量">8.1 传入的变量</a></li>
+<li><a href="#82-获取patch的数量">8.2 获取Patch的数量</a></li>
+<li><a href="#83-class-token">8.3 class token：</a></li>
+<li><a href="#84-定义位置编码">8.4 定义位置编码</a></li>
+<li><a href="#86-表示层和分类头">8.6 表示层和分类头</a></li>
+<li><a href="#87-初始化各个模块">8.7 初始化各个模块</a></li>
+<li><a href="#88-forward实现">8.8 forward实现</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-如何使用timm库以及-vision_transformerpy代码搭建自己的模型">4 如何使用timm库以及 vision_transformer.py代码搭建自己的模型？</a></li>
+<li><a href="#5-timm库-trainpy代码解读">5 timm库 train.py代码解读：</a></li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Representation layer</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/09.timm</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><a href="https://zhuanlan.zhihu.com/p/350837279">视觉 Transformer 优秀开源工作：timm 库 vision transformer 代码解读</a></p>
+<h2 id="timm库-vision_transformerpy代码解读">timm库 vision_transformer.py代码解读<a class="anchor-link" href="#timm库-vision_transformerpy代码解读" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://github.com/huggingface/pytorch-image-models/blob/main/timm/models/vision_transformer.py">https://github.com/huggingface/pytorch-image-models/blob/main/timm/models/vision_transformer.py</a>  </p>
+</blockquote>
+<h2 id="vision_transformerpy">vision_transformer.py<a class="anchor-link" href="#vision_transformerpy" title="Permanent link">&para;</a></h2>
+<p><strong>代码中定义的变量的含义如下</strong>：</p>
+<blockquote>
+<p><strong>img_size：tuple</strong>类型，里面是int类型，代表输入的图片大小，默认是<strong>224</strong>。<br />
+<strong>patch_size：tuple</strong>类型，里面是int类型，代表Patch的大小，默认是<strong>16</strong>。<br />
+<strong>in_chans：int</strong>类型，代表输入图片的channel数，默认是<strong>3</strong>。<br />
+<strong>num_classes：int</strong>类型classification head的分类数，比如CIFAR100就是100，默认是<strong>1000</strong>。<br />
+<strong>embed_dim：int</strong>类型Transformer的embedding dimension，默认是<strong>768</strong>。<br />
+<strong>depth：int</strong>类型，Transformer的Block的数量，默认是<strong>12</strong>。<br />
+<strong>num_heads：int</strong>类型，attention heads的数量，默认是<strong>12</strong>。<br />
+<strong>mlp_ratio：int</strong>类型，mlp hidden dim/embedding dim的值，默认是<strong>4</strong>。<br />
+<strong>qkv_bias：bool</strong>类型，attention模块计算qkv时需要bias吗，默认是<strong>True</strong>。<br />
+<strong>qk_scale</strong>：一般设置成<strong>None</strong>就行。<br />
+<strong>drop_rate：float</strong>类型，dropout rate，默认是<strong>0</strong>。<br />
+<strong>attn_drop_rate：float</strong>类型，attention模块的dropout rate，默认是<strong>0</strong>。<br />
+<strong>drop_path_rate：float</strong>类型，默认是<strong>0</strong>。<br />
+<strong>hybrid_backbone：nn.Module</strong>类型，在把图片转换成Patch之前，需要先通过一个Backbone吗？默认是<strong>None</strong>。<br />
+如果是None，就直接把图片转化成Patch。<br />
+如果不是None，就先通过这个Backbone，再转化成Patch。<br />
+<strong>norm_layer：nn.Module</strong>类型，归一化层类型，默认是<strong>None</strong>。</p>
+</blockquote>
+<h3 id="1-导入必要的库和模型">1 导入必要的库和模型：<a class="anchor-link" href="#1-导入必要的库和模型" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import math
+import logging
+from functools import partial
+from collections import OrderedDict
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from .helpers import load_pretrained
+from .layers import StdConv2dSame, DropPath, to_2tuple, trunc_normal_
+from .resnet import resnet26d, resnet50d
+from .resnetv2 import ResNetV2
+from .registry import register_model
+</code></pre>
+<h3 id="2-定义字典代表标准的模型">2 定义字典，代表标准的模型<a class="anchor-link" href="#2-定义字典代表标准的模型" title="Permanent link">&para;</a></h3>
+<p>如果需要更改模型超参数只需要改变_cfg的传入的参数即可。</p>
+<pre><code class="language-python">def _cfg(url='', **kwargs):
+    return {
+        'url': url,
+        'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
+        'crop_pct': .9, 'interpolation': 'bicubic',
+        'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
+        'first_conv': 'patch_embed.proj', 'classifier': 'head',
+        **kwargs
+    }
+</code></pre>
+<h3 id="3-default_cfgs">3 default_cfgs<a class="anchor-link" href="#3-default_cfgs" title="Permanent link">&para;</a></h3>
+<p>default_cfgs代表支持的所有模型，也定义成字典的形式：</p>
+<blockquote>
+<p>vit_small_patch16_224里面的small代表小模型。<br />
+<strong>ViT</strong>的第一步要把图片分成一个个<strong>patch</strong>，然后把这些patch组合在一起作为对图像的序列化操作，比如一张224 × 224的图片分成大小为16 × 16的patch，那一共可以分成196个。所以这个图片就序列化成了(196, 256)的tensor。所以这里的：<br />
+<strong>16</strong>：就代表patch的大小。<br />
+<strong>224</strong>：就代表输入图片的大小。<br />
+按照这个命名方式，支持的模型有：vit_base_patch16_224，vit_base_patch16_384等等。  </p>
+<p>后面的vit_<strong>deit</strong>_base_patch16_224等等模型代表DeiT这篇论文的模型。</p>
+</blockquote>
+<pre><code class="language-python">default_cfgs = {
+    # patch models (my experiments)
+    'vit_small_patch16_224': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/vit_small_p16_224-15ec54c9.pth',
+    ),
+
+    # patch models (weights ported from official Google JAX impl)
+    'vit_base_patch16_224': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_p16_224-80ecf9dd.pth',
+        mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5),
+    ),
+    'vit_base_patch32_224': _cfg(
+        url='',  # no official model weights for this combo, only for in21k
+        mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_base_patch16_384': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_p16_384-83fb41ba.pth',
+        input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0),
+    'vit_base_patch32_384': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_p32_384-830016f5.pth',
+        input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0),
+    'vit_large_patch16_224': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_p16_224-4ee7a4dc.pth',
+        mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_large_patch32_224': _cfg(
+        url='',  # no official model weights for this combo, only for in21k
+        mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_large_patch16_384': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_p16_384-b3be5167.pth',
+        input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0),
+    'vit_large_patch32_384': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_p32_384-9b920ba8.pth',
+        input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0),
+
+    # patch models, imagenet21k (weights ported from official Google JAX impl)
+    'vit_base_patch16_224_in21k': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_patch16_224_in21k-e5005f0a.pth',
+        num_classes=21843, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_base_patch32_224_in21k': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_patch32_224_in21k-8db57226.pth',
+        num_classes=21843, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_large_patch16_224_in21k': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_patch16_224_in21k-606da67d.pth',
+        num_classes=21843, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_large_patch32_224_in21k': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_patch32_224_in21k-9046d2e7.pth',
+        num_classes=21843, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    'vit_huge_patch14_224_in21k': _cfg(
+        url='',  # FIXME I have weights for this but &gt; 2GB limit for github release binaries
+        num_classes=21843, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+
+    # hybrid models (weights ported from official Google JAX impl)
+    'vit_base_resnet50_224_in21k': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_resnet50_224_in21k-6f7c7740.pth',
+        num_classes=21843, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=0.9, first_conv='patch_embed.backbone.stem.conv'),
+    'vit_base_resnet50_384': _cfg(
+        url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_base_resnet50_384-9fd3c705.pth',
+        input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0, first_conv='patch_embed.backbone.stem.conv'),
+
+    # hybrid models (my experiments)
+    'vit_small_resnet26d_224': _cfg(),
+    'vit_small_resnet50d_s3_224': _cfg(),
+    'vit_base_resnet26d_224': _cfg(),
+    'vit_base_resnet50d_224': _cfg(),
+
+    # deit models (FB weights)
+    'vit_deit_tiny_patch16_224': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth'),
+    'vit_deit_small_patch16_224': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth'),
+    'vit_deit_base_patch16_224': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth',),
+    'vit_deit_base_patch16_384': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_base_patch16_384-8de9b5d1.pth',
+        input_size=(3, 384, 384), crop_pct=1.0),
+    'vit_deit_tiny_distilled_patch16_224': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_tiny_distilled_patch16_224-b40b3cf7.pth'),
+    'vit_deit_small_distilled_patch16_224': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_small_distilled_patch16_224-649709d9.pth'),
+    'vit_deit_base_distilled_patch16_224': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_224-df68dfff.pth', ),
+    'vit_deit_base_distilled_patch16_384': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_384-d0272ac0.pth',
+        input_size=(3, 384, 384), crop_pct=1.0),
+}
+</code></pre>
+<h3 id="4-ffn实现">4 FFN实现<a class="anchor-link" href="#4-ffn实现" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">class Mlp(nn.Module):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        self.fc1 = nn.Linear(in_features, hidden_features)
+        self.act = act_layer()
+        self.fc2 = nn.Linear(hidden_features, out_features)
+        self.drop = nn.Dropout(drop)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.drop(x)
+        x = self.fc2(x)
+        x = self.drop(x)
+        return x
+</code></pre>
+<h3 id="5-attention实现">5 Attention实现<a class="anchor-link" href="#5-attention实现" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>在python 3.5以后，@是一个操作符，表示矩阵-向量乘法<br />
+A@x 就是矩阵-向量乘法A*x: <a href="http://np.dot/">http://np.dot/</a>(A, x)。</p>
+</blockquote>
+<pre><code class="language-python">class Attention(nn.Module):
+    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+        super().__init__()
+        self.num_heads = num_heads
+        head_dim = dim // num_heads
+        # NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights
+        self.scale = qk_scale or head_dim ** -0.5
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(self, x):
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]   # make torchscript happy (cannot use tensor as tuple)
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+
+        # x: (B, N, C)
+        return x
+</code></pre>
+<h3 id="6-包含attention和add--norm的block实现">6 包含Attention和Add &amp; Norm的Block实现<a class="anchor-link" href="#6-包含attention和add--norm的block实现" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410101739987.jpg"/></div>
+
+<blockquote>
+<p><strong>不同之处是</strong>：<br />
+先进行Norm，再Attention；先进行Norm，再通过FFN (MLP)。</p>
+</blockquote>
+<pre><code class="language-python">class Block(nn.Module):
+
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+        super().__init__()
+        self.norm1 = norm_layer(dim)
+        self.attn = Attention(
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+        # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
+        self.drop_path = DropPath(drop_path) if drop_path &gt; 0. else nn.Identity()
+        self.norm2 = norm_layer(dim)
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+
+    def forward(self, x):
+        x = x + self.drop_path(self.attn(self.norm1(x)))
+        x = x + self.drop_path(self.mlp(self.norm2(x)))
+        return x
+</code></pre>
+<h3 id="7-图片转换成patch">7 图片转换成Patch<a class="anchor-link" href="#7-图片转换成patch" title="Permanent link">&para;</a></h3>
+<p>一种做法是直接把Image转化成Patch，另一种做法是把Backbone输出的特征转化成Patch。</p>
+<p><strong>1) 直接把Image转化成Patch</strong>：</p>
+<blockquote>
+<p>输入的<strong>x</strong>的维度是：(B, C, H, W)<br />
+输出的<strong>PatchEmbedding</strong>的维度是：(B, 14*14, 768)，768表示embed_dim，14*14表示一共有196个Patches。</p>
+</blockquote>
+<pre><code class="language-python">class PatchEmbed(nn.Module):
+    &quot;&quot;&quot; Image to Patch Embedding
+    &quot;&quot;&quot;
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=768):
+        super().__init__()
+        img_size = to_2tuple(img_size)
+        patch_size = to_2tuple(patch_size)
+        num_patches = (img_size[1] // patch_size[1]) * (img_size[0] // patch_size[0])
+        self.img_size = img_size
+        self.patch_size = patch_size
+        self.num_patches = num_patches
+
+        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
+
+    def forward(self, x):
+        B, C, H, W = x.shape
+        # FIXME look at relaxing size constraints
+        assert H == self.img_size[0] and W == self.img_size[1], \
+            f&quot;Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]}).&quot;
+        x = self.proj(x).flatten(2).transpose(1, 2)
+
+        # x: (B, 14*14, 768)
+        return x
+</code></pre>
+<p><strong>2) 把Backbone输出的特征转化成Patch</strong>：</p>
+<blockquote>
+<p>输入的<strong>x</strong>的维度是：(B, C, H, W)<br />
+得到Backbone输出的维度是：(B, feature_size, feature_size, feature_dim)<br />
+输出的<strong>PatchEmbedding</strong>的维度是：(B, feature_size, feature_size, embed_dim)，一共有feature_size * feature_size个Patches。</p>
+</blockquote>
+<pre><code class="language-python">class HybridEmbed(nn.Module):
+    &quot;&quot;&quot; CNN Feature Map Embedding
+    Extract feature map from CNN, flatten, project to embedding dim.
+    &quot;&quot;&quot;
+    def __init__(self, backbone, img_size=224, feature_size=None, in_chans=3, embed_dim=768):
+        super().__init__()
+        assert isinstance(backbone, nn.Module)
+        img_size = to_2tuple(img_size)
+        self.img_size = img_size
+        self.backbone = backbone
+        if feature_size is None:
+            with torch.no_grad():
+                # FIXME this is hacky, but most reliable way of determining the exact dim of the output feature
+                # map for all networks, the feature metadata has reliable channel and stride info, but using
+                # stride to calc feature dim requires info about padding of each stage that isn't captured.
+                training = backbone.training
+                if training:
+                    backbone.eval()
+                o = self.backbone(torch.zeros(1, in_chans, img_size[0], img_size[1]))
+                if isinstance(o, (list, tuple)):
+                    o = o[-1]  # last feature if backbone outputs list/tuple of features
+                feature_size = o.shape[-2:]
+                feature_dim = o.shape[1]
+                backbone.train(training)
+        else:
+            feature_size = to_2tuple(feature_size)
+            if hasattr(self.backbone, 'feature_info'):
+                feature_dim = self.backbone.feature_info.channels()[-1]
+            else:
+                feature_dim = self.backbone.num_features
+        self.num_patches = feature_size[0] * feature_size[1]
+        self.proj = nn.Conv2d(feature_dim, embed_dim, 1)
+
+    def forward(self, x):
+        x = self.backbone(x)
+        if isinstance(x, (list, tuple)):
+            x = x[-1]  # last feature if backbone outputs list/tuple of features
+        x = self.proj(x).flatten(2).transpose(1, 2)
+        return x
+</code></pre>
+<h3 id="8-visiontransformer-类的实现">8 VisionTransformer 类的实现<a class="anchor-link" href="#8-visiontransformer-类的实现" title="Permanent link">&para;</a></h3>
+<h4 id="81-传入的变量">8.1 传入的变量<a class="anchor-link" href="#81-传入的变量" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">class VisionTransformer(nn.Module):
+    &quot;&quot;&quot; Vision Transformer
+
+    A PyTorch impl of : `An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale`  -
+        https://arxiv.org/abs/2010.11929
+    &quot;&quot;&quot;
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=12,
+                 num_heads=12, mlp_ratio=4., qkv_bias=True, qk_scale=None, representation_size=None,
+                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0., hybrid_backbone=None, norm_layer=None):
+</code></pre>
+<h4 id="82-获取patch的数量">8.2 获取Patch的数量<a class="anchor-link" href="#82-获取patch的数量" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">super().__init__()
+self.num_classes = num_classes
+self.num_features = self.embed_dim = embed_dim  # num_features for consistency with other models
+norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
+
+if hybrid_backbone is not None:
+    self.patch_embed = HybridEmbed(
+        hybrid_backbone, img_size=img_size, in_chans=in_chans, embed_dim=embed_dim)
+else:
+    self.patch_embed = PatchEmbed(
+        img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim)
+num_patches = self.patch_embed.num_patches
+</code></pre>
+<h4 id="83-class-token">8.3 class token：<a class="anchor-link" href="#83-class-token" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>一开始定义成(1, 1, 768)，之后再变成(B, 1, 768)。</p>
+</blockquote>
+<pre><code class="language-python">self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+</code></pre>
+<h4 id="84-定义位置编码">8.4 定义位置编码<a class="anchor-link" href="#84-定义位置编码" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
+
+8.5 把12个Block连接起来：
+
+​```python
+self.pos_drop = nn.Dropout(p=drop_rate)
+
+dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]  # stochastic depth decay rule
+self.blocks = nn.ModuleList([
+    Block(
+        dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
+        drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer)
+    for i in range(depth)])
+self.norm = norm_layer(embed_dim)
+</code></pre>
+<h4 id="86-表示层和分类头">8.6 表示层和分类头<a class="anchor-link" href="#86-表示层和分类头" title="Permanent link">&para;</a></h4>
+<p>表示层输出维度是representation_size，分类头输出维度是num_classes。</p>
+<pre><code class="language-python"># Representation layer
+if representation_size:
+    self.num_features = representation_size
+    self.pre_logits = nn.Sequential(OrderedDict([
+        ('fc', nn.Linear(embed_dim, representation_size)),
+        ('act', nn.Tanh())
+    ]))
+else:
+    self.pre_logits = nn.Identity()
+
+# Classifier head
+self.head = nn.Linear(self.num_features, num_classes) if num_classes &gt; 0 else nn.Identity()
+</code></pre>
+<h4 id="87-初始化各个模块">8.7 初始化各个模块<a class="anchor-link" href="#87-初始化各个模块" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p>函数trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.)的目的是用截断的正态分布绘制的值填充输入张量，我们只需要输入均值mean，标准差std，下界a，上界b即可。  </p>
+<p>self.apply(self._init_weights)表示对各个模块的权重进行初始化。apply函数的代码是：</p>
+</blockquote>
+<pre><code class="language-python">        for module in self.children():
+            module.apply(fn)
+        fn(self)
+        return self
+</code></pre>
+<blockquote>
+<p>递归地将fn应用于每个子模块，相当于在递归调用fn，即_init_weights这个函数。<br />
+也就是把模型的所有子模块的nn.Linear和nn.LayerNorm层都初始化掉。</p>
+</blockquote>
+<pre><code class="language-python">trunc_normal_(self.pos_embed, std=.02)
+trunc_normal_(self.cls_token, std=.02)
+self.apply(self._init_weights)
+
+def _init_weights(self, m):
+if isinstance(m, nn.Linear):
+    trunc_normal_(m.weight, std=.02)
+    if isinstance(m, nn.Linear) and m.bias is not None:
+        nn.init.constant_(m.bias, 0)
+elif isinstance(m, nn.LayerNorm):
+    nn.init.constant_(m.bias, 0)
+    nn.init.constant_(m.weight, 1.0)
+</code></pre>
+<h4 id="88-forward实现">8.8 forward实现<a class="anchor-link" href="#88-forward实现" title="Permanent link">&para;</a></h4>
+<pre><code class="language-python">def forward_features(self, x):
+    B = x.shape[0]
+    x = self.patch_embed(x)
+
+    cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+    x = torch.cat((cls_tokens, x), dim=1)
+    x = x + self.pos_embed
+    x = self.pos_drop(x)
+
+    for blk in self.blocks:
+        x = blk(x)
+
+    x = self.norm(x)[:, 0]
+    x = self.pre_logits(x)
+    return x
+
+def forward(self, x):
+    x = self.forward_features(x)
+    x = self.head(x)
+    return x
+</code></pre>
+<p><strong>9 下面是Training data-efficient image transformers &amp; distillation through attention这篇论文的DeiT这个类的实现</strong>：</p>
+<p>整体结构与ViT相似，继承了上面的VisionTransformer类。</p>
+<pre><code class="language-python">class DistilledVisionTransformer(VisionTransformer):
+</code></pre>
+<p>再额外定义以下3个变量：</p>
+<ul>
+<li>distillation token：dist_token</li>
+<li>新的位置编码：pos_embed</li>
+<li>蒸馏分类头：head_dist</li>
+</ul>
+<p><strong>DeiT</strong>相关介绍可以参考：<a href="https://zhuanlan.zhihu.com/p/348593638">https://zhuanlan.zhihu.com/p/348593638</a>。</p>
+<pre><code class="language-python">self.dist_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
+num_patches = self.patch_embed.num_patches
+self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 2, self.embed_dim))
+self.head_dist = nn.Linear(self.embed_dim, self.num_classes) if self.num_classes &gt; 0 else nn.Identity()
+</code></pre>
+<p>初始化新定义的变量：</p>
+<pre><code>trunc_normal_(self.dist_token, std=.02)
+trunc_normal_(self.pos_embed, std=.02)
+self.head_dist.apply(self._init_weights)
+</code></pre>
+<p>前向函数：</p>
+<pre><code>def forward_features(self, x):
+    B = x.shape[0]
+    x = self.patch_embed(x)
+
+    cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+    dist_token = self.dist_token.expand(B, -1, -1)
+    x = torch.cat((cls_tokens, dist_token, x), dim=1)
+
+    x = x + self.pos_embed
+    x = self.pos_drop(x)
+
+    for blk in self.blocks:
+        x = blk(x)
+
+    x = self.norm(x)
+    return x[:, 0], x[:, 1]
+
+def forward(self, x):
+    x, x_dist = self.forward_features(x)
+    x = self.head(x)
+    x_dist = self.head_dist(x_dist)
+    if self.training:
+        return x, x_dist
+    else:
+        # during inference, return the average of both classifier predictions
+        return (x + x_dist) / 2
+</code></pre>
+<p><strong>10 对位置编码进行插值</strong>：</p>
+<blockquote>
+<p>posemb代表未插值的位置编码权值，posemb_tok为位置编码的token部分，posemb_grid为位置编码的插值部分。<br />
+首先把要插值部分posemb_grid给reshape成(1, gs_old, gs_old, -1)的形式，再插值成(1, gs_new, gs_new, -1)的形式，最后与token部分在第1维度拼接在一起，得到插值后的位置编码posemb。</p>
+</blockquote>
+<pre><code>def resize_pos_embed(posemb, posemb_new):
+    # Rescale the grid of position embeddings when loading from state_dict. Adapted from
+    # https://github.com/google-research/vision_transformer/blob/00883dd691c63a6830751563748663526e811cee/vit_jax/checkpoint.py#L224
+    _logger.info('Resized position embedding: %s to %s', posemb.shape, posemb_new.shape)
+    ntok_new = posemb_new.shape[1]
+    if True:
+        posemb_tok, posemb_grid = posemb[:, :1], posemb[0, 1:]
+        ntok_new -= 1
+    else:
+        posemb_tok, posemb_grid = posemb[:, :0], posemb[0]
+    gs_old = int(math.sqrt(len(posemb_grid)))
+    gs_new = int(math.sqrt(ntok_new))
+    _logger.info('Position embedding grid-size from %s to %s', gs_old, gs_new)
+    posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
+    posemb_grid = F.interpolate(posemb_grid, size=(gs_new, gs_new), mode='bilinear')
+    posemb_grid = posemb_grid.permute(0, 2, 3, 1).reshape(1, gs_new * gs_new, -1)
+    posemb = torch.cat([posemb_tok, posemb_grid], dim=1)
+    return posemb
+</code></pre>
+<p><strong>11 _create_vision_transformer函数用于创建vision transformer</strong>：</p>
+<blockquote>
+<p>checkpoint_filter_fn的作用是加载预训练权重。</p>
+</blockquote>
+<pre><code>def checkpoint_filter_fn(state_dict, model):
+    &quot;&quot;&quot; convert patch embedding weight from manual patchify + linear proj to conv&quot;&quot;&quot;
+    out_dict = {}
+    if 'model' in state_dict:
+        # For deit models
+        state_dict = state_dict['model']
+    for k, v in state_dict.items():
+        if 'patch_embed.proj.weight' in k and len(v.shape) &lt; 4:
+            # For old models that I trained prior to conv based patchification
+            O, I, H, W = model.patch_embed.proj.weight.shape
+            v = v.reshape(O, -1, H, W)
+        elif k == 'pos_embed' and v.shape != model.pos_embed.shape:
+            # To resize pos embedding when using model at different size from pretrained weights
+            v = resize_pos_embed(v, model.pos_embed)
+        out_dict[k] = v
+    return out_dict
+
+
+def _create_vision_transformer(variant, pretrained=False, distilled=False, **kwargs):
+    default_cfg = default_cfgs[variant]
+    default_num_classes = default_cfg['num_classes']
+    default_img_size = default_cfg['input_size'][-1]
+
+    num_classes = kwargs.pop('num_classes', default_num_classes)
+    img_size = kwargs.pop('img_size', default_img_size)
+    repr_size = kwargs.pop('representation_size', None)
+    if repr_size is not None and num_classes != default_num_classes:
+        # Remove representation layer if fine-tuning. This may not always be the desired action,
+        # but I feel better than doing nothing by default for fine-tuning. Perhaps a better interface?
+        _logger.warning(&quot;Removing representation layer for fine-tuning.&quot;)
+        repr_size = None
+
+    model_cls = DistilledVisionTransformer if distilled else VisionTransformer
+    model = model_cls(img_size=img_size, num_classes=num_classes, representation_size=repr_size, **kwargs)
+    model.default_cfg = default_cfg
+
+    if pretrained:
+        load_pretrained(
+            model, num_classes=num_classes, in_chans=kwargs.get('in_chans', 3),
+            filter_fn=partial(checkpoint_filter_fn, model=model))
+    return model
+</code></pre>
+<p><strong>12 定义和注册vision transformer模型</strong>：</p>
+<blockquote>
+<p>@ <strong>register_model</strong>这个函数来自timm库model文件夹下的registry.py文件，它的作用是：<br />
+<strong>@ 指装饰器</strong><br />
+<strong>@register_model代表注册器，注册这个新定义的模型。</strong><br />
+存储到<strong>_model_entrypoints</strong>这个字典中，比如：</p>
+</blockquote>
+<pre><code>_model_entrypoints[vit_base_patch16_224] = _create_vision_transformer('vit_base_patch16_224', pretrained=pretrained, **model_kwargs)
+</code></pre>
+<blockquote>
+<p>然后在<strong>factory.py</strong>的<strong>create_model函数</strong>中的下面这几行真正创建模型，你以后想创建的任何模型都会使用create_model这个函数，这里说清楚了为什么要用它：</p>
+</blockquote>
+<pre><code>    if is_model(model_name):
+        create_fn = model_entrypoint(model_name)
+    else:
+        raise RuntimeError('Unknown model (%s)' % model_name)
+
+    with set_layer_config(scriptable=scriptable, exportable=exportable, no_jit=no_jit):
+        model = create_fn(pretrained=pretrained, **kwargs)
+</code></pre>
+<blockquote>
+<p>比如刚才在main.py里面用了create_model创建模型，如下面代码所示。而create_model就来自factory.py：</p>
+</blockquote>
+<pre><code>    model = create_model(
+        args.model,
+        pretrained=False,
+        num_classes=args.nb_classes,
+        drop_rate=args.drop,
+        drop_path_rate=args.drop_path,
+        drop_block_rate=None,
+    )
+</code></pre>
+<p>一共可以选择的模型包括：</p>
+<blockquote>
+<p><strong>ViT系列</strong>：<br />
+vit_small_patch16_224<br />
+vit_base_patch16_224<br />
+vit_base_patch32_224<br />
+vit_base_patch16_384<br />
+vit_base_patch32_384<br />
+vit_large_patch16_224<br />
+vit_large_patch32_224<br />
+vit_large_patch16_384<br />
+vit_large_patch32_384<br />
+vit_base_patch16_224_in21k<br />
+vit_base_patch32_224_in21k<br />
+vit_large_patch16_224_in21k<br />
+vit_large_patch32_224_in21k<br />
+vit_huge_patch14_224_in21k<br />
+vit_base_resnet50_224_in21k<br />
+vit_base_resnet50_384<br />
+vit_small_resnet26d_224<br />
+vit_small_resnet50d_s3_224<br />
+vit_base_resnet26d_224<br />
+vit_base_resnet50d_224  </p>
+<p><strong>DeiT系列</strong>：<br />
+vit_deit_tiny_patch16_224<br />
+vit_deit_small_patch16_224<br />
+vit_deit_base_patch16_224<br />
+vit_deit_base_patch16_384<br />
+vit_deit_tiny_distilled_patch16_224<br />
+vit_deit_small_distilled_patch16_224<br />
+vit_deit_base_distilled_patch16_224<br />
+vit_deit_base_distilled_patch16_384</p>
+</blockquote>
+<p>以上就是对timm库 vision_transformer.py代码的分析。</p>
+<h2 id="4-如何使用timm库以及-vision_transformerpy代码搭建自己的模型">4 如何使用timm库以及 vision_transformer.py代码搭建自己的模型？<a class="anchor-link" href="#4-如何使用timm库以及-vision_transformerpy代码搭建自己的模型" title="Permanent link">&para;</a></h2>
+<p>在搭建我们自己的视觉Transformer模型时，我们可以按照下面的步骤操作：首先</p>
+<ul>
+<li>继承timm库的<strong>VisionTransformer</strong>这个类。</li>
+<li>添加上自己模型<strong>独有的一些变量</strong>。</li>
+<li>重写<strong>forward</strong>函数。</li>
+<li>通过timm库的<strong>注册器</strong>注册新模型。</li>
+</ul>
+<p><strong>我们以ViT模型的改进版DeiT为例</strong>：</p>
+<p>首先，DeiT的所有模型列表如下：</p>
+<pre><code>__all__ = [
+    'deit_tiny_patch16_224', 'deit_small_patch16_224', 'deit_base_patch16_224',
+    'deit_tiny_distilled_patch16_224', 'deit_small_distilled_patch16_224',
+    'deit_base_distilled_patch16_224', 'deit_base_patch16_384',
+    'deit_base_distilled_patch16_384',
+]
+</code></pre>
+<p>导入VisionTransformer这个类，注册器register_model，以及初始化函数trunc_normal_：</p>
+<pre><code>from timm.models.vision_transformer import VisionTransformer, _cfg
+from timm.models.registry import register_model
+from timm.models.layers import trunc_normal_
+</code></pre>
+<p>DeiT的class名称是DistilledVisionTransformer，它直接继承了VisionTransformer这个类：</p>
+<pre><code>class DistilledVisionTransformer(VisionTransformer):
+</code></pre>
+<p>添加上自己模型独有的一些变量：</p>
+<pre><code>def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.dist_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
+    num_patches = self.patch_embed.num_patches
+    # 位置编码不是ViT中的(b, N, 256), 而变成了(b, N+2, 256), 原因是还有class token和distillation token.
+    self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 2, self.embed_dim))
+    self.head_dist = nn.Linear(self.embed_dim, self.num_classes) if self.num_classes &gt; 0 else nn.Identity()
+
+    trunc_normal_(self.dist_token, std=.02)
+    trunc_normal_(self.pos_embed, std=.02)
+    self.head_dist.apply(self._init_weights)
+</code></pre>
+<p>重写forward函数：</p>
+<pre><code>def forward_features(self, x):
+    # taken from https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
+    # with slight modifications to add the dist_token
+    B = x.shape[0]
+
+    x = self.patch_embed(x)
+
+    cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+    dist_token = self.dist_token.expand(B, -1, -1)
+
+    x = torch.cat((cls_tokens, dist_token, x), dim=1)
+
+    x = x + self.pos_embed
+    x = self.pos_drop(x)
+
+    for blk in self.blocks:
+        x = blk(x)
+
+    x = self.norm(x)
+
+    return x[:, 0], x[:, 1]
+
+def forward(self, x):
+    x, x_dist = self.forward_features(x)
+    x = self.head(x)
+    x_dist = self.head_dist(x_dist)
+    if self.training:
+        return x, x_dist
+    else:
+        # during inference, return the average of both classifier predictions
+        return (x + x_dist) / 2
+</code></pre>
+<p>通过timm库的注册器注册新模型：</p>
+<pre><code>@register_model
+def deit_base_patch16_224(pretrained=False, **kwargs):
+    model = VisionTransformer(
+        patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
+    model.default_cfg = _cfg()
+    if pretrained:
+        checkpoint = torch.hub.load_state_dict_from_url(
+            url=&quot;https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth&quot;,
+            map_location=&quot;cpu&quot;, check_hash=True
+        )
+        model.load_state_dict(checkpoint[&quot;model&quot;])
+    return model
+</code></pre>
+<p>———————————————— 更新 2021.03.01———————————————</p>
+<h2 id="5-timm库-trainpy代码解读">5 timm库 train.py代码解读：<a class="anchor-link" href="#5-timm库-trainpy代码解读" title="Permanent link">&para;</a></h2>
+<p>timm库的训练使用 <strong>结合apex支持的分布式训练，同步bn，以及混合精度的训练方式</strong>，其train.py的写法很具有代表性，值得拿出来讨论。因此这篇文章再多加一段，来专门讨论这个train.py。</p>
+<p>结合apex支持的分布式训练，同步bn，以及混合精度的训练方式的详细讲解可以参考下面这篇文章：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/353587472">科技猛兽：PyTorch 77.结合apex支持的分布式训练，同步bn，以及混合精度</a>在这篇文章中我们使用8步法结合apex支持的分布式训练，同步bn，以及混合精度：</p>
+<p><strong>1. 先罗列自己网络的参数</strong>：</p>
+<pre><code>def parse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--local_rank', type=int, default=0)
+    ...
+    ...
+    args = parser.parse_args()
+    return args
+</code></pre>
+<p>local_rank指定了输出设备，默认为GPU可用列表中的第一个GPU。<strong>这里这个是必须加的。原因后面讲</strong></p>
+<p><strong>2. 在主函数中开头写</strong>：</p>
+<pre><code>def main():
+    args = parse()
+    torch.cuda.set_device(args.local_rank)  # 必须写！，还必须在下一句的前面，
+    #torch.utils.launch也需要set_device， 所以必须写
+    torch.distributed.init_process_group(
+        'nccl',
+        init_method='env://'
+    )
+</code></pre>
+<p><strong>3. 导入数据接口，这里有一点不一样。需要用一个DistributedSampler</strong>：</p>
+<pre><code>dataset = DAVIS2017(root, 'training')
+num_workers = 4 if cuda else 0
+# 多了一个DistributedSampler，作为dataloader的sampler
+train_sampler  = torch.utils.data.distributed.DistributedSampler(dataset)
+loader = DataLoader(dataset,batch_size=batchsize,shuffle=False, num_workers=num_workers,pin_memory=cuda,
+                                     drop_last=True, sampler=train_sampler)
+</code></pre>
+<p><strong>4. 之后定义模型</strong>：</p>
+<pre><code>net = XXXNet(using_amp=True)
+net.train()
+net = convert_syncbn_model(net)  # 用apex支持的方法，使得普通bn成为同步bn。
+# 切记在网络实现中，不要使用torch自带的SyncBatchnorm。
+device = torch.device('cuda:{}'.format(args.local_rank))
+net = net.to(device)  # 把模型搬运到第一块GPU上
+</code></pre>
+<p><strong>5. 定义优化器，损失函数，定义优化器一定要在把模型搬运到GPU之后</strong>：</p>
+<pre><code>opt = Adam([{'params': params_low_lr, 'lr': 4e-5},
+         {'params': params_high_lr, 'lr': 1e-4}], weight_decay=settings.WEIGHT_DECAY)
+crit = nn.BCELoss().to(device)
+</code></pre>
+<p><strong>6. 多GPU设置</strong>：</p>
+<pre><code>net, opt = amp.initialize(net, opt, opt_level=&quot;O1&quot;)  # 字母小写o,不是零。
+# 关于initialize用法，见上一篇博客。
+net = DDP(net, delay_allreduce=True)  # 必须在initialze之后
+</code></pre>
+<p><strong>7. 记得loss要这么用</strong>：</p>
+<pre><code>opt.zero_grad()
+# loss.backward()
+with amp.scale_loss(loss, opt) as scaled_loss:
+     scaled_loss.backward()
+opt.step()
+</code></pre>
+<p><strong>8. 然后在代码底部加入</strong>：</p>
+<pre><code>if __name__ == '__main__':
+    main()
+</code></pre>
+<p><strong>那么这个train.py大体上依然遵循这8步</strong>：</p>
+<p><a href="https://github.com/rwightman/pytorch-image-models/blob/master/train.py">https://github.com/rwightman/pytorch-image-models/blob/master/train.py</a><strong>1. 通过命令行解析定义各种超参数，包括</strong>：</p>
+<blockquote>
+<p><strong>Dataset / Model parameters</strong>，比如：data，--model，--pretrained等等。<br />
+<strong>Optimizer parameters</strong>，比如：--opt，--opt-eps，--momentum等等。<br />
+<strong>Learning rate schedule parameters</strong>，比如：--sched，--lr，--epochs，--start-epoch，--decay-epochs，--decay-rate等等。<br />
+<strong>Augmentation &amp; regularization parameters</strong>，比如：--mixup，--hflip，--vflip，--cutmix，--drop等等。<br />
+<strong>Batch norm parameters</strong>，比如：--bn-tf，--bn-momentum，--sync-bn，--dist-bn，--split-bn等等。<br />
+<strong>Model Exponential Moving Average parameters</strong>，比如：--model-ema，--model-ema-force-cpu，--model-ema-decay等等。<br />
+<strong>Misc parameters</strong>，比如：--seed，--log-interval，--num-gpu，--save-images，amp，--apex-amp，--native-amp，--output，--local_rank等等。</p>
+</blockquote>
+<pre><code>def _parse_args():
+    # Do we have a config file to parse?
+    args_config, remaining = config_parser.parse_known_args()
+    if args_config.config:
+        with open(args_config.config, 'r') as f:
+            cfg = yaml.safe_load(f)
+            parser.set_defaults(**cfg)
+
+    # The main arg parser parses the rest of the args, the usual
+    # defaults will have been overridden if config file specified.
+    args = parser.parse_args(remaining)
+
+    # Cache the args as a text string to save them in the output dir later
+    args_text = yaml.safe_dump(args.__dict__, default_flow_style=False)
+    return args, args_text
+</code></pre>
+<p><strong>2. 分布式命令</strong>：</p>
+<pre><code>    args.device = 'cuda:0'
+    args.world_size = 1
+    args.rank = 0  # global rank
+    if args.distributed:
+        args.num_gpu = 1
+        args.device = 'cuda:%d' % args.local_rank
+        torch.cuda.set_device(args.local_rank)
+        args.world_size = int(os.environ['WORLD_SIZE'])
+        args.rank = int(os.environ['RANK'])
+        torch.distributed.init_process_group(backend='nccl', init_method='env://', rank=args.rank, world_size=args.world_size)
+        args.world_size = torch.distributed.get_world_size()
+        args.rank = torch.distributed.get_rank()
+</code></pre>
+<p><strong>3. 导入数据接口，这里有一点不一样。需要用一个DistributedSampler</strong>：</p>
+<pre><code>    loader_train = create_loader(
+        dataset_train,
+        input_size=data_config['input_size'],
+        batch_size=args.batch_size,
+        is_training=True,
+        use_prefetcher=args.prefetcher,
+        no_aug=args.no_aug,
+        re_prob=args.reprob,
+        re_mode=args.remode,
+        re_count=args.recount,
+        re_split=args.resplit,
+        scale=args.scale,
+        ratio=args.ratio,
+        hflip=args.hflip,
+        vflip=args.vflip,
+        color_jitter=args.color_jitter,
+        auto_augment=args.aa,
+        num_aug_splits=num_aug_splits,
+        interpolation=train_interpolation,
+        mean=data_config['mean'],
+        std=data_config['std'],
+        num_workers=args.workers,
+        distributed=args.distributed,
+        collate_fn=collate_fn,
+        pin_memory=args.pin_mem,
+        use_multi_epochs_loader=args.use_multi_epochs_loader,
+        repeated_aug=args.repeated_aug
+    )
+</code></pre>
+<p><strong>4. 之后定义模型</strong>：</p>
+<pre><code>    model = create_model(
+        args.model,
+        pretrained=args.pretrained,
+        num_classes=args.num_classes,
+        drop_rate=args.drop,
+        drop_connect_rate=args.drop_connect,  # DEPRECATED, use drop_path
+        drop_path_rate=args.drop_path,
+        drop_block_rate=args.drop_block,
+        global_pool=args.gp,
+        bn_tf=args.bn_tf,
+        bn_momentum=args.bn_momentum,
+        bn_eps=args.bn_eps,
+        scriptable=args.torchscript,
+        checkpoint_path=args.initial_checkpoint)
+--------------------------------------------------------------------------
+    # move model to GPU, enable channels last layout if set
+    model.cuda()
+    if args.channels_last:
+        model = model.to(memory_format=torch.channels_last)
+--------------------------------------------------------------------------
+    # setup synchronized BatchNorm for distributed training
+    if args.distributed and args.sync_bn:
+        assert not args.split_bn
+        if has_apex and use_amp != 'native':
+            # Apex SyncBN preferred unless native amp is activated
+            model = convert_syncbn_model(model)
+        else:
+            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+        if args.local_rank == 0:
+            _logger.info(
+                'Converted model to use Synchronized BatchNorm. WARNING: You may have issues if using '
+                'zero initialized BN layers (enabled by default for ResNets) while sync-bn enabled.')
+
+
+
+</code></pre>
+<p><strong>5. 定义优化器，损失函数，定义优化器一定要在把模型搬运到GPU之后</strong>：</p>
+<pre><code>    optimizer = create_optimizer(args, model)
+</code></pre>
+<p><strong>6. 多GPU设置</strong>：</p>
+<pre><code>    # setup automatic mixed-precision (AMP) loss scaling and op casting
+    amp_autocast = suppress  # do nothing
+    loss_scaler = None
+    if use_amp == 'apex':
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
+        loss_scaler = ApexScaler()
+        if args.local_rank == 0:
+            _logger.info('Using NVIDIA APEX AMP. Training in mixed precision.')
+    elif use_amp == 'native':
+        amp_autocast = torch.cuda.amp.autocast
+        loss_scaler = NativeScaler()
+        if args.local_rank == 0:
+            _logger.info('Using native Torch AMP. Training in mixed precision.')
+    else:
+        if args.local_rank == 0:
+            _logger.info('AMP not enabled. Training in float32.')
+--------------------------------------------------------------------------
+    # setup distributed training
+    if args.distributed:
+        if has_apex and use_amp != 'native':
+            # Apex DDP preferred unless native amp is activated
+            if args.local_rank == 0:
+                _logger.info(&quot;Using NVIDIA APEX DistributedDataParallel.&quot;)
+            model = ApexDDP(model, delay_allreduce=True)
+        else:
+            if args.local_rank == 0:
+                _logger.info(&quot;Using native Torch DistributedDataParallel.&quot;)
+            model = NativeDDP(model, device_ids=[args.local_rank])  # can use device str in Torch &gt;= 1.1
+        # NOTE: EMA model does not need to be wrapped by DDP
+</code></pre>
+<p><strong>7. 记得loss要这么用</strong>：</p>
+<pre><code>    # setup automatic mixed-precision (AMP) loss scaling and op casting
+    amp_autocast = suppress  # do nothing
+    loss_scaler = None
+    if use_amp == 'apex':
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
+        loss_scaler = ApexScaler()
+        if args.local_rank == 0:
+            _logger.info('Using NVIDIA APEX AMP. Training in mixed precision.')
+    elif use_amp == 'native':
+        amp_autocast = torch.cuda.amp.autocast
+        loss_scaler = NativeScaler()
+        if args.local_rank == 0:
+            _logger.info('Using native Torch AMP. Training in mixed precision.')
+    else:
+        if args.local_rank == 0:
+            _logger.info('AMP not enabled. Training in float32.')
+--------------------------------------------------------------------------
+        optimizer.zero_grad()
+        if loss_scaler is not None:
+            loss_scaler(
+                loss, optimizer,
+                clip_grad=args.clip_grad, clip_mode=args.clip_mode,
+                parameters=model_parameters(model, exclude_head='agc' in args.clip_mode),
+                create_graph=second_order)
+        else:
+            loss.backward(create_graph=second_order)
+            if args.clip_grad is not None:
+                dispatch_clip_grad(
+                    model_parameters(model, exclude_head='agc' in args.clip_mode),
+                    value=args.clip_grad, mode=args.clip_mode)
+            optimizer.step()
+</code></pre>
+<p><strong>8. 然后在代码底部加入</strong>：</p>
+<pre><code>if __name__ == '__main__':
+    main()
+</code></pre>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<p>本文简要介绍了优秀的PyTorch Image Model 库：timm库以及其中的 vision transformer 代码和训练代码。 Transformer 架构早已在自然语言处理任务中得到广泛应用，但在计算机视觉领域中仍然受到限制。在计算机视觉领域，目前已有大量工作表明模型对 CNN 的依赖不是必需的，当直接应用于图像块序列时，transformer 也能很好地执行图像分类任务。本文的目的是为学者介绍一个优秀的 vision transformer 的PyTorch实现，以便更快地开展相关实验。</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/350837279">视觉 Transformer 优秀开源工作：timm 库 vision transformer 代码解读</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

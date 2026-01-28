@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#learning-attentional-mixture-ofloras-for-language-model-continual-learning">Learning Attentional Mixture ofLoRAs for Language Model Continual Learning</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/14.PEFT/01.LoRA</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="learning-attentional-mixture-ofloras-for-language-model-continual-learning">Learning Attentional Mixture ofLoRAs for Language Model Continual Learning<a class="anchor-link" href="#learning-attentional-mixture-ofloras-for-language-model-continual-learning" title="Permanent link">&para;</a></h2>
+<p>微调大语言模型（LLMs）使用低秩适应（LoRA）被广泛认为是持续学习新任务的有效方法。然而，在处理多个任务连续时，它往往会导致灾难性遗忘。为此，作者提出了一种持续学习方法Attentional<br />
+Mixture of LoRAs（AM-LoRA），专门针对LLMs。<br />
+具体而言，AM-LoRA学习一系列任务的一系列LoRA，以持续学习来自不同任务的知识。AM-<br />
+LoRA的关键在于设计了一个注意力机制作为知识混合模块，以适应地集成每个LoRA的信息。通过注意力机制，AM-<br />
+LoRA可以有效利用每个LoRA的独特贡献，同时减轻它们之间可能导致的灾难性遗忘的风险。<br />
+此外，在学习过程中进一步引入了<br />
+范数，使注意力向量更加稀疏。稀疏约束可以使模型倾向于选择少数高度相关的LoRA，而不是集体聚合和加权所有LoRA，这可以进一步减少来自相互干扰的影响。在持续学习基准测试上的实验结果表明，AM-<br />
+LoRA具有优越性。<br />
+1 简介<br />
+基于LoRA的有效参数微调（PEFT）方法作为连续学习的基本单元，广泛用于将大语言模型（LLMs）适应不同领域的下游任务。然而，在处理多个任务连续时，往往会出现灾难性遗忘。<br />
+几项研究探讨了在持续学习语言模型中使用LoRA方法的可行性。其中，O-LoRA提出了一种学习正交低秩自适应的方法，用于持续学习语言模型。它基于这样一个假设，即前任务的梯度子空间可以由LoRA参数表示，这使得模型可以在学习新任务时，逐步学习到一个新的正交子空间，从而在同时学习新任务时减轻灾难性遗忘。</p>
+<p>尽管取得了进展，现有的方法仍面临重要挑战。首先，现有的正交梯度下降方法，例如O-<br />
+LoRA，存在任务和参数之间的不匹配问题。从参数空间的角度看，正交梯度下降的假设是基于参数空间中不同任务存在共同最优解，如图1（a）所示。<br />
+然而，即使参数收敛到共同最优解，模型逐渐偏离前一个任务的最优参数，导致当前参数与前一个任务参数的不匹配问题。尤其是在巨大的参数空间的LLM中，多个任务的最优参数可能非常不同，甚至不存在共同最优解（图1（b））。在这种情况下学习新任务时，模型参数与前一个任务的匹配程度将更低，导致灾难性遗忘。<br />
+此外，现有的方法无法动态适应最新的场景。在训练过程中，只有新任务的可训练LoRA参数，而其他模块保持冻结。这阻止了先前的LoRA适应新任务的出现。在这样一种条件下，简单地将每个LoRA的输出相加，而不精确地选择知识，不仅可能无法防止有害信息影响当前任务，而且可能导致新任务和先前任务之间的知识异构冲突。<br />
+为了解决这些问题，作者提出了自适应混合LoRA（AM-<br />
+LoRA），它可以根据需要自适应地混合不同任务特定LoRA的知识。作者设计了一个新的框架，允许模型在有效结合学习顺序的LoRA能力的特性下，有效结合不同LoRA的能力。<br />
+具体而言，AM-LoRA包括两个组件： 特定任务LoRA矩阵序列 和 注意力选择器<br />
+。特定任务LoRA矩阵序列用于学习各种任务的知识，而注意力选择器在学习过程中负责过滤和混合来自不同LoRA的知识，以更好地解决当前任务。这种设计使模型能够利用每个任务适当的知识，避免任务和参数之间的不匹配问题。AM-<br />
+LoRA还可以在持续学习过程中不断调整每个LoRA的贡献，有助于模型动态地适应新的任务场景。<br />
+此外，作者将稀疏性约束集成到AM-<br />
+LoRA中，可以实现对不同任务知识的精确选择。这种机制不仅减少了有害信息的影响，还最大限度地利用有益知识，促进新任务的学习，防止不同任务知识之间的异质性冲突。<br />
+本论文的贡献可以概括如下：<br />
+1. 提出了一种新颖的持续学习方法AM-LoRA，用于LLM，该方法可以根据注意力机制自适应地混合一系列由顺序学习的LoRA（低秩近似）任务所传递的知识。 <br />
+2. 提出了一个稀疏学习策略来优化AM-LoRA，这导致了稀疏的注意力向量，使得模型更倾向于选择少数高度相关的LoRA，而不是将所有LoRA进行聚合和加权，这可以进一步减少相互干扰带来的影响。 <br />
+3. 在实际世界的持续学习基准测试上进行了广泛的实验。实验结果显示，AM-LoRA在现有最先进方法上取得了优越的性能。<br />
+2 相关工作<br />
+在本节中首先介绍了用于语言模型的参数高效微调（PEFT）技术，然后介绍了现有的连续学习方法。这两种工作都与AM-LoRA密切相关。<br />
+2.1 参数高效微调<br />
+参数高效微调（PEFT）旨在优化微调过程，以最小化LLM适应新任务或新知识所需的计算成本和时间。其中更常用的PEFT方法包括 Adapter、Prefix<br />
+Tuning、P-Tuning和LoRA。在这些方法中，LoRA由于其优越的性能，逐渐成为LLM指令微调的常用范式。<br />
+一些现有工作专注于利用LLMs进行持续学习基于LoRA。然而，如何解决灾难性遗忘问题是一个核心挑战。AM-LoRA的目标就是解决这一问题。<br />
+2.2 持续学习<br />
+持续学习（CL）是指模型在不断学习新任务或数据流的同时，保留先前任务所获得的知识和能力的过程。现有的CL方法可以分为三类。<br />
+    ▪   基于复习的方法会重新评分并播放之前任务的少量训练样本，或者学习生成之前任务的无真样; <br />
+    ▪   基于正则化的方法在学会一个新任务时，向学习新任务的参数中添加额外的损失，以巩固从之前任务学习到的参数; <br />
+    ▪   基于架构的方法为单独的任务学习不同的参数集。 <br />
+由于训练成本高和获取高质量数据具有挑战性，对于LLM的持续学习，使用PEFT方法（也属于参数隔离方法）至关重要。<br />
+目前有许多研究探讨了使用PEFT方法进行LLM持续学习的有效性，如O-<br />
+LoRA，它创新性地采用LoRA进行LLM的持续学习。然而，O-LoRA仅仅将所有LoRA输出特征相加，这导致了信息损失加剧，因此也存在灾难性遗忘等缺点。<br />
+正如之前讨论的，AM-LoRA更适合LLM持续学习场景，允许LLM在避免灾难性遗忘的同时高效地学习新任务。<br />
+3 本文方法<br />
+在本节中提出了AM-LoRA，通过注意力机制自适应地将各种特定任务LoRA的知识整合在一起。首先简要介绍LoRA，这是AM-<br />
+LoRA的基础。然后作者简要概述了AM-LoRA论框架。接下来两个子节详细阐述了AM-LoRA的两个核心部分。最后，将讨论AM-LoRA与O-<br />
+LoRA之间的关键差异以及AM-LoRA的优势。<br />
+3.1 初步的<br />
+低秩自适应（LoRA）是一种基于低秩假设的大语言模型（LLM）的低资源微调方法。它由两个低秩矩阵组成，分别是  和  , 其中  。在这里，<br />
+负责降维矩阵，而  负责扩维矩阵。<br />
+在微调过程中，大语言模型的参数被冻结，只训练  和  。由于  的较小值，微调在计算上变得高效。LLM参数的更新可以表示为：<br />
+在更新  后的参数  和更新前的参数  分别为  和  。通常，矩阵  表示为  。<br />
+3.2 框架</p>
+<p>如图2所示，AM-<br />
+LoRA由两部分组成：一个针对特定任务的LoRA矩阵序列和一个负责组合所有LoRA能力的注意力选择器。其中，LoRA矩阵序列主要负责学习新任务知识。注意力选择器更专注于学习如何过滤LoRA中的有用知识，以更好地处理新任务。<br />
+在下一两个子节中，作者将详细介绍这两部分。输入数据同时经过LoRA处理不同的任务，然后生成相应任务知识的特征。所有特征然后由注意力选择器稀疏选择并注意力混合，最终生成充分结合所有任务知识的高质量特征。<br />
+3.3 任务特定LoRAs的增量学习<br />
+由于原始方法需要在每个任务中调整所有参数的LoRA，因此在连续学习多个任务时，单个LoRA的改变容易导致之前任务的知识丢失。因此，作者采用增量学习方法，为每个任务学习一个独立的LoRA，所有任务对应的LoRA共同构成一个任务特定的LoRA序列。<br />
+具体而言，如图2所示，给定任务序列  及其相应的训练数据集  ,LLM  持续微调以获得特定任务的 LoRA 矩阵序列  。<br />
+作者以第  个任务为例，说明 LoRA 训练过程。将预训练模型  的所有参数以及前  个任务对应的 LoRA 矩阵  到  冻结。只涉及新任务的 LoRA<br />
+参与训练。<br />
+在此设置下，第  个任务 LoRA 训练的前向过程可以表示如下：<br />
+是输入向量，  是输出向量。  是 Transformer 块的关 Key和Value 投影矩阵，  是前  个任务的 LoRA<br />
+矩阵，它们都处于冻结状态。然而，仅仅冻结前任务的 LoRA 参数是不够的，以解决灾难性遗忘问题。在推理过程中简单地将所有 LoRA<br />
+特征相加将导致从过去任务中失去信息，从而降低过去任务的性能。<br />
+3.4 注意力选择器<br />
+注意力选择器是AM-LoRA的核心部分，它基于作者设计的用于有效整合特定任务LoRA中的知识的注意力机制。具体来说，注意力选择器与新任务LoRA矩阵<br />
+一起添加和训练。<br />
+如图2右侧所示，将每个特定任务的LoRA输入到注意力选择器中，然后通过相应的密集层进行非线性变换，该密集层表示为  （其中<br />
+）。接下来，将转换后的LoRA特征组合在一起并经过softmax函数。然后，在这个状态下，每个任务的关注度分数就可以得到：<br />
+其中，  (  ) 表示每个 LoRA 对应的密集层，而  是输入向量。然后，在添加注意力选择器后，前向过程可以表示为：<br />
+受到ResNet中的残差连接的启发，作者在模型中添加了一个零LoRA矩阵<br />
+，允许模型在学习新任务时选择不利用之前任务的知识。此外，它还负责在训练LoRA的第一个任务时分配权重。<br />
+3.5 具有稀疏约束的损失函数<br />
+作者观察到，在模型学习过程中，模型可能会保留与当前任务无关或有害的特征，导致不同任务之间的知识存在异质冲突。这将对模型的泛化性能和学习效果产生负面影响。<br />
+为了解决这些问题，作者引入了L1范数，使注意力向量变得更稀疏。这可以使模型更准确地执行LoRA选择，并减少不同任务之间的相互干扰。作者只在Attentional<br />
+Selector的密集层上添加稀疏约束，这不会影响LoRA序列的学习效果。第n个任务的训练损失函数如下：<br />
+当前任务对应的损失为  ，  (  )表示n+1层密集层系数矩阵，<br />
+是L1范数损失的权重。随着学习任务的逐渐增加，这种设计将提高模型的泛化能力。这使得它能够在更长的任务序列中更好地缓解灾难性遗忘。<br />
+3.6 AM-LoRA vs. O-LoRA<br />
+O-LoRA<br />
+也是一种基于正则化学习的常规方法，该方法在与先任务相关的LoRA子空间的对偶空间中进行学习。这种方法限制了模型捕捉跨任务异质性的能力，从而影响了后续任务的学习。此外，即使将新任务LoRA参数限制在先梯度空间的正交空间中更新，参数也会逐渐远离过去任务的优化解，导致灾难性遗忘。<br />
+代替为参数更新任务添加过多约束，AM-<br />
+LoRA通过过滤前一个任务LoRA输出中的特征进行过滤。这种设计允许对不同任务特征进行更灵活的适应，从而提高新任务的学习效果。此外，通过选择性地保留对当前任务有用的知识，AM-<br />
+LoRA避免了单个任务特征之间的异质冲突，从而降低了灾难性遗忘的影响。<br />
+4 实验<br />
+在本节中，作者通过一系列连续学习实验评估了AM-LoRA的性能，这些实验的总结用于回答以下研究问题：<br />
+RQ1 : AM-LoRA 在持续学习基准测试中相对于各种 Baseline 的表现如何?<br />
+RQ2 : 去中心化问题是否会影响LLM持续学习方法的性能？<br />
+RQ3 ：AM-LoRA如何避免在连续学习过程中出现灾难性遗忘？<br />
+RQ4 : 设计不同的子模块如何影响模型性能？<br />
+4.1 数据集<br />
+作者首先在[16]的标准CL基准测试上进行了实验，包括五个文本分类数据集：AG新闻，亚马逊评论，Yelp评论，DBpedia和Yahoo问答。作者采用T5模型的CL设置，遵循O-<br />
+LoRA，并探索了三个不同的基准测试顺序。有关任务详细信息请参见附录A.1，实验结果请参见附录A.2。<br />
+遵循T5中提出的众多任务，较长的任务序列对AM-<br />
+LoRA提出了更大的挑战，这在15个数据集上的持续学习基准测试中得到了评估。这包括标准CL基准测试中的5个任务，GLUE基准测试中的4个任务（MNLI、QQP、RTE、SST2），SuperGLUE基准测试中的5个任务（WiC、CB、COPA、MultiRC、BoolQ）以及IMDB电影评论数据集。遵循先前的方法，作者在每个任务上选择1000个随机样本进行训练，并保留每个类别中的500个样本进行验证。<br />
+4.2 比较方法<br />
+为了证明AM-LoRA的有效性，作者将作者的模型与以下方法进行了比较：<br />
+基于全模型微调的方法<br />
+：SeqFT在多个任务上对预训练模型的所有参数进行微调。不需要进行正则化或重新播放以前任务的样本。PerTaskFT为每个任务训练一个单独的模型。<br />
+基于LoRA的基本方法：<br />
+SinLoRA仅使用一个LoRA在多个任务上进行训练，不添加任何正则化约束和过去样本重放。作为SinLoRA的改进，IncLoRA在训练新任务时添加了一个LoRA模块。每个任务都有自己的LoRA，不添加正则化或样本重放。<br />
+持续学习 Baseline 方法<br />
+：Replay利用内存缓冲区来微调整个模型，并在学习新任务时重新播放以前任务的样本。EWC使用正则化损失微调整个模型，该损失用于抑制可能损坏以前任务知识参数更新。L2P，LFPT5和ProgPrompt在训练阶段为所有任务训练特定的<br />
+Prompt 。<br />
+在推理阶段，训练好的 Prompt 被用作重新播放样本或 Token<br />
+来确定任务ID。O-LoRA使模型能够通过冻结过去任务的LoRA参数，在正交子空间逐步学习新任务。这是当前持续学习的最先进方法。<br />
+多任务学习 ：在模型中同时训练所有任务通常被认为是连续学习的上限。<br />
+4.3 实验设置<br />
+为了与最近的连续学习方法进行比较，作者在广泛使用的预训练T5-Large模型上进行了实验。此外，为了检查AM-<br />
+LoRA在LLM中的效果，作者使用LaMDA2-7B模型进行了实验。<br />
+对于LoRA设置，采用矩阵秩  为8，缩放因子  设置为32。作者在两个模型上的所有实验都在配备8个NVIDIA GeForce RTX<br />
+3090的机器上进行，实现基于DeepSpeed仓库。所有实验结果都是三个运行结果的平均值。<br />
+4.4 AM-LoRA在持续学习基准测试（RQ1）上的性能<br />
+表1展示了AM-<br />
+LoRA与基准连续学习方法在标准CL基准测试和大量任务基准测试上的性能对比。根据以前的工作，作者在使用不同任务序列的T5-Large模型上报告了3次运行的结果。</p>
+<p>在标准CL基准测试中结果 在T5-Large模型与标准CL基准测试的实验中，AM-LoRA在顺序1、顺序2和平均结果上显著优于所有连续学习<br />
+Baseline 方法，并与SOTA相竞争，在顺序3上。这表明，AM-LoRA在相同实验设置下的连续学习方法中具有优越性能。<br />
+此外，可以看出AM-LoRA的效果非常接近多任务学习，明显优于以前的所有连续学习方法，特别是在顺序2上，这进一步证明了AM-<br />
+LoRA在解决灾难性遗忘问题的有效性更强。<br />
+大量任务的结果 AM-LoRA在大规模任务中也表现出竞争力的性能，超越了大多数 Baseline<br />
+方法。然而，与PerTaskFT和MTL方法相比，还存在一些差距。可以看出，更长的任务序列仍然是连续学习方法的挑战。<br />
+此外，ProgPrompt 在更长的序列任务中表现出优异的性能。它本质上学习每个任务的一个独立的 Prompt<br />
+，然后在推理过程中执行任务识别。然而，如前所述，这种方法将降低模型的泛化能力，不适合LLM。作者认为，连续学习的目标是使模型在不断学习任务的同时，能够持续改进其能力，而不仅仅是要识别任务。<br />
+4.5 最优解分散问题（RQ2）的实证研究<br />
+表2展示了在LLaMA2-7B上，AM-LoRA与每个 Baseline<br />
+方法性能的比较。O-LoRA和IncLoRA在LLaMA2-7B上的性能并没有比在T5-Large上更好，尽管LLaMA2-7B是一个更大、更强大的LLM。<br />
+不仅在连续学习方法中，多任务学习（MTL）在LLaMA2-7B上的效果并没有在T5-Large上那么明显。实验结果加强了作者之前分析的结果，即与一个正常的预训练模型相比，LLM的参数空间更大，因此多个任务的最优解之间的距离可能太远，导致没有共同的优化解，从而使实现较小模型的性能变得困难。</p>
+<p>AM-<br />
+LoRA滤波器和有效地将多个LoRA的输出组合起来，以在保留每个任务能力的同时，实现学习新任务，同时确保不破坏以前任务的知识。它利用以前任务的知识来促进对新任务的学习。<br />
+正因为这个优势，AM-LoRA在LLMs中超过了MTL。此外，需要澄清的是，MTL是O-LoRA方法的极限，但不是AM-LoRA的上限。AM-<br />
+LoRA的上限是分别训练每个任务的一个模型，这种基座模型足够强大，可以完全避免灾难性遗忘。<br />
+4.6 AM-LoRA在LLM持续学习中的有效性（RQ3）<br />
+为了证明AM-LoRA可以有效缓解灾难性遗忘，作者与没有配备AM-<br />
+LoRA的模型进行了比较（学习每个任务单独的LoRA，当学习新任务时冻结先前的LoRA参数）。每个任务在一段时间内的性能进行了记录。</p>
+<p>如图3所示，作者可以观察到，在同时学习新任务时，冻结前一个LoRA的方法可以在一定程度上保持过去任务的能力。在学习了两个任务后，前一个任务的性能会有所下降。然而，在训练四个任务后，第一个任务的性能会急剧下降。仅冻结可见基础参数的方法不足以解决灾难性遗忘问题。<br />
+当具有AM-LoRA的模型学习多个任务时，前一个任务的性能仍能保持高水平，与前方法相比，保持前任务知识的能力得到了极大的提高。可以看出，AM-<br />
+LoRA可以通过筛选和结合每个LoRA的输出特征有效地缓解灾难性遗忘。</p>
+<p>如图4所示，作者在dbpedia中选取了一部分数据，观察了AM-LoRA在任务LoRA数量层数不断加深时，对每个任务LoRA的注意力得分分布。可以看出，绕过<br />
+Query 矩阵的AM-LoRA更倾向于使用其他任务LoRA的知识，而值矩阵的AM-LoRA更倾向于使用其自身任务LoRA的知识。这进一步证明了AM-<br />
+LoRA更好地利用了所有LoRA的知识来解决灾难性遗忘问题。<br />
+4.7 消融研究<br />
+在本节中，作者尝试了四种不同的AM-<br />
+LoRA方案，变化在于注意力选择器中的可训练密集层数量以及是否添加L1范数。如图5所示，当只有对应新任务的密集层参与训练时，之前的LoRA密集层会被冻结。这可以降低训练参数的数量，但可以观察到这种解决方案的有效性并不理想。在AM-<br />
+LoRA中，密集层的作用是在学习新任务的新LoRA时帮助过去任务适应新的状态，因此冻结前任务的密集层会导致容量下降。</p>
+<p>此外，作者可以观察到，在稠密层中添加稀疏约束可以有效地屏蔽有害特征，使模型能够准确地选择适当的知识。这种设计还可以提高模型的泛化能力，并在学习更长的任务序列时更好地反映其优势。<br />
+5 总结<br />
+在本文中提出了一种名为AM-<br />
+LoRA的方法，该方法可以根据对特定任务的注意力有效地混合每个特定任务LoRA的知识，以解决灾难性遗忘问题。此外，作者将稀疏性约束引入到AM-<br />
+LoRA的学习中，使其能够准确地选择适当的知识存在于LoRA中。<br />
+在减轻灾难性遗忘的同时，AM-LoRA还可以使模型更合理地利用来自先验任务的知识。在连续学习基准测试上的广泛实验表明，AM-<br />
+LoRA在现有最先进的连续学习方法上取得了优越的性能。<br />
+参考</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/5cZcS2RVpg0mRAPlWsUVkw">南开大学提出AM-LoRA | LoRA家族再添一员大将，知识混合+持续学习让LLM不再遗忘</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

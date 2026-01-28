@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-预备知识">0 预备知识</a></li>
+<li><a href="#1-显存分析">1. 显存分析</a><ul>
+<li><a href="#11-存储指标">1.1 存储指标</a></li>
+<li><a href="#12-神经网络显存占用">1.2 神经网络显存占用</a><ul>
+<li><a href="#121-参数的显存占用">1.2.1 参数的显存占用</a></li>
+<li><a href="#122-梯度与动量的显存占用">1.2.2 梯度与动量的显存占用</a></li>
+<li><a href="#123-输入输出的显存占用">1.2.3 输入输出的显存占用</a></li>
+</ul>
+</li>
+<li><a href="#13-节省显存的方法">1.3 节省显存的方法</a></li>
+</ul>
+</li>
+<li><a href="#2-计算量分析">2 计算量分析</a><ul>
+<li><a href="#21-常用操作的计算量">2.1 常用操作的计算量</a></li>
+<li><a href="#22-alexnet-分析">2.2 AlexNet 分析</a></li>
+<li><a href="#23-减少卷积层的计算量">2.3 减少卷积层的计算量</a></li>
+<li><a href="#24-常用模型-显存计算复杂度准确率">2.4 常用模型 显存/计算复杂度/准确率</a></li>
+</ul>
+</li>
+<li><a href="#3-总结">3 总结</a><ul>
+<li><a href="#31-建议">3.1 建议</a></li>
+<li><a href="#32-关于显卡选购">3.2 关于显卡选购</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/101.GPU</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><a href="https://zhuanlan.zhihu.com/p/31558973">科普帖：深度学习中GPU和显存分析</a></p>
+<h2 id="0-预备知识">0 预备知识<a class="anchor-link" href="#0-预备知识" title="Permanent link">&para;</a></h2>
+<p><code>nvidia-smi</code>是Nvidia显卡命令行管理套件，基于NVML库，旨在管理和监控Nvidia GPU设备。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503130954842.jpg" />  </p>
+<p>这是nvidia-smi命令的输出，其中最重要的两个指标：</p>
+<ul>
+<li>显存占用</li>
+<li>GPU利用率</li>
+</ul>
+<p>显存占用和GPU利用率是两个不一样的东西，显卡是由GPU计算单元和显存等组成的，显存和GPU的关系有点类似于内存和CPU的关系。</p>
+<p>这里推荐一个好用的小工具：<code>gpustat</code>,直接<code>pip install gpustat</code>即可安装，gpustat基于<code>nvidia-smi</code>，可以提供更美观简洁的展示，结合watch命令，可以<strong>动态实时监控</strong>GPU的使用情况。</p>
+<pre><code class="language-bash">watch --color -n1 gpustat -cpu 
+</code></pre>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010565.jpg" />  </p>
+<p><strong>显存可以看成是空间，类似于内存。</strong></p>
+<ul>
+<li>显存用于存放模型，数据</li>
+<li>显存越大，所能运行的网络也就越大</li>
+</ul>
+<p><strong>GPU计算单元</strong>类似于CPU中的核，用来进行数值计算。衡量计算量的单位是flop： <em>the number of floating-point multiplication-adds</em>，浮点数先乘后加算一个flop。计算能力越强大，速度越快。衡量计算能力的单位是flops： 每秒能执行的flop数量</p>
+<pre><code>1*2+3                  1 flop
+1*2 + 3*4 + 4*5        3 flop 
+</code></pre>
+<h2 id="1-显存分析">1. 显存分析<a class="anchor-link" href="#1-显存分析" title="Permanent link">&para;</a></h2>
+<h3 id="11-存储指标">1.1 存储指标<a class="anchor-link" href="#11-存储指标" title="Permanent link">&para;</a></h3>
+<pre><code>1Byte = 8 bit
+1K = 1024 Byte
+1M = 1024 K
+1G = 1024 M
+1T = 1024 G
+
+10 K = 10*1024 Byte
+</code></pre>
+<p>除了<code>K</code>、<code>M</code>，<code>G</code>，<code>T</code>等之外，我们常用的还有<code>KB</code> 、<code>MB</code>，<code>GB</code>，<code>TB</code> 。二者有细微的差别。</p>
+<pre><code>1Byte = 8 bit
+1KB = 1000 Byte
+1MB = 1000 KB
+1GB = 1000 MB
+1TB = 1000 GB
+
+10 KB = 10000 Byte
+</code></pre>
+<p><code>K</code>、<code>M</code>，<code>G</code>，<code>T</code>是以1024为底，而<code>KB</code> 、<code>MB</code>，<code>GB</code>，<code>TB</code>以1000为底。不过一般来说，在估算显存大小的时候，我们不需要严格的区分这二者。</p>
+<p>在深度学习中会用到各种各样的数值类型，数值类型命名规范一般为<code>TypeNum</code>，比如Int64、Float32、Double64。</p>
+<ul>
+<li>Type：有Int，Float，Double等</li>
+<li>Num: 一般是 8，16，32，64，128，表示该类型所占据的比特数目</li>
+</ul>
+<p>常用的数值类型如下图所示(<em>int64 准确的说应该是对应c中的long long类型， long类型在32位机器上等效于int32</em>)：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503130959895.jpg" />  </p>
+<p>其中Float32 是在深度学习中最常用的数值类型，称为单精度浮点数，每一个单精度浮点数占用4Byte的显存。</p>
+<p>举例来说：有一个1000x1000的 矩阵，float32，那么占用的显存差不多就是</p>
+<blockquote>
+<p>1000x1000x4 Byte = 4MB</p>
+</blockquote>
+<p>32x3x256x256的四维数组（BxCxHxW）占用显存为：24M</p>
+<h3 id="12-神经网络显存占用">1.2 神经网络显存占用<a class="anchor-link" href="#12-神经网络显存占用" title="Permanent link">&para;</a></h3>
+<p>神经网络模型占用的显存包括：</p>
+<ul>
+<li>模型自身的参数</li>
+<li>模型的输出</li>
+</ul>
+<p>举例来说，对于如下图所示的一个全连接网络(不考虑偏置项b)</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010566.jpg" />  </p>
+<p>模型的显存占用包括：</p>
+<ul>
+<li>参数：二维数组 W</li>
+<li>模型的输出： 二维数组 Y</li>
+</ul>
+<p>输入X可以看成是上一层的输出，因此把它的显存占用归于上一层。</p>
+<p><strong>这么看来显存占用就是W和Y两个数组？</strong> <strong>并非如此！！！</strong></p>
+<h4 id="121-参数的显存占用">1.2.1 参数的显存占用<a class="anchor-link" href="#121-参数的显存占用" title="Permanent link">&para;</a></h4>
+<p>只有有参数的层，才会有显存占用。这部份的显存占用和<strong>输入无关</strong>，模型加载完成之后就会占用。</p>
+<p><strong>有参数的层主要包括：</strong></p>
+<ul>
+<li>卷积</li>
+<li>全连接</li>
+<li>BatchNorm</li>
+<li>Embedding层</li>
+<li>... ...</li>
+</ul>
+<p><strong>无参数的层</strong>：</p>
+<ul>
+<li>多数的激活层(Sigmoid/ReLU)</li>
+<li>池化层</li>
+<li>Dropout</li>
+<li>... ...</li>
+</ul>
+<p>更具体的来说，模型的参数数目(这里均不考虑偏置项b)为：</p>
+<ul>
+<li>Linear(M-&gt;N): 参数数目：M×N</li>
+<li>Conv2d(Cin, Cout, K): 参数数目：Cin × Cout × K × K</li>
+<li>BatchNorm(N): 参数数目： 2N</li>
+<li>Embedding(N,W): 参数数目： N × W</li>
+</ul>
+<p><strong>参数占用显存 = 参数数目×n</strong></p>
+<p><em>n = 4 ：float32</em> </p>
+<p><em>n = 2 : float16</em> </p>
+<p><em>n = 8 : double64</em></p>
+<p>在PyTorch中，当你执行完<code>model=MyGreatModel().cuda()</code>之后就会占用相应的显存，占用的显存大小基本与上述分析的显存差不多（<em>会稍大一些，因为其它开销</em>）。</p>
+<h4 id="122-梯度与动量的显存占用">1.2.2 梯度与动量的显存占用<a class="anchor-link" href="#122-梯度与动量的显存占用" title="Permanent link">&para;</a></h4>
+<p>举例来说， 优化器如果是SGD：</p>
+<p><span class="math-inline">W_{t+1} = W_{t} - \alpha \nabla F(W_t)</span> </p>
+<p>可以看出来，除了保存 <span class="math-inline">W</span> 之外还要保存对应的梯度 <span class="math-inline">\nabla F(W)</span> ，因此显存占用等于参数占用的显存x2,</p>
+<p>如果是带Momentum-SGD</p>
+<p><span class="math-inline">v_{t+1} = \rho v_t + \nabla F(W_t)\ W_{t+1} = W_{t} - \alpha v_{t+1}</span> </p>
+<p>这时候还需要保存动量， 因此显存x3</p>
+<p>如果是Adam优化器，动量占用的显存更多，显存x4</p>
+<p>总结一下，模型中<strong>与输入无关的显存占用</strong>包括：</p>
+<ul>
+<li>参数 <strong>W</strong></li>
+<li>梯度 <strong>dW</strong>（一般与参数一样）</li>
+<li>优化器的<strong>动量</strong>（普通SGD没有动量，momentum-SGD动量与梯度一样，Adam优化器动量的数量是梯度的两倍）</li>
+</ul>
+<h4 id="123-输入输出的显存占用">1.2.3 输入输出的显存占用<a class="anchor-link" href="#123-输入输出的显存占用" title="Permanent link">&para;</a></h4>
+<p>这部份的显存主要看输出的feature map 的形状。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131006145.jpg" />  </p>
+<p>比如卷积的输入输出满足以下关系：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131006978.jpg" /> </p>
+<p>据此可以计算出每一层输出的Tensor的形状，然后就能计算出相应的显存占用。</p>
+<p>模型输出的显存占用，总结如下：</p>
+<ul>
+<li>需要计算每一层的feature map的形状（多维数组的形状）</li>
+<li>需要保存输出对应的梯度用以反向传播（链式法则）</li>
+<li><strong>显存占用与 batch size 成正比</strong></li>
+<li>模型输出不需要存储相应的动量信息。</li>
+</ul>
+<p>深度学习中神经网络的显存占用，我们可以得到如下公式：</p>
+<pre><code>显存占用 = 模型显存占用 + batch_size × 每个样本的显存占用
+</code></pre>
+<p>可以看出显存不是和batch-size简单的成正比，尤其是模型自身比较复杂的情况下：比如全连接很大，Embedding层很大</p>
+<p>另外需要注意：</p>
+<ul>
+<li>输入（数据，图片）一般不需要计算梯度</li>
+<li>神经网络的每一层输入输出都需要保存下来，用来反向传播，但是在某些特殊的情况下，我们可以不要保存输入。比如ReLU，在PyTorch中，使用<code>nn.ReLU(inplace = True)</code> 能将激活函数ReLU的输出直接覆盖保存于模型的输入之中，节省不少显存。感兴趣的读者可以思考一下，这时候是如何反向传播的（提示：<span class="math-inline">y=relu(x) -&gt; <em>dx = dy.copy();dx[y&lt;=0]=0</em></span>）</li>
+</ul>
+<h3 id="13-节省显存的方法">1.3 节省显存的方法<a class="anchor-link" href="#13-节省显存的方法" title="Permanent link">&para;</a></h3>
+<p>在深度学习中，一般占用显存最多的是卷积等层的输出，模型参数占用的显存相对较少，而且不太好优化。</p>
+<p>节省显存一般有如下方法：</p>
+<ul>
+<li>降低batch-size</li>
+<li>下采样(NCHW -&gt; (1/4)*NCHW)</li>
+<li>减少全连接层（一般只留最后一层分类用的全连接层）</li>
+</ul>
+<h2 id="2-计算量分析">2 计算量分析<a class="anchor-link" href="#2-计算量分析" title="Permanent link">&para;</a></h2>
+<p>计算量的定义，之前已经讲过了，计算量越大，操作越费时，运行神经网络花费的时间越多。</p>
+<h3 id="21-常用操作的计算量">2.1 常用操作的计算量<a class="anchor-link" href="#21-常用操作的计算量" title="Permanent link">&para;</a></h3>
+<p>常用的操作计算量如下：</p>
+<ul>
+<li>全连接层：BxMxN , B是batch size，M是输入形状，N是输出形状。</li>
+<li>卷积的计算量: <span class="math-inline">BHWC_{out}C_{in}K^2</span></li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131009599.jpg" />  </p>
+<ul>
+<li>BatchNorm 计算量我个人估算大概是 <span class="math-inline">BHWC\times {4,5,6}</span> ， 欢迎指正</li>
+<li>池化的计算量： <span class="math-inline">BHWCK^2</span></li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010421.jpg" /><br />
+* ReLU的计算量： BHWC</p>
+<h3 id="22-alexnet-分析">2.2 AlexNet 分析<a class="anchor-link" href="#22-alexnet-分析" title="Permanent link">&para;</a></h3>
+<p>AlexNet的分析如下图，左边是每一层的参数数目（不是显存占用），右边是消耗的计算资源. 这里某些地方的计算结果可能和上面的公式对不上, 这是因为原始的AlexNet实现有点特殊(在多块GPU上实现的).</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010204.jpg" />  </p>
+<p>可以看出：</p>
+<ul>
+<li>全连接层占据了绝大多数的参数</li>
+<li>卷积层的计算量最大</li>
+</ul>
+<h3 id="23-减少卷积层的计算量">2.3 减少卷积层的计算量<a class="anchor-link" href="#23-减少卷积层的计算量" title="Permanent link">&para;</a></h3>
+<p>今年谷歌提出的MobileNet，利用了一种被称为DepthWise Convolution的技术，将神经网络运行速度提升许多，它的核心思想就是把一个卷积操作拆分成两个相对简单的操作的组合。如图所示, 左边是原始卷积操作，右边是两个特殊而又简单的卷积操作的组合（上面类似于池化的操作，但是有权重，下面类似于全连接操作）。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010700.jpg" />  </p>
+<p>Depthwise Convolution</p>
+<p>这种操作使得：</p>
+<ul>
+<li>显存占用变多(每一步的输出都要保存)</li>
+<li>计算量变少了许多，变成原来的（ <span class="math-inline">{1\over C_{out} } + \frac 1 {k^2}</span> ）（一般为原来的10－15%）</li>
+</ul>
+<h3 id="24-常用模型-显存计算复杂度准确率">2.4 常用模型 显存/计算复杂度/准确率<a class="anchor-link" href="#24-常用模型-显存计算复杂度准确率" title="Permanent link">&para;</a></h3>
+<p>去年一篇论文(<a href="https://arxiv.org/abs/1605.07678">https://arxiv.org/abs/1605.07678</a>)总结了当时常用模型的各项指标，横座标是计算复杂度（越往右越慢，越耗时），纵座标是准确率（越高越好），圆的面积是参数数量（不是显存占用），参数量越多，保存的模型文件越大。左上角我画了一个红色小圆，那是最理想的模型：快，准确率高，显存占用小。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010567.jpg" />  </p>
+<p>常见模型计算量/参数量/准确率</p>
+<h2 id="3-总结">3 总结<a class="anchor-link" href="#3-总结" title="Permanent link">&para;</a></h2>
+<h3 id="31-建议">3.1 建议<a class="anchor-link" href="#31-建议" title="Permanent link">&para;</a></h3>
+<ul>
+<li>时间更宝贵，尽可能使模型变快（减少flop）</li>
+<li>显存占用不是和batch size简单成正比，模型自身的参数及其延伸出来的数据也要占据显存</li>
+<li>batch size越大，速度未必越快。在你充分利用计算资源的时候，加大batch size在速度上的提升很有限</li>
+</ul>
+<p>尤其是batch-size，假定GPU处理单元已经充分利用的情况下：</p>
+<ul>
+<li>增大batch size能增大速度，但是很有限（主要是并行计算的优化）</li>
+<li>增大batch size能减缓梯度震荡，需要更少的迭代优化次数，收敛的更快，但是每次迭代耗时更长。</li>
+<li>增大batch size使得一个epoch所能进行的优化次数变少，收敛可能变慢，从而需要更多时间才能收敛（比如batch_size 变成全部样本数目）。</li>
+</ul>
+<h3 id="32-关于显卡选购">3.2 关于显卡选购<a class="anchor-link" href="#32-关于显卡选购" title="Permanent link">&para;</a></h3>
+<p>当前市面上常用的显卡指标如下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503131010568.jpg" />  </p>
+<p>常见显卡性能指标(Base Core, 不考虑tensorcore和Boost等)</p>
+<p>更多显卡的更多指标请参阅<em><a href="https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units">https://en.wikipedia.org/wiki/List_of_Nvidia_graphics_processing_units</a></em></p>
+<p>显然<strong>GTX 1080TI</strong>性价比最高，速度超越新Titan X，价格却便宜很多，显存也只少了1个G（据说故意阉割掉一个G，不然全面超越了Titan X怕激起买Titan X人的民愤~）。</p>
+<ul>
+<li>K80性价比很低（速度慢，而且贼贵）</li>
+<li>注意GTX TITAN X和Nvidia TITAN X的区别</li>
+<li>tensorcore的性能目前来看还无法全面发挥出来, 这里不考虑. 其它的tesla系列像P100这些企业级的显卡这里不列了,普通消费者不会买, 而且性价比较低(一台DGX 1上百万.....)</li>
+</ul>
+<p>另外，针对本文，我做了一个<a href="https://docs.google.com/presentation/d/e/2PACX-1vQVHMzd5MKrAbsYtCCsWDJ4eo9AUGGsC1tHtOY0agRfUbK0a9YCySvgNejuOLokB6tHbj0tLuohCaNP/pub?start=false&amp;loop=false&amp;delayms=3000&amp;slide=id.p">https://docs.google.com/presentation/d/e/2PACX-1vQVHMzd5MKrAbsYtCCsWDJ4eo9AUGGsC1tHtOY0agRfUbK0a9YCySvgNejuOLokB6tHbj0tLuohCaNP/pub?start=false&amp;loop=false&amp;delayms=3000&amp;slide=id.p</a>，国内用户可以<a href="http://misc-1252820389.cosbj.myqcloud.com/神经网络分析.pptx">http://misc-1252820389.cosbj.myqcloud.com/神经网络分析.pptx</a>。Google幻灯片格式更好，后者格式可能不太正常。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

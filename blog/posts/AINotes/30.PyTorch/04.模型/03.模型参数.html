@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实例化模型</title>
+    <meta name="description" content="实例化模型 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#nnparameter">nn.Parameter</a></li>
+<li><a href="#1-modelmodules">1. model.modules()</a></li>
+<li><a href="#2-modelnamed_modules">2. model.named_modules()</a></li>
+<li><a href="#3-modelchildren">3. model.children()</a></li>
+<li><a href="#4-modelnamed_children">4. model.named_children()</a></li>
+<li><a href="#5-modelparameters">5. model.parameters()</a></li>
+<li><a href="#6-modelnamed_parameters">6. model.named_parameters()</a></li>
+<li><a href="#7-modelstate_dict">7. model.state_dict()</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>实例化模型</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/04.模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="nnparameter">nn.Parameter<a class="anchor-link" href="#nnparameter" title="Permanent link">&para;</a></h2>
+<p>在 PyTorch 中，<code>nn.Parameter</code>是<code>torch.nn.module.Parameter</code>类的一个实例，它用于自动跟踪模型参数在训练过程中的变化。<code>nn.Parameter</code>是<code>torch.Tensor</code>的一个子类，但与普通的<code>Tensor</code>不同，<code>nn.Parameter</code>会被添加到模型的<code>parameters()</code>迭代器中，这样 PyTorch 的优化器就能找到并更新它们。</p>
+<p><strong>语法</strong></p>
+<blockquote>
+<p>CLASS torch.nn.parameter.Parameter(data=None, requires_grad=True) [SOURCE]</p>
+</blockquote>
+<p><code>nn.Parameter</code>的主要参数是：</p>
+<ul>
+<li><strong>data</strong> (torch.Tensor): 存储参数值的张量。这个张量包含了模型权重或偏置的数值。</li>
+<li><strong>requires_grad</strong> (bool, optional): 一个布尔值，指定是否需要计算该参数的梯度。在大多数情况下，你会希望这个值为<code>True</code>，以便在训练过程中更新参数。默认值通常为<code>True</code>。</li>
+</ul>
+<p>使用<code>nn.Parameter</code>的一个典型场景是在定义模型的<code>__init__</code>方法时，将模型的层权重或偏置包装为<code>nn.Parameter</code>对象。这样，当调用模型的<code>parameters()</code>方法时，这些参数会被包含在返回的迭代器中，从而可以被优化器访问和更新。</p>
+<p>以下是一个简单的例子，展示了如何在自定义模型中使用<code>nn.Parameter</code>：</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+class MyModel(nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+        # 使用nn.Parameter定义权重和偏置
+        self.weight = nn.Parameter(torch.randn(2, 2))
+        self.bias = nn.Parameter(torch.zeros(2))
+
+    def forward(self, x):
+        # 在前向传播中使用定义的参数
+        x = torch.matmul(x, self.weight) + self.bias
+        return x
+
+# 实例化模型
+model = MyModel()
+
+# 打印模型参数
+for name, param in model.named_parameters():
+    print(name, param.size())
+</code></pre>
+<p>在这个例子中，<code>MyModel</code>类定义了两个<code>nn.Parameter</code>对象：<code>weight</code>和<code>bias</code>。这些参数在模型的前向传播方法<code>forward</code>中被使用。当我们调用<code>model.named_parameters()</code>时，这些参数会被包含在返回的迭代器中，我们可以遍历并打印它们的名称和大小。</p>
+<p>注意，虽然<code>nn.Parameter</code>是<code>torch.Tensor</code>的一个子类，但你不应该直接对<code>nn.Parameter</code>对象调用<code>.backward()</code>或<code>.grad</code>等方法。这些操作应该通过模型的输出和损失函数进行，然后使用优化器来更新参数。</p>
+<p><strong>小结</strong></p>
+<p><code>torch.nn.Parameter()</code>将一个不可训练的 tensor 转换成可以训练的类型 parameter，并将这个 parameter 绑定到这个 module 里面。即在定义网络时这个 tensor 就是一个可以训练的参数了。使用这个函数的目的也是想让某些变量在学习的过程中不断的修改其值以达到最优化。</p>
+<blockquote>
+<ul>
+<li><a href="https://blog.csdn.net/weixin_44878336/article/details/124733598">torch.nn.Parameter()函数的讲解和使用</a></li>
+</ul>
+</blockquote>
+<h2 id="1-modelmodules">1. model.modules()<a class="anchor-link" href="#1-modelmodules" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>功能</strong>：返回模型中所有模块（包括子模块）的迭代器，按深度优先顺序遍历。</li>
+<li><strong>返回值</strong>：所有模块（层）的无名迭代器。</li>
+<li><strong>应用场景</strong>：遍历整个模型及其子模块。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(10, 20),
+    nn.ReLU(),
+    nn.Sequential(
+        nn.Conv2d(1, 3, 3),
+        nn.Sigmoid()
+    )
+)
+
+for module in model.modules():
+    print(module)
+</code></pre>
+<p><strong>输出</strong>（显示所有模块，包括嵌套的子模块）：</p>
+<pre><code class="language-plaintext">Sequential(
+  (0): Linear(in_features=10, out_features=20, bias=True)
+  (1): ReLU()
+  (2): Sequential(
+    (0): Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+    (1): Sigmoid()
+  )
+)
+Linear(in_features=10, out_features=20, bias=True)
+ReLU()
+Sequential(
+  (0): Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+  (1): Sigmoid()
+)
+Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+Sigmoid()
+</code></pre>
+<hr />
+<h2 id="2-modelnamed_modules">2. model.named_modules()<a class="anchor-link" href="#2-modelnamed_modules" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>功能</strong>：返回模型中所有模块的迭代器（包括子模块），同时提供模块名称。</li>
+<li><strong>返回值</strong>：一个包含模块名称和模块本身的键值对的迭代器。</li>
+<li><strong>应用场景</strong>：需要知道模块的名称（键值）及其对应的层时使用。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">for name, module in model.named_modules():
+    print(name, module)
+</code></pre>
+<p><strong>输出</strong>：</p>
+<pre><code class="language-plaintext">   Sequential(
+  (0): Linear(in_features=10, out_features=20, bias=True)
+  (1): ReLU()
+  (2): Sequential(
+    (0): Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+    (1): Sigmoid()
+  )
+)
+0 Linear(in_features=10, out_features=20, bias=True)
+1 ReLU()
+2 Sequential(
+  (0): Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+  (1): Sigmoid()
+)
+2.0 Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+2.1 Sigmoid()
+</code></pre>
+<hr />
+<h2 id="3-modelchildren">3. model.children()<a class="anchor-link" href="#3-modelchildren" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>功能</strong>：返回模型的直接子模块（不包括嵌套的子模块）。</li>
+<li><strong>返回值</strong>：直接子模块的无名迭代器。</li>
+<li><strong>应用场景</strong>：仅需遍历顶层模块时使用。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">for child in model.children():
+    print(child)
+</code></pre>
+<p><strong>输出</strong>（仅顶层模块）：</p>
+<pre><code class="language-plaintext">Linear(in_features=10, out_features=20, bias=True)
+ReLU()
+Sequential(
+  (0): Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+  (1): Sigmoid()
+)
+</code></pre>
+<hr />
+<h2 id="4-modelnamed_children">4. model.named_children()<a class="anchor-link" href="#4-modelnamed_children" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>功能</strong>：返回模型直接子模块及其名称的迭代器。</li>
+<li><strong>返回值</strong>：包含模块名称和直接子模块的键值对的迭代器。</li>
+<li><strong>应用场景</strong>：需要知道顶层模块的名称和内容时使用。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">for name, child in model.named_children():
+    print(name, child)
+</code></pre>
+<p><strong>输出</strong>：</p>
+<pre><code class="language-plaintext">0 Linear(in_features=10, out_features=20, bias=True)
+1 ReLU()
+2 Sequential(
+  (0): Conv2d(1, 3, kernel_size=(3, 3), stride=(1, 1))
+  (1): Sigmoid()
+)
+</code></pre>
+<h2 id="5-modelparameters">5. model.parameters()<a class="anchor-link" href="#5-modelparameters" title="Permanent link">&para;</a></h2>
+<p><code>model.parameters()</code> 是 PyTorch 中 <code>nn.Module</code> 类的一个方法，用于返回模型中所有参数的迭代器。与 <code>model.named_parameters()</code> 不同，<code>model.parameters()</code> 仅返回参数本身，而不包括参数的名称。</p>
+<p><strong>返回值</strong>:</p>
+<p>该方法返回一个迭代器，每次迭代返回一个 <code>torch.nn.Parameter</code> 对象，即模型中的参数。这些参数通常是模型的权重和偏置项。</p>
+<p><strong>示例</strong>:</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+# 定义一个简单的模型
+class SimpleModel(nn.Module):
+    def __init__(self):
+        super(SimpleModel, self).__init__()
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
+        self.fc1 = nn.Linear(320, 50)
+
+    def forward(self, x):
+        # 前向传播逻辑
+        pass
+
+# 实例化模型
+model = SimpleModel()
+
+# 使用 parameters() 遍历模型参数
+for param in model.parameters():
+    print(param.size())
+</code></pre>
+<p>在这个例子中，<code>model.parameters()</code> 会遍历模型中的所有参数，并打印出每个参数的大小。输出：</p>
+<pre><code class="language-python">torch.Size([10, 1, 5, 5])
+torch.Size([10])
+torch.Size([50, 320])
+torch.Size([50])
+</code></pre>
+<p>每个卷积层（<code>conv1</code>）和全连接层（<code>fc1</code>）都有权重（<code>weight</code>）和偏置（<code>bias</code>）参数，这些参数都会被 <code>model.parameters()</code> 遍历到。</p>
+<p><strong>统计所有可训练参数</strong>:</p>
+<pre><code class="language-python">total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print(&quot;Total trainable parameters: &quot;, total_trainable_params)
+</code></pre>
+<pre><code class="language-python">Total trainable parameters:  16310
+</code></pre>
+<p><strong>注意事项</strong></p>
+<ul>
+<li><code>model.parameters()</code> 返回的参数迭代器是按照它们在模型中被定义的顺序进行遍历的。</li>
+<li>由于 <code>model.parameters()</code> 不返回参数的名称，如果你需要参数的名称信息，应该使用 <code>model.named_parameters()</code>。</li>
+<li><code>model.parameters()</code> 返回的参数可以直接用于优化算法，如 SGD、Adam 等，因为这些算法通常只需要参数的数值而不需要它们的名称。</li>
+</ul>
+<p>在训练神经网络时，我们通常会使用优化器（如 <code>torch.optim.SGD</code> 或 <code>torch.optim.Adam</code>）来更新模型的参数。优化器内部会调用 <code>model.parameters()</code> 来获取模型参数的迭代器，并在每个训练步骤中更新这些参数。</p>
+<h2 id="6-modelnamed_parameters">6. model.named_parameters()<a class="anchor-link" href="#6-modelnamed_parameters" title="Permanent link">&para;</a></h2>
+<p><code>model.named_parameters()</code> 是 PyTorch 中模型（通常是 <code>nn.Module</code> 的实例）的一个方法，用于返回模型中所有参数的迭代器，每个参数都以名称（字符串）和参数本身（<code>torch.nn.Parameter</code> 对象）的元组形式返回。</p>
+<p><strong>参数说明</strong></p>
+<p><code>model.named_parameters()</code> 方法不接受任何参数。</p>
+<p><strong>返回值</strong></p>
+<p>该方法返回一个迭代器，每次迭代返回一个元组，元组的第一个元素是参数的名称（字符串），第二个元素是对应的参数（<code>torch.nn.Parameter</code> 对象）。</p>
+<p><strong>示例</strong></p>
+<p>下面是一个简单的示例，展示了如何使用 <code>model.named_parameters()</code>：</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+# 定义一个简单的模型
+class SimpleModel(nn.Module):
+    def __init__(self):
+        super(SimpleModel, self).__init__()
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, 10)
+
+    def forward(self, x):
+        # 前向传播逻辑
+        pass
+
+# 实例化模型
+model = SimpleModel()
+
+# 使用 named_parameters() 遍历模型参数
+for name, param in model.named_parameters():
+    print(name, param.size())
+</code></pre>
+<p>在这个例子中，<code>model.named_parameters()</code> 会遍历模型中的所有参数，并打印出每个参数的名称和大小。输出：</p>
+<pre><code class="language-python">conv1.weight torch.Size([10, 1, 5, 5])
+conv1.bias torch.Size([10])
+conv2.weight torch.Size([20, 10, 5, 5])
+conv2.bias torch.Size([20])
+fc1.weight torch.Size([50, 320])
+fc1.bias torch.Size([50])
+fc2.weight torch.Size([10, 50])
+fc2.bias torch.Size([10])
+</code></pre>
+<p>每个卷积层（<code>conv1</code> 和 <code>conv2</code>）都有权重（<code>weight</code>）和偏置（<code>bias</code>）参数，全连接层（<code>fc1</code> 和 <code>fc2</code>）也是如此。注意，参数的名称是由层名称和参数类型（<code>weight</code> 或 <code>bias</code>）组成的。</p>
+<p><strong>注意事项</strong></p>
+<ul>
+<li><code>named_parameters()</code> 只返回模型中直接定义的参数，如果模型中有子模块（其他 <code>nn.Module</code> 的实例），那么子模块中的参数也会被包括在内。</li>
+<li>如果你只想获取特定类型的参数（例如只获取权重或只获取偏置），你可以通过检查参数名称来实现。例如，你可以通过检查名称是否包含 <code>weight</code> 或 <code>bias</code> 来过滤参数。</li>
+<li>与 <code>model.parameters()</code> 不同，<code>model.named_parameters()</code> 返回的是名称和参数的元组，而 <code>model.parameters()</code> 只返回参数的迭代器，不包含名称信息。</li>
+</ul>
+<h2 id="7-modelstate_dict">7. model.state_dict()<a class="anchor-link" href="#7-modelstate_dict" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>功能</strong>：返回模型的所有状态（参数和缓冲区）的字典。</li>
+<li><strong>返回值</strong>：<code>OrderedDict</code>，包含参数和持久化缓冲区的名称及值。</li>
+<li><strong>应用场景</strong>：保存模型状态或查看所有可训练参数和缓冲值时使用。</li>
+</ul>
+<p><strong>示例</strong>：</p>
+<pre><code class="language-python">state_dict = model.state_dict()
+for key, value in state_dict.items():
+    print(key, value.size())
+</code></pre>
+<p><strong>输出</strong>：</p>
+<pre><code class="language-python">conv1.weight torch.Size([10, 1, 5, 5])
+conv1.bias torch.Size([10])
+conv2.weight torch.Size([20, 10, 5, 5])
+conv2.bias torch.Size([20])
+fc1.weight torch.Size([50, 320])
+fc1.bias torch.Size([50])
+fc2.weight torch.Size([10, 50])
+fc2.bias torch.Size([10])
+</code></pre>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回内容</th>
+<th>是否包含子模块</th>
+<th>是否包含名称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model.modules()</code></td>
+<td>所有模块</td>
+<td>是</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>model.named_modules()</code></td>
+<td>所有模块及名称</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td><code>model.children()</code></td>
+<td>直接子模块</td>
+<td>否</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>model.named_children()</code></td>
+<td>直接子模块及名称</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td><code>model.parameters()</code></td>
+<td>所有参数</td>
+<td>是</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>model.named_parameters()</code></td>
+<td>所有参数及名称</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td><code>model.state_dict()</code></td>
+<td>所有参数和缓冲区（字典形式）</td>
+<td>是</td>
+<td>是</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>模块和参数</strong>：<code>modules</code> 和 <code>children</code> 提供层结构信息，而 <code>parameters</code> 和 <code>state_dict</code> 提供权重和偏置。</li>
+<li><strong>名称与无名</strong>：<code>named_*</code> 方法更适合调试和命名层参数。</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

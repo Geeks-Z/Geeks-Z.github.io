@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟 logits 和真实标签</title>
+    <meta name="description" content="模拟 logits 和真实标签 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#交叉熵">交叉熵</a></li>
+<li><a href="#cross-entropy-loss">Cross Entropy Loss</a><ul>
+<li><a href="#fcross_entropy">F.cross_entropy()</a></li>
+<li><a href="#bcewithlogitsloss">BCEWithLogitsLoss</a></li>
+<li><a href="#binary_cross_entropy_with_logits">binary_cross_entropy_with_logits</a></li>
+</ul>
+</li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>模拟 logits 和真实标签</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/05.分布</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="交叉熵">交叉熵<a class="anchor-link" href="#交叉熵" title="Permanent link">&para;</a></h2>
+<p>假设有两个分布<span class="math-inline">p，q</span>​，则它们在给定样本集上的交叉熵定义如下：</p>
+<p><div class="math-display"><br />
+CEH(p,q)=E_p[−logq]=−\sum_{x\in\chi}p(x)logq(x)=H(p)+D_{KL}(p\parallel q)<br />
+</div></p>
+<p>可以看出，交叉熵与相对熵仅相差了<span class="math-inline">H(p)</span>​，​ 当<span class="math-inline">p</span>​​ 已知时，可以把<span class="math-inline">H(p)</span>​​ 看做一个常数，此时交叉熵与 KL 距离在行为上是等价的，都反映了分布<span class="math-inline">p，q</span>​​ 的相似程度。最小化交叉熵等于最小化 KL 距离。它们都将在<span class="math-inline">p=q</span>​​ 时取得最小值<span class="math-inline">H(p)</span>​​（<span class="math-inline">p=q</span>​​​ 时 KL 距离为 0），因此有的工程文献中将最小化 KL 距离的方法称为 Principle of Minimum Cross-Entropy (MCE)或 Minxent 方法。特别的，在 logistic regression 中：</p>
+<p><span class="math-inline">p</span>: 真实样本分布，服从参数为<span class="math-inline">p</span>  0-1 分布，即<span class="math-inline">X∼B(1,p)</span><br />
+<span class="math-inline">q</span>: 待估计的模型，服从参数为<span class="math-inline">q</span>  0-1 分布，即<span class="math-inline">X∼B(1,q)</span></p>
+<p>两者的交叉熵为：</p>
+<p><div class="math-display"><br />
+\begin{split}CEH(p,q)&amp;=−\sum_{x\in\chi}p(x)logq(x)\<br />
+&amp;=-[P_p(x=1)logP_q(x=1)+P_p(x=0)logP_q(x=0)]\<br />
+&amp;=-[plogq+(1-p)log(1-q)]\<br />
+&amp;=-[ylogh_{\theta}(x)+(1-y)log(1-h_{\theta}(x))]<br />
+\end{split}<br />
+</div></p>
+<p>对所有训练样本取均值得：</p>
+<p><div class="math-display"><br />
+-\frac{1}{m}\sum_{i=1}^{m}[y^{(i)}logh_\theta(x^{(i)}) + (1-y^{(i)})log(1-h_\theta(x^{(i)}))]<br />
+</div></p>
+<p>这个结果与通过最大似然估计方法求出来的结果一致。</p>
+<h2 id="cross-entropy-loss">Cross Entropy Loss<a class="anchor-link" href="#cross-entropy-loss" title="Permanent link">&para;</a></h2>
+<p>Cross Entropy Loss 是非常重要的损失函数，也是应用最多的损失函数之一。二分类问题的交叉熵 Loss 主要有两种形式，下面分别详细介绍。<br />
+第一种形式是基于输出标签 label 的表示方式为 <span class="math-inline">{0,1}</span>，也最为常见。它的 Loss 表达式为：</p>
+<p><div class="math-display"><br />
+L=-[yln\hat{y}+(1-y)ln(1-\hat{y})]<br />
+</div></p>
+<p>注意公式中<span class="math-inline">x</span>​​ 表示样本，<span class="math-inline">y</span>​​ 表示实际的标签，<span class="math-inline">\hat{y}</span>​ 表示预测的输出。</p>
+<p>推导：</p>
+<p>从最大似然性的角度出发，预测类别的概率可以写成：</p>
+<p><div class="math-display"><br />
+P(y\mid x)=\hat{y}^y\cdot (1-\hat{y})^{(1-y)}<br />
+</div></p>
+<p>当真实标签<span class="math-inline">y=1</span> ，概率等式转化为：</p>
+<p><div class="math-display"><br />
+P(y=1\mid x)=\hat{y}<br />
+</div></p>
+<p>当真实标签<span class="math-inline">y=0</span>​ 时，概率等式转化为：</p>
+<p><div class="math-display"><br />
+P(y=0\mid x)=1-\hat{y}<br />
+</div></p>
+<p>因为<span class="math-inline">P(y\mid x)</span> 大越好。所以对<span class="math-inline">P(y\mid x)</span> 数引入<span class="math-inline">ln</span> 数，因为<span class="math-inline">ln</span>​ 函数运算不会影响函数本身的单调性。则有：</p>
+<p><div class="math-display"><br />
+lnP(y\mid x)=ln(\hat{y}^y\cdot (1-\hat{y})^{(1-y)})=yln\hat{y}+(1-y)ln(1-\hat{y})<br />
+</div></p>
+<p>我们希望<span class="math-inline">lnP(y\mid x)</span>​ 越大越好，反过来，只要 <span class="math-inline">lnP(y\mid x)</span>​ 的负值 <span class="math-inline">-lnP(y\mid x)</span>​ 越小就行了。那我们就可以引入损失函数，且令<span class="math-inline">Loss=-lnP(y\mid x)</span>​​ 即可。则得到损失函数为：</p>
+<p><div class="math-display"><br />
+L=-[yln\hat{y}+(1-y)ln(1-\hat{y})]<br />
+</div></p>
+<p>当<span class="math-inline">y=1</span> ，<span class="math-inline">L=-ln\hat{y}</span>，又因为<span class="math-inline">\hat{y}=\frac{1}{1+e^{-s}}</span>。代入公式 15 得：<span class="math-inline">L=ln(1+e^{-s})</span>。对应 Loss 曲线为：</p>
+<p><img alt="image-20210904213525451" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955533.png" /></p>
+<p>从图中明显能够看出，<span class="math-inline">s</span> 越大于零，<span class="math-inline">L </span>​ 越小，函数的变化趋势也完全符合实际需要的情况。</p>
+<p>当<span class="math-inline">y=0</span>​​​ 时，<span class="math-inline">L=-ln(1-\hat{y})</span>​​​，又因为<span class="math-inline">\hat{y}=\frac{1}{1+e^{-s}}</span>​​​。代入公式 15 得：<span class="math-inline">L=ln(1+e^{s})</span>​​​​。对应 Loss 曲线为：</p>
+<p><img alt="image-20210904213726323" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955060.png" /></p>
+<p>从图中明显能够看出，<span class="math-inline">s</span> 越小于零，<span class="math-inline">L</span>​ 越小，函数的变化趋势也完全符合实际需要的情况。</p>
+<p>第二种形式是基于输出标签 label 的表示方式为<span class="math-inline">{-1,+1}</span>，也比较常见。它的 Loss 表达式为：</p>
+<p><div class="math-display"><br />
+L=ln(1+e^{-ys})<br />
+</div></p>
+<p>从概率角度来看，预测类别的概率可以写成：</p>
+<p><div class="math-display"><br />
+P(y\mid x)=g(ys)<br />
+</div></p>
+<p>接下来，同样引入 <span class="math-inline">ln</span>​ 函数，要让概率最大，反过来，只要其负数最小即可。那么就可以定义相应<br />
+的损失函数为：</p>
+<p><div class="math-display"><br />
+L=-lng(ys)=-ln\frac{1}{1+e^{-ys}}=ln(1+e^{-ys})<br />
+</div></p>
+<p>以<span class="math-inline">ys</span> 横坐标，可以绘制 Loss 的曲线如下图所示：</p>
+<p><img alt="image-20210904220655486" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160955752.png" /></p>
+<p>其实上面介绍的两种形式的交叉熵 Loss 是一样的，只不过由于标签 label 的表示方式不同，公式稍有变化。标签用<span class="math-inline">{-1,+1}</span> 表示的好处是可以把 <span class="math-inline">ys</span> 整合在一起，作为横坐标，容易作图且具有实际的物理意义。<br />
+总结一下，交叉熵 Loss 的优点是在整个实数域内，Loss 近似线性变化。尤其是当 <span class="math-inline">ys \ll 0</span>​ 的时候，Loss 更近似线性。这样，模型受异常点的干扰就较小。而且，交叉熵 Loss 连续可导，便于求导计算，是使用最广泛的损失函数之一。</p>
+<p>特点：</p>
+<ul>
+<li>本质上也是一种<strong>对数似然函数</strong>，可用于二分类和多分类任务中。</li>
+</ul>
+<p>二分类问题中的 loss 函数（输入数据是 softmax 或者 sigmoid 函数的输出）：</p>
+<p><div class="math-display"><br />
+loss=-\frac{1}{n}\sum_x[yln\hat{y}+(1-y)ln(1-\hat{y})]<br />
+</div></p>
+<p>多分类问题中的 loss 函数（输入数据是 softmax 或者 sigmoid 函数的输出）：</p>
+<p><div class="math-display"><br />
+loss=-\frac{1}{n}\sum_iy_iln\hat{y}_i<br />
+</div></p>
+<ul>
+<li>当使用 sigmoid 作为激活函数的时候，常用<strong>交叉熵损失函数</strong>而不用<strong>均方误差损失函数</strong>，因为它可以<strong>完美解决平方损失函数权重更新过慢</strong>的问题，具有“误差大的时候，权重更新快；误差小的时候，权重更新慢”的良好性质。</li>
+</ul>
+<h3 id="fcross_entropy">F.cross_entropy()<a class="anchor-link" href="#fcross_entropy" title="Permanent link">&para;</a></h3>
+<p><code>F.cross_entropy</code> 是 PyTorch 中用于计算交叉熵损失的函数，常用于分类任务中。交叉熵损失函数是一种衡量预测分布与真实分布之间差异的常用方法，特别适合分类任务。</p>
+<p><strong>基本公式</strong></p>
+<p>交叉熵损失的公式如下：<br />
+<div class="math-display"><br />
+    \text{CrossEntropy}(p, q) = - \sum_{i} y_i \log(\hat{y}_i)<br />
+</div><br />
+其中：</p>
+<ul>
+<li><span class="math-inline">y_i</span> 是真实标签（通常是独热编码或整数形式）。</li>
+<li><span class="math-inline">\hat{y}_i</span> 是预测的类别概率，由模型输出的 logits（未归一化的分数）经过 softmax 得到。</li>
+</ul>
+<p><strong>PyTorch中的实现</strong></p>
+<p><code>F.cross_entropy</code> 集成了以下几个步骤：</p>
+<ol>
+<li><strong>Logits 计算</strong>：它接收的模型输出通常是 logits（未归一化的分数），而不是直接的概率分布。</li>
+<li><strong>Softmax 转换</strong>：函数内部会对 logits 应用 softmax 操作，得到每个类别的预测概率。</li>
+<li><strong>负对数似然计算</strong>：对预测概率取对数后，根据真实标签计算负对数似然。</li>
+<li><strong>损失输出</strong>：最终返回平均损失值（或总损失，取决于设置）。</li>
+</ol>
+<p><strong>函数签名</strong></p>
+<pre><code class="language-python">torch.nn.functional.cross_entropy(
+    input, 
+    target, 
+    weight=None, 
+    size_average=None, 
+    ignore_index=-100, 
+    reduce=None, 
+    reduction='mean', 
+    label_smoothing=0.0
+)
+</code></pre>
+<p><strong>参数说明：</strong></p>
+<ol>
+<li><strong><code>input</code></strong>：模型的输出 logits，形状为 <span class="math-inline">(N, C)</span> 或 <span class="math-inline">(N, C, d_1, d_2, ...)</span>，其中：<br />
+   - <span class="math-inline">N</span> 是批次大小。<br />
+   - <span class="math-inline">C</span> 是类别数。</li>
+<li><strong><code>target</code></strong>：真实标签，形状为 <span class="math-inline">(N)</span> 或 <span class="math-inline">(N, d_1, d_2, ...)</span>。它是每个样本的整数类别索引（非独热编码）。</li>
+<li><strong><code>weight</code></strong>：类别权重（可选），用于平衡类别不平衡的问题。形状为 <span class="math-inline">(C)</span>。</li>
+<li><strong><code>ignore_index</code></strong>：忽略特定类别的索引（可选），用于标记不参与损失计算的样本。</li>
+<li><strong><code>reduction</code></strong>：指定如何对每个样本的损失进行汇总。可选值：<br />
+   - <code>'mean'</code>（默认）：返回损失的平均值。<br />
+   - <code>'sum'</code>：返回损失的总和。<br />
+   - <code>'none'</code>：返回每个样本的单独损失值。</li>
+<li><strong><code>label_smoothing</code></strong>：标签平滑系数（可选）。若 <span class="math-inline">&gt; 0</span>，将真实标签的分布平滑为非零值。</li>
+</ol>
+<p><strong>示例代码</strong></p>
+<ol>
+<li>简单分类任务</li>
+</ol>
+<pre><code class="language-python">import torch
+import torch.nn.functional as F
+
+# 模拟 logits 和真实标签
+logits = torch.tensor([[1.0, 2.0, 3.0], [1.0, 2.0, 0.5]])  # 2 个样本，3 个类别
+targets = torch.tensor([2, 1])  # 样本真实类别索引
+
+# 计算交叉熵损失
+loss = F.cross_entropy(logits, targets)
+print(&quot;Cross-Entropy Loss:&quot;, loss.item())
+</code></pre>
+<ol start="2">
+<li>使用类别权重</li>
+</ol>
+<pre><code class="language-python">weights = torch.tensor([1.0, 2.0, 0.5])  # 设置类别权重
+loss = F.cross_entropy(logits, targets, weight=weights)
+print(&quot;Weighted Loss:&quot;, loss.item())
+</code></pre>
+<ol start="3">
+<li>忽略某些类别</li>
+</ol>
+<pre><code class="language-python">targets = torch.tensor([2, -100])  # 第二个样本的标签被忽略
+loss = F.cross_entropy(logits, targets, ignore_index=-100)
+print(&quot;Loss with Ignored Index:&quot;, loss.item())
+</code></pre>
+<p><strong>常见问题与注意事项</strong></p>
+<ol>
+<li><strong><code>input</code> 应为 logits 而非概率</strong>：<br />
+   - 如果提供的是已经经过 softmax 的概率，则会导致结果不正确。</li>
+<li><strong><code>target</code> 应为整数标签</strong>：<br />
+   - 如果需要支持独热编码标签，可以考虑其他损失函数（如 <code>torch.nn.BCELoss</code> 或 <code>torch.nn.BCEWithLogitsLoss</code>）。</li>
+<li><strong>类别不平衡问题</strong>：<br />
+   - 如果类别不平衡，建议使用 <code>weight</code> 参数为不同类别设置权重。</li>
+</ol>
+<p>通过 <code>F.cross_entropy</code>，可以高效地计算分类任务中的损失，同时支持许多定制化选项，适应各种需求。</p>
+<h3 id="bcewithlogitsloss">BCEWithLogitsLoss<a class="anchor-link" href="#bcewithlogitsloss" title="Permanent link">&para;</a></h3>
+<p><div class="math-display">\ell(x, y)=L=\left{l_{1}, \ldots, l_{N}\right}^{\top}, \quad l_{n}=-w_{n}\left[y_{n} \cdot \log \sigma\left(x_{n}\right)+\left(1-y_{n}\right) \cdot \log \left(1-\sigma\left(x_{n}\right)\right)\right]</div></p>
+<p>where <span class="math-inline">N</span> is the batch size. If reduction is not 'none' (default 'mean'), then</p>
+<p><div class="math-display">\ell(x, y)=\left{\begin{array}{ll}\operatorname{mean}(L), &amp; \text { if reduction }=\text {'mean'; } \\operatorname{sum}(L), &amp; \text { if reduction }=\text {'sum' }\end{array}\right.</div></p>
+<p>This is used for measuring the error of a reconstruction in for example an auto-encoder. Note that the targets <span class="math-inline">t[i]</span> should be numbers between 0 and 1 .It's possible to trade off recall and precision by adding weights to positive examples. In the case of multi-label classification the loss can be described as:</p>
+<p><div class="math-display">\ell_{c}(x, y)=L_{c}=\left{l_{1, c}, \ldots, l_{N, c}\right}^{\top}, \quad l_{n, c}=-w_{n, c}\left[p_{c} y_{n, c} \cdot \log \sigma\left(x_{n, c}\right)+\left(1-y_{n, c}\right) \cdot \log (1-\sigma(x_{n, c}\right))]</div></p>
+<p><code>weight</code>: pytorch 官方对 weight 给出的解释，if provided it’s repeated to match input tensor shape，就是给出 weight 参数后，会将其 shape 和 input 的 shape 相匹配。</p>
+<p><code>BCEWithLogitsLoss</code> 是 PyTorch 中用于二分类任务的一个损失函数，它结合了 sigmoid 层和二元交叉熵损失（Binary Cross Entropy Loss）。在训练模型时，我们通常会得到模型的原始输出（logits），即未经过 sigmoid 激活的分数。<code>BCEWithLogitsLoss</code> 允许我们直接将这些 logits 作为输入，并在内部进行 sigmoid 操作后再计算二元交叉熵损失。</p>
+<p>数学上，<code>BCEWithLogitsLoss</code> 的计算可以分为两步：</p>
+<ol>
+<li><strong>Sigmoid 操作</strong>：首先，对 logits 应用 sigmoid 函数来得到概率预测值。</li>
+</ol>
+<p><div class="math-display"> p = \sigma(x) = \frac{1}{1 + e^{-x}} </div></p>
+<p>其中 <span class="math-inline">x</span> 是 logits，<span class="math-inline">p</span> 是经过 sigmoid 激活后的概率预测值。</p>
+<ol start="2">
+<li><strong>二元交叉熵损失</strong>：然后，使用得到的概率预测值 <span class="math-inline">p</span> 和真实标签 <span class="math-inline">y</span>（通常为 0 或 1）来计算二元交叉熵损失。</li>
+</ol>
+<p><div class="math-display"> \text{loss} = - \sum_{i} [y_i \cdot \log(p_i) + (1 - y_i) \cdot \log(1 - p_i)] </div></p>
+<p>其中 <span class="math-inline">i</span> 表示样本索引，<span class="math-inline">y_i</span> 是真实标签，<span class="math-inline">p_i</span> 是预测概率。</p>
+<p>将这两步结合起来，<code>BCEWithLogitsLoss</code> 的数学表达式可以看作是在内部进行了 sigmoid 操作后，再计算二元交叉熵损失。</p>
+<p>在 PyTorch 的 <code>BCEWithLogitsLoss</code> 实现中，还有一个可选的权重参数 <code>weight</code> 和归约参数 <code>reduction</code>（如 <code>'none'</code>, <code>'mean'</code>, <code>'sum'</code>），用于调整损失的计算方式。权重参数 <code>weight</code> 可以用于处理类别不平衡的问题，而归约参数 <code>reduction</code> 则决定了损失是如何在批量样本上进行归约的（例如取平均或求和）。</p>
+<h3 id="binary_cross_entropy_with_logits">binary_cross_entropy_with_logits<a class="anchor-link" href="#binary_cross_entropy_with_logits" title="Permanent link">&para;</a></h3>
+<p><code>torch.nn.functional.binary_cross_entropy_with_logits(input, target, weight=None, size_average=None, reduce=None, reduction='mean', pos_weight=None)</code>:</p>
+<p>在 PyTorch 中，<code>torch.nn.functional.binary_cross_entropy_with_logits</code> 是一个用于计算二分类任务的交叉熵损失的函数，它结合了 logits（原始模型输出）和 sigmoid 操作，直接计算损失，而无需手动应用 sigmoid。下面是该函数的主要参数说明：</p>
+<p><strong>参数</strong></p>
+<ul>
+<li><strong>input</strong> (Tensor): 模型未经过 sigmoid 激活的原始输出（logits）。形状应为 <code>(N, *)</code>，其中 <code>N</code> 是批量大小，<code>*</code> 表示任何数量的额外维度。</li>
+<li><strong>target</strong> (Tensor): 真实标签，与 <code>input</code> 有相同的形状（即 <code>(N, *)</code>），但数据类型应为 <code>long</code>。标签值应为 0 或 1。</li>
+<li><strong>weight</strong> (Tensor, optional): 各类别的损失权重。它应该是一个形状为 <code>(C,)</code> 的 Tensor，其中 <code>C</code> 是类别的数量（在二分类中通常为 1）。对于不平衡的数据集，可以通过为少数类别指定更大的权重来调整损失。</li>
+<li><strong>size_average</strong> (bool, optional): 是否计算每个 mini-batch 损失的平均值。在 PyTorch 的新版本中，此参数已被 <code>reduction</code> 替换。默认为 <code>True</code>。</li>
+<li><strong>reduce</strong> (bool, optional): 是否对输出进行归约。在 PyTorch 的新版本中，此参数已被 <code>reduction</code> 替换。默认为 <code>True</code>。</li>
+<li><strong>reduction</strong> (str, optional): 指定损失的归约类型。可选值为 <code>'none' | 'mean' | 'sum'</code>。<code>'none'</code>: 不进行归约，返回每个元素的损失；<code>'mean'</code>: 输出损失的平均值；<code>'sum'</code>: 输出损失的总和。默认值为 <code>'mean'</code>。</li>
+<li><strong>pos_weight</strong> (Tensor, optional): 正样本的权重。如果给定，它必须是与 <code>input</code> 形状相同的 Tensor。</li>
+</ul>
+<p>注意：在实际应用中，你通常会使用 <code>torch.nn.BCEWithLogitsLoss</code> 类作为损失函数的封装，而不是直接使用 <code>torch.nn.functional.binary_cross_entropy_with_logits</code> 函数。使用类的方式可以更方便地管理参数和状态。</p>
+<p><strong>binary_cross_entropy 与 binary_cross_entropy_with_logits 区别</strong></p>
+<p>有一个（类）损失函数名字中带了 with_logits. 而这里的 logits 指的是,该损失函数已经内部自带了计算 logit 的操作，无需在传入给这个 loss 函数之前手动使用 sigmoid/softmax 将之前网络的输入映射到[0,1]之间</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="http://blog.csdn.net/u012162613/article/details/44239919">交叉熵损失函数</a></li>
+<li><a href="http://deeplearning.stanford.edu/wiki/index.php/Softmax回归">UFLDL 中关于 logistic regression 的说明</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Kraft's_inequality">Kraft’s inequality</a></li>
+<li><a href="http://colah.github.io/posts/2015-09-Visual-Information/">Visual Information</a></li>
+<li><a href="https://blog.csdn.net/tsyccnh/article/details/79163834">一文搞懂交叉熵在机器学习中的使用，透彻理解交叉熵背后的直觉</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/115277553">损失函数：交叉熵详解</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-类增量学习class-incremental-learning">2.1 类增量学习（Class-Incremental Learning）</a></li>
+</ul>
+</li>
+<li><a href="#3-预备知识preliminaries">3. 预备知识（Preliminaries）</a></li>
+<li><a href="#4-方法methodology">4. 方法（Methodology）</a><ul>
+<li><a href="#41-注意力感知任务无关提示attention-aware-task-invariant-prompts">4.1 注意力感知任务无关提示（Attention-Aware Task-Invariant Prompts）</a></li>
+<li><a href="#42-自适应任务特定提示self-adaptive-task-specific-prompts">4.2 自适应任务特定提示（Self-Adaptive Task-Specific Prompts）</a></li>
+<li><a href="#43-锚点损失anchor-loss">4.3 锚点损失（Anchor Loss）</a></li>
+</ul>
+</li>
+<li><a href="#5-实验experiments">5. 实验（Experiments）</a><ul>
+<li><a href="#51-实现细节implementation-details">5.1 实现细节（Implementation Details）</a></li>
+<li><a href="#52-基准对比benchmark-comparisons">5.2 基准对比（Benchmark Comparisons）</a></li>
+</ul>
+</li>
+<li><a href="#53-消融实验ablation-study">5.3 消融实验（Ablation Study）</a><ul>
+<li><a href="#54-提示特征可视化prompt-visualization">5.4 提示特征可视化（Prompt Visualization）</a></li>
+<li><a href="#55-模型复杂度分析model-complexity">5.5 模型复杂度分析（Model Complexity）</a></li>
+</ul>
+</li>
+<li><a href="#6-结论conclusion">6. 结论（Conclusion）</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/41.小样本类增量学习FSCIL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>少样本类增量学习（Few-Shot Class-Incremental Learning，FSCIL）模型旨在在保留旧类知识的同时，利用稀缺样本逐步学习新类别。现有的 FSCIL 方法通常对整个骨干网络进行微调，导致过拟合，从而阻碍新类的学习潜力。另一方面，近年来的基于提示（prompt）的 CIL 方法在每个任务中利用充足的数据训练提示，从而缓解遗忘问题。</p>
+<p>在本工作中，我们提出了一种新颖的框架，称为“注意力感知自适应提示（Attention-aware Self-adaptive Prompt，ASP）”。ASP 通过从注意力机制角度减少特定信息，鼓励任务无关提示捕捉共享知识。此外，ASP 中的自适应任务特定提示在信息瓶颈（Information Bottleneck）学习目标的引导下，提供特定信息并将旧类知识迁移到新类。</p>
+<p>总之，ASP 避免了对基础任务的过拟合，也不需要在少样本增量任务中依赖大量数据。我们在三个基准数据集上进行了广泛实验，验证了 ASP 在学习新类和减缓遗忘方面，始终优于最先进的 FSCIL 方法和基于提示的 CIL 方法。源代码地址：https://github.com/DawnLIU35/FSCIL-ASP。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>随着世界不断变化，现实中的数据也在不断演变。因此，机器学习模型需要跟随数据的变化持续学习新类别，同时保留从先前数据中学到的知识，这被称为类增量学习（Class-Incremental Learning，CIL）【26,42,51,56】。CIL 的主要挑战是灾难性遗忘问题（Catastrophic Forgetting）【11,52】：当模型在新任务上训练后，由于无法完全获取旧任务的数据（例如因存储空间有限或隐私问题【8,45】），会遗忘之前的知识。</p>
+<p>尽管许多 CIL 方法假设每个新类都能持续获得充足样本进行训练【12,22,24】，但这一假设在许多现实应用中并不成立。例如，在智能医疗决策系统中，系统需跟踪生理信号并学习新病人信息，而每个新病人仅有有限数据，同时还需保留现有病人数据的知识【38】。这种在有限数据下持续学习新类的任务被称为少样本类增量学习（Few-Shot Class-Incremental Learning，FSCIL）【39,41】。</p>
+<p>FSCIL 通常包括：首先使用充足样本训练一个基础模型；随后利用从基础类学到的知识增量学习新类，而这些新类样本非常有限。除了灾难性遗忘的挑战外，FSCIL 还面临着因训练样本过少导致的过拟合问题，从而进一步阻碍模型对新类的学习。</p>
+<p>各种研究【41】已被提出以应对 FSCIL 场景。其中一些工作专注于提升基础模型对新出现的少样本类别的泛化能力【6, 33, 63】，而其他研究则致力于寻找在有限数据下对新任务进行增量训练的更优策略【5, 9, 20, 50】。然而，大多数现有方法会对基础模型中的所有参数进行微调，这会导致基础类上的过拟合，并阻碍模型对新类的可迁移性。</p>
+<p>另一方面，近期的基于提示的 CIL 方法【34, 53, 54】利用了预训练视觉 Transformer（Vision Transformer，ViT）【10】所固有的泛化能力，通过固定骨干参数，仅训练少量称为“提示（prompts）”的新参数。它们通常通过键 - 查询（key-query）机制学习任务特定提示，并将已见任务的知识存储在专门的提示池中。通过这种方式，它们无需使用旧数据样本的回放缓存（rehearsal buffer）即可保留旧任务的知识。</p>
+<p>然而，为了训练任务特定提示，这些基于提示的方法仍然需要从新任务中获得充足的数据样本，而这在少样本增量学习任务中并不具备。</p>
+<p>在本文中，我们提出了一种新颖的框架，称为注意力感知自适应提示（Attention-Aware Self-Adaptive Prompt，ASP），以克服现有 FSCIL 和基于提示的 CIL 方法在 FSCIL 设定下的不足。</p>
+<p>ASP 旨在利用预训练 ViT 的内在泛化能力以及从充足的基础类中学到的知识，促进在有限数据下对新类的持续学习。具体而言，ASP 固定 ViT 骨干网络，在注意力模块之间引入提示，以适配 FSCIL 任务，其中提示被分解为：<br />
+- <strong>注意力感知任务无关提示（Task-Invariant Prompts，TIP）</strong>，以及<br />
+- <strong>自适应任务特定提示（Task-Specific Prompts，TSP）</strong>。</p>
+<p>注意力模块对每个 TIP 给予相同的关注，无论具体任务为何，从而鼓励 TIP 仅包含可以在基础类与新类之间通用的任务无关信息。</p>
+<p>与以往的键 - 查询机制不同，ASP 使用一个<strong>提示编码器（prompt encoder）</strong>将输入图像转换为提示特征。受信息瓶颈（Information Bottleneck，IB）理论【2】的启发，ASP 引导提示编码器生成与语义信息高度相关、与图像中冗余信息弱相关的提示特征。</p>
+<p>为了进一步提升泛化能力，ASP 在整个训练集上聚合提示特征，以避免对单个图像的过拟合。对于某个特定输入图像，其对应的 TSP 由平均提示特征和其自身提示特征共同组成。</p>
+<p>因此，ASP 避免了对整个骨干网络的微调，缓解了过拟合问题，也避免了在训练新类 TSP 时对大量数据的依赖。</p>
+<p>最后，为了进一步提升模型判别能力，ASP 引入了一种基于相似性的损失函数，用于将特征向量聚集到其类别中心。类别中心则由训练期间的锚点样本（anchor samples）估计而得。</p>
+<p>我们工作的主要贡献如下：</p>
+<ul>
+<li>
+<p>我们提出了 ASP，这是一种创新的基于提示的方法，可同时应对现有 FSCIL 方法中的过拟合问题，以及基于提示方法在 FSCIL 情景下对数据需求过高的问题。</p>
+</li>
+<li>
+<p>我们设计了<strong>注意力感知的 TIP</strong>和<strong>自适应的 TSP</strong>，以实现从基础类到新类的知识迁移，并减缓对旧类的遗忘。</p>
+</li>
+<li>
+<p>我们在三个基准数据集上进行了大量实验，表明 ASP 在学习新类和保留旧类性能方面显著优于最先进的 FSCIL 和基于提示的 CIL 方法。</p>
+</li>
+</ul>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-类增量学习class-incremental-learning">2.1 类增量学习（Class-Incremental Learning）<a class="anchor-link" href="#21-类增量学习class-incremental-learning" title="Permanent link">&para;</a></h3>
+<p><strong>非基于提示的方法：</strong><br />
+通常，增量学习可分为三种不同的设置：任务增量（TIL）、领域增量（DIL）和类增量学习（CIL）【42】。在这三者中，CIL 被认为是最具挑战性的场景【41】，要求在学习新类别的同时不遗忘旧类别。</p>
+<p>当前的 CIL 研究主要沿着三个方向展开。<br />
+- 最有效的方向是<strong>重放方法（rehearsal methods）</strong>【4, 30, 31, 48, 49】，它们建立一个重放缓冲区用于存储之前任务的样本；<br />
+- 第二种方法试图识别当前任务中的重要参数，并在增量任务中防止其发生变化【3, 18, 58】；<br />
+- 此外，还有大量方法利用<strong>知识蒸馏</strong>技术来保留先前任务的知识，从而克服遗忘问题【14, 22, 30】。</p>
+<p>近年来，部分<strong>无重放（rehearsal-free）方法</strong>【25, 53】开始受到关注，因为在实际应用中并不总是允许存储重放样本【54】。值得注意的是，ASP 同样不需要重放缓冲区来存储任何数据样本。</p>
+<p>通常，CIL 方法在每个增量任务中都需要足够的训练数据来学习新类别，但这在 FSCIL 情境下并不成立。</p>
+<p><strong>基于提示的方法：</strong><br />
+提示学习方法（prompt-based methods）【21, 55】最初被提出用于自然语言处理任务，以更好地利用预训练知识完成下游任务。其基本思想是：固定骨干网络参数，仅微调一小部分新参数（即“提示”），这些提示被添加到输入文本或图像之前【16】。</p>
+<p>近期，使用 ViT 骨干的基于提示的 CIL 方法在学习新类别和防止灾难性遗忘方面取得了显著表现。<br />
+- L2P【54】最早提出使用键 - 查询机制，从提示池中选择任务特定提示；<br />
+- DualP【53】引入任务无关提示（TIP）以捕捉不同任务之间的共享信息。但其 TIP 仍包含过多任务特定信息，TSP 则需要在增量任务中用充足数据进行训练。这种做法在新任务样本有限的情况下，容易对少样本任务发生严重过拟合，从而最终导致 FSCIL 性能下降；<br />
+- 随后，CodaP【34】提出端到端地训练提示池及其选择机制；<br />
+- 最新的 HideP【46】则将 CIL 分解为多个层次组件并分别优化。</p>
+<p>然而，所有现有的基于提示的 CIL 方法都不适用于 FSCIL 情境，因为它们都需要在增量任务中使用足够样本来捕捉任务特定知识并将其存储于提示中。与此相反，ASP 无需为新任务训练新的 TSP，因此在少样本增量任务中效果良好。</p>
+<h2 id="3-预备知识preliminaries">3. 预备知识（Preliminaries）<a class="anchor-link" href="#3-预备知识preliminaries" title="Permanent link">&para;</a></h2>
+<p>少样本类增量学习旨在通过其各自的数据 <span class="math-inline">D_0, ..., D_T</span> 学习一系列任务 <span class="math-inline">t</span>。在学习第 <span class="math-inline">t</span> 个任务时，来自先前任务 <span class="math-inline">0, ..., t-1</span> 的数据完全不可用或仅部分可用，模型需要在所有已见任务 <span class="math-inline">0, ..., t</span> 上都能保持良好性能。第 <span class="math-inline">t</span> 个任务的训练数据表示为：</p>
+<p><div class="math-display"><br />
+    D_t = {(x_{t,i}, y_{t,i})}<em>{i=1}^{N_t}<br />
+</div><br />
+其中 <span class="math-inline">N_t = |D_t|</span> 表示该任务的数据规模，<span class="math-inline">x</em>{t,i} \in \mathcal{X}<em>t</span>，<span class="math-inline">y</em>{t,i} \in \mathcal{Y}_t</span> 分别为样本和对应标签。不同任务间的标签空间互不重叠，即对于任意 <span class="math-inline">t, t' \in [0, T]</span> 且 <span class="math-inline">t \ne t'</span>，有：</p>
+<p><div class="math-display"><br />
+    \mathcal{Y}<em>t \cap \mathcal{Y}</em>{t'} = \emptyset<br />
+</div><br />
+第一个任务（基础任务）具有充足的训练数据 <span class="math-inline">D_0</span>，而之后的增量任务为 <span class="math-inline">N</span>- 类 <span class="math-inline">K</span>- 样本分类任务，即每个任务包含 <span class="math-inline">N</span> 个类别，每类有 <span class="math-inline">K</span> 个样本。</p>
+<p>FSCIL 模型可拆分为一个骨干网络 <span class="math-inline">f_\theta</span>（参数为 <span class="math-inline">\theta</span>）和一个线性分类器 <span class="math-inline">h_\psi</span>（参数为 <span class="math-inline">\psi</span>）。对于来自已见任务的输入测试样本 <span class="math-inline">x</span>，模型目标是预测：<br />
+<div class="math-display"><br />
+    y = h_\psi(f_\theta(x))<br />
+</div><br />
+使其与真实类别一致。</p>
+<hr />
+<p><strong>视觉任务的基于提示方法</strong>通常采用预训练的视觉 Transformer（ViT）【10】作为骨干网络 <span class="math-inline">f_\theta</span>，并在训练时固定其参数 <span class="math-inline">\theta</span>，以保持预训练所得的泛化能力。</p>
+<p>ViT 模型包含多个多头自注意力（Multi-Head Self-Attention，MSA）层。设第 <span class="math-inline">l</span> 个 MSA 层的输入为 <span class="math-inline">h^l \in \mathbb{R}^{L_h \times D}</span>，其输出为：<br />
+<div class="math-display"><br />
+    \text{MSA}(h^l) = \text{Concat}(h_1^l, ..., h_m^l)W^O, \quad \text{其中 } h_i^l = \text{Attention}(h^l W^Q_i, h^l W^K_i, h^l W^V_i) \tag{1}<br />
+</div></p>
+<p><div class="math-display"><br />
+    \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V \tag{2}<br />
+</div><br />
+其中 <span class="math-inline">W^O, W^Q_i, W^K_i, W^V_i</span> 为投影矩阵，<span class="math-inline">m</span> 是注意力头的数量，<span class="math-inline">d_k</span> 是缩放因子。</p>
+<hr />
+<p><strong>提示微调（Prompt Tuning, ProT）</strong>【16, 21】是一种常用方法，其在第 <span class="math-inline">l</span> 层前引入可训练参数 <span class="math-inline">p^l \in \mathbb{R}^{L_p \times D}</span> 作为提示，并将其与 <span class="math-inline">h^l</span> 拼接输入 MSA：<br />
+<div class="math-display"><br />
+    f_{\text{ProT}}(p^l, h^l) = \text{MSA}([p^l; h^l]) \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">[\cdot ; \cdot]</span> 表示在序列长度维度上的拼接操作。</p>
+<p>在 ViT 的第一个层之前，输入图像被分割为若干 patch，并转化为序列形式 <span class="math-inline">x^e \in \mathbb{R}^{L_x \times D}</span>。在图像分类任务中，会添加一个类别标记（class token）<span class="math-inline">\text{cls} \in \mathbb{R}^{1 \times D}</span>，并将视觉提示前置，构成 ViT 的输入：<br />
+<div class="math-display"><br />
+    x^p = [\text{cls}; p^0; x^e] \tag{4}<br />
+</div></p>
+<hr />
+<p><strong>原型网络（Prototypical Network）</strong>【35】广泛用于少样本学习问题。它计算类别 <span class="math-inline">k</span> 的均值特征 <span class="math-inline">c_k</span> 作为类别原型：<br />
+<div class="math-display"><br />
+    c_k = \frac{1}{N_k} \sum_{y_i = k} f(x_i)<br />
+</div><br />
+其中 <span class="math-inline">N_k</span> 是第 <span class="math-inline">k</span> 类的样本数量，使用类别标记的输出特征作为图像嵌入。</p>
+<p>对于一个包含 <span class="math-inline">K</span> 个类别的分类任务，令 <span class="math-inline">W = [c_0, c_1, ..., c_K]</span> 为线性分类器，输入样本使用与原型的 softmax 概率进行分类：<br />
+<div class="math-display"><br />
+    P(y = k \mid x) \propto c_k^\top f_{\theta, p}(x)<br />
+</div><br />
+根据【47, 61】，新类原型会被追加到 <span class="math-inline">W</span> 中，从而实现对所有已见类的联合分类。</p>
+<h2 id="4-方法methodology">4. 方法（Methodology）<a class="anchor-link" href="#4-方法methodology" title="Permanent link">&para;</a></h2>
+<p>具有良好泛化能力的基础模型有助于适应少样本的新类别【36, 61】。为了防止基础类过拟合并利用预训练 ViT 的泛化能力来在有限数据下学习新类别，ASP 固定预训练的骨干网络，并学习可迁移基础类知识到新类的提示。受 DualP【53】启发，我们将提示分解为：</p>
+<ul>
+<li>注意力感知的任务无关提示（Task-Invariant Prompts，TIP）  </li>
+<li>自适应的任务特定提示（Task-Specific Prompts，TSP）</li>
+</ul>
+<p>在第 4.1 节中，ASP 保持所有 TIP 在不同任务中拥有一致的注意力，从而包含最小的任务特定信息；<br />
+在第 4.2 节中，ASP 使用提示编码器（prompt encoder）将输入图像映射为 TSP，并结合信息瓶颈（IB）理论增强其泛化能力【23】。<br />
+因此，该提示编码器也可以用于新类数据，无需额外训练。<br />
+最后，在第 4.3 节中，我们引入锚点损失（Anchor Loss），通过将类特征拉向其类别中心，进一步增强模型判别能力。</p>
+<p>ASP 仅在基础任务上使用充足数据进行训练，随后在少样本增量任务中利用公式 (11) 更新提示。我们的整体训练流程如图 1 所示。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250429203731.png" style="zoom: 80%;" /></div>
+
+<hr />
+<h3 id="41-注意力感知任务无关提示attention-aware-task-invariant-prompts">4.1 注意力感知任务无关提示（Attention-Aware Task-Invariant Prompts）<a class="anchor-link" href="#41-注意力感知任务无关提示attention-aware-task-invariant-prompts" title="Permanent link">&para;</a></h3>
+<p>类似 DualP【53】，任务无关提示在基础类训练后固定，用于后续少样本增量任务。尽管 DualP 为所有任务使用相同的 TIP，但由于每个提示标记的注意力差异，它们在不同任务中并不传递完全相同的信息。因此，这些提示实际上仍然携带任务特定的信息。</p>
+<p>为减少提示中的任务特定信息，ASP 鼓励对每个提示标记的注意力保持一致。注意力矩阵定义为：<br />
+<div class="math-display"><br />
+    A = \text{softmax} \left( \frac{QK^\top}{\sqrt{d_k}} \right)<br />
+</div><br />
+设第 <span class="math-inline">l</span> 层中第 <span class="math-inline">i</span> 个标记为 <span class="math-inline">t_i \in \mathbb{R}^{1 \times D}</span>，则其对第 <span class="math-inline">j</span> 个标记的注意力为：<br />
+<div class="math-display"><br />
+    A_{ij} = \frac{\exp(t_i W^Q \cdot t_j W^K)}{\sum_{m=1}^{1 + L_p + L_x} \exp(t_i W^Q \cdot t_m W^K)} \tag{5}<br />
+</div><br />
+注意力取决于提示标记的值。若两个提示标记值相同，则可保证其注意力一致。最简单的方式是在训练前将每个提示标记初始化为相同的值，这些值在梯度下降优化过程中将保持不变【32】。</p>
+<p>在基础类训练中，我们使用提示 <span class="math-inline">p_I^l \in \mathbb{R}^{L_I \times D}</span>，其中每个标记的初始值相同。图 2 展示了 ASP 的 TIP 与随机初始化 TIP 在注意力分布上的对比。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250429203801.png" style="zoom: 80%;" /></div>
+
+<p>由于 <span class="math-inline">p_I^l</span> 无论任务或类别如何，对模型输出的影响始终一致，因此其倾向于包含所有基础类间的共享知识。这种类无关的知识同样适用于新类，因此它也具备任务无关性。</p>
+<p>在训练基础类后，TIP 在后续少样本增量任务中保持固定。</p>
+<hr />
+<h3 id="42-自适应任务特定提示self-adaptive-task-specific-prompts">4.2 自适应任务特定提示（Self-Adaptive Task-Specific Prompts）<a class="anchor-link" href="#42-自适应任务特定提示self-adaptive-task-specific-prompts" title="Permanent link">&para;</a></h3>
+<p>仅依赖 TIP 可能会导致欠拟合，因为它只考虑了不同任务的共享属性，忽略了独有特征。为将任务特定信息融入提示，先前研究【53, 54】采用键 - 查询机制，根据输入图像生成任务特定提示。然而，这些方法需要大量训练数据来捕获这些信息。</p>
+<p>相比之下，ASP 使用一个紧凑的神经网络作为提示编码器 <span class="math-inline">E_p</span>，将输入图像转换为任务特定提示。该编码器首先在充足的基础类数据上训练以获得编码能力。为了保证该能力能迁移至新类，ASP 借助信息瓶颈（Information Bottleneck，IB）理论【2】来增强其泛化能力。</p>
+<p><strong>提示学习目标：</strong><br />
+受 IB 理论【2】启发，我们提出以下提示学习目标：<br />
+<div class="math-display"><br />
+\mathcal{L}_{IB} = I(P; X) - \gamma I(P; Y) \tag{6}<br />
+</div><br />
+其中随机变量 <span class="math-inline">P</span> 表示与输入 <span class="math-inline">X</span> 对应的潜在提示，<span class="math-inline">I(P;Y)</span> 表示提示与标签的互信息，<span class="math-inline">I(P;X)</span> 表示提示与输入的互信息，<span class="math-inline">\gamma</span> 是权衡常数。</p>
+<p>该损失中：<br />
+- 最大化 <span class="math-inline">I(P;Y)</span> 强化提示与语义信息的相关性；<br />
+- 最小化 <span class="math-inline">I(P;X)</span> 抑制输入中的冗余信息影响提示，从而提升泛化性。</p>
+<p>由于直接计算互信息不可行（通常需要对联合分布积分），我们采用变分推断进行近似，其下界为：<br />
+<div class="math-display"><br />
+    I(P; Y) - \eta I(P; X) \geq \int P(x)P(y|x)P(p|x)\log P(y|p)\,dx\,dy\,dp - \eta \int P(x)P(p|x)\log \frac{P(p|x)}{r(p)}\,dx\,dp \tag{7}<br />
+</div><br />
+其中 <span class="math-inline">r(p)</span> 是对 <span class="math-inline">P(p)</span> 的变分边际近似，选为标准正态分布 <span class="math-inline">r(p) = \mathcal{N}(0, I)</span>。详细推导见附录。</p>
+<p>我们接下来介绍 Eq. (7) 的计算方法。近似联合分布 <span class="math-inline">P(y,x) = P(x)P(y|x)</span> 使用经验分布估计为：<br />
+<div class="math-display"><br />
+    P(x, y) \approx \frac{1}{N} \sum_{n=1}^{N} \delta_{x_n}(x)\delta_{y_n}(y)<br />
+</div><br />
+其中 <span class="math-inline">\delta</span> 表示狄拉克函数。</p>
+<p>假设提示编码器满足：<br />
+<div class="math-display"><br />
+P(p|x) = \mathcal{N}(p \mid f_\mu(x), f_\Sigma(x))<br />
+</div><br />
+即通过两个全连接网络 <span class="math-inline">f_\mu</span> 和 <span class="math-inline">f_\Sigma</span> 输出均值与协方差矩阵。使用重参数技巧【1, 17】，将随机变量变换为噪声变量 <span class="math-inline">\epsilon \sim \mathcal{N}(0, I)</span>，计算得到经验 IB 损失：<br />
+<div class="math-display"><br />
+    \mathcal{L}<em>{IB} = \mathbb{E}</em>{\epsilon \sim \mathcal{N}(0, I)} \left[ -\log P(y \mid (x, \epsilon)) \right] + \text{KL}(P(p|x) | r(p)) \tag{8}<br />
+</div><br />
+我们使用提示编码器 <span class="math-inline">E_p</span> 将图像转化为对应的 TSP。受前人研究启发【53, 54】，首先通过冻结的骨干网络 <span class="math-inline">f_\theta</span> 提取图像特征，再送入 <span class="math-inline">f_\mu</span> 获得提示特征。为实现从基础类向新类的知识迁移，提示编码器还以 TIP 为输入，以生成 TSP。为进一步增强新类提示的泛化能力，我们将基础类中所有提示特征与当前图像提示融合，构建任务特定提示 <span class="math-inline">p_S</span>，避免其对单一图像过拟合，提升泛化性。</p>
+<p>在基础类训练阶段，第 <span class="math-inline">l</span> 层的 TSP 计算为：<br />
+<div class="math-display"><br />
+    p_S^l = \alpha p_\text{avg}^l + (1 - \alpha) f_\mu([p_I^l; f_\theta(x, \epsilon)]) \tag{9}<br />
+</div><br />
+其中 <span class="math-inline">\alpha</span> 为超参数，平均提示特征计算如下：<br />
+<div class="math-display"><br />
+    p_\text{avg}^l = \frac{1}{N_0} \sum_{x_0} f_\mu([p_I^l; f_\theta(x_0)]) \tag{10}<br />
+</div><br />
+在第 <span class="math-inline">t</span> 个增量任务中，我们通过指数滑动平均（EMA）更新 <span class="math-inline">p_\text{avg}</span> 以融入新类信息：<br />
+<div class="math-display"><br />
+    p_\text{avg}^l = \beta p_\text{avg}^l + (1 - \beta) \frac{1}{N_t} \sum_{x_t} f_\mu([p_I^l; f_\theta(x_t)]) \tag{11}<br />
+</div><br />
+其中 <span class="math-inline">\beta</span> 控制更新速率。为了平衡 TIP 和 TSP 的影响，我们设其长度相同，即 <span class="math-inline">L_S = L_I</span>。</p>
+<p>最终，第 <span class="math-inline">l</span> 层输入的完整提示为：<br />
+<div class="math-display"><br />
+    p^l = [p_I^l; p_S^l] \tag{12}<br />
+</div></p>
+<h3 id="43-锚点损失anchor-loss">4.3 锚点损失（Anchor Loss）<a class="anchor-link" href="#43-锚点损失anchor-loss" title="Permanent link">&para;</a></h3>
+<p>在基础类训练阶段，我们的目标是训练一个特征提取器，使其满足以下两个条件：</p>
+<ol>
+<li>最大化类别间特征嵌入的距离；  </li>
+<li>最小化类别内特征嵌入的距离。</li>
+</ol>
+<p>此外，我们还希望得到一个分类器头 <span class="math-inline">h_\psi</span>，能够准确地将这些特征映射到对应的类别预测上。</p>
+<p>按照【28, 47】的做法，我们使用一个无偏置项的全连接层作为分类器头 <span class="math-inline">h_\psi</span>，预测结果通过计算特征与分类器权重之间的余弦相似度获得：<br />
+<div class="math-display"><br />
+    y_k = \frac{W_k^\top f_{\theta, p}(x, \epsilon)}{|W_k| \cdot |f_{\theta, p}(x, \epsilon)|} \tag{13}<br />
+</div><br />
+其中 <span class="math-inline">|\cdot|</span> 表示 <span class="math-inline">l_2</span> 范数。此处权重 <span class="math-inline">W_k</span> 可被视为类别 <span class="math-inline">k</span> 的原型向量【24, 28】。</p>
+<p>为了区分类别特征和原型，我们在 Eq. (8) 中采用交叉熵损失函数：<br />
+<div class="math-display"><br />
+    \mathcal{L}<em>{IB} = -\frac{1}{N} \sum</em>{i=1}^N \log \frac{\exp(y_k)}{\sum_{k' \in K} \exp(y_{k'})} + \text{KL}(P(p|x) | r(p)) \tag{14}<br />
+</div><br />
+该损失函数的作用是：<br />
+- 拉近特征 <span class="math-inline">f_{\theta, p}(x_k)</span> 与其类别原型 <span class="math-inline">W_k</span>；<br />
+- 同时推远它与其他类别的原型 <span class="math-inline">W_i</span>，<span class="math-inline">i \ne k</span>。</p>
+<p>然而，只有“拉近”的操作是准确的，而“推远”的操作可能会使得类别原型远离类别均值，从而导致错误分类。与以往工作类似【47, 62】，我们在基础类训练结束后，用类别均值 <span class="math-inline">c</span> 替代权重 <span class="math-inline">W</span>。</p>
+<p>因此，有必要将类别特征对齐到其类别均值，从而为新类别保留足够表示空间，以提升新类的准确性【36, 61】。</p>
+<p>对于任意输入样本，我们最大化其特征与对应类别均值之间的余弦相似度：<br />
+<div class="math-display"><br />
+    \mathcal{L}<em>c = 1 - \frac{c_k^\top f</em>{\theta, p}(x_k)}{|c_k| \cdot |f_{\theta, p}(x_k)|} \tag{15}<br />
+</div><br />
+由于训练过程中类别均值不断变化，在每个小批量之后重新计算它们的成本较高。因此，我们使用锚点样本（anchor sample）来估算类别均值。</p>
+<p>在每个训练周期开始时，先计算精确的类别均值，然后选择与该均值最相似的样本作为该类别的锚点样本：<br />
+<div class="math-display"><br />
+    \hat{x}<em>k = \arg\max</em>{x \in \mathcal{X}<em>k} \frac{c_k^\top f</em>{\theta, p}(x)}{|c_k| \cdot |f_{\theta, p}(x)|} \tag{16}<br />
+</div><br />
+接着使用该锚点的特征向量作为类别均值的估计值，即：<br />
+<div class="math-display"><br />
+    \hat{c}<em>k = f</em>{\theta, p}(\hat{x}<em>k)<br />
+</div><br />
+最终的训练损失函数为：<br />
+<div class="math-display"><br />
+    \mathcal{L} = \mathcal{L}</em>{IB} + \lambda \mathcal{L}_c \tag{17}<br />
+</div><br />
+其中 <span class="math-inline">\lambda</span> 是平衡两个损失项的超参数。</p>
+<h2 id="5-实验experiments">5. 实验（Experiments）<a class="anchor-link" href="#5-实验experiments" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先介绍 FSCIL 的实验细节，包括数据集、评估协议、训练细节以及对比方法。随后，我们在三个基准数据集上比较 ASP 与各类基准方法的性能，展示 ASP 的有效性。此外，我们还进行了消融实验验证 ASP 中各组件的贡献，最后提供更多实验结果以供进一步分析。我们将在论文接收后公开代码。</p>
+<h3 id="51-实现细节implementation-details">5.1 实现细节（Implementation Details）<a class="anchor-link" href="#51-实现细节implementation-details" title="Permanent link">&para;</a></h3>
+<p><strong>数据集：</strong><br />
+遵循 FSCIL 研究【47, 61】和基于提示的 CIL 研究【37, 46, 53】，我们在三个数据集上评估 ASP 的性能：  CIFAR100【19】、CUB200-2011【43】、ImageNet-R【13】</p>
+<p>具体设置如下：<br />
+- CIFAR100 被划分为 60 个基础类和 40 个新类。新类进一步划分为 8 个任务，每个任务包含 5 个类别，每类 5 个样本（即 5-way 5-shot）；<br />
+- CUB200 和 ImageNet-R 分别以 100 个类构成基础任务，剩余 100 个类则划分为 10 个任务，每个任务为 10-way 5-shot。</p>
+<p><strong>评估协议：</strong><br />
+遵循以往研究【6, 39, 61】，我们记录第 <span class="math-inline">t</span> 个任务后模型在所有已见任务（0 到 <span class="math-inline">t</span>）上的 Top-1 准确率，记为 <span class="math-inline">A_t</span>。<br />
+- 平均准确率定义为 <span class="math-inline">A_{\text{avg}} = \frac{1}{T+1} \sum_{t=0}^T A_t</span>，用于衡量模型整体性能；<br />
+- 遗忘率（performance dropping rate, PD）定义为 <span class="math-inline">PD = A_0 - A_T</span>，用于衡量灾难性遗忘程度；<br />
+- 调和准确率（Harmonic Accuracy, HAcc）【28】用于衡量模型在基础类与新类之间的平衡性，定义为：<br />
+<div class="math-display"><br />
+    A_h = \frac{2 \times A_o \times A_n}{A_o + A_n}<br />
+</div><br />
+其中 <span class="math-inline">A_o</span> 是任务 0（基础类）的准确率，<span class="math-inline">A_n</span> 是所有新类（任务 <span class="math-inline">t &gt; 0</span>）的平均准确率。</p>
+<p><strong>训练细节：</strong><br />
+所有实验使用 PyTorch【27】在 NVIDIA RTX A6000 GPU 上进行。我们采用【34, 62】的设置，选择使用在 ImageNet1K 上预训练的 ViT-B/16 作为骨干网络 <span class="math-inline">f_\theta</span>。<br />
+- 所有图像被统一调整为 224×224；<br />
+- 使用 SGD 优化器，训练 20 个 epoch；<br />
+- 学习率设为 0.01（CIFAR100 和 CUB200），ImageNet-R 使用 0.03；<br />
+- 批量大小：CIFAR100 为 48，CUB200 和 ImageNet-R 为 24。</p>
+<p>提示长度设置如下：<br />
+- ImageNet-R 使用 <span class="math-inline">L_p = 10</span>；<br />
+- CIFAR100 与 CUB200 使用 <span class="math-inline">L_p = 3</span>。</p>
+<p>所有实验使用三个随机种子进行重复实验，最终结果取平均。</p>
+<p><strong>对比方法：</strong><br />
+我们首先比较两种经典 CIL 方法：<br />
+- iCaRL【30】<br />
+- Foster【44】</p>
+<p>此外，还对比三种最先进的 FSCIL 方法：<br />
+- CEC【59】<br />
+- FACT【61】<br />
+- TEEN【47】</p>
+<p>最后，比较三种最新的基于提示的 CIL 方法：<br />
+- L2P【54】<br />
+- DualP【53】<br />
+- CodaP【34】</p>
+<h3 id="52-基准对比benchmark-comparisons">5.2 基准对比（Benchmark Comparisons）<a class="anchor-link" href="#52-基准对比benchmark-comparisons" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们报告 ASP 与多种基准方法在 FSCIL 设定下的性能表现。对于 CIFAR100 和 ImageNet-R，我们在表 1 和表 2 中展示了每个任务的详细准确率（Top-1 accuracy <span class="math-inline">A_t</span>）以及三种评估指标（<span class="math-inline">A_{\text{avg}}</span>、PD 和 HAcc）。CUB200 的详细结果见附录。每个增量任务的 Top-1 准确率变化曲线如图 3 所示。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250429212349.png" style="zoom: 80%;" /></div>
+
+<p>在 CIFAR100、CUB200 和 ImageNet-R 三个数据集上的实验结果显示：</p>
+<ul>
+<li><strong>ASP 在最后一个任务的 Top-1 准确率 <span class="math-inline">A_T</span></strong> 分别达到 86.7%、83.5% 和 69.7%，相比排名第二的方法分别高出 2.7%、2.9% 和 7.2%；</li>
+<li>除了第一个任务外，ASP 在多数增量任务中表现最佳。之所以在第一个任务中略逊，是因为经典 CIL 和 FSCIL 方法会使用充足数据对所有参数进行微调，因此合理地获得更高起始性能；</li>
+<li>ASP 在<strong>平均准确率 <span class="math-inline">A_{\text{avg}}</span></strong> 上同样表现优异，在三个数据集上分别为 89.0%、83.8%、75.3%，分别高出排名第二方法 1.7%、0.7%、9.2%；</li>
+<li>在<strong>性能下降率（PD）</strong>方面，ASP 在 CIFAR100 和 CUB200 上取得最低值，在 ImageNet-R 上排名第二；</li>
+<li>在<strong>调和准确率（HAcc）</strong>方面，ASP 在三个数据集上均为最佳，分别达到 85.3%、83.4%、67.0%，表明 ASP 在持续学习新类的同时，也能良好保留基础类性能。</li>
+</ul>
+<p>一个有趣的发现是，<strong>原始的基于提示的 CIL 方法在 HAcc 指标上几乎无法学习新类</strong>。我们认为其主要原因是：分类器头为全连接层，极易对少样本数据发生严重过拟合。因此，我们将原始分类器替换为类均值构建的原型网络，分别命名为 L2P+、DualP+ 和 CodaP+。  从表 1 和表 2 中的 HAcc 结果可以看出，这种改动显著提高了其在 FSCIL 设定下学习新类的能力。</p>
+<h2 id="53-消融实验ablation-study">5.3 消融实验（Ablation Study）<a class="anchor-link" href="#53-消融实验ablation-study" title="Permanent link">&para;</a></h2>
+<p>我们在 CIFAR100 上进行消融实验，以验证 ASP 中各模块的贡献。我们将 ASP 的训练拆解为五个模块：</p>
+<ul>
+<li>
+<p>TIP-Base：只使用任务无关提示训练基础任务；</p>
+</li>
+<li>
+<p>TIP+TSP：在 TIP-Base 的基础上加入任务特定提示；</p>
+</li>
+<li>
+<p>TIP+TSP+IB：加入信息瓶颈目标，用于优化提示编码器；</p>
+</li>
+<li>
+<p>TIP+TSP+IB+Avg：加入平均提示机制提升泛化性；</p>
+</li>
+<li>
+<p>TIP+TSP+IB+Avg+AL (ASP)：加入锚点损失，形成完整 ASP 模型。</p>
+</li>
+</ul>
+<p>结果如表 3 所示：</p>
+<p>使用 TIP 训练基础任务（TIP-Base）后保持其冻结，并在增量任务中添加 TSP（TIP+TSP），显著提升了新类性能；加入 IB 目标后，进一步提升了模型的泛化能力，说明该正则项能有效引导提示向语义相关方向压缩；平均提示（Avg）引入后，新类准确率继续上升，验证其在防止过拟合方面的有效性；最终加入锚点损失（AL）后，基础类准确率提升明显，说明该模块能帮助特征聚类并构建更稳健的原型。</p>
+<p>结论：ASP 中的每个模块均对最终性能提升起到了关键作用。</p>
+<h3 id="54-提示特征可视化prompt-visualization">5.4 提示特征可视化（Prompt Visualization）<a class="anchor-link" href="#54-提示特征可视化prompt-visualization" title="Permanent link">&para;</a></h3>
+<p>为了进一步验证 ASP 学习到的提示特征的泛化性，我们将 CIFAR100 中不同类样本在任务 10 训练结束后的提示特征 <span class="math-inline">f_u([p_I;f_{\theta}(x)])</span> 投影到二维空间（使用 t-SNE）。如图 4 所示，与 DualP 相比，ASP 学习到的提示特征分布更加紧凑且类间区分性更好，表明 ASP 在任务无关和任务特定提示的设计下，具有更强的泛化能力。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250429212412.png" style="zoom: 80%;" /></div>
+
+<h3 id="55-模型复杂度分析model-complexity">5.5 模型复杂度分析（Model Complexity）<a class="anchor-link" href="#55-模型复杂度分析model-complexity" title="Permanent link">&para;</a></h3>
+<p>我们比较了各类方法的训练参数量（Trainable Params）和训练时间（Training Time），结果如表 4 所示。</p>
+<p>ASP 仅需训练提示编码器和提示参数，训练参数远少于需微调整个骨干的 FSCIL 方法；</p>
+<p>同时，ASP 的训练时间也优于 L2P 和 DualP，说明 ASP 在效率和性能之间取得良好平衡。</p>
+<h2 id="6-结论conclusion">6. 结论（Conclusion）<a class="anchor-link" href="#6-结论conclusion" title="Permanent link">&para;</a></h2>
+<p>本文提出了一种新颖的注意力感知自适应提示方法（Attention-aware Self-Adaptive Prompt，ASP），以应对少样本类增量学习（FSCIL）任务。<br />
+ASP 固定了预训练的视觉 Transformer 骨干网络，避免了对基础类的过拟合，并设计了两个互补的提示模块：</p>
+<ul>
+<li><strong>任务无关提示（TIP）</strong>：通过保持注意力一致性，学习基础类与新类之间共享的类无关知识；  </li>
+<li><strong>任务特定提示（TSP）</strong>：通过提示编码器在信息瓶颈目标的指导下学习，并引入平均提示机制，增强了对新类的泛化能力。</li>
+</ul>
+<p>此外，ASP 引入锚点损失，引导模型学习判别性强且分布紧凑的特征表示。</p>
+<p>我们在三个基准数据集上进行了大量实验，结果显示 ASP 在多个评估指标上均显著优于当前最先进的 FSCIL 方法和基于提示的 CIL 方法。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

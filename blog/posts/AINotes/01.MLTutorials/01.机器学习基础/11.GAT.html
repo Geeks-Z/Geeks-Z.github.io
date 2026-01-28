@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAT（Graph Attention Network）</title>
+    <meta name="description" content="GAT（Graph Attention Network） - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-基础概念">1 基础概念</a><ul>
+<li><a href="#11-graph数据结构的两种特征">1.1 Graph数据结构的两种“特征”</a></li>
+<li><a href="#12-gcn的局限性">1.2 GCN的局限性</a></li>
+<li><a href="#13-mask-graph-attention-or-global-graph-attention">1.3 Mask graph attention or global graph attention</a></li>
+</ul>
+</li>
+<li><a href="#2-原理">2 原理</a><ul>
+<li><a href="#21-计算注意力系数attention-coefficient">2.1 计算注意力系数（attention coefficient）</a></li>
+<li><a href="#22-加权求和aggregate">2.2 加权求和（aggregate）</a></li>
+</ul>
+</li>
+<li><a href="#3-谈几点深入的理解">3 谈几点深入的理解</a></li>
+<li><a href="#4-code">4 Code</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>GAT（Graph Attention Network）</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="gatgraph-attention-network">GAT（Graph Attention Network）<a class="anchor-link" href="#gatgraph-attention-network" title="Permanent link">&para;</a></h1>
+<h2 id="1-基础概念"><strong>1 基础概念</strong><a class="anchor-link" href="#1-基础概念" title="Permanent link">&para;</a></h2>
+<h3 id="11-graph数据结构的两种特征"><strong>1.1 Graph数据结构的两种“特征”</strong><a class="anchor-link" href="#11-graph数据结构的两种特征" title="Permanent link">&para;</a></h3>
+<p>当我们说起graph或者network的数据结构，通常是包含着顶点和边的关系。研究目标聚焦在顶点之上，边诉说着顶点之间的关系。</p>
+<p><strong>对于任意一个顶点<span class="math-inline">i</span>，它在图上邻居<span class="math-inline">N_i</span>​  ,构成第一种特征，即图的结构关系。</strong></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953600.jpg" /></p>
+<p>​                                                                                                               图1</p>
+<p><strong>当然，除了图的结构之外，每个顶点还有自己的特征<span class="math-inline">h_i</span>（通常是一个高维向量)。</strong>它可以是社交网络中每个用户的个体属性；可以是生物网络中，每个蛋白质的性质；还可以使交通路网中，每个交叉口的车流量。</p>
+<h3 id="12-gcn的局限性"><strong>1.2 GCN的局限性</strong><a class="anchor-link" href="#12-gcn的局限性" title="Permanent link">&para;</a></h3>
+<p>GCN是处理transductive任务的一把利器（transductive任务是指：训练阶段与测试阶段都基于同样的图结构），然而GCN有<strong>两大局限性</strong>：</p>
+<p>（a）<strong>无法完成inductive任务，即处理动态图问题。</strong>inductive任务是指：训练阶段与测试阶段需要处理的graph不同。通常是训练阶段只是在子图（subgraph）上进行，测试阶段需要处理未知的顶点。（unseen node）</p>
+<p>（b）<strong>处理有向图的瓶颈，不容易实现分配不同的学习权重给不同的neighbor</strong>。</p>
+<h3 id="13-mask-graph-attention-or-global-graph-attention"><strong>1.3 Mask graph attention or global graph attention</strong><a class="anchor-link" href="#13-mask-graph-attention-or-global-graph-attention" title="Permanent link">&para;</a></h3>
+<p>还有一件事件需要提前说清楚<strong>：GAT本质上可以有两种运算方式的</strong>，这也是原文中作者提到的</p>
+<ul>
+<li><strong>Global graph attention</strong></li>
+</ul>
+<p><strong>顾名思义，就是每一个顶点<span class="math-inline">i</span> 对于图上任意顶点都进行attention运算。</strong>可以理解为图1的蓝色顶点对于其余全部顶点进行一遍运算。</p>
+<p><strong>优点</strong>：完全不依赖于图的结构，对于inductive任务无压力</p>
+<p><strong>缺点</strong>：（1）丢掉了图结构的这个特征，无异于自废武功，效果可能会很差（2）运算面临着高昂的成本</p>
+<ul>
+<li><strong>Mask graph attention</strong></li>
+</ul>
+<p>注意力机制的运算只在邻居顶点上进行，也就是说图1的蓝色顶点只计算和橙色顶点的注意力系数。</p>
+<h2 id="2-原理"><strong>2 原理</strong><a class="anchor-link" href="#2-原理" title="Permanent link">&para;</a></h2>
+<p><strong>和所有的attention mechanism一样，GAT的计算也分为两步走</strong>：</p>
+<h3 id="21-计算注意力系数attention-coefficient"><strong>2.1 计算注意力系数（attention coefficient）</strong><a class="anchor-link" href="#21-计算注意力系数attention-coefficient" title="Permanent link">&para;</a></h3>
+<p>对于顶点<span class="math-inline">i</span>​，逐个计算它的邻居们<span class="math-inline">(j \in N_i)</span>​和它自己之间的<strong>相似系数</strong><br />
+<div class="math-display"><br />
+e_{ij}=a([Wh_i||Wh_j]),j\in N_i \tag 1\<br />
+h_i \in R^F\<br />
+W\in R^{F^{'}\times F}\<br />
+a\in R^{F^{'}}\times R^{F^{'}}<br />
+</div><br />
+解读一下这个公式<strong>：首先一个共享参数<span class="math-inline">W</span>​ 的线性映射对于顶点的特征进行了增维，当然这是一种常见的特征增强（feature augment)方法</strong>；<span class="math-inline">[\cdot||\cdot]</span>​ 对于顶点<span class="math-inline">i,j</span>​  的变换后的特征进行了拼接（concatenate）；<strong>最后<span class="math-inline">a(\cdot)</span>​  把拼接后的高维特征映射到一个实数上，</strong>作者是通过 single-layer feedforward neural network实现的。</p>
+<p><strong>显然学习顶点<span class="math-inline">i,j</span> 间的相关性，就是通过可学习的参数<span class="math-inline">W</span> 和映射 <span class="math-inline">a(\cdot)</span> 完成的。</strong></p>
+<p><strong>有了相关系数，离注意力系数就差归一化了！其实就是用个<span class="math-inline">softmax</span></strong><br />
+<div class="math-display"><br />
+a_{ij} = \frac {exp(LeakyReLU(e_{ij}))}{\sum_{k\in N_i}exp(LeakyReLU(e_{ik}))}\tag2<br />
+</div><br />
+要注意这里作者用了个<span class="math-inline">LeakyReLU(\cdot)</span> ，至于原因嘛，估计是试出来的，毕竟深度玄学。</p>
+<p>上面的步骤可以参考图2进行理解</p>
+<p><img alt="image-20210817190815495" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953920.png" /></p>
+<p>​                                                                                                           </p>
+<h3 id="22-加权求和aggregate"><strong>2.2 加权求和（aggregate）</strong><a class="anchor-link" href="#22-加权求和aggregate" title="Permanent link">&para;</a></h3>
+<p>完成第一步，已经成功一大半了。第二步很简单，<strong>根据计算好的注意力系数，把特征加权求和（aggregate）一下。</strong><br />
+<div class="math-display"><br />
+h_{i}^{'}=\sigma(\sum_{j\in N_i}a_{ij}Wh_j) \tag3<br />
+</div><br />
+<span class="math-inline">h_{i}^{'}</span> 是GAT输出的对于每个顶点<span class="math-inline">i</span> 的新特征（融合了邻域信息），<span class="math-inline">\sigma(\cdot)</span> 是激活函数。</p>
+<p>式（3）看着还有点单薄，<strong>俗话说一个篱笆三个桩，attention得靠multi-head帮！</strong>作者们建议对中间层使用拼接对最后一层使用求平均。来进化增强一下<br />
+<div class="math-display"><br />
+h_{i}^{'}(K)=\parallel_{k=1}^K\sigma(\sum_{j\in N_i}a_{ij}^{k}W^{k}h_j) \tag4<br />
+</div><br />
+嗯，这次看起来就很健壮了，<strong>multi-head attention也可以理解成用了ensemble的方法，毕竟convolution也得靠大量的卷积核才能大显神威！</strong></p>
+<p>上面的步骤可以参考图3进行理解</p>
+<p><img alt="image-20210817190829441" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953389.png" /></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160953116.png" alt="image-20210818110721231" style="zoom:67%;" /></p>
+<h2 id="3-谈几点深入的理解"><strong>3 谈几点深入的理解</strong><a class="anchor-link" href="#3-谈几点深入的理解" title="Permanent link">&para;</a></h2>
+<p><strong>3.1 与GCN的联系与区别</strong></p>
+<p>无独有偶，我们可以发现本质上而言<strong>：GCN与GAT都是将邻居顶点的特征聚合到中心顶点上（一种aggregate运算），</strong>利用graph上的local stationary学习新的顶点特征表达。<strong>不同的是GCN利用了拉普拉斯矩阵，GAT利用attention系数。</strong>一定程度上而言，GAT会更强，因为 顶点特征之间的相关性被更好地融入到模型中。</p>
+<p><strong>3.2 为什么GAT适用于有向图？</strong></p>
+<p><strong>我认为最根本的原因是GAT的运算方式是逐顶点的运算（node-wise），这一点可从公式（1）—公式（3）中很明显地看出。每一次运算都需要循环遍历图上的所有顶点来完成。逐顶点运算意味着，摆脱了拉普利矩阵的束缚，</strong>使得有向图问题迎刃而解。</p>
+<p><strong>3.3为什么GAT适用于inductive任务？</strong></p>
+<p><strong>GAT中重要的学习参数是</strong> <span class="math-inline">W</span> <strong>与</strong><span class="math-inline">a(\cdot)</span>，因为上述的逐顶点运算方式，这两个参数仅与1.1节阐述的顶点特征相关，与图的结构毫无关系。所以测试任务中改变图的结构，对于GAT影响并不大，只需要改变<span class="math-inline">N_i</span> ，重新计算即可。**</p>
+<p>与此相反的是，<strong>GCN是一种全图的计算方式，一次计算就更新全图的节点特征。学习的参数很大程度与图结构相关，这使得GCN在inductive任务上遇到困境。</strong></p>
+<h2 id="4-code">4 Code<a class="anchor-link" href="#4-code" title="Permanent link">&para;</a></h2>
+<p>参考：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/81350196">向往的GAT（图注意力模型） - 知乎 (zhihu.com)</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/57180498">深入理解图注意力机制 - 知乎 (zhihu.com)</a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

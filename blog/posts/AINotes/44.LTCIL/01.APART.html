@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#adaptive-adapter-routing-for-long-tailed-class-incremental-learning">Adaptive Adapter Routing for Long-Tailed Class-Incremental Learning</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-预备知识">3. 预备知识</a><ul>
+<li><a href="#31-长尾类别增量学习">3.1 长尾类别增量学习</a></li>
+<li><a href="#32-用于-cil-的预训练模型">3.2 用于 CIL 的预训练模型</a></li>
+</ul>
+</li>
+<li><a href="#4-自适应适配器路由用于-ltcil">4. 自适应适配器路由用于 LTCIL</a><ul>
+<li><a href="#41-辅助适配器池">4.1 辅助适配器池</a></li>
+<li><a href="#42-自适应路由">4.2 自适应路由</a></li>
+<li><a href="#43-apart-的总结">4.3 Apart 的总结</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实施细节">5.1 实施细节</a></li>
+<li><a href="#52-基准比较">5.2 基准比较</a></li>
+<li><a href="#53-消融研究">5.3 消融研究</a></li>
+<li><a href="#54-进一步分析">5.4 进一步分析</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+<li><a href="#附录">附录</a><ul>
+<li><a href="#a-实施细节">A 实施细节</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/44.LTCIL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="adaptive-adapter-routing-for-long-tailed-class-incremental-learning">Adaptive Adapter Routing for Long-Tailed Class-Incremental Learning<a class="anchor-link" href="#adaptive-adapter-routing-for-long-tailed-class-incremental-learning" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>在我们的不断变化的世界中，新数据呈现出长尾分布，例如不同类别的新图像数量不同。这就需要在不遗忘的情况下持续对不平衡数据进行模型学习，解决长尾类别增量学习（LTCIL）的挑战。现有方法通常依赖于用以前数据重新训练线性分类器，这在现实世界设置中是不切实际的。在本文中，我们利用预训练模型的强大表示能力，引入了自适应适配器路由（Apart）作为 LTCIL 的无样本解决方案。为了对抗遗忘，我们训练插入的适配器，冻结预训练的权重以进行更深入的适应，并在顺序模型更新期间维护适配器池以供选择。此外，我们提出了一个辅助适配器池，专门设计用于有效泛化，特别是在少数类别上。自适应实例路由跨这些池捕获关键相关性，促进了所有类别的全面表示。因此，Apart 在统一框架内解决了不平衡问题和灾难性遗忘问题。广泛的基准实验验证了 Apart 的有效性。代码可在：<a href="https://github.com/vita-qzh/APART">https://github.com/vita-qzh/APART</a> 获取。</p>
+<p>关键词：长尾类别增量学习，预训练模型，灾难性遗忘，类别增量学习</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>传统的机器学习算法通常假设一个封闭世界场景，其中数据来自静态、平衡的分布 [Ye et al., 2024]。然而在现实中，数据经常呈现出长尾流模式，例如图片不断出现，但在类别和数量上有所不同。这就要求从长尾数据中进行增量学习，称为长尾类别增量学习（LTCIL）[Liu et al., 2022]。在 LTCIL 中，一个重大挑战是灾难性遗忘 [French, 1999]，模型在学习过程中倾向于丢失旧数据的知识。此外，固有的数据不平衡导致模型对少数类别的表示不足，导致对多数类别的偏见 [Zhang et al., 2023]。这些相互关联的挑战在机器学习社区中构成了一个重大问题。因此，已经开发了几种算法来解决这些问题。例如，LWS[Liu et al., 2022] 通过从新数据和保留的旧数据中采样平衡数据集来重新平衡分类器。类似地，GVAlign[Kalla and Biswas, 2024] 通过重放生成的伪增强样本来增强表示的鲁棒性并校准分类器。这些方法虽然提高了性能，但依赖于以前类别的样本存储。</p>
+<p>在 LTCIL 中保留样本对于防止遗忘至关重要，但由于存储限制 [Kremp et al., 2014] 和隐私问题 [Chamikara et al., 2018]，这种方法经常在现实世界应用中失败。然而，预训练模型（PTMs）的最新进展 [Han et al., 2021] 表明，由于其强大的表示能力，它们在不依赖样本的情况下也有效。PTMs 不仅在类别增量学习 [Wang et al., 2022] 中越来越受欢迎，而且在长尾学习 [Shi et al., 2024] 中也挑战了传统的“从零开始训练”范式。它们能够提供强大的基础知识，通过广泛的预训练数据集得到加强，确保了对下游任务的惊人适应性。这种适应性在处理少数类别的数据稀缺性和维护旧任务性能方面特别有益。因此，利用 PTMs 已成为这些领域实现卓越性能的主要策略。在本文中，我们探索将 PTMs 整合到 LTCIL 中，以“无样本”的方式克服其挑战。</p>
+<p>LTCIL 提出了两个关键挑战，即灾难性遗忘和数据不平衡。灾难性遗忘发生在新信息取代旧知识时，导致现有特征被覆盖和整体性能下降。另一方面，数据不平衡使得学习过程偏向多数类别，忽视了少数类别。因此，多数类别和少数类别之间的边界是有偏见的，使模型更有可能将样本分类为多数类别。在学习过程中，这两个问题紧密耦合，增加了 LTCIL 的难度。</p>
+<p>一个能够持续从长尾数据流中学习的理想的模型应该是节俭和全面的。节俭意味着模型，特别是基于 PTMs 的模型，可以充分利用其潜力来学习新类别。因此，模型更新机制应该精心设计，以抵抗学习过程中的灾难性遗忘。同时，全面意味着模型采用特定的学习策略来捕获更多的少数类别，为所有类别提供全面和独特的表示。通过协调这些节俭和全面方面，模型可以熟练地应对 LTCIL 的挑战，为提高性能铺平道路。</p>
+<p>在本文中，我们提出了自适应适配器路由（Apart）来解决上述 LTCIL 中的挑战。为了使模型节俭，我们冻结了 PTMs 的大部分参数，并在每一层使用可训练的适配器。此外，我们将一组适配器扩展到包含多个组的池中。每次新数据到来时，我们检索最相关的适配器组并更新它。此外，我们引入了一个专门针对少数类别的辅助池。在推理期间，我们动态地结合这两个池以获得全面表示。与使用固定阈值过滤训练数据以供辅助池使用的方法不同，我们的方法自适应地学习实例路由，以数据驱动的方式编码任务信息。这反映了辅助池与少数类别的相关性，使所有类别都能全面了解。上述统一框架以端到端的方式进行训练，实现了数据驱动的自动路由学习。我们通过在几个基准数据集上进行大量实验来广泛验证 Apart 的有效性。Apart 的主要贡献可以总结如下：</p>
+<ul>
+<li>在多个选择中选择用于预训练模型深层适应的层级适配器，减少了在转移到下游任务时的遗忘。</li>
+<li>为少数类别特别设计的辅助池，补偿了数据的不足。在训练辅助池时数据的不平衡大大减少，从而全面表示少数类别。</li>
+<li>自适应路由被学习以自动以数据驱动的方式捕获数据和辅助池之间的相关性，减少了在定义少数类别时对手动阈值的依赖。</li>
+</ul>
+<p>本文的组织如下。第 2 节回顾了主要相关工作。第 3 节阐述了研究问题并介绍了基线方法。第 4 节描述了 Apart 并详细说明了其每个元素。第 5 节介绍了实证评估和进一步分析。之后，我们在第 6 节总结本文。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>长尾学习：旨在从高度不平衡的数据中学习 [Zhang et al., 2023]，其中少数类别（多数类别/头部类别）拥有大量数据，而其余类别（少数类别/尾部类别）数据有限。当前算法大致可分为三组。第一组考虑重新采样数据集以形成平衡的训练集 [Chawla et al., 2018] 或重新加权损失项以支持尾部类别 [Cui et al., 2019; Lin et al., 2017]。第二组考虑从头部类别向尾部类别转移知识 [Wang et al., 2017] 和自训练 [Rosenberg et al., 2005; Wei et al., 2021] 以增强尾部类别的识别能力。第三组设计技术通过表示学习 [Huang et al., 2016]、解耦训练 [Kang et al., 2020] 和集成学习 [Zhou et al., 2020] 来改进表示或分类器模块。</p>
+<p>类别增量学习（CIL）：旨在顺序学习新任务，不忘旧知识 [Zhou et al., 2024; Wang et al., 2023]。为了缓解困境，提出了大量工作，主要分为三类。第一组通过知识蒸馏将旧模型的知识转移到新模型 [Hinton et al., 2015]，在更新时 [Li and Hoiem, 2017; Douillard et al., 2020]。第二组基于以前任务保留的样本，并重放它们以维护旧知识 [Zheng et al., 2024; Rebuffi et al., 2017; Hou et al., 2019a; Castro et al., 2018]。第三组扩展网络 [Yan et al., 2021; Wang et al., 2022; Zhou et al., 2023] 以满足随数据增加而产生的模型容量需求。随着预训练模型的流行，出现了更多基于 PTMs 的方法 [Zhou et al., 2024; Wang et al., 2022; Seale Smith et al., 2022; Zhou et al., 2024; Wang et al., 2022; Zhou et al., 2024]。这些方法主要设计轻量级模块，以参数高效的方式适应 PTMs。长尾类别增量学习（LTCIL）：最近提出，旨在从长尾流数据中学习。LWS[Liu et al., 2022] 从新数据和保留的旧数据中采样平衡数据集，以重新加权分类器以获得更好的性能。此外，GVAlign[Kalla and Biswas, 2024] 通过重放生成的伪增强样本来增强表示的鲁棒性并校准分类器。这些方法都遵循两阶段策略，在第二阶段使用平衡数据集纠正模型的输出。相比之下，我们的目标是在不访问旧数据的情况下实现更好的增量性能。</p>
+<h2 id="3-预备知识">3. 预备知识<a class="anchor-link" href="#3-预备知识" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先描述 LTCIL 的设置，然后介绍基线方法及其局限性。</p>
+<h3 id="31-长尾类别增量学习">3.1 长尾类别增量学习<a class="anchor-link" href="#31-长尾类别增量学习" title="Permanent link">&para;</a></h3>
+<p>在类别增量学习中，模型从顺序任务中学习。当任务 <span class="math-inline">t</span> 到来时，模型的训练数据集表示为 <span class="math-inline">D_t = {(x_i, y_i)}<em>{i=1}^{n_t}</span>，其中 <span class="math-inline">x_i \in R^{H \times W \times C}</span> 是第 <span class="math-inline">i</span> 个实例，<span class="math-inline">y_i \in Y_t</span> 是当前标签空间中的相应标签，<span class="math-inline">n_t</span> 是任务 <span class="math-inline">t</span> 的总大小。标签之间没有重叠，即当 <span class="math-inline">t \neq t'</span> 时，<span class="math-inline">Y_t \cap Y</em>{t'} = \emptyset</span>。与常规 CIL 中每个类别的频率为常数的均匀分布不同，LTCIL 中的数据遵循长尾分布。分布越陡，模型适应尾部类别的挑战就越大，同时不忘旧知识。</p>
+<p>在 LTCIL 中，我们用 <span class="math-inline">Y_t = \bigcup_{k=1}^{t} Y_k</span> 表示所有已看到类别的集合。它可以分解为一个特征提取器 <span class="math-inline">\phi : R^{H \times W \times C} \rightarrow R^d</span>（<span class="math-inline">d</span> 是特征的维度）和一个分类器 <span class="math-inline">g : R^d \rightarrow R^{|Y_t|}</span>，即 <span class="math-inline">f(x) = g(\phi(x))</span>。分类器可以分解为每个任务的一组分类器，即 <span class="math-inline">g = [g_1, \ldots, g_t]</span>，其中 <span class="math-inline">g_k : R^d \rightarrow R^{|Y_k|}</span>。面对新任务时，分类器 <span class="math-inline">g</span> 需要更新和扩展。我们遵循 [Zhu et al., 2021; Wang et al., 2022] 实现所有方法，即在训练时不保留样本，即当训练任务 <span class="math-inline">t</span> 时，模型只能访问 <span class="math-inline">D_t</span>。由于 LTCIL 在推理时不提供任务 ID，模型必须区分旧类别和新类别，并对所有已看到的任务都有良好的性能。换句话说，整个平衡测试数据集 <span class="math-inline">\bigcup_{k=1}^{t} D_{test k}</span> 上的性能被考虑在内，即 <span class="math-inline">\sum_{(x_i,y_i) \in \bigcup_{k=1}^{t} D_{test k}} \ell(f(x_i), y_i)</span>，其中 <span class="math-inline">\ell(\cdot, \cdot)</span> 测量输入对之间的差异。</p>
+<h3 id="32-用于-cil-的预训练模型">3.2 用于 CIL 的预训练模型<a class="anchor-link" href="#32-用于-cil-的预训练模型" title="Permanent link">&para;</a></h3>
+<p>目前，预训练模型在 CIL 领域越来越受欢迎。视觉识别任务中最有代表性的 PTM 是视觉变换器（ViT）[Dosovitskiy et al., 2020]，它在大规模数据集（例如，ImageNet[Russakovsky et al., 2015]）上预训练，作为主干 <span class="math-inline">\phi</span> 提取实例的特征。ViT 由一个嵌入层和几个transformer block组成。图像 <span class="math-inline">x</span> 首先被划分为一系列补丁，然后通过嵌入层得到其嵌入 <span class="math-inline">E = [e_0, e_1, \ldots, e_{N_p}] \in R^{N_p \times d}</span>（<span class="math-inline">N_p</span> 是补丁的数量）。然后，一个可学习的 [CLS] 标记 <span class="math-inline">c \in R^d</span> 被添加到其嵌入中，以获得transformer block的最终输入 <span class="math-inline">x_0 = [c, E]</span>。模型基于 <span class="math-inline">\phi(x)</span>，即 [CLS] 标记的嵌入特征，给出最终预测。</p>
+<p>L2P[Wang et al., 2022] 是第一个在 CIL 中使用预训练 ViT 的方法。为了有效地适应下游任务，它采用了视觉提示调整 [Jia et al., 2022]，这是一种参数高效的微调技术。提示可以看作是输入的水平扩展。在训练期间，它冻结了整个主干，并在实例的嵌入前添加提示 <span class="math-inline">P \in R^{L \times d}</span>，其中 <span class="math-inline">L</span> 是提示的长度。然后，连接的嵌入 <span class="math-inline">[c, P, E]</span> 被传递到冻结的主干以获得分类特征。通过这种方式，任务的知识被编码在提示中。为了减轻遗忘，为模型提供了多个提示以扩大表示空间，表示为一个池 <span class="math-inline">P = [P_1, P_2, \ldots, P_M]</span>。对于每个提示 <span class="math-inline">P_i</span>，一个键 <span class="math-inline">k_i</span> 在键值格式中与之关联，用于查询（即，<span class="math-inline">(k_i, P_i)</span>）。在训练时，实例级的提示从 <span class="math-inline">P</span> 中选择，然后更新。提示的选择基于实例和可学习的键之间的距离：<br />
+<div class="math-display"><br />
+    \min_s \gamma(\phi(x), k_s),<br />
+</div><br />
+其中 <span class="math-inline">\gamma(\cdot, \cdot)</span> 表示余弦距离。这里，我们使用分类特征 <span class="math-inline">\phi(x)</span> 来表示实例，并与 <span class="math-inline">k_s</span>，即 <span class="math-inline">P_s</span> 的键进行距离计算。其他基于提示的算法 [Wang et al., 2022; Seale Smith et al., 2022] 也探索了更多的选择和融合机制。</p>
+<p>讨论：虽然方程 1 为在提示中编码任务特定信息提供了有效方式，但 L2P 在 LTCIL 中并未获得预期的性能。主要有两个原因。首先，可学习的提示只添加到输入级别，因此当整个主干被冻结时，其影响有限。这限制了模型在面对多样化的下游任务时的表示能力。其次，当数据分布变得长尾时，需要更具体的措施来补偿少数类别以获得全面的特征。在训练期间，提示不可避免地偏向多数类别，并且不能像预期的那样存储精确的知识。因此，方程 1 抵抗遗忘的能力被削弱了。</p>
+<h2 id="4-自适应适配器路由用于-ltcil">4. 自适应适配器路由用于 LTCIL<a class="anchor-link" href="#4-自适应适配器路由用于-ltcil" title="Permanent link">&para;</a></h2>
+<p>鉴于 PTMs 的潜力，我们尝试以无样本的方式将 PTMs 整合到 LTCIL 中。为了使模型具有可用性，我们在每一层中插入适配器，而不是在第一层中预置提示，垂直扩展冻结的PTM，并进行更深层次的适配。另一方面，为了使模型全面，提出了一个独特的机制，专门针对少数类别。为了加强与少数类别的相关性，实例路由自适应地以数据驱动的方式学习。在本节中，我们首先介绍促进长尾学习的技术，然后讨论路由策略。我们在最后总结训练流程。</p>
+<h3 id="41-辅助适配器池">4.1 辅助适配器池<a class="anchor-link" href="#41-辅助适配器池" title="Permanent link">&para;</a></h3>
+<p>适配器是 PTMs 的垂直扩展，增加了转移到下游任务的可转移性，同时消耗的参数有限。与提示相比，适应发生在结构中而不是输入中，因此在视觉识别任务上表现更好。在本文中，我们遵循 [Chen et al., 2022] 在 ViT 的每个transformer block中插入适配器。适配器是一个瓶颈结构，由一个下投影层 <span class="math-inline">W_{down} \in R^{d \times r}</span>、一个非线性激活 ReLU 和一个上投影层 <span class="math-inline">W_{up} \in R^{r \times d}</span> 组成，其中 <span class="math-inline">r \ll d</span> 是瓶颈中间维度。它主要通过在相同输入上添加非线性变换来改变transformer block中的残差连接。对于第 <span class="math-inline">i</span> 个transformer block，我们将其多头自注意力后的输出表示为 <span class="math-inline">\hat{x}<em>i</span>。我们在 MLP 结构中插入适配器，并得到输出：<br />
+<div class="math-display"><br />
+    x</em>{i+1} = \text{MLP}(\text{LN}(\hat{x}<em>i)) + \text{ReLU}(\hat{x}_i W</em>{down}) W_{up},<br />
+</div><br />
+其中 <span class="math-inline">\text{MLP}(\text{LN}(\hat{x}_i))</span> 是transformer block的原始输出，<span class="math-inline">LN</span> 表示层归一化。我们将每个块中插入的适配器组表示为 <span class="math-inline">\mathbf{A}</span>。在训练期间，我们冻结整个主干，只优化 <span class="math-inline">\mathbf{A}</span> 中的轻量级模块，使适应下游任务的同时保留 PTM 的表示。为了扩大微调模型的容量并减轻遗忘，我们遵循 [Wang et al., 2022] 将适配器 <span class="math-inline">\mathbf{A}</span> 扩展到一个包含 <span class="math-inline">M</span> 组适配器的池 <span class="math-inline">\mathcal{A} = [\mathbf{A}_1, \mathbf{A}_2, \dots, \mathbf{A}_M]</span> 中。我们还采用方程 1 中的键查询匹配策略。与选择一组提示的 L2P 不同，Apart 只选择一个适配器组，即每层插入的 12 个适配器，这足以存储精确的知识。然后，适应模型给出预测：<br />
+<div class="math-display"><br />
+    f(\mathbf{x}; \mathcal{A}) = g(\phi(\mathbf{x};\mathcal{A})),<br />
+</div><br />
+其中 <span class="math-inline">\phi(\cdot; A)</span> 是基于池 <span class="math-inline">\mathbf{A}</span> 的适应特征提取器，<span class="math-inline">g(\cdot)</span> 是相应的调整分类器，通过一个简单的线性层完成。在训练期间，我们寻找 <span class="math-inline">\mathbf{A}</span> 中最适合当前任务的适配器组，通过最小化：<br />
+<div class="math-display"><br />
+    \mathcal{L}(\mathbf{x}, y; \mathcal{A})  = \ell(f(\mathbf{x};\mathcal{A}), y) + \gamma(\phi(\mathbf{x}), \mathbf{k}_s),<br />
+</div><br />
+其中 <span class="math-inline">k_s</span> 是根据方程 1 从 <span class="math-inline">\mathbf{A}</span> 中选择的最适配器组的键。解方程 3 使编码任务特定信息到适配器组中成为可能，适配器选择策略使对查询实例到最适配器的全面估计成为可能。</p>
+<p><strong>辅助适配器池</strong>：由于不平衡分布使模型有偏见，并且对少数类别的学习不足，为了补偿不足，在没有多数类别的干扰下特别训练少数类别是直观的方法。在没有多数类别的情况下，少数类别之间的不平衡比率要小得多，这使得提供更准确的表示成为可能。因此，我们提出学习一个辅助池 <span class="math-inline">\mathcal{A}^{aux}</span>，与 <span class="math-inline">\mathbf{A}</span> 的池大小相同，以支持少数类别。类似地，辅助适应模型给出预测：<br />
+<div class="math-display"><br />
+   f(\mathbf{x}; \mathcal{A}^{aux}) = g^{aux}(\phi(\mathbf{x};\mathcal{A}^{aux})),<br />
+</div><br />
+其中 <span class="math-inline">\phi(\cdot; A_{aux})</span> 和 <span class="math-inline">g_{aux}(\cdot)</span> 分别是相应的主干和分类器。两个分类器都以 3.1 节提到的方式扩展。基于辅助池的检索损失被称为 <span class="math-inline">L(x, y; A_{aux})</span>。在这种情况下，原始池将针对所有类别进行训练，而辅助池应专门针对尾部类别进行优化，以实现所有类别之间的全面表示。这可以通过调整辅助池不同类别的损失权重来实现。损失的权重由类别在训练集中的频率决定：<br />
+<div class="math-display"><br />
+    L_1(x, y) = L(x, y; A) + I(N(y) \leq \theta) L(x, y; A_{aux}),<br />
+</div><br />
+其中 <span class="math-inline">N(y)</span> 是属于类别 <span class="math-inline">y</span> 的实例数量，<span class="math-inline">I(\cdot)</span> 是指示函数，如果表达式成立则输出 1，否则输出 0。<span class="math-inline">\theta</span> 是定义少数和多数类别的阈值。</p>
+<p><strong>辅助适配器池的效果</strong>：方程 4 引入了辅助池并汇总了损失，如图 1 中间部分所示。第一项强制适配器从当前任务中学习并更新存储的知识，第二项强制辅助池仅从少数类别中学习。通过优化方程 4，在充分学习多数类别的基础上，辅助池在少数类别上泛化。因此，对少数类别的识别偏见和持续学习中的遗忘被减轻。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202152513.png" style="zoom: 80%;" /></div>
+
+<h3 id="42-自适应路由">4.2 自适应路由<a class="anchor-link" href="#42-自适应路由" title="Permanent link">&para;</a></h3>
+<p>函数 <span class="math-inline">I(N(y) \leq \theta)</span> 反映了辅助池与所有类别，特别是少数类别之间的相关性。辅助池没有保留来自多数类别的有价值信息，只是作为一个单一池的修改。然而，步骤函数的启发式格式依赖于 <span class="math-inline">\theta</span>，这在多数类别和少数类别之间制造了一个硬性和人为的界限。过滤需要一个精确的 <span class="math-inline">\theta</span>。对于一些长尾分布，其不平衡比率极端的情况下，一个多数类别的实例可能几乎与所有少数类别的实例之和一样多。在这种情况下，需要一个相当大的 <span class="math-inline">\theta</span>。一旦 <span class="math-inline">\theta</span> 变小，一些意外的数据可能被排除在外，即使有辅助池，它们也得不到足够的表示。此外，步骤函数对少数类别没有区别，这意味着少数类别之间的不平衡仍未解决。为了减少对精确阈值的依赖并修改少数类别的不平衡，我们提出了一种自适应适配器路由策略，为更平滑的边界分配具有实例特定功能的样本。实例和类别的信息结合起来表示与 <span class="math-inline">A_{aux}</span> 的关系。对于实例 <span class="math-inline">x</span>，实例信息被编码在 <span class="math-inline">\phi(x)</span> 的嵌入中，通过一个线性层 <span class="math-inline">\psi_1(\cdot)</span>，即 <span class="math-inline">\psi_1(\phi(x))</span>，类别信息被编码为从整数到嵌入的映射，即 <span class="math-inline">\psi_2(N(y))</span>。两个嵌入的连接通过 MLP 传递，得到自适应权重：<br />
+<div class="math-display"><br />
+    w(x, y) = \sigma(\text{MLP}([\psi_1(\phi(x)), \psi_2(N(y))])),<br />
+</div><br />
+其中 <span class="math-inline">\sigma(\cdot)</span> 是非线性激活函数。然后原始损失更新为：<br />
+<div class="math-display"><br />
+    L_1(x, y) = L(x, y; A) + w(x, y) L(x, y; A_{aux}).<br />
+</div><br />
+为了用更多数据信息指导路由，原始的步骤函数权重格式可以作为最初几个周期的参考。然后，我们通过添加正则化项避免权重在训练时趋于 0：<br />
+<div class="math-display"><br />
+    L_2(x, y) = (\alpha - w(x, y))^2,<br />
+</div><br />
+其中 <span class="math-inline">\alpha</span> 是一个超参数，反映了对分配器 <span class="math-inline">w</span> 优化的限制。我们默认将其设置为 1。</p>
+<p>自适应适配器路由的效果：方程 5 学习了辅助损失的实例权重，如图 1 左半部分所示。它结合了实例和类别的信息。方程 6 中的替换显示在图 1 的右半部分。与启发式权重相比，自适应可学习的权重以数据驱动的方式调节单个实例的重要性。因此，辅助池可以编码更多特定于实例的知识，并给出更全面的表示。</p>
+<h3 id="43-apart-的总结">4.3 Apart 的总结<a class="anchor-link" href="#43-apart-的总结" title="Permanent link">&para;</a></h3>
+<p>我们在算法 1 中给出了 Apart 的伪代码。在每个小批量中，我们首先分别计算适配器池产生的损失，如方程 3 所示。然后我们学习辅助损失的权重，遵循方程 5，并将它们加起来进行反向传播，即 <span class="math-inline">L_1(x, y) + L_2(x, y)</span>。注意，两个适配器池共享相同的预训练模型，使得与 PTM 相比，内存预算可以忽略不计。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173409.png" style="zoom: 80%;" /></div>
+
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们将 Apart 与基准 LTCIL 数据集上的最先进方法进行比较。消融研究验证了 Apart 的每个部分的有效性，进一步的分析和可视化用于探索 Apart 的内在特性。</p>
+<h3 id="51-实施细节">5.1 实施细节<a class="anchor-link" href="#51-实施细节" title="Permanent link">&para;</a></h3>
+<p><strong>数据集</strong>：按照 [Liu et al., 2022]，我们首先在数据集 CIFAR100[Krizhevsky et al., 2009] 上进行实验。由于 PTMs 主要在 ImageNet21k[Russakovsky et al., 2015] 上预训练，像 ImageNet-Subset 这样的 100 类数据集由于重叠而不适合评估。按照 [Wang et al., 2022; Zhou et al., 2024]，我们选择了另外两个数据集 ImageNet-R[Hendrycks et al., 2021] 和 ObjectNet[Barbu et al., 2019] 作为 PTMs 适应的具有挑战性的下游任务。其中，CIFAR100 包含 60,000 张图片，分为 100 类。ImageNet-R 包含 30,000 张图片，分为 200 类。ObjectNet 包含约 33,000 张图片，分为 200 类。为了模拟 LTCIL 场景，我们对这些数据集进行了采样。按照 [Liu et al., 2022]，我们通过参数 <span class="math-inline">\rho</span> 控制长尾分布，该参数是最少频繁类别 <span class="math-inline">N_{min}</span> 与最频繁类别 <span class="math-inline">N_{max}</span> 之间的数量比率，即 <span class="math-inline">\rho = \frac{N_{min}}{N_{max}}</span>。对于 CIFAR100，不平衡比率 <span class="math-inline">\rho</span> 设置为 0.01，最多一个类别有 500 个实例。对于 ImageNet-R，数据集自然呈现长尾分布，<span class="math-inline">\rho = 0.11</span>，最频繁的类别有 349 个实例。尽管它不遵循标准指数衰减，我们将其保留为原始状态，不进行额外处理。对于 ObjectNet，我们设置 <span class="math-inline">\rho = 0.01</span> 和 <span class="math-inline">N_{max} = 200</span>。</p>
+<p><strong>设置</strong>：按照 [Liu et al., 2022]，我们进行了两种 LTCIL 场景，即有序 LTCIL 和无序 LTCIL。前者通过任务遵循长尾分布，而后者首先随机打乱衰减数字，然后为每个类别分配频率。在有序 LTCIL 中，跨任务的不平衡比率保持不变，而无序 LTCIL 可以看作是一个通用场景，允许不同任务中有不同的比率。</p>
+<p><strong>数据集分割</strong>：首先，我们采用 [Liu et al., 2022] 中的分割，从包含一半类别的基础任务开始，然后将其他类别分成 5 个任务或 10 个任务。为了简单起见，我们将分割表示为“B{m}-{n}”的格式，其中 <span class="math-inline">m</span> 是第一个任务中的类别数量，<span class="math-inline">n</span> 是随后任务中的数量。</p>
+<p><strong>比较方法</strong>：由于我们的方法基于 PTMs，我们主要将其与基于 PTMs 的 CIL 方法进行比较，即 L2P[Wang et al<br />
+., 2022]、DualPrompt[Wang et al., 2022]、CODA-Prompt[Seale Smith et al., 2022]、SimpleCIL[Zhou et al., 2024] 和 ADAM-Finetune[Zhou et al., 2024]。此外，我们还重新实现了需要样本的 LUCIR[Hou et al., 2019b] 和 LUCIR+LWS 进行比较。最后，我们还与经典 CIL 算法 LwF[Li and Hoiem, 2017] 和基线方法 Finetune 进行了比较，后者不保存样本。</p>
+<p><strong>训练细节</strong>：按照 [Wang et al., 2022]，我们对所有比较的方法使用相同的主干 ViTB/16-IN1K，该主干在 ImageNet21K 上预训练，并在 ImageNet1K 上额外微调。主干的选择决定了 <span class="math-inline">k_s</span> 的维度，因为检索是基于键和嵌入之间的余弦距离。因此，<span class="math-inline">k_s</span> 的维度设置为 768。我们使用 Adamw 进行模型训练，批量大小为 48，训练 10 个周期。学习率从 0.003 开始，并随着余弦退火而衰减。对于 Apart，池的大小为 5，投影维度为 64。对于基于提示的方法，池的大小为 10。对于像 LUCIR 和 LWS 这样的基于样本的方法，我们每个类别保存 10 个样本进行重放。</p>
+<p><strong>评估协议</strong>：按照 [Rebuffi et al., 2017]，我们在每个任务 <span class="math-inline">i</span> 后记录准确度作为 <span class="math-inline">Acc_i</span>，并使用所有 <span class="math-inline">T</span> 任务上的平均 <span class="math-inline">Acc = \frac{1}{T} \sum_{i=1}^{T} Acc_i</span> 和最后一个准确度 <span class="math-inline">Acc_T</span> 作为指标。</p>
+<h3 id="52-基准比较">5.2 基准比较<a class="anchor-link" href="#52-基准比较" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们报告了在基准数据集 CIFAR100、ImageNet-R 和 ObjectNet 上的准确度，分别是在无序 LTCIL 和有序 LTCIL 下的表 1、表 2，并在图 2 中展示了增量性能。具体来说，图 2 清楚地显示了 Apart 的优越性能。我们可以推断出，传统方法（例如，LwF）有明显的下降趋势，表明它们受到灾难性遗忘的影响。相比之下，LUCIR 和 LWS 的下降相对较小，这归功于样本的帮助。与大多数基于参数高效的微调技术（例如，L2P、DualPrompt 和 CODA-Prompt）相比，我们发现第一项任务的性能存在差距。差距清楚地表明了使用辅助适配器池在训练期间补偿少数类别的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173439.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173506.png" style="zoom: 80%;" /></div>
+
+<p>此外，Apart 在基准数据集上的比较方法中表现优于表 1、表 2 中的其他方法。传统 CIL 方法的不佳表现，即 LwF，表明长尾数据放大了 CIL 问题的难度，即使是具有强大泛化能力的基于 PTMs 的也是如此。表示能力由 SimpleCIL 的性能证明，它完全依赖于冻结的 PTMs。然而，在 LTCIL 中，来自 PTMs 的好处是有限的，需要更多的任务特定特征来提高性能。同样，Apart 通过甚至 8% 在无序场景中和 9% 在有序场景中超过了大多数基于提示的方法。它揭示了，尽管提示有助于抵抗传统 CIL 中的遗忘，但存储在提示中的知识不可避免地受到不平衡的干扰。LWS 是为 LTCIL 中的卷积网络设计的，并提高了与 LUCIR 结合的性能。然而，正如报告的那样，当我们用预训练的 ViT 替换 ResNet 时，重新加权分类层的改进是有限的。尽管有平衡的数据集，LWS 仍然无法解决有偏见的表示。它表明，在长尾数据流中，表示中的偏见比分类中的偏见更有害。因此，Apart 中的辅助池更多地从少数类别中学习，消除了表示的潜在偏见，获得了比 LUCIR 和 LUCIR+LWS 更好的性能，表明专门用于少数类别的辅助池的优越性。总之，Apart 超越了基于提示和基于样本的方法，验证了其有效性。</p>
+<h3 id="53-消融研究">5.3 消融研究<a class="anchor-link" href="#53-消融研究" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们进行消融研究，分析 Apart 的三个组成部分的重要性，并探索适配器池数量的影响。在表 3 中，结果清楚地显示了每个组成部分的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173528.png" style="zoom: 80%;" /></div>
+
+<p>当我们放弃两个池之间的自适应路由时，我们按照方程 4 训练两个池，其中实例的分布很大程度上依赖于固定阈值。相比之下，自适应和动态边界可以获得辅助池的改进。此外，消融辅助池意味着只使用一个池进行训练，导致没有独特的机制来处理不平衡的数据。因此，我们发现一个池不能为所有类别生成全面的表示，对少数类别的学习不足导致下降。此外，我们将适配器池替换为单个适配器。由于容量不足，模型遭受遗忘。平均准确度的下降高达 4%，最后一次准确度的下降接近 9%，显示了在顺序任务学习中多个适配器的必要性。从上述消融中，我们发现一个更多的适配器池可以带来性能提升。然而，这是否意味着更多的适配器池一定会带来更好的性能呢？表 4 显示了应用多个池时准确度的变化。增加的池被用来在相同规则下捕获更多来自少数类别的信息。从表中，我们观察到，最初，额外的池带来了准确度的增加。模型大小随着池的增加而线性增长，但改进是有限的。当池的数量增加到 6 时，出现了下降。结果表明，参数的增加并不一定保证性能的提高。根据实验，我们将大小设置为 2，以在性能和模型大小之间取得平衡。</p>
+<p>表 4 不同适配器池数量在有序 CIFAR100 B50-5 上的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173301.png" style="zoom: 80%;" /></div>
+
+<h3 id="54-进一步分析">5.4 进一步分析<a class="anchor-link" href="#54-进一步分析" title="Permanent link">&para;</a></h3>
+<p>子组措施：按照 [Liu et al., 2019]，我们可以根据实例数量将所有类别分为三组，并报告这些分割类别在 CIFAR100 上的的性能。具体来说，我们在表 5 中报告了 CIFAR100 的三组类别的准确度，即多样本（有≥100 个实例）、中等样本（20∼100 个实例）和少样本（≤20 个实例）。“Overall”表示 <span class="math-inline">Acc_T</span>。具体来说，我们发现其他方法的整体性能较差主要是由于少数类别的性能差距。随着实例数量的减少，测试准确度降低。将 SimpleCIL 与 L2P 进行比较时，我们发现 L2P 以牺牲少数类别为代价获得了更好的整体性能。通过微调 PTMs，L2P 将多样本准确度提高了 13%，但整体准确度仅提高了 0.6%。表示中的偏见导致了对少数类别的忽视。相比之下，Apart 在不同类别集上都取得了全面的进步。</p>
+<p>可视化分配器权重：在本节中，我们展示了分配器在图 3 中学习到的权重，即方程 5。它揭示了学习到的权重 <span class="math-inline">w(x, y)</span> 与类别频率 <span class="math-inline">N(y)</span>（在方程 4 中提到）之间的关系，每个实例。</p>
+<p>表 5 无序 CIFAR100 B50-5 上的组准确度。Apart 在不同类别上表现出全面的优势。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173323.png" style="zoom: 80%;" /></div>
+
+<p>“实例级”报告了一个实例的权重，“频率级”报告了相同类别频率的平均权重。从图中，不同类别产生不同的权重，揭示了学习到的路由以数据驱动的方式编码任务特定信息。此外，对于实例数量较多的类别，学习到的权重总体呈下降趋势。结果意味着自适应权重有助于辅助池更多地从少数类别中学习。因此，它加强了辅助池与少数类别之间的相关性，并修改了表示。</p>
+<p>表 6 在 ImageNet-R 上的公平比较。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202173332.png" style="zoom: 80%;" /></div>
+
+<p>公平比较：Apart 不保存样本，但需要调整参数。由于内存由参数和样本组成，我们在相同的内存预算下进行公平比较，如 [Zhou et al., 2023] 中所述。一个使用相同主干 ViTB/16-IN1K 重新实现的基于复习的方法 iCaRL[Rebuffi et al., 2017] 被比较。即使基于样本，使用随机初始化的 ResNet 实现的 iCaRL 也较弱。为了对齐内存空间，我们计算了 iCaRL 对应的样本内存。Apart 的内存由三部分组成：一个冻结的主干以获得 [CLS] 标记，一个主干用于微调，以及方法相关的参数。对于 iCaRL，内存由三部分组成：一个旧主干用于知识蒸馏，一个主干用于训练，以及样本内存。样本的内存应该与方法相关参数的内存一致，包括池、嵌入和分类器。保存一个 ImageNet-R 图像需要 3×224×224 个整数（int），而 Apart 需要 12,231,953 个方法相关参数（float）。为了对齐内存预算，iCaRL 需要保存大约 352 个实例。表 6 中的比较显示，在与 iCaRL-352 相同的内存空间下，Apart 实现了更好的性能，后者存储了 352 个样本。即使样本数量增加到 2000，iCaRL 也无法击败 Apart。结果表明，样本的成本更高。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>在我们的动态世界中，数据经常以不平衡的流方式出现，要求模型解决长尾类别增量学习问题。本文提出了 Apart 以应对 LTCIL，它通过实例特定选择学习适配器池，以克服预训练模型的遗忘问题。为了补偿尾部类别，我们学习了一个辅助适配器池以实现统一的特征表示。此外，我们设计了一种自适应适配器路由策略，以自动选择适当的池使用，以数据驱动的方式追踪长尾分布。广泛的实验验证了 Apart 的卓越性能。</p>
+<h2 id="附录">附录<a class="anchor-link" href="#附录" title="Permanent link">&para;</a></h2>
+<h3 id="a-实施细节">A 实施细节<a class="anchor-link" href="#a-实施细节" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们讨论了比较的方法和基准数据集的详细信息。</p>
+<p>A.1 比较的方法</p>
+<p>本文中比较的方法如下：</p>
+<ul>
+<li>Finetune：直接用新数据集训练模型，不解决灾难性遗忘问题；</li>
+<li>LwF：Li and Hoiem (2017) 利用知识蒸馏将知识从旧的冻结模型转移到新的模型，同时微调新任务；</li>
+<li>LUCIR：Hou et al. (2019b) 是一种基于样本的方法，它学习与旧的不同的正常化余弦分类器；</li>
+<li>LWS：Liu et al. (2022) 是一种最先进的基于样本的 LTCIL 方法。它在两阶段框架中用保留的样本和新任务数据重新训练线性分类器。它可以与其他基于样本的方法结合使用；</li>
+<li>L2P：Wang et al. (2022) 是一种最先进的基于提示的 CIL 方法。它冻结了预训练模型，并添加提示以适应新任务。提示池以“键值”对构建。在更新时，从池中检索最适宜的提示；</li>
+<li>DualPrompt：Wang et al. (2022) 是一种最先进的基于提示的 CIL 方法。它将 L2P 中的提示扩展到每个层中插入的提示，称为通用提示和专家提示。前者学习跨任务的知识，后者遵循检索策略学习任务特定知识；</li>
+<li>CODA-Prompt：Seale Smith et al. (2022) 是一种最先进的基于提示的 CIL 方法。它将提示分解为加权和格式，并引入了可学习的注意力机制来提示匹配；</li>
+<li>SimpleCIL：Zhou et al. (2024) 是一种最先进的基于 PTMs 的 CIL 方法。它将从冻结的 PTMs 提取的原型特征设置为分类器，无需额外训练即可完成下游任务；</li>
+<li>ADAM：Zhou et al. (2024) 是一种最先进的基于 PTMs 的 CIL 方法。它通过在第一项任务上高效调整来适应下游任务，并通过提取连接的原型分类器与原始冻结模型合并。</li>
+</ul>
+<p>所有这些方法都使用相同的主干，即 ViT-B/16-IN1K。</p>
+<p>A.2 数据集</p>
+<p>按照 [Zhou et al., 2024]，我们选择了三个基于预训练模型的数据集进行比较。为了模拟长尾分布，我们按照参数化的指数衰减从原始数据集中采样。ρ是最少频繁类别与最频繁类别数量之间的比率，即 <span class="math-inline">\rho = \frac{N_{min}}{N_{max}}</span>。详细介绍如下。</p>
+<ul>
+<li>CIFAR100：Krizhevsky et al. (2009) 包含 60,000 张图像，分为 100 类，其中 50,000 张是训练实例，10,000 张是测试实例，分布均匀。我们用 <span class="math-inline">\rho = 0.01</span> 和 <span class="math-inline">N_{max} = 500</span> 对其进行采样；</li>
+<li>ImageNet-R：Hendrycks et al. (2021) 被 Wang et al. (2022) 引入 CIL。它包含 30,000 张不同风格的图片，其中 24,000 张是训练实例，6,000 张是测试实例。由于它遵循长尾分布，<span class="math-inline">\rho = 0.11</span> 和 <span class="math-inline">N_{max} = 349</span> 为 200 类，我们在不进行额外处理的情况下对其进行实验；</li>
+<li>ObjectNet：Barbu et al. (2019) 被 Zhou et al. (2024) 引入 CIL。它包含有控制变化的图片。选择了约 32,000 张实例的 200 类子集进行评估，其中 26,509 张是训练实例，6,628 张是测试实例。我们用 <span class="math-inline">\rho = 0.01</span> 和 <span class="math-inline">N_{max} = 200</span> 对其进行采样。</li>
+</ul>
+<p>由于我们从数据集中采样以模拟长尾分布，我们在图 4 中提供了分布。</p>
+<p>附录 B 额外的实验评估</p>
+<p>在本节中，我们分析了 Apart 的更多超参数，除了本文中提到的池数量。</p>
+<p>B.1 池大小的影响</p>
+<p>我们在表 6 中展示了不同池大小的结果。池大小 <span class="math-inline">M</span> 意味着池中的选项数量。它揭示了池大小对增量性能的影响。当池中的选项少于模型完成长序列任务所需的容量时，会出现相对较低的准确度。当池中有更多的适配器时，首先会出现增长，然后是下降。增长是为了适当的容量，而每个元素在池中的学习不足可能导致下降。因此，我们将 <span class="math-inline">M</span> 设置为默认值 5。</p>
+<p>表 6 不同池大小在无序 CIFAR100 B50-5 上的性能。</p>
+<p><span class="math-inline">M</span> 3 5 7 10<br />
+准确度 83.61 84.91 83.54 83.57<br />
+最后一次准确度 79.92 81.93 79.87 80.17</p>
+<p>B.2 权重尺度的影响</p>
+<p>我们探索了参数 <span class="math-inline">\alpha</span> 在 <span class="math-inline">L_2(\cdot, \cdot)</span> 中的影响，该参数控制自适应权重的尺度。<span class="math-inline">\alpha</span> 的选择对性能有显著影响。表 7 中的结果显示，随着 <span class="math-inline">\alpha</span> 变大，性能最初会提高。一个小权重直接导致辅助池相对于其他池的学习不足。然后，在没有对它进行约束时，预测的集成是偏见的。同时，小的学到的权重在路由多数类别和少数类别之间几乎没有差距，导致对少数类别的学习不足。当 <span class="math-inline">\alpha</span> 变大时，会出现适度的下降，因为差距缩小了。因此，我们将 <span class="math-inline">\alpha</span> 设置为默认值 1。</p>
+<p>表 7 不同 <span class="math-inline">\alpha</span> 在无序 CIFAR100 B50-5 上的性能。</p>
+<p><span class="math-inline">\alpha</span> 0.1 0.3 0.5 0.7 1.0 3.0<br />
+准确度 52.58 69.74 76.35 84.02 84.91 84.40<br />
+最后一次准确度 52.61 72.28 74.57 80.84 81.93 81.51</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#一个框架回顾优化算法">一个框架回顾优化算法</a></li>
+<li><a href="#sgd">SGD</a></li>
+<li><a href="#sgd-with-momentum">SGD with Momentum</a></li>
+<li><a href="#sgd-with-nesterov-acceleration">SGD with Nesterov Acceleration</a></li>
+<li><a href="#adagrad">AdaGrad</a></li>
+<li><a href="#adadelta--rmsprop">AdaDelta / RMSProp</a></li>
+<li><a href="#adam">Adam</a></li>
+<li><a href="#adamw">AdamW</a></li>
+<li><a href="#nadam">Nadam</a></li>
+<li><a href="#补充指数移动平均值的偏差修正">补充：指数移动平均值的偏差修正</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/08.模型优化</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="一个框架回顾优化算法">一个框架回顾优化算法<a class="anchor-link" href="#一个框架回顾优化算法" title="Permanent link">&para;</a></h2>
+<p>深度学习优化算法经历了 SGD -&gt; SGDM -&gt; NAG -&gt;AdaGrad -&gt; AdaDelta -&gt; Adam -&gt; Nadam 这样的发展历程。</p>
+<p>首先定义：待优化参数： <span class="math-inline">w</span> ，目标函数： <span class="math-inline">f(w)</span> ，初始学习率 <span class="math-inline">\alpha</span>。</p>
+<p>而后，开始进行迭代优化。在每个epoch <span class="math-inline">t</span> ：</p>
+<ol>
+<li>计算目标函数关于当前参数的梯度： <span class="math-inline">g_t=\nabla f(w_t)</span></li>
+<li>根据历史梯度计算一阶动量和二阶动量：<span class="math-inline">m_t = \phi(g_1, g_2, \cdots, g_t); V_t = \psi(g_1, g_2, \cdots, g_t)</span>，</li>
+<li>计算当前时刻的下降梯度： <span class="math-inline">\eta_t = \alpha \cdot m_t / \sqrt{V_t}</span></li>
+<li>根据下降梯度进行更新： <span class="math-inline">w_{t+1} = w_t - \eta_t</span></li>
+</ol>
+<p>步骤3、4对于各个算法都是一致的，主要的差别就体现在1和2上。</p>
+<h2 id="sgd">SGD<a class="anchor-link" href="#sgd" title="Permanent link">&para;</a></h2>
+<p>SGD没有动量的概念，也就是说：</p>
+<p><div class="math-display">m_t = g_t; V_t = I^2</div></p>
+<p>代入步骤3，可以看到下降梯度就是最简单的</p>
+<p><div class="math-display">\eta_t = \alpha \cdot g_t </div></p>
+<p>SGD最大的缺点是下降速度慢，而且可能会在沟壑的两边持续震荡，停留在一个局部最优点。</p>
+<h2 id="sgd-with-momentum">SGD with Momentum<a class="anchor-link" href="#sgd-with-momentum" title="Permanent link">&para;</a></h2>
+<p>为了抑制SGD的震荡，SGDM认为梯度下降过程可以加入惯性。下坡的时候，如果发现是陡坡，那就利用惯性跑的快一些。SGDM全称是SGD with momentum，在SGD基础上引入了一阶动量：</p>
+<p><div class="math-display">m_t = \beta_1 \cdot m_{t-1} + (1-\beta_1)\cdot g_t</div> </p>
+<p>一阶动量是各个时刻梯度方向的指数移动平均值，约等于最近 <span class="math-inline">1/(1-\beta_1)</span> 个时刻的梯度向量和的平均值。</p>
+<p>也就是说，<span class="math-inline">t</span> 时刻的下降方向，不仅由当前点的梯度方向决定，而且由此前累积的下降方向决定。 <span class="math-inline">\beta_1</span> 的经验值为0.9，这就意味着下降方向主要是此前累积的下降方向，并略微偏向当前时刻的下降方向。想象高速公路上汽车转弯，在高速向前的同时略微偏向，急转弯可是要出事的。</p>
+<h2 id="sgd-with-nesterov-acceleration">SGD with Nesterov Acceleration<a class="anchor-link" href="#sgd-with-nesterov-acceleration" title="Permanent link">&para;</a></h2>
+<p>SGD 还有一个问题是困在局部最优的沟壑里面震荡。想象一下你走到一个盆地，四周都是略高的小山，你觉得没有下坡的方向，那就只能待在这里了。可是如果你爬上高地，就会发现外面的世界还很广阔。因此，我们不能停留在当前位置去观察未来的方向，而要向前一步、多看一步、看远一些。</p>
+<p>NAG全称Nesterov Accelerated Gradient，是在SGD、SGD-M的基础上的进一步改进，改进点在于步骤1。我们知道在时刻t的主要下降方向是由累积动量决定的，自己的梯度方向说了也不算，那与其看当前梯度方向，不如先看看如果跟着累积动量走了一步，那个时候再怎么走。因此，NAG在步骤1，不计算当前位置的梯度方向，而是计算如果按照累积动量走了一步，那个时候的下降方向：</p>
+<p><span class="math-inline">g_t=\nabla f(w_t-\alpha \cdot m_{t-1} / \sqrt{V_{t-1}})</span> </p>
+<p>然后用下一个点的梯度方向，与历史累积动量相结合，计算步骤2中当前时刻的累积动量。</p>
+<h2 id="adagrad">AdaGrad<a class="anchor-link" href="#adagrad" title="Permanent link">&para;</a></h2>
+<p>此前我们都没有用到二阶动量。二阶动量的出现，才意味着“自适应学习率”优化算法时代的到来。SGD及其变种以同样的学习率更新每个参数，但深度神经网络往往包含大量的参数，这些参数并不是总会用得到（想想大规模的embedding）。对于经常更新的参数，我们已经积累了大量关于它的知识，不希望被单个样本影响太大，希望学习速率慢一些；对于偶尔更新的参数，我们了解的信息太少，希望能从每个偶然出现的样本身上多学一些，即学习速率大一些。</p>
+<p>怎么样去度量历史更新频率呢？那就是二阶动量——该维度上，迄今为止所有梯度值的平方和：</p>
+<p><span class="math-inline">V_t = \sum_{\tau=1}^{t} g_\tau^2</span></p>
+<p>我们再回顾一下步骤3中的下降梯度：</p>
+<p><span class="math-inline">\eta_t = \alpha \cdot m_t / \sqrt{V_t}</span> </p>
+<p>可以看出，此时实质上的学习率由 <span class="math-inline"> \alpha</span> 变成了 <span class="math-inline"> \alpha / \sqrt{V_t}</span> 。 一般为了避免分母为0，会在分母上加一个小的平滑项。因此<span class="math-inline">\sqrt{V_t}</span> 是恒大于0的，而且参数更新越频繁，二阶动量越大，学习率就越小。</p>
+<p>这一方法在稀疏数据场景下表现非常好。但也存在一些问题：因为<span class="math-inline">\sqrt{V_t}</span> 是单调递增的，会使得学习率单调递减至0，可能会使得训练过程提前结束，即便后续还有数据也无法学到必要的知识。</p>
+<h2 id="adadelta--rmsprop">AdaDelta / RMSProp<a class="anchor-link" href="#adadelta--rmsprop" title="Permanent link">&para;</a></h2>
+<p>由于AdaGrad单调递减的学习率变化过于激进，我们考虑一个改变二阶动量计算方法的策略：不累积全部历史梯度，而只关注过去一段时间窗口的下降梯度。这也就是AdaDelta名称中Delta的来历。</p>
+<p>修改的思路很简单。前面我们讲到，指数移动平均值大约就是过去一段时间的平均值，因此我们用这一方法来计算二阶累积动量：</p>
+<p><span class="math-inline">V_t = \beta_2 * V_{t-1} + (1-\beta_2) g_t^2</span> </p>
+<p>这就避免了二阶动量持续累积、导致训练过程提前结束的问题了。</p>
+<h2 id="adam">Adam<a class="anchor-link" href="#adam" title="Permanent link">&para;</a></h2>
+<p>谈到这里，Adam和Nadam的出现就很自然而然了——它们是前述方法的集大成者。我们看到，SGD-M在SGD基础上增加了一阶动量，AdaGrad和AdaDelta在SGD基础上增加了二阶动量。把一阶动量和二阶动量都用起来，就是Adam了——Adaptive + Momentum。</p>
+<p>SGD的一阶动量：</p>
+<p><span class="math-inline">m_t = \beta_1 \cdot m_{t-1} + (1-\beta_1)\cdot g_t</span></p>
+<p>加上AdaDelta的二阶动量：</p>
+<p><span class="math-inline">V_t = \beta_2 * V_{t-1} + (1-\beta_2) g_t^2</span></p>
+<p>优化算法里最常见的两个超参数 <span class="math-inline"> \beta_1, \beta_2</span> 就都在这里了，前者控制一阶动量，后者控制二阶动量。</p>
+<h2 id="adamw">AdamW<a class="anchor-link" href="#adamw" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://mp.weixin.qq.com/s/4oq1L3hdWWby9lERDZiF6g">AdamW与Adam的比较，可能AdamW依然是最好的优化器</a></p>
+<ol>
+<li>AdamW 的实现方法与传统的 L2 正则化不同，它直接对权重进行衰减，而不是将其加到损失函数上。 </li>
+<li>实验结果显示，适当调整的 Adam 优化器可以达到或超过 SGD 加 momentum 的准确率，并且通常训练速度更快。 </li>
+<li>在使用 Adam 优化器时，需要适当调整正则化超参数，以确保模型的泛化能力。 <br />
+   - <strong>初始学习率（lr）</strong>:通常从较大的学习率开始，例如0.001到0.01，然后根据需要进行调整。对于AdamW，可以使用学习率预热（gradual warm-up）策略，逐渐增加学习率，以避免初始训练阶段的不稳定。<br />
+   - <strong>权重衰减（wd）</strong>: 权重衰减通常设置得较小，例如1e-2到1e-5。在使用AdamW时，wd的值可能需要比在SGD中使用L2正则化时大得多。<br />
+   - <strong>动量参数（beta1）</strong>: beta1的常用值在0.9到0.99之间。有时候，可以在训练过程中根据学习率调整beta1，例如使用1cycle策略，在学习率增加时降低beta1，学习率减少时恢复高值。<br />
+   - <strong>二次动量参数（beta2）</strong>: beta2通常被设置得较高，如0.999，以便更好地平滑梯度的估计。对于非常长的训练，有时会选择更接近1的值。<br />
+   - <strong>epsilon（ε）</strong>: 通常设置为一个非常小的值，如1e-8，以确保数值稳定性。<br />
+   - <strong>学习率衰减（lr decay）</strong>: 可以使用步进衰减、余弦衰减或余弦余弦衰减等策略，以逐渐降低学习率，有助于模型收敛。<br />
+   - <strong>批量大小（batch size）</strong>: 选择合适的批量大小对于训练稳定性和计算效率很重要。批量大小通常受到硬件（尤其是GPU内存）的限制。<br />
+   - <strong>训练周期（epochs）</strong>: 确保模型有足够的训练周期来收敛。对于使用AdamW的超级收敛（super-convergence），可能需要的周期比使用SGD时少得多。<br />
+   - <strong>权重初始化</strong>: 使用合适的权重初始化方法，如He初始化或Xavier初始化，可以帮助模型更快地收敛。<br />
+</li>
+</ol>
+</blockquote>
+<h2 id="nadam">Nadam<a class="anchor-link" href="#nadam" title="Permanent link">&para;</a></h2>
+<p>最后是Nadam。我们说Adam是集大成者，但它居然遗漏了Nesterov，这还能忍？必须给它加上，按照NAG的步骤1：</p>
+<p><span class="math-inline">g_t=\nabla f(w_t-\alpha \cdot m_{t-1} / \sqrt{V_t})</span> </p>
+<p>这就是Nesterov + Adam = Nadam了。</p>
+<p>说到这里，大概可以理解为什么经常有人说 Adam / Nadam 目前最主流、最好用的优化算法了。新手上路，先拿来一试，收敛速度嗖嗖滴，效果也是杠杠滴。</p>
+<p>那为什么Adam还老招人黑，被学术界一顿鄙夷？难道只是为了发paper灌水吗？</p>
+<p>请继续阅读：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/32262540">https://zhuanlan.zhihu.com/p/32262540</a> </p>
+<p><a href="https://zhuanlan.zhihu.com/p/32338983">https://zhuanlan.zhihu.com/p/32338983</a></p>
+<hr />
+<h2 id="补充指数移动平均值的偏差修正">补充：指数移动平均值的偏差修正<a class="anchor-link" href="#补充指数移动平均值的偏差修正" title="Permanent link">&para;</a></h2>
+<p>前面我们讲到，一阶动量和二阶动量都是按照指数移动平均值进行计算的：</p>
+<p><span class="math-inline">m_t = \beta_1 \cdot m_{t-1} + (1-\beta_1)\cdot g_t</span> </p>
+<p><span class="math-inline">V_t = \beta_2 \cdot V_{t-1} + (1-\beta_2) \cdot g_t^2</span> </p>
+<p>实际使用过程中，参数的经验值是</p>
+<p><span class="math-inline">\beta_1=0.9, \beta_2=0.999</span> </p>
+<p>初始化：</p>
+<p><span class="math-inline">m_0=0, V_0=0</span> </p>
+<p>这个时候我们看到，在初期， <span class="math-inline">m_t, V_t</span> 都会接近于0，这个估计是有问题的。因此我们常常根据下式进行误差修正：</p>
+<p><span class="math-inline">\tilde{m}_t = m_t / (1-\beta_1^t)</span> </p>
+<p><span class="math-inline">\tilde{V}_t = V_t / (1-\beta_2^t)</span> </p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/32230623">一个框架看懂优化算法之异同 SGD/AdaGrad/Adam</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-introduction">1. INTRODUCTION</a></li>
+<li><a href="#2overview">2.OVERVIEW</a></li>
+<li><a href="#3相关符号定义">3.相关符号定义</a></li>
+<li><a href="#4fsl问题定义">4.FSL问题定义</a></li>
+<li><a href="#5两类fsl方法的区别与联系">5.两类FSL方法的区别与联系</a></li>
+<li><a href="#6基于判别模型的方法">6.基于判别模型的方法</a></li>
+<li><a href="#7总结">7.总结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/16.小样本学习</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p><strong>Link:</strong> <a href="https://zhuanlan.zhihu.com/p/258562899">小样本学习——概念、原理与方法简介（Few-shot learning）</a></p>
+<p><strong><a href="https://zhida.zhihu.com/search?content_id=145589507&amp;content_type=Article&amp;match_order=1&amp;q=Few-shot+learning&amp;zhida_source=entity">Few-shot learning</a> (FSL)</strong> 在机器学习领域具有重大意义和挑战性，是否拥有从少量样本中学习和概括的能力，是将人工智能和人类智能进行区分的明显分界点，因为人类可以仅通过一个或几个示例就可以轻松地建立对新事物的认知，而机器学习算法通常需要成千上万个有监督样本来保证其泛化能力。原则上我们将FSL方法分为基于生成模型和基于判别模型两种，其中基于元学习的FSL方法值得特别注意。</p>
+<p>到目前为止，FSL有一部分比较重要的应用，涵盖了计算机视觉，自然语言处理，音频和语音，强化学习和数据分析等许多研究热点，可以说是一个很有发展前景的方向。</p>
+<h2 id="1-introduction"><strong>1. INTRODUCTION</strong><a class="anchor-link" href="#1-introduction" title="Permanent link">&para;</a></h2>
+<p>作为人类，其中一个显著的标志就是能够仅通过一个或几个示例就快速建立对新概念的认知能力。许多认知学和心理学证据表明，人类可以通过很少的图像来识别视觉对象，甚至儿童也可以通过仅一次的接触去记住一个新单词。</p>
+<p>尽管没有确切的证据解释人类从少量样本中学习和概括能力的实现机制，但是一些神经生物学学者认为，人类杰出的学习和认知能力得益于其前额叶皮层（PFC）和人脑的工作记忆机制 ，尤其是PFC特定的神经生物学机制与先前存储在大脑中的记忆之间的相互作用。</p>
+<p>相比之下，大多数尖端的机器学习算法都需要大量数据，尤其是最广为人知的深度学习，即使它已将人工智能推向了新的高潮，在视觉，文本，语音等广泛的研究领域中均取得了令人瞩目的成就。</p>
+<p>一般来讲，深度学习的成功可以归结于三个关键因素：强大的计算资源（例如GPU）、复杂的神经网络(如CNN、LSTM)、大规模数据集。</p>
+<p>但是，由于诸如隐私，安全性或数据的高标签成本等一系列因素，许多现实的应用场景（例如在医学，军事和金融领域）没有条件获取足够的带标签的训练样本，因此，如何使得一个机器学习/深度学习系统能够从非常少量的样本中高效地学习和推广其认知能力，成为许多机器学习/深度学习研究人员迫切期待实现的蓝图。</p>
+<p>从高层的角度来看，研究小样本学习（FSL）的理论和实践意义主要来自三个方面：</p>
+<ol>
+<li>首先，FSL方法预计不会依赖大规模的训练样本，从而避免了某些特定应用中数据准备的高昂成本。</li>
+<li>FSL可以缩小人类智能与人工智能之间的距离，这是发展通用类型AI的必经之路。</li>
+<li>FSL可以为一项新出现的、可采集样本很少的任务实现低成本，快速的模型部署。</li>
+</ol>
+<p>尽管上述的实践意义非常令人鼓舞，但由于其理论中固有的难度（即数据规模问题），对于FSL的研究在过去的几十年里，比起利用大量数据进行的机器学习研究要缓慢很多。</p>
+<p>接下来，先考虑一个一般的机器学习问题，该问题由准备好的监督训练集所描述：</p>
+<p><span class="math-inline">D_{t} ={(x_{i},y_{i})}<em>{i-1}^{n}</span> ，（ <span class="math-inline">x∈ X,y∈Y</span>， 从联合分布 <span class="math-inline">P</em>{X×Y}</span> 中得出）</p>
+<p>该学习算法的目标是产生映射函数： <span class="math-inline">f∈F:X →Y</span> ，使得预期的错误成本 <span class="math-inline">ε_{ex}=\mathbb{E}<em>{(x,y)∼P</em>{X×Y}}L(f(x),y)</span> 达到最小。</p>
+<p>其中 <span class="math-inline">L(f(x),y)</span> 表示 <span class="math-inline">x</span> 的预测值 <span class="math-inline">f(x)</span> 与其实际值 <span class="math-inline">y</span> 之前的损失Loss</p>
+<p>实际上，联合分布 <span class="math-inline">P_{X×Y}</span> 对于我们是未知的，因此因此学习算法实际上旨在最小化经验误差 <span class="math-inline">ε_{ex}=\mathbb{E}<em>{(x,y)∼D</em>{t}}L(f(x),y)</span> 。</p>
+<p>在这种情况下，一个典型的问题是，如果学习算法选择的 <span class="math-inline">f</span> 的函数空间 <span class="math-inline">F</span> 太大，则泛化误差 <span class="math-inline">\varepsilon=\left| \varepsilon_{ex}-\varepsilon_{em}\right|</span> 会变得很大，因此，很容易出现过拟合。</p>
+<p>我们可以从以下角度重新审视这个问题：</p>
+<p><span class="math-inline">min_{f}\varepsilon_{em},\;s.t.\;f(x_{i}) =y_{i},∀(x_{i},y_{i})∈D_{t}.\;(1)</span></p>
+<p>如果 <span class="math-inline">D_{t}</span> 中包含更多的受监督的样本，那么函数 <span class="math-inline">f</span> 将会有更多的约束条件，这意味着函数 <span class="math-inline">f</span> 的空间将会变小，这将会带来一个比较好的泛化效果。相反，如果监督样本的数据集规模减少，自然会导致较差的泛化能力。从本质上讲，<strong>每个监督样本形成的约束可以看作是函数 <span class="math-inline">f</span> 上的归一化，它可以压缩函数 <span class="math-inline">f</span> 的冗余可选空间，从而减少学习算法的泛化误差</strong>。</p>
+<p>从以上可以看出，如果一个学习算法只使用普通的ML/DL学习技术来处理一个FSL任务，而没有任何复杂的学习策略或特定的网络设计，那么得到的算法模型将面临严重的过拟合问题。</p>
+<p>小样本学习（FSL）可以追溯到2000年初，也称为small-sample learning, few-shot learning或者one-shot learning，这个概念(FSL)正交于zero-shot learning(ZSL)，那是机器学习的另一个热门话题。ZSL的设置需要特定于概念的辅助信息，以支持跨概念的知识传递信息，这与FSL的信息大不相同。</p>
+<h2 id="2overview">2.OVERVIEW<a class="anchor-link" href="#2overview" title="Permanent link">&para;</a></h2>
+<p>机器学习的一般机制是使用在预先准备的训练样本上学习的统计模型来对未来数据做出预测。 在大多数情况下，模型的泛化能力由足够数量的训练样本来保证。</p>
+<p>但是，在许多实际应用中，可能只允许我们拿到极少的关于新事物的训练数据，在限制范围内，每个概念仅一个或几个示例。 例如，我们可能需要识别几种不常见的国家一级保护动物，而手边只有几张带注释的动物图片。</p>
+<p>随着深度学习的蓬勃发展，尤其是CNN在视觉任务上取得的巨大成功，许多FSL研究人员开始将目光从非深度模型转移到深度模型，2015年，G.Kochet等人通过提议一个孪生卷积网络，在成对样本上学习与类别无关的相似性度量标准，率先将深度学习纳入FSL问题的解决方案，这也标志着FSL进入了一个新时代。之后，后续的FSL方法充分利用了深度神经网络在特征表示和端到端模型优化方面的优势，从不同角度解决了FSL问题，包括数据增强，度量学习和元学习。</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-9ee5c4510c2d4cf32c9251ec0795ae58_1440w.jpg" /></p>
+<p>图1 FSL发展历程和相关应用</p>
+<h2 id="3相关符号定义">3.相关符号定义<a class="anchor-link" href="#3相关符号定义" title="Permanent link">&para;</a></h2>
+<p>通常，我们用 <span class="math-inline">x </span> 来表示输入数据，<span class="math-inline">y </span> 来表示监督信息， <span class="math-inline">X</span> 和 <span class="math-inline">Y</span> 分别表示输入数据和监督信息的空间。</p>
+<p>一个典型的FSL任务数据则被描述为 <span class="math-inline">D_{T}=(D_{trn},D_{tst} )</span></p>
+<p>其中：</p>
+<p><span class="math-inline">D_{trn}={(x_{i},y_{i})}<em>{i=1}^{N</em>{trn}},\;D_{tst}={x_{j}},\;x_{i},x_{j}∈ X_{\tau}⊂X,y_{i}∈ Y_{\tau}⊂ Y</span></p>
+<p>用于任务 <span class="math-inline">T</span> 的样本 <span class="math-inline">x_{i},x_{j}</span> 来自一个特定的域 <span class="math-inline">D_{\tau} = {X_{\tau}，P(X_{\tau})}</span> ，由数据空间 <span class="math-inline">X_{\tau}</span> 和边际概率分布 <span class="math-inline">P(X_{\tau})\</span> 组成。</p>
+<p>通常，在 <span class="math-inline">D_{trn}</span> 中有 <span class="math-inline">C</span> 个任务类，每个类只有 <span class="math-inline">K</span> （非常小，例如1、5）个样本，即 <span class="math-inline">N_{trn}</span> = <span class="math-inline">CK</span> ，这也称为C-way,K-shot任务。目的是产生一个目标预测函数 <span class="math-inline">f∈F：X→Y</span> ，该函数可以对 <span class="math-inline">D_{tst}</span> 中的待预测样本进行预测。根据之前的分析，很难用少量的 <span class="math-inline">D_{trn}</span> 建立高质量的模型。</p>
+<p>因此，在大多数情况下，研究人员可以利用一个有监督的辅助数据集 ：<span class="math-inline">D_{A}={(x_{i}^{a},y_{i}^{a})}^{N_{aux}}<em>{i=1},x^{a}</em>{i}∈ X_{A}⊂ X,y^{a}<em>{i}∈ Y</em>{A}⊂ Y</span></p>
+<p><span class="math-inline">D_{A}</span> 中包括足够的类别和归属该类别的根据以往的经验收集的样本 <span class="math-inline">(N_{a}\gg N_{trn},\left| Y_{A}\right|\gg\left| Y_{T}\right| )</span></p>
+<p>需要注意的是， <span class="math-inline">D_{A}</span> 中不包含任务 <span class="math-inline">T</span> 中的样本类别。即， <span class="math-inline">Y_{T}\cap Y_{A}=\oslash</span> ，但 <span class="math-inline">D_{A}</span> 和 <span class="math-inline">D_{T}</span> 中的数据都来自同一域中，也就是说，<span class="math-inline">D_{T} {X_{\tau}，P(X_{\tau})}=D_{A} {X_{A}，P(X_{A})}</span></p>
+<p>这个设定是相对可靠且合理的，因为现在我们可以轻松地从许多与task <span class="math-inline">T</span> 相关的历史数据，包括离线或公开标记的数据中获取我们需要的辅助数据集 <span class="math-inline">D_{A}</span> ，尤其是在当今的大数据时代。</p>
+<p>在此基础上，我们对FSL进行统一定义。</p>
+<h2 id="4fsl问题定义">4.FSL问题定义<a class="anchor-link" href="#4fsl问题定义" title="Permanent link">&para;</a></h2>
+<p><strong>定义：</strong>Few-shot learning是指，给定一个有特定于任务 <span class="math-inline">T</span> 的包含少量可用的有监督信息的数据集 <span class="math-inline">D_{T}</span> 和与 <span class="math-inline">T</span> 不相关的辅助数据集 <span class="math-inline">D_{A}</span> ，小样样本学习的目标是为任务 <span class="math-inline">T</span> 构建函数 <span class="math-inline">f</span> ，该任务的完成利用了 <span class="math-inline">D_{T}</span> 中很少的监督信息和 <span class="math-inline">D_{A}</span> 中的知识，完成将输入映射到目标的任务。</p>
+<p>上述定义中与 <span class="math-inline">T</span> 不相关的术语表示 <span class="math-inline">D_{T}</span> 和 <span class="math-inline">D_{A}</span> 中的类别是正交的，即 <span class="math-inline">Y_{T}∩Y_{A}=∅</span> 。如果 <span class="math-inline">D_{A}</span> 覆盖了 <span class="math-inline">T</span> 中的任务，即 <span class="math-inline">Y_{T}∩Y_{A}= Y_{T}</span> ，则FSL问题将崩溃为传统的大样本学习问题。</p>
+<p>由此可以产生很多基于FSL的扩展性问题，如 <span class="math-inline">D_{trn}</span> 中包含一部分无标签数据，或者 <span class="math-inline">D_{A}\ne D_{T}</span> 的情况。</p>
+<h2 id="5两类fsl方法的区别与联系">5.两类FSL方法的区别与联系<a class="anchor-link" href="#5两类fsl方法的区别与联系" title="Permanent link">&para;</a></h2>
+<p><strong>判别模型概念理解：</strong></p>
+<p>判别方法由数据直接学习决策函数 <span class="math-inline">f(x)</span> 或者条件概率分布 <span class="math-inline">P(y|x)</span> 作为预测的模型，即判别模型。判别方法关心的是对给定输入 <span class="math-inline">x</span> ，应该预测什么样的输出 <span class="math-inline">y</span> 。</p>
+<p>比如说要确定一只羊是山羊还是绵羊，用判别模型的方法是先从历史数据中学习到模型，</p>
+<p>然后通过提取这只羊的特征来预测出这只羊是山羊的概率，还是绵羊的概率。</p>
+<p><strong>生成模型概念理解：</strong></p>
+<p>生成方法由数据学习输入和输出联合概率分布 <span class="math-inline">P(x,y)</span> ，然后求出后验概率分布 <span class="math-inline">P(y|x)</span> 作为预测的模型，即生成模型。这里以朴素贝叶斯为例，我们要求的目标可以通过：</p>
+<p><span class="math-inline">P(x,y) =P(x|y) P(y)</span></p>
+<p>求出输入输出的联合概率分布，然后通过贝叶斯公式：</p>
+<p><span class="math-inline">P(y|x)=\frac{P(x|y) P(y)}{P(x)}</span></p>
+<p>求出后验概率分布。</p>
+<p>对于上面的例子我们换种思路，我们可以根据山羊的特征首先学习出一个山羊模型，然后根据绵羊的特征学习出一个绵羊模型。然后从这只羊中提取特征，放到山羊模型中看概率是多少，再放到绵羊模型中看概率是多少，哪个大就是哪个。</p>
+<p>由于我们关注的是 <span class="math-inline">y</span> 的离散值结果中哪个概率大（比如山羊概率和绵羊概率哪个大），而并不是关心具体的概率，因此上式改写为：</p>
+<p><span class="math-inline">arg\max_{y}P(y|x)=arg\max_{y}\frac{P(x|y) P(y)}{P(x)} =arg\max_{y}{P(x|y) P(y)} </span></p>
+<p>其中 <span class="math-inline">P(x|y)</span> 称为条件概率(class-conditional probability)，或称为“似然”(likelihood)， <span class="math-inline">P(y)</span> 称为先验(prior)概率。 <span class="math-inline">P(x)</span> 是用于归一化的"证据"因子。对于给定样本 <span class="math-inline">x</span> 。证据因子 <span class="math-inline">P(x)</span> 与类标记无关,因此估计 <span class="math-inline">P(y|x)</span> 的问题就转化为如何基于训练数据来估计先验 <span class="math-inline">P(y)</span> 和似然 <span class="math-inline">P(x|y)</span> 。</p>
+<p><strong>判别模型与生成模型比较：</strong></p>
+<p><strong>判别模型：</strong></p>
+<p>优点： <br />
+1）仅需要有限的样本。节省计算资源，需要的样本数量也少于生成模型。 <br />
+2）能清晰的分辨出多类或某一类与其他类之间的差异特征，准确率往往较生成模型高。 <br />
+3）由于直接学习<span class="math-inline">P(y|x)</span>，而不需要求解类别条件概率，所以允许我们对输入进行抽象（比如降维、构造等），从而能够简化学习问题。</p>
+<p>缺点：</p>
+<p>1）不能反映训练数据本身的特性。能力有限，可以告诉你的是1还是2，但没有办法把整个场景描述出来。 <br />
+2）没有生成模型的优点。 <br />
+3）黑盒操作: 变量间的关系不清楚，不可视。</p>
+<p>主要应用：</p>
+<p>Image and document classification</p>
+<p>Biosequence analysis</p>
+<p>Time series prediction</p>
+<p><strong>生成模型：</strong></p>
+<p>优点：<br />
+1）生成给出的是联合分布<span class="math-inline">P(x,y) </span> ，不仅能够由联合分布计算后验分布<span class="math-inline">P(y|x)</span>（反之则不行），还可以给出其他信息，比如可以使用<span class="math-inline">P(x)=\sum_{i=1}^{k}{P(x|y_{i})} P(y_i )</span> 计算边缘分布<span class="math-inline">P({x} )</span>。如果一个输入样本的边缘分布<span class="math-inline">P({x} )</span> 小的话，那么可以认为学习出的这个模型可能不太适合对这个样本进行分类，分类效果可能会不好，这也是所谓的异常值检测(<em>outlier detection)。</em><br />
+2）生成模型收敛速度比较快，即当样本数量较多时，生成模型能更快地收敛于真实模型。<br />
+3）生成模型能够应付存在隐变量的情况，比如混合高斯模型就是含有隐变量的生成方法。</p>
+<p>4）研究单类问题比判别模型灵活性强</p>
+<p>缺点：<br />
+1）联合分布能够提供更多的信息，但也需要更多的样本和更多计算，尤其是为了更准确估计类别条件分布，需要增加样本的数目，而且类别条件概率的许多信息是我们做分类用不到，因而如果我们只需要做分类任务，就浪费了计算资源。<br />
+2）另外，实践中多数情况下判别模型效果更好。</p>
+<h2 id="6基于判别模型的方法">6.基于判别模型的方法<a class="anchor-link" href="#6基于判别模型的方法" title="Permanent link">&para;</a></h2>
+<p><strong>6.1度量学习（Metric Learning）</strong></p>
+<p>度量学习的一般目标是学习相似度度量 <span class="math-inline">S</span> ，在该标准下，相似样本对可以获得较高的相似度得分，而非相似对则获得较低的相似度得分。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-26139cbca15600f237ed5a2150f83860_1440w.jpg" /></p>
+<p>基于度量学习的FSL方法的通用框架</p>
+<p>如上图所示，所有基于度量学习的FSL方法都遵循这一原理，它使用辅助数据集 <span class="math-inline">D_{A}</span> 创建相似性度量并将其推广到任务 <span class="math-inline">T</span> 的新颖类中。相似度度量可以是简单的距离测量，复杂的网络或其他可行的模块或算法，只要它们可以估计样本或特征之间的相似度即可。</p>
+<p>几种典型的基于度量学习的FSL方法包括类相关性度量(CRM)、<a href="https://zhida.zhihu.com/search?content_id=145589507&amp;content_type=Article&amp;match_order=1&amp;q=KernelBoost&amp;zhida_source=entity">KernelBoost</a>、Siamese Net等，他们开发了与不同的度量损失函数和相关的各种形式的相似性度量指标来解决FSL任务。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-e0f73c9a709fc1c65e20208e7372631a_1440w.jpg" /></p>
+<p>基于度量学习的FSL方法</p>
+<p>CRM是非深度期提出的基于度量学习的基于FSL方法的基础工作,它使用马氏距离来衡量样本相似性。</p>
+<p>KernelBoost 建议通过boosting算法学习成对距离，形式为核函数。核函数定义为一些弱核函数的组合。</p>
+<p><a href="https://zhida.zhihu.com/search?content_id=145589507&amp;content_type=Article&amp;match_order=1&amp;q=Siamese+Nets&amp;zhida_source=entity">Siamese Nets</a>是第一个将深度神经网络带入FSL任务的工作，它由拥有相同权重的孪生CNN组成，两个CNN接受一对样本 <span class="math-inline">（x_{i}，x_{j}）</span> 作为输入，并且将它们在顶层的输出进行计算，以输出单个成对相似度<span class="math-inline">scprep（x_{i}，x_{j}）</span>。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-ff0d653ee11b751684e06fe770843639_1440w.jpg" /></p>
+<p>2-CNN网络模型</p>
+<p>关于度量学习算法的具体流程和内容将会在后续文章中给出</p>
+<p><strong>6.2 数据增强（</strong>Augmentation<strong>）</strong></p>
+<p>数据增强是提高训练样本数量和增强数据多样性的直观方法，在视觉领域，一些基本的增强操作包括旋转，翻转，裁剪，平移以及将噪波添加到图像中。对于FSL任务，这些低层次的增强手段不足以为FSL模型的泛化能力带来实质性的收益。 在这种情况下，不少文章提出了针对FSL定制的更复杂的增强模型，算法或网络。</p>
+<p><img alt="" src="https://picx.zhimg.com/v2-7585164e5aebcb21115df6782c7a909d_1440w.jpg" /></p>
+<p>基于数据增强的FSL方法的总体框架</p>
+<p>除了DAGAN在数据级别对样本进行增强之外，其他方法也实现了在task <span class="math-inline">T</span> 中训练样本的特征级增强。根据数据的扩充是否依赖于外部信息（例如语义属性，词向量属性等），可以将现有的基于扩充的FSL方法进一步分为有监督和无监督两类。</p>
+<p>基于监督增强的几种FSL方法包括特征轨迹转移、AGA、Dual TriNet、Author-Topic (AT)和ABS-Net。为便于标记，设 <span class="math-inline">\Omega_{fe}</span> 为特征空间， <span class="math-inline">\Omega_{si}</span> 为辅助信息空间。通过这些方法学习到的扩增 <span class="math-inline">A(·)</span> 本质上是 <span class="math-inline">\Omega_{fe}</span> 与 <span class="math-inline">\Omega_{si}</span> 之间的映射关系，尽管它们在映射方向和映射模块上有所不同，总结如下图所示。</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-5b1bb0e2343eec8e49560eb929d8b16c_1440w.jpg" /></p>
+<p>feature与side information之间的映射关系</p>
+<p>基于数据增强的FSL方法不会与其他FSL方法冲突，例如基于度量学习或元学习的方法。相反，大多数基于增强的FSL方法是对它们的补充，数据增强方法可以当作即插即用的模块：首先可以采用这些增强策略来丰富 <span class="math-inline">D_{trn}</span> ，然后通过其他FSL方法学习增强的 <span class="math-inline">D_{trn}^{aug}</span> .</p>
+<p>具体内容会在之后的文章中详细探讨</p>
+<p><strong>6.3 元学习（Meta Learning）</strong></p>
+<p>元学习的想法最早是在九十年代提出的。 随着深度学习的普及，一些文章提出利用元学习策略来学习以优化深度模型。通常，元学习主张跨任务学习，然后适应新任务。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-494970d0691b80a41ce28b842c5eb5eb_1440w.jpg" /></p>
+<p>其目的是在任务级别上学习而不是在样本上学习，并且学习任务未知的系统而不是特定于任务的模型。</p>
+<p>FSL可以用于验证跨任务的元学习方法的功能，其中每个任务仅提供一些带标签的样本。</p>
+<p>元学习通过两个阶段来处理FSL问题：meta-train(元训练)和meta-test(元测试)，在元训练阶段，模型暴露于许多独立的，由辅助数据集 <span class="math-inline">D_{A}</span> 构建的监督任务 <span class="math-inline">T\sim p(T)</span> 中，以学习如何适应未来的相关任务。 <span class="math-inline">p(T)</span> 定义任务分配，这表明所有任务都来 <span class="math-inline">p(T)</span> 自并遵循相同的任务范式，例如，所有任务都是C-ways，K-shot问题。</p>
+<p>每个meta-train任务都会设置一个特定于任务的数据集 <span class="math-inline">D_{T}={D_{trn},D_{tst}}</span></p>
+<p>在元测试中，模型在新任务 <span class="math-inline">T\sim p(T)</span> 上测试，其元测试标签空间与元训练期间的标签空间不相交。</p>
+<p>元学习是一种高级的跨任务学习策略，而不是特定的FSL模型。我们基于元学习模型来在该学习策略背后进行FSL的内容。通常将基于主题学习的FSL方法概括为五个子类 类别：Learn-to-Measure (L2M), Learn-to-Finetune (L2F), Learn-to-Parameterize (L2P), Learn-to-Adjust (L2A) and Learn-to-Remember (L2R)。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-83b07bf740af0c26ce337bad84dedd7b_1440w.jpg" /></p>
+<p>5-way ，1-shot示意图</p>
+<p>我们有一个拥有大量数据的训练集（training set），我们利用这个训练集来构造出和测试时类似的数据结构 <span class="math-inline">D_{A} {X_{A}，P(X_{A})}</span> ，也就是sample set和query set来模拟测试时的support set和testing set。我们可以使用训练集来生成巨量的模拟任务，从而在meta层面上训练整个关系网络。随后，我们在运用数据集 <span class="math-inline">D_{T}(D_{trn},D_{tst} )</span> 来对网络进行调整，以期待让其实现小样本学习的任务，在少量数据集 <span class="math-inline">D_{T}</span> 上实现准确分类。元学习的目标就是通过学习大量的任务，从而学习到内在的元知识，从而能够快速的处理新的同类任务，这和少样本学习的目标设定是一样的。</p>
+<p>具体的元学习方案和其余扩展内容会在专栏随后的文章中更新</p>
+<h2 id="7总结">7.总结<a class="anchor-link" href="#7总结" title="Permanent link">&para;</a></h2>
+<p>使学习系统能够从少量样本中学习，对于机器学习和人工智能的进一步发展至关重要，本文对小样本学习（FSL）的概念、原理和方法进行了简要的解释，并且将FSL方法进行了归类解释，随后会更新一些关于文中谈到的FSL方法和相关原理解释。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#对比学习与谱聚类算法">对比学习与谱聚类算法</a></li>
+<li><a href="#从simclr谈起">从SimCLR谈起</a></li>
+<li><a href="#什么是理想空间">什么是理想空间？</a></li>
+<li><a href="#子图采样评分">子图采样评分</a></li>
+<li><a href="#从simclr到谱聚类">从SimCLR到谱聚类</a><ul>
+<li><a href="#拓展到clip">拓展到CLIP</a></li>
+</ul>
+</li>
+<li><a href="#总结">总结</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/15.对比学习</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>文章来源：<a href="https://zhuanlan.zhihu.com/p/634466306">对比学习在学啥？</a></p>
+</blockquote>
+<p>对比学习是大模型的入门算法。它的想法很简单：对于输入<span class="math-inline">x</span>, 找一些它的正样本和负样本，希望在学习之后的网络特征空间中，<span class="math-inline">x</span> 正样本近一点，负样本远一点。</p>
+<p>实际上，对比学习并非个例，预训练算法大多非常简单：要么是遮盖一部分数据内容让模型猜出来，要么是让模型不断预测一句话的下一个词是什么等等。因为这些算法过于简单，人们很难理解它们究竟如何创造出了强大的模型，所以往往会把大模型的成功归功于海量数据或巨大算力，把算法设计归为炼丹与悟性。</p>
+<h2 id="对比学习与谱聚类算法">对比学习与谱聚类算法<a class="anchor-link" href="#对比学习与谱聚类算法" title="Permanent link">&para;</a></h2>
+<ol>
+<li>对比学习与谱聚类算法的关系<strong>不是我们第一个提出的</strong>。人们早就在实践中发现，对比学习得到的模型在分类任务上有突出的效果，但是在其他下游任务中表现一般。马腾宇老师组在2021年的论文<a href="https://arxiv.org/abs/2106.04156">https://arxiv.org/abs/2106.04156</a>中极具创新性地证明了，如果把对比学习中常用的InfoNCE loss改成某种变体（他们称之为spectral contrastive loss），那么得到的模型几乎就是在做谱聚类：是谱聚类的结果乘以一个线性变换矩阵。换句话说，他们已经证明了，对比学习的变体是谱聚类的变体。我们的结果可以看作是对他们结果的进一步完善<strong>：对比学习就是谱聚类</strong>。因此，虽然我们的结果可以看做是这个问题的一个完美句号，但并不出人意料。</li>
+<li>我们的理论框架精致，但<strong>并非原创</strong>。事实上，我们使用了Van Assel等人2022年发表的用于分析Dimension reduction的概率图框架<a href="https://arxiv.org/abs/2201.13053v2">https://arxiv.org/abs/2201.13053v2</a>，将其调整之后用于对比学习分析之中。虽然这一调整并不显然，相信原作者也没有想到他们的框架可以用来分析预训练模型；但是我们的理论工具确实来源于他们的工作。</li>
+</ol>
+<p>所以我想，我们的工作最重要的地方是提供了<strong>理解大模型的新视角</strong>。对我来说，当对比学习的底层逻辑以一种简洁、优雅的方式展现出来时，它的意义远远超出了谱聚类的理论刻画本身，给我带来了巨大震撼。这种新的视角可以帮助AI从业者更好地理解预训练算法和模型，对未来的算法设计与模型应用都会有帮助。当然，这意味着要先理解一点点数学——不过我保证，这是值得的。</p>
+<h2 id="从simclr谈起">从SimCLR谈起<a class="anchor-link" href="#从simclr谈起" title="Permanent link">&para;</a></h2>
+<p>我们先从Hinton团队2020年提出的SimCLR算法<a href="https://arxiv.org/abs/2002.05709">https://arxiv.org/abs/2002.05709</a>谈起，它也是对比学习的代表算法。SimCLR专门用于理解图像，它基于一个重要的先验知识：把一只狗的图片进行翻转、旋转、切分或者其他相关操作，得到的图片还是在描绘同一只狗。具体来说，论文中考虑了9种不同类型的操作，如下图所示：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202408312057890.jpg"/></div>
+
+<p>对于人类来说，上面的这些图一看就是同一只狗。针对任何一张图片 <span class="math-inline">x</span> ，我们可以通过这样的方法随机生成两个它的变体，称之为 <span class="math-inline">x_i</span> 和 <span class="math-inline">x_j</span> 。既然这两个变体图片描述的是同一个东西，它们应该包含了极为相似的语义信息。可是，一只狗的像素矩阵，和将它旋转之后得到的像素矩阵，在像素空间中天差地别。那么，我们能不能找到一个语义空间，使得这两者相似呢？这就是SimCLR算法，见下图（我们基于原文的示意图进行了微小的调整）。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202408312057891.jpg"/></div>
+
+<p>可以看到，假如我们通过预先定义的图片操作，生成了 <span class="math-inline">x_i</span> 和 <span class="math-inline">x_j</span>。然后我们把它们分别塞进神经网络 <span class="math-inline">f</span> 中，得到了两个向量 <span class="math-inline">z_i, z_j</span> 。我们希望这两个向量比较接近，毕竟他们代表的图片有相似的语义。</p>
+<p>可是，如果使用这个标准来训练模型的话，模型非常容易偷懒。试想，倘若 <span class="math-inline">f</span> 把所有的输入都映射到同一个输出，那自然满足我们的要求，但是这个模型什么都没有学到。因此，SimCLR引入了负样本，即从数据集中随机选一些图片生成 <span class="math-inline">z_k</span>，使得 <span class="math-inline">z_i, z_j</span> 比较近，但是和 <span class="math-inline">z_k</span> 又比较远。这样， <span class="math-inline">f</span> 就没法偷懒，不得不认认真真学点东西了。</p>
+<p>使用这个想法设计的损失函数叫做InfoNCE loss，它有一个令人望而生畏的数学定义。假如给定一个图片 <span class="math-inline">x_i</span> 和它的正样本 <span class="math-inline">x_j</span> ，还有一系列负样本，我们叫它们 <span class="math-inline">x_k^1, \cdots, x_k^N</span> ，那么损失函数定义为（我们进行了等价变换，详见论文<a href="https://arxiv.org/abs/2303.15103v2">https://arxiv.org/abs/2303.15103v2</a>)：</p>
+<p><div class="math-display">L(x_i, x_j, {x_k^n})=-\log\frac{\exp(-|f(x_i)-f(x_j)|^2/2\tau)}{\exp(-|f(x_i)-f(x_j)|^2/2\tau)+\sum_t \exp(-|f(x_i)-f(x_k^t)|^2/2\tau)}</div> </p>
+<p>这个式子很复杂，但是如果我们愿意<strong>抓大放小</strong>的话，它也很简单。所谓的抓大放小，就是先不管那些我们不明白的部分，只看它的主要意思。按照这个指导思想，我带着大家过一遍：</p>
+<p>开头为什么有个负号？说明后面的式子越大越好。为什么要加个log？不懂，我们先不管，之后再说。下面这个分式是什么？可以看到，分子在分母中也出现了，我们就把分子当做 <span class="math-inline">x_i, x_j</span> 相近程度即可。分式的意思就是说， <span class="math-inline">x_i</span> 与 <span class="math-inline">x_j</span> 这对正样本的相近程度，相比 <span class="math-inline">x_i</span> 和 <span class="math-inline">x_k^t</span> 那些负样本的相近程度，应该越大越好。</p>
+<p>为什么 <span class="math-inline">\exp(-|f(x_i)-f(x_j)|^2/2\tau)</span> 能够表示两个图片的相近程度呢？<span class="math-inline">f(x_i), f(x_j)</span> 的含义很清楚，就是把 <span class="math-inline">x_i, x_j</span> 塞进神经网络得到的表征。exp和 <span class="math-inline">\tau</span> 代表了高斯核函数，是一种刻画两个表征的相似度的方法。</p>
+<p>上述就是SimCLR算法分析的传统思路。我们跳过或者模糊不清的部分，就是深度学习中非常重要的玄学——不懂没关系，效果好就行。</p>
+<p>我们今天的目标，就是把这些部分解释清楚，同时给出一个与传统分析思路截然不同的新思路。整个故事环环相扣，我们把SimCLR算法搁置一下，先从理想空间谈起。</p>
+<h2 id="什么是理想空间">什么是理想空间？<a class="anchor-link" href="#什么是理想空间" title="Permanent link">&para;</a></h2>
+<p>我们刚才谈到，在像素空间中，模型很难理解一张图片的语义。为了能够让模型更好地理解图片的语义，我们需要找到一个更好的空间，我称之为理想空间（即刚才说的语义空间）。在理想空间里，任何两个图片的语义关系可以非常方便地计算出来。比如说，在对比学习考虑的问题里，我们可以使用一个简单的函数 <span class="math-inline">k(z_i, z_j)</span> 直接算出 <span class="math-inline">z_i</span> 与 <span class="math-inline">z_j</span> 的相似关系。所以说，在理想空间中，图片的语义对于模型来说是“显然”的，因为任何两个图片的关系可以用 <span class="math-inline">k</span> 计算得到。如下图所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202408312057892.jpg" /><br />
+图中第一行的四个圆点表示四个数据点（在我们这里就是四个图片），圆点间的箭头表示它们之间的关系（我特意画了有向箭头，所以关系可以是单向的）。一般来说，关系可以非常复杂，但是今天我们假设两个点之间的关系可以用一个实数表示。这样，这些点与关系就形成了一个图，可以用邻接矩阵 <span class="math-inline">\mathbf{\pi}</span> 表示。在SimCLR算法中，两个点之间的关系等价于它们被选为一对正样本的概率，表示它们的相似程度。</p>
+<p>我们的目标是通过神经网络 <span class="math-inline">f</span> 计算出一个理想空间 <span class="math-inline">Z</span> （第二行），使得在这个空间中，任何两个点 <span class="math-inline">z_i, z_j</span> 之间的关系可以用一个简单的数学函数 <span class="math-inline">k(z_i,z_j)</span> 计算得到。今天我们考虑的是一种极为简单的 <span class="math-inline">k</span> 函数，我们要求 <span class="math-inline">k(z_i, z_j)</span> 可以简化写成 <span class="math-inline">k(z_i-z_j)</span> ，即 <span class="math-inline">k</span> 具有平移不变性。</p>
+<p>从图中可以看到，我特意在任何两个点之间都画了双向箭头，这是因为任何两个点都可以用 <span class="math-inline">k</span> 算出关系。这和第一行的关系图不同，因为第一行很可能存在两个点没有关系，或者只有单向关系。我把第二行的关系用邻接矩阵 <span class="math-inline">K_Z</span> 来表示。</p>
+<p>在理想的情况下，我们希望<span class="math-inline">K_Z</span> <span class="math-inline">\mathbf{\pi}</span> 一样的。可是，如果 <span class="math-inline">k</span> 是对称的， 而<span class="math-inline">\mathbf{\pi}</span> 在有向边，那这两个矩阵完全一样是不可能的。所以，我们需要定义一个损失函数来刻画它们的距离，然后使用优化算法进行优化。这样，我们就得到了一个可以将对象映射到理想空间的神经网络 <span class="math-inline">f</span> 的算法。</p>
+<p>然而，这个算法有个问题，就是损失函数不好算。考虑到我们的数据集非常大，可以包含几百万张甚至更多图片，所以上下两行对应的图都非常庞大，无法直接计算两个邻接矩阵的距离。那该怎么办呢？</p>
+<p>很简单，我们可以对原图进行降采样，取两个子图进行比较。如下图所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202408312057894.jpg" /><br />
+可以看到，左边计算Ideal loss可能很困难，所以我们走右边的虚线，通过子图采样的方法，得到两个子图 <span class="math-inline">W_X, W_Z</span> 。通过使用交叉熵让两个子图尽可能接近，我们也可以驱使模型学习到好的理想空间。但是要注意，这个思路本质是一种启发式算法，必要但并不充分：原图一致意味着子图一致，但是子图一致不意味着原图一致。</p>
+<h2 id="子图采样评分">子图采样评分<a class="anchor-link" href="#子图采样评分" title="Permanent link">&para;</a></h2>
+<p>如何对原图采样呢？我们可以使用Van Assel等人提出的框架<a href="#ref_3">#ref_3</a>，使用Markov随机场。对这个工具不太熟悉的朋友不必惊慌，它背后的原理很简单。如果我们想要对原图采样（假设它有 <span class="math-inline">n</span> 个点），那么我们首先需要定义子图的分布。这个分布说白了，就是给每个子图一个得分，使得每个子图被采到的概率与它的得分成正比。换句话说，我们需要设计一个评分函数，用于给每个子图评分，这样就可以定义出一个采样的分布。分高的经常被采，分低的就不怎么会被采到。</p>
+<p>所以，评分函数的定义，就决定了采样分布——我们需要设计一个合理的评分函数。我们考虑一个极为简单的办法，就是只考虑出度为1的子图。具体来说，这样的子图保持了原图的点不变，但是只给每个点留了1个出去的有向边。如果我们把这样的一个子图叫做 <span class="math-inline">W</span>，那么当我们给定原图的时候（用邻接矩阵<span class="math-inline">\pi</span> 示），我们可以定义<span class="math-inline">W</span> 评分为： <span class="math-inline">\Pi_{(i,j)\in [n]^2}\pi_{i,j}^{W_{i,j}}</span> 。</p>
+<p>注意到，由于<span class="math-inline">W</span> 个点的出度为1，所以它的邻接矩阵里面的数要么是0，要么是1。从这个角度来看，我们把 <span class="math-inline">W_{i,j}</span> 放到了 <span class="math-inline">\pi_{i,j}</span> 的指数上，所以只有当 <span class="math-inline">W_{i,j}=1</span> 时 <span class="math-inline">\pi_{i,j}</span> 才会被计算到连乘中，否则不会。换句话说，当 <span class="math-inline">W</span> 选中的边两端的点相似度（由 <span class="math-inline">\pi</span> 定义）较高时，评分更高，更容易被采到。</p>
+<p>非常神奇的是，基于这样的采样方式， <span class="math-inline">W</span> 的每一行彼此之间都是独立的，并且每一行（因为出度为1，所以有且仅有一个1）是从多项式分布 <span class="math-inline">M(1,\pi_i / \sum_j \pi_{i,j})</span> 中采样得到的。换句话说，对于第 <span class="math-inline">i</span> 行的W来说，它的第 <span class="math-inline">j</span> 列为1的概率恰好为 <span class="math-inline">\pi_{i,j}/ \sum_k{\pi_{i,k}}</span> 。当然，这里的 <span class="math-inline">\pi</span> 如果替换成 <span class="math-inline">K_Z</span>，结果也是一样的。</p>
+<h2 id="从simclr到谱聚类">从SimCLR到谱聚类<a class="anchor-link" href="#从simclr到谱聚类" title="Permanent link">&para;</a></h2>
+<p>一旦理解了子图的采样方法，剩下的部分就容易很多。从上图来看，我们需要优化 <span class="math-inline">W_X, W_Z</span> 的交叉熵。我们知道这两个矩阵的每一行都是独立的，所以可以单独拿出来计算。换句话说，我们可以针对每一行 <span class="math-inline">i</span> 计算 <span class="math-inline">W_{X,i}, W_{Z,i}</span> 的交叉熵，然后加起来。具体来说，对于给定的 <span class="math-inline">i</span>，我们需要计算每一列 <span class="math-inline">j</span> 配对的可能性。注意到 <span class="math-inline">j\neq i</span> ，因为我们假设没有指向自己的边：</p>
+<p><span class="math-inline">-\sum_{j\neq i}\Pr(W_{X,i,j}=1)\log\Pr(W_{Z,i,j}=1)</span> </p>
+<p>我们之前提过，由于 <span class="math-inline">W</span> 的采样特点，上式的<strong>右半部分</strong> <span class="math-inline">\Pr(W_{Z,i,j}=1)=K_{Z,i,j}/|K_{Z,i}|<em>1</span> (当j <span class="math-inline">\neq i</span> 时）。另外，根据 <span class="math-inline">K_Z=(k(z_i-z_j))</em>{(i,j)\in [n]^2}</span> ，不难算出当 <span class="math-inline">k</span> 是高斯核函数的时候：</p>
+<p><span class="math-inline">K_{Z,i,j}/|K_{Z,i}|<em>1=\frac{\exp(-|z_i-z_j|^2/2\tau)}{\sum</em>{k\neq i}\exp(-|z_i-z_k|^2/2\tau)}</span> (当j <span class="math-inline">\neq i</span> ）</p>
+<p>注意到， <span class="math-inline">z_i=f(x_i)</span> ，所以我们进一步可以得到：</p>
+<p><span class="math-inline">-\log\Pr(W_{Z,i,j}=1)=-\log \frac{\exp(-|f(x_i)-f(x_j)|^2/2\tau)}{\sum_{k\neq i}\exp(-|f(x_i)-f(x_k)|^2/2\tau)}</span> </p>
+<p>这恰好是SimCLR的InfoNCE损失函数！</p>
+<p>另一方面，我们真正需要优化的损失函数还有<strong>左半部分</strong> <span class="math-inline">\sum_{j\neq i}\Pr(W_{X,i,j}=1)</span> 这一项。这一项恰好对应于SimCLR算法针对每项输入 <span class="math-inline">x</span> 进行增广采样时，采到 <span class="math-inline">(x_i, x_j)</span> 这两个对象为一对正样本的概率。换句话说，SimCLR算法正好在优化 <span class="math-inline">-\sum_{j\neq i}\Pr(W_{X,i,j}=1)\log\Pr(W_{Z,i,j}=1)</span> 这一损失函数。</p>
+<p>另一方面，Van Assel等人的论文<a href="#ref_3">#ref_3</a>中证明了，上述损失函数等价于在 <span class="math-inline">\pi</span> 上进行谱分解。因此，我们就证明了SimCLR算法本质是在相似图上做谱分解算法，如下图所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/v2-ae3d3cde09ebefd9633b25df25ecb02b_b.jpg" />  </p>
+<h3 id="拓展到clip">拓展到CLIP<a class="anchor-link" href="#拓展到clip" title="Permanent link">&para;</a></h3>
+<p>与SimCLR相比，CLIP算法的用途更加广泛。例如，OpenAI提出的文图生成模型Dall-E2就是使用CLIP模型将文字与图像连在了一起，使得人们可以使用文字生成极高质量的图片。CLIP算法同样很简单，就是把图像和其文字描绘当做一组对象，使用InfoNCE损失函数把这两个对象连在一起。使用我们的分析方法，不难发现CLIP本质是在一个二分图上做谱聚类，具体可以参考论文<a href="#ref_1">#ref_1</a>。</p>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<p>可以看到，我们全程并没有为了证明SimCLR而证明SimCLR，也没有加入任何假设。实际上，我们是先从理想空间的角度来理解SimCLR算法，认为应该采用子图采样的方式才能够把理想空间学到。子图采样的方法有很多，我们选了比较自然、容易计算的一个，而它恰好就直接对应了SimCLR的算法！真是颇有一种踏破铁鞋无觅处，得来全不费工夫的感觉。</p>
+<p>我认为这背后提供的新视角是非常重要的。SimCLR/CLIP这些基础的预训练算法，其实是在把对象映射到理想空间，使得要学习的关系在理想空间中可以用简单函数自然地计算。当我们关注预训练算法的时候，我们不应该只看它的算法描述，而应该更多地关注模型通过学习对象的表征，构建了一个什么样的理想空间。</p>
+<p>毕竟，算法的<strong>最终目标</strong>可能要比算法的<strong>前行路线</strong>更值得分析。</p>
+<hr />
+<p>本文介绍的论文题为《<a href="https://arxiv.org/abs/2303.15103">https://arxiv.org/abs/2303.15103</a>》<a href="#ref_1">#ref_1</a>，由谭智泉、张伊凡、杨景钦和我合作完成。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ol start="2">
+<li><a href="#ref_2_0">#ref_2_0</a>[1] <a href="https://arxiv.org/abs/2106.04156">https://arxiv.org/abs/2106.04156</a></li>
+<li>^<a href="#ref_3_0">#ref_3_0</a><a href="#ref_3_1">#ref_3_1</a><a href="#ref_3_2">#ref_3_2</a>[2] <a href="https://arxiv.org/abs/2201.13053v2">https://arxiv.org/abs/2201.13053v2</a></li>
+<li><a href="#ref_4_0">#ref_4_0</a>[4] <a href="https://arxiv.org/abs/2002.05709">https://arxiv.org/abs/2002.05709</a></li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

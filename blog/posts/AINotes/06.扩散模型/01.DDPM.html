@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>use sinusoidal position embedding to encode time step (https://arxiv.org/abs/1706.03762)</title>
+    <meta name="description" content="use sinusoidal position embedding to encode time step (https://arxiv.org/abs/1706.03762) - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#新的起点">新的起点</a></li>
+<li><a href="#拆楼建楼">拆楼建楼</a></li>
+<li><a href="#该怎么拆">该怎么拆</a></li>
+<li><a href="#又如何建">又如何建</a></li>
+<li><a href="#降低方差">降低方差</a></li>
+<li><a href="#递归生成">递归生成</a></li>
+<li><a href="#超参设置">超参设置</a></li>
+<li><a href="#文章小结">文章小结</a></li>
+<li><a href="#扩散模型原理">扩散模型原理</a><ul>
+<li><a href="#扩散过程">扩散过程</a></li>
+<li><a href="#反向过程">反向过程</a></li>
+<li><a href="#优化目标">优化目标</a></li>
+</ul>
+</li>
+<li><a href="#模型设计">模型设计</a></li>
+<li><a href="#代码实现">代码实现</a></li>
+<li><a href="#小结">小结</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>use sinusoidal position embedding to encode time step (https://arxiv.org/abs/1706.03762)</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/06.扩散模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/535042237">生成扩散模型漫谈（一）：DDPM = 拆楼 + 建楼</a></p>
+</blockquote>
+<p>说到生成模型，<strong><a href="https://kexue.fm/tag/vae/">VAE</a></strong>、<strong><a href="https://kexue.fm/tag/GAN/">GAN</a></strong>可谓是“如雷贯耳”，本站也有过多次分享。此外，还有一些比较小众的选择，如<strong><a href="https://kexue.fm/tag/flow/">flow模型</a></strong>、<strong><a href="https://kexue.fm/archives/6760">VQ-VAE</a></strong>等，也颇有人气，尤其是VQ-VAE及其变体<strong><a href="https://arxiv.org/abs/2012.09841">VQ-GAN</a></strong>，近期已经逐渐发展到“图像的Tokenizer”的地位，用来直接调用NLP的各种预训练方法。除了这些之外，还有一个本来更小众的选择——扩散模型（Diffusion Models）——正在生成模型领域“异军突起”，当前最先进的两个文本生成图像——OpenAI的<strong><a href="https://arxiv.org/abs/2204.06125">DALL·E 2</a></strong>和Google的<strong><a href="https://arxiv.org/abs/2205.11487">Imagen</a></strong>，都是基于扩散模型来完成的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241222142249.png" style="zoom: 80%;" /></div>
+
+<p>从本文开始，我们开一个新坑，逐渐介绍一下近两年关于生成扩散模型的一些进展。据说生成扩散模型以数学复杂闻名，似乎比VAE、GAN要难理解得多，是否真的如此？扩散模型真的做不到一个“大白话”的理解？让我们拭目以待。</p>
+<h2 id="新的起点">新的起点<a class="anchor-link" href="#新的起点" title="Permanent link">&para;</a></h2>
+<p>其实我们在之前的文章<strong><a href="https://kexue.fm/archives/6612">《能量视角下的GAN模型（三）：生成模型=能量模型》</a></strong>、<strong><a href="https://kexue.fm/archives/7038">《从去噪自编码器到生成模型》</a></strong>也简单介绍过扩散模型。说到扩散模型，一般的文章都会提到能量模型（Energy-based Models）、得分匹配（Score Matching）、朗之万方程（Langevin Equation）等等，简单来说，是通过得分匹配等技术来训练能量模型，然后通过郎之万方程来执行从能量模型的采样。</p>
+<p>从理论上来讲，这是一套很成熟的方案，原则上可以实现任何连续型对象（语音、图像等）的生成和采样。但从实践角度来看，能量函数的训练是一件很艰难的事情，尤其是数据维度比较大（比如高分辨率图像）时，很难训练出完备能量函数来；另一方面，通过朗之万方程从能量模型的采样也有很大的不确定性，得到的往往是带有噪声的采样结果。所以很长时间以来，这种传统路径的扩散模型只是在比较低分辨率的图像上做实验。</p>
+<p>如今生成扩散模型的大火，则是始于2020年所提出的<strong><a href="https://arxiv.org/abs/2006.11239">DDPM</a></strong>（Denoising Diffusion Probabilistic Model），虽然也用了“扩散模型”这个名字，但事实上除了采样过程的形式有一定的相似之外，DDPM与传统基于朗之万方程采样的扩散模型可以说完全不一样，这完全是一个新的起点、新的篇章。</p>
+<p>准确来说，DDPM叫“渐变模型”更为准确一些，扩散模型这一名字反而容易造成理解上的误解，传统扩散模型的能量模型、得分匹配、朗之万方程等概念，其实跟DDPM及其后续变体都没什么关系。有意思的是，DDPM的数学框架其实在ICML2015的论文<strong><a href="https://arxiv.org/abs/1503.03585">《Deep Unsupervised Learning using Nonequilibrium Thermodynamics》</a></strong>就已经完成了，但DDPM是首次将它在高分辨率图像生成上调试出来了，从而引导出了后面的火热。由此可见，一个模型的诞生和流行，往往还需要时间和机遇，</p>
+<h2 id="拆楼建楼">拆楼建楼<a class="anchor-link" href="#拆楼建楼" title="Permanent link">&para;</a></h2>
+<p>很多文章在介绍DDPM时，上来就引入转移分布，接着就是变分推断，一堆数学记号下来，先吓跑了一群人（当然，从这种介绍我们可以再次看出，DDPM实际上是VAE而不是扩散模型），再加之人们对传统扩散模型的固有印象，所以就形成了“需要很高深的数学知识”的错觉。事实上，DDPM也可以有一种很“大白话”的理解，它并不比有着“造假-鉴别”通俗类比的GAN更难。</p>
+<p>首先，我们想要做一个像GAN那样的生成模型，它实际上是将一个随机噪声<span class="math-inline">\boldsymbol{z}</span> 换成一个数据样本<span class="math-inline">\boldsymbol{x}</span> 过程：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241222142310.png" style="zoom: 80%;" /></div>
+
+<p>我们可以将这个过程想象为“建设”，其中随机噪声<span class="math-inline">\boldsymbol{z}</span> 砖瓦水泥等原材料，样本数据<span class="math-inline">\boldsymbol{x}</span> 高楼大厦，所以生成模型就是一支用原材料建设高楼大厦的施工队。</p>
+<p>这个过程肯定很难的，所以才有了那么多关于生成模型的研究。但俗话说“破坏容易建设难”，建楼你不会，拆楼你总会了吧？我们考虑将高楼大厦一步步地拆为砖瓦水泥的过程：设<span class="math-inline">\boldsymbol{x}_0</span> 建好的高楼大厦（数据样本），<span class="math-inline">\boldsymbol{x}_T</span> 拆好的砖瓦水泥（随机噪声），假设“拆楼”需要<span class="math-inline">T</span> ，整个过程可以表示为</p>
+<p><div class="math-display">\boldsymbol{x} = \boldsymbol{x}<em>0 \to \boldsymbol{x}_1 \to \boldsymbol{x}_2 \to \cdots \to \boldsymbol{x}</em>{T-1} \to \boldsymbol{x}_T = \boldsymbol{z} \</div></p>
+<p>建高楼大厦的难度在于，从原材料<span class="math-inline">\boldsymbol{x}<em>T</span> 最终高楼大厦<span class="math-inline">\boldsymbol{x}_0</span> 跨度过大，普通人很难理解<span class="math-inline">\boldsymbol{x}_T</span> 怎么一下子变成<span class="math-inline">\boldsymbol{x}_0</span> 。但是，当我们有了“拆楼”的中间过程<span class="math-inline">\boldsymbol{x}_1,\boldsymbol{x}_2,\cdots,\boldsymbol{x}_T</span> ，我们知道<span class="math-inline">\boldsymbol{x}</em>{t-1} \to \boldsymbol{x}<em>t</span> 表着拆楼的一步，那么反过来<span class="math-inline">\boldsymbol{x}_t\to \boldsymbol{x}</em>{t-1}</span> 就是建楼的一步？如果我们能学会两者之间的变换关系<span class="math-inline">\boldsymbol{x}<em>{t-1}=\boldsymbol{\mu}(\boldsymbol{x}_t)</span>，那么从<span class="math-inline">\boldsymbol{x}_T</span> 发，反复地执行<span class="math-inline">\boldsymbol{x}</em>{T-1}=\boldsymbol{\mu}(\boldsymbol{x}<em>T)</span>、<span class="math-inline">\boldsymbol{x}</em>{T-2}=\boldsymbol{\mu}(\boldsymbol{x}_{T-1})</span>、...，最终不就能造出高楼大厦<span class="math-inline">\boldsymbol{x}_0</span> 来？</p>
+<h2 id="该怎么拆">该怎么拆<a class="anchor-link" href="#该怎么拆" title="Permanent link">&para;</a></h2>
+<p>正所谓“饭要一口一口地吃”，楼也要一步一步地建，DDPM做生成模型的过程，其实跟上述“拆楼-建楼”的类比是完全一致的，它也是先反过来构建一个从数据样本渐变到随机噪声的过程，然后再考虑其逆变换，通过反复执行逆变换来完成数据样本的生成，所以本文前面才说DDPM这种做法其实应该更准确地称为“渐变模型”而不是“扩散模型”。</p>
+<p>具体来说，DDPM将“拆楼”的过程建模为</p>
+<p><div class="math-display">\boldsymbol{x}<em>t = \alpha_t \boldsymbol{x}</em>{t-1} + \beta_t \boldsymbol{\varepsilon}_t,\quad \boldsymbol{\varepsilon}_t\sim\mathcal{N}(\boldsymbol{0}, \boldsymbol{I}) \tag3</div></p>
+<p>其中有<span class="math-inline">\alpha_t,\beta_t &gt; 0</span> <span class="math-inline">\alpha_t^2 + \beta_t^2=1</span>，<span class="math-inline">\beta_t</span> 常很接近于0，代表着单步“拆楼”中对原来楼体的破坏程度，噪声<span class="math-inline">\boldsymbol{\varepsilon}<em>t</span> 引入代表着对原始信号的一种破坏，我们也可以将它理解为“原材料”，即每一步“拆楼”中我们都将<span class="math-inline">\boldsymbol{x}</em>{t-1}</span> 解为“<span class="math-inline">\alpha_t \boldsymbol{x}_{t-1}</span> 楼体 + <span class="math-inline">\beta_t \boldsymbol{\varepsilon}_t</span> 原料”。（<strong>提示</strong>：本文<span class="math-inline">\alpha_t,\beta_t</span> 定义跟原论文不一样。）</p>
+<p>反复执行这个拆楼的步骤，我们可以得到：</p>
+<p><div class="math-display">\begin{aligned} \boldsymbol{x}<em>t =&amp;\, \alpha_t \boldsymbol{x}</em>{t-1} + \beta_t \boldsymbol{\varepsilon}<em>t \ =&amp;\, \alpha_t \big(\alpha</em>{t-1} \boldsymbol{x}<em>{t-2} + \beta</em>{t-1} \boldsymbol{\varepsilon}<em>{t-1}\big) + \beta_t \boldsymbol{\varepsilon}_t \ =&amp;\,\cdots\ =&amp;\,(\alpha_t\cdots\alpha_1) \boldsymbol{x}_0 + \underbrace{(\alpha_t\cdots\alpha_2)\beta_1 \boldsymbol{\varepsilon}_1 + (\alpha_t\cdots\alpha_3)\beta_2 \boldsymbol{\varepsilon}_2 + \cdots + \alpha_t\beta</em>{t-1} \boldsymbol{\varepsilon}<em>{t-1} + \beta_t \boldsymbol{\varepsilon}_t}</em>{\text{多个相互独立的正态噪声之和}} \end{aligned}\tag4</div></p>
+<p>可能刚才读者就想问为什么叠加的系数要满足<span class="math-inline">\alpha_t^2 + \beta_t^2 = 1</span> ，现在我们就可以回答这个问题。首先，式中花括号所指出的部分，正好是多个独立的正态噪声之和，其均值为0，方差则分别为<span class="math-inline">(\alpha_t\cdots\alpha_2)^2\beta_1^2</span>、<span class="math-inline">(\alpha_t\cdots\alpha_3)^2\beta_2^2</span>、...、<span class="math-inline">\alpha_t^2\beta_{t-1}^2</span>、<span class="math-inline">\beta_t^2</span>；然后，我们利用一个概率论的知识——正态分布的叠加性，即上述多个独立的正态噪声之和的分布，实际上是均值为0、方差为<span class="math-inline">(\alpha_t\cdots\alpha_2)^2\beta_1^2 + (\alpha_t\cdots\alpha_3)^2\beta_2^2 + \cdots + \alpha_t^2\beta_{t-1}^2 + \beta_t^2</span> 正态分布；最后，在<span class="math-inline">\alpha_t^2 + \beta_t^2 = 1</span> 成立之下，我们可以得到式<span class="math-inline">(4)</span> 各项系数平方和依旧为1，即</p>
+<p><div class="math-display">(\alpha_t\cdots\alpha_1)^2 + (\alpha_t\cdots\alpha_2)^2\beta_1^2 + (\alpha_t\cdots\alpha_3)^2\beta_2^2 + \cdots + \alpha_t^2\beta_{t-1}^2 + \beta_t^2 = 1 \tag5</div></p>
+<p>所以实际上相当于有</p>
+<p><div class="math-display">\boldsymbol{x}<em>t = \underbrace{(\alpha_t\cdots\alpha_1)}</em>{\text{记为}\bar{\alpha}<em>t} \boldsymbol{x}_0 + \underbrace{\sqrt{1 - (\alpha_t\cdots\alpha_1)^2}}</em>{\text{记为}\bar{\beta}_t} \bar{\boldsymbol{\varepsilon}}_t,\quad \bar{\boldsymbol{\varepsilon}}_t\sim\mathcal{N}(\boldsymbol{0}, \boldsymbol{I}) \tag6</div></p>
+<p>这就为计算<span class="math-inline">\boldsymbol{x}_t</span> 供了极大的便利。另一方面，DDPM会选择适当的<span class="math-inline">\alpha_t</span> 式，使得有<span class="math-inline">\bar{\alpha}_T\approx 0</span>，这意味着经过<span class="math-inline">T</span> 的拆楼后，所剩的楼体几乎可以忽略了，已经全部转化为原材料<span class="math-inline">\boldsymbol{\varepsilon}</span>。（<strong>提示</strong>：本文<span class="math-inline">\bar{\alpha}_t</span> 定义跟原论文不一样。）</p>
+<h2 id="又如何建">又如何建<a class="anchor-link" href="#又如何建" title="Permanent link">&para;</a></h2>
+<p>“拆楼”是<span class="math-inline">\boldsymbol{x}<em>{t-1}\to \boldsymbol{x}_t</span> 过程，这个过程我们得到很多的数据对<span class="math-inline">(\boldsymbol{x}</em>{t-1},\boldsymbol{x}<em>t)</span>，那么“建楼”自然就是从这些数据对中学习一个<span class="math-inline">\boldsymbol{x}_t\to \boldsymbol{x}</em>{t-1}</span> 模型。设该模型为<span class="math-inline">\boldsymbol{\mu}(\boldsymbol{x}_t)</span>，那么容易想到学习方案就是最小化两者的欧氏距离：</p>
+<p><div class="math-display">\left\Vert\boldsymbol{x}_{t-1} - \boldsymbol{\mu}(\boldsymbol{x}_t)\right\Vert^2 \</div></p>
+<p>其实这已经非常接近最终的DDPM模型了，接下来让我们将这个过程做得更精细一些。首先“拆楼”的式<span class="math-inline">(3)</span> 以改写为<span class="math-inline">\boldsymbol{x}_{t-1} = \frac{1}{\alpha_t}\left(\boldsymbol{x}_t  - \beta_t \boldsymbol{\varepsilon}_t\right)</span>，这启发我们或许可以将“建楼”模型<span class="math-inline">\boldsymbol{\mu}(\boldsymbol{x}_t)</span> 计成</p>
+<p><div class="math-display">\boldsymbol{\mu}(\boldsymbol{x}<em>t) = \frac{1}{\alpha_t}\left(\boldsymbol{x}_t   - \beta_t \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\boldsymbol{x}_t, t)\right)\</div></p>
+<p>的形式，其中<span class="math-inline">\boldsymbol{\theta}</span> 训练参数，将其代入到损失函数，得到</p>
+<p><div class="math-display">\left\Vert\boldsymbol{x}<em>{t-1} - \boldsymbol{\mu}(\boldsymbol{x}_t)\right\Vert^2 = \frac{\beta_t^2}{\alpha_t^2}\left\Vert \boldsymbol{\varepsilon}_t - \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\boldsymbol{x}_t, t)\right\Vert^2 \</div></p>
+<p>前面的因子<span class="math-inline">\frac{\beta_t^2}{\alpha_t^2}</span> 表loss的权重，这个我们可以暂时忽略，最后代入结合式<span class="math-inline">(6)</span> <span class="math-inline">(3)</span> 给出<span class="math-inline">\boldsymbol{x}_t</span> 表达式</p>
+<p><div class="math-display">\boldsymbol{x}<em>t = \alpha_t\boldsymbol{x}</em>{t-1} + \beta_t \boldsymbol{\varepsilon}<em>t = \alpha_t\left(\bar{\alpha}</em>{t-1}\boldsymbol{x}<em>0 + \bar{\beta}</em>{t-1}\bar{\boldsymbol{\varepsilon}}<em>{t-1}\right) + \beta_t \boldsymbol{\varepsilon}_t = \bar{\alpha}_t\boldsymbol{x}_0 + \alpha_t\bar{\beta}</em>{t-1}\bar{\boldsymbol{\varepsilon}}_{t-1} + \beta_t \boldsymbol{\varepsilon}_t  \</div></p>
+<p>得到损失函数的形式为</p>
+<p><div class="math-display">\left\Vert \boldsymbol{\varepsilon}<em>t - \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\bar{\alpha}<em>t\boldsymbol{x}_0 + \alpha_t\bar{\beta}</em>{t-1}\bar{\boldsymbol{\varepsilon}}_{t-1} + \beta_t \boldsymbol{\varepsilon}_t, t)\right\Vert^2\</div></p>
+<p>可能读者想问为什么要回退一步来给出<span class="math-inline">\boldsymbol{x}_t</span>，直接根据式<span class="math-inline">\eqref{eq:skip}</span> 给出<span class="math-inline">\boldsymbol{x}_t</span> 以吗？答案是不行，因为我们已经事先采样了<span class="math-inline">\boldsymbol{\varepsilon}_t</span>，而<span class="math-inline">\boldsymbol{\varepsilon}_t</span> <span class="math-inline">\bar{\boldsymbol{\varepsilon}}_t</span> 是相互独立的，所以给定<span class="math-inline">\boldsymbol{\varepsilon}_t</span> 情况下，我们不能完全独立地采样<span class="math-inline">\bar{\boldsymbol{\varepsilon}}_t</span>。</p>
+<h2 id="降低方差">降低方差<a class="anchor-link" href="#降低方差" title="Permanent link">&para;</a></h2>
+<p>原则上来说，损失函数<span class="math-inline">\eqref{eq:loss-1}</span> 可以完成DDPM的训练，但它在实践中可能有方差过大的风险，从而导致收敛过慢等问题。要理解这一点并不困难，只需要观察到式<span class="math-inline">\eqref{eq:loss-1}</span> 际上包含了4个需要采样的随机变量：</p>
+<blockquote>
+<p>1、从所有训练样本中采样一个<span class="math-inline">\boldsymbol{x}<em>0</span>； 2、从正态分布<span class="math-inline">\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})</span> 采样<span class="math-inline">\bar{\boldsymbol{\varepsilon}}</em>{t-1}, \boldsymbol{\varepsilon}_t</span>（两个不同的采样结果）；<br />
+ 3、从<span class="math-inline">1\sim T</span> 采样一个<span class="math-inline">t</span>。</p>
+</blockquote>
+<p>要采样的随机变量越多，就越难对损失函数做准确的估计，反过来说就是每次对损失函数进行估计的波动（方差）过大了。很幸运的是，我们可以通过一个积分技巧来将<span class="math-inline">\bar{\boldsymbol{\varepsilon}}_{t-1}, \boldsymbol{\varepsilon}_t</span> 并成单个正态随机变量，从而缓解一下方差大的问题。</p>
+<p>这个积分确实有点技巧性，但也不算复杂。由于正态分布的叠加性，我们知道<span class="math-inline">\alpha_t\bar{\beta}<em>{t-1}\bar{\boldsymbol{\varepsilon}}</em>{t-1} + \beta_t \boldsymbol{\varepsilon}<em>t</span> 际上相当于单个随机变量<span class="math-inline">\bar{\beta}_t\boldsymbol{\varepsilon}|\boldsymbol{\varepsilon}\sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})</span>，同理<span class="math-inline">\beta_t \bar{\boldsymbol{\varepsilon}}</em>{t-1} - \alpha_t\bar{\beta}_{t-1} \boldsymbol{\varepsilon}_t</span> 际上相当于单个随机变量<span class="math-inline">\bar{\beta}_t\boldsymbol{\omega}|\boldsymbol{\omega}\sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})</span>，并且可以验证<span class="math-inline">\mathbb{E}[\boldsymbol{\varepsilon}\boldsymbol{\omega}^{\top}]=\boldsymbol{0}</span>，所以这是两个相互独立的正态随机变量。</p>
+<p>接下来，我们反过来将<span class="math-inline">\boldsymbol{\varepsilon}_t</span> <span class="math-inline">\boldsymbol{\varepsilon},\boldsymbol{\omega}</span> 新表示出来</p>
+<p><div class="math-display">\boldsymbol{\varepsilon}<em>t = \frac{(\beta_t \boldsymbol{\varepsilon} - \alpha_t\bar{\beta}</em>{t-1} \boldsymbol{\omega})\bar{\beta}<em>t}{\beta_t^2 + \alpha_t^2\bar{\beta}</em>{t-1}^2} = \frac{\beta_t \boldsymbol{\varepsilon} - \alpha_t\bar{\beta}_{t-1} \boldsymbol{\omega}}{\bar{\beta}_t} \</div></p>
+<p>代入到式<span class="math-inline">\eqref{eq:loss-1}</span> 到</p>
+<p><div class="math-display">\begin{aligned} &amp;\,\mathbb{E}<em>{\bar{\boldsymbol{\varepsilon}}</em>{t-1}, \boldsymbol{\varepsilon}<em>t\sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})}\left[\left\Vert \boldsymbol{\varepsilon}_t - \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\bar{\alpha}<em>t\boldsymbol{x}_0 + \alpha_t\bar{\beta}</em>{t-1}\bar{\boldsymbol{\varepsilon}}<em>{t-1} + \beta_t \boldsymbol{\varepsilon}_t, t)\right\Vert^2\right] \ =&amp;\,\mathbb{E}</em>{\boldsymbol{\omega}, \boldsymbol{\varepsilon}\sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})}\left[\left\Vert \frac{\beta_t \boldsymbol{\varepsilon} - \alpha_t\bar{\beta}<em>{t-1} \boldsymbol{\omega}}{\bar{\beta}_t} - \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\bar{\alpha}_t\boldsymbol{x}_0 + \bar{\beta}_t\boldsymbol{\varepsilon}, t)\right\Vert^2\right] \end{aligned}\</div></p>
+<p>注意到，现在损失函数关于<span class="math-inline">\boldsymbol{\omega}</span> 是二次的，所以我们可以展开然后将它的期望直接算出来，结果是</p>
+<p><div class="math-display">\frac{\beta_t^2}{\bar{\beta}<em>t^2}\mathbb{E}</em>{\boldsymbol{\varepsilon}\sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})}\left[\left\Vert\boldsymbol{\varepsilon} - \frac{\bar{\beta}<em>t}{\beta_t}\boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\bar{\alpha}_t\boldsymbol{x}_0 + \bar{\beta}_t\boldsymbol{\varepsilon}, t)\right\Vert^2\right]+\text{常数} \</div></p>
+<p>再次省掉常数和损失函数的权重，我们得到DDPM最终所用的损失函数：</p>
+<p><div class="math-display">\left\Vert\boldsymbol{\varepsilon} - \frac{\bar{\beta}<em>t}{\beta_t}\boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\bar{\alpha}_t\boldsymbol{x}_0 + \bar{\beta}_t\boldsymbol{\varepsilon}, t)\right\Vert^2 \</div></p>
+<p>（<strong>提示</strong>：原论文中的<span class="math-inline">\boldsymbol{\epsilon}<em>{\boldsymbol{\theta}}</span> 际上就是本文的<span class="math-inline">\frac{\bar{\beta}_t}{\beta_t}\boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}</span>，所以大家的结果是完全一样的。）</p>
+<h2 id="递归生成">递归生成<a class="anchor-link" href="#递归生成" title="Permanent link">&para;</a></h2>
+<p>至此，我们算是把DDPM的整个训练流程捋清楚了。内容写了不少，你要说它很容易，那肯定说不上，但真要说非常困难的地方也几乎没有——没有用到传统的能量函数、得分匹配等工具，甚至连变分推断的知识都没有用到，只是借助“拆楼-建楼”的类比和一些基本的概率论知识，就能得到完全一样的结果。所以说，以DDPM为代表的新兴起的生成扩散模型，实际上没有很多读者想象的复杂，它可以说是我们从“拆解-重组”的过程中学习新知识的形象建模。</p>
+<p>训练完之后，我们就可以从一个随机噪声<span class="math-inline">\boldsymbol{x}_T\sim\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})</span> 发执行<span class="math-inline">T</span> 式<span class="math-inline">\eqref{eq:sample}</span> 进行生成：</p>
+<p><div class="math-display">\boldsymbol{x}<em>{t-1} = \frac{1}{\alpha_t}\left(\boldsymbol{x}_t - \beta_t \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\boldsymbol{x}_t, t)\right) \</div></p>
+<p>这对应于自回归解码中的Greedy Search。如果要进行Random Sample，那么需要补上噪声项：</p>
+<p><div class="math-display">\boldsymbol{x}<em>{t-1} = \frac{1}{\alpha_t}\left(\boldsymbol{x}_t - \beta_t \boldsymbol{\epsilon}</em>{\boldsymbol{\theta}}(\boldsymbol{x}_t, t)\right) + \sigma_t \boldsymbol{z},\quad \boldsymbol{z}\sim\mathcal{N}(\boldsymbol{0}, \boldsymbol{I}) \</div></p>
+<p>一般来说，我们可以让<span class="math-inline">\sigma_t=\beta_t</span>，即正向和反向的方差保持同步。这个采样过程跟传统扩散模型的朗之万采样不一样的地方在于：DDPM的采样每次都从一个随机噪声出发，需要重复迭代<span class="math-inline">T</span> 来得到一个样本输出；朗之万采样则是从任意一个点出发，反复迭代无限步，理论上这个迭代无限步的过程中，就把所有数据样本都被生成过了。所以两者除了形式相似外，实质上是两个截然不同的模型。</p>
+<p>从这个生成过程中，我们也可以感觉到它其实跟Seq2Seq的解码过程是一样的，都是串联式的自回归生成，所以生成速度是一个瓶颈，DDPM设了<span class="math-inline">T=1000</span>，意味着每生成一个图片，需要将<span class="math-inline">\boldsymbol{\epsilon}_{\boldsymbol{\theta}}(\boldsymbol{x}_t, t)</span> 复执行1000次，因此DDPM的一大缺点就是采样速度慢，后面有很多工作都致力于提升DDPM的采样速度。而说到“图片生成 + 自回归模型 + 很慢”，有些读者可能会联想到早期的<strong><a href="https://arxiv.org/abs/1601.06759">PixelRNN</a></strong>、<strong><a href="https://arxiv.org/abs/1606.05328">PixelCNN</a></strong>等模型，它们将图片生成转换成语言模型任务，所以同样也是递归地进行采样生成以及同样地慢。那么DDPM的这种自回归生成，跟PixelRNN/PixelCNN的自回归生成，又有什么实质区别呢？为什么PixelRNN/PixelCNN没大火起来，反而轮到了DDPM？</p>
+<p>了解PixelRNN/PixelCNN的读者都知道，这类生成模型是逐个像素逐个像素地生成图片的，而自回归生成是有序的，这就意味着我们要提前给图片的每个像素排好顺序，最终的生成效果跟这个顺序紧密相关。然而，目前这个顺序只能是人为地凭着经验来设计（这类经验的设计都统称为“Inductive Bias”），暂时找不到理论最优解。换句话说，PixelRNN/PixelCNN的生成效果很受Inductive Bias的影响。但DDPM不一样，它通过“拆楼”的方式重新定义了一个自回归方向，而对于所有的像素来说则都是平权的、无偏的，所以减少了Inductive Bias的影响，从而提升了效果。此外，DDPM生成的迭代步数是固定的<span class="math-inline">T</span>，而PixelRNN/PixelCNN则是等于图像分辨率（<span class="math-inline">\text{宽}\times\text{高}\times{通道数}</span>），所以DDPM生成高分辨率图像的速度要比PixelRNN/PixelCNN快得多。</p>
+<h2 id="超参设置">超参设置<a class="anchor-link" href="#超参设置" title="Permanent link">&para;</a></h2>
+<p>这一节我们讨论一下超参的设置问题。</p>
+<p>在DDPM中，<span class="math-inline">T=1000</span>，可能比很多读者的想象数值要大，那为什么要设置这么大的<span class="math-inline">T</span> ？另一边，对于<span class="math-inline">\alpha_t</span> 选择，将原论文的设置翻译到本博客的记号上，大致上是</p>
+<p><div class="math-display">\alpha_t = \sqrt{1 - \frac{0.02t}{T}} \</div></p>
+<p>这是一个单调递减的函数，那为什么要选择单调递减的<span class="math-inline">\alpha_t</span> ？</p>
+<p>其实这两个问题有着相近的答案，跟具体的数据背景有关。简单起见，在重构的时候我们用了欧氏距离<span class="math-inline">\eqref{eq:loss-0}</span> 为损失函数，而一般我们用DDPM做图片生成，以往做过图片生成的读者都知道，欧氏距离并不是图片真实程度的一个好的度量，VAE用欧氏距离来重构时，往往会得到模糊的结果，除非是输入输出的两张图片非常接近，用欧氏距离才能得到比较清晰的结果，所以选择尽可能大的<span class="math-inline">T</span>，正是为了使得输入输出尽可能相近，减少欧氏距离带来的模糊问题。</p>
+<p>选择单调递减的<span class="math-inline">\alpha_t</span> 有类似考虑。当<span class="math-inline">t</span> 较小时，<span class="math-inline">\boldsymbol{x}<em>t</span> 比较接近真实图片，所以我们要缩小<span class="math-inline">\boldsymbol{x}</em>{t-1}</span> <span class="math-inline">\boldsymbol{x}<em>t</span> 差距，以便更适用欧氏距离<span class="math-inline">\eqref{eq:loss-0}</span>，因此要用较大的<span class="math-inline">\alpha_t</span>；当<span class="math-inline">t</span> 较大时，<span class="math-inline">\boldsymbol{x}_t</span> 经比较接近纯噪声了，噪声用欧式距离无妨，所以可以稍微增大<span class="math-inline">\boldsymbol{x}</em>{t-1}</span> <span class="math-inline">\boldsymbol{x}_t</span> 差距，即可以用较小的<span class="math-inline">\alpha_t</span>。那么可不可以一直用较大的<span class="math-inline">\alpha_t</span> ？可以是可以，但是要增大<span class="math-inline">T</span>。注意在推导<span class="math-inline">\eqref{eq:skip}</span> ，我们说过应该有<span class="math-inline">\bar{\alpha}_T\approx 0</span>，而我们可以直接估算</p>
+<p><div class="math-display">\log \bar{\alpha}<em>T = \sum</em>{t=1}^T \log\alpha_t = \frac{1}{2} \sum_{t=1}^T \log\left(1 - \frac{0.02t}{T}\right) &lt; \frac{1}{2} \sum_{t=1}^T \left(- \frac{0.02t}{T}\right) = -0.005(T+1) \</div></p>
+<p>代入<span class="math-inline">T=1000</span> 致是<span class="math-inline">\bar{\alpha}_T\approx e^{-5}</span>，这个其实就刚好达到<span class="math-inline">\approx 0</span> 标准。所以如果从头到尾都用较大的<span class="math-inline">\alpha_t</span>，那么必然要更大的<span class="math-inline">T</span> 能使得<span class="math-inline">\bar{\alpha}_T\approx 0</span> 。</p>
+<p>最后我们留意到，“建楼”模型中的<span class="math-inline">\boldsymbol{\epsilon}_{\boldsymbol{\theta}}(\bar{\alpha}_t\boldsymbol{x}_0 + \bar{\beta}_t\boldsymbol{\varepsilon}, t)</span> ，我们在输入中显式地写出了<span class="math-inline">t</span>，这是因为原则上不同的<span class="math-inline">t</span> 理的是不同层次的对象，所以应该用不同的重构模型，即应该有<span class="math-inline">T</span> 不同的重构模型才对，于是我们共享了所有重构模型的参数，将<span class="math-inline">t</span> 为条件传入。按照论文附录的说法，<span class="math-inline">t</span> 转换成<strong><a href="https://kexue.fm/archives/8231">《Transformer升级之路：1、Sinusoidal位置编码追根溯源》</a></strong>介绍的位置编码后，直接加到残差模块上去的。</p>
+<h2 id="文章小结">文章小结<a class="anchor-link" href="#文章小结" title="Permanent link">&para;</a></h2>
+<p>本文从“拆楼-建楼”的通俗类比中介绍了最新的生成扩散模型DDPM，在这个视角中，我们可以通过较为“大白话”的描述以及比较少的数学推导，来得到跟原始论文一模一样的结果。总的来说，本文说明了DDPM也可以像GAN一样找到一个形象类比，它既可以不用到VAE中的“变分”，也可以不用到GAN中的“概率散度”、“最优传输”，从这个意义上来看，DDPM甚至算得上比VAE、GAN还要简单。</p>
+<h2 id="扩散模型原理">扩散模型原理<a class="anchor-link" href="#扩散模型原理" title="Permanent link">&para;</a></h2>
+<p>扩散模型包括两个过程<strong>：前向过程（forward process）</strong>和<strong>反向过程（reverse process）</strong>，其中前向过程又称为<strong>扩散过程（diffusion process）</strong>，如下图所示。无论是前向过程还是反向过程都是一个<strong>参数化的马尔可夫链（Markov chain）</strong>，其中反向过程可以用来生成数据，这里我们将通过变分推断来进行建模和求解。 </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241017092625.png" style="zoom: 60%;" /></div>
+
+<h3 id="扩散过程">扩散过程<a class="anchor-link" href="#扩散过程" title="Permanent link">&para;</a></h3>
+<p>扩散过程是指的对数据逐渐增加高斯噪音直至数据变成随机噪音的过程。对于原始数据<span class="math-inline">\mathbf{x}<em>0 \sim q(\mathbf{x}_0)</span>，总共包含<span class="math-inline">T</span> 的扩散过程的每一步都是对上一步得到的数据<span class="math-inline">\mathbf{x}</em>{t-1}</span> 如下方式增加高斯噪音：</p>
+<p><div class="math-display">q(\mathbf{x}<em>t \vert \mathbf{x}</em>{t-1}) = \mathcal{N}(\mathbf{x}<em>t; \sqrt{1 - \beta_t} \mathbf{x}</em>{t-1}, \beta_t\mathbf{I}) \</div></p>
+<p>这里<span class="math-inline">{\beta_t}^T_{t=1}</span> 每一步所采用的<strong>方差</strong>，它介于0～1之间。对于扩散模型，我们往往称不同step的方差设定为<strong>variance schedule</strong>或者<strong>noise schedule</strong>，通常情况下，越后面的step会采用更大的方差，即满足<span class="math-inline">\beta_1 &lt; \beta_2 &lt; \dots &lt; \beta_T</span>。在一个设计好的<strong>variance schedule</strong>下，的如果扩散步数<span class="math-inline">T</span> 够大，那么最终得到的<span class="math-inline">\mathbf{x}<em>{T}</span> 完全丢失了原始数据而变成了一个随机噪音。 扩散过程的每一步都生成一个带噪音的数据<span class="math-inline">\mathbf{x}</em>{t}</span>，整个扩散过程也就是一个<strong>马尔卡夫链</strong>：</p>
+<p><div class="math-display">q(\mathbf{x}<em>{1:T} \vert \mathbf{x}_0) = \prod^T</em>{t=1} q(\mathbf{x}<em>t \vert \mathbf{x}</em>{t-1}) \</div></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128483.jpg" /><br />
+另外要指出的是，扩散过程往往是固定的，即采用一个预先定义好的<strong>variance schedule</strong>，比如DDPM就采用一个线性的<strong>variance schedule</strong>。 </p>
+<p>扩散过程的一个重要特性是我们可以<strong>直接基于原始数据</strong><span class="math-inline">\mathbf{x}<em>{0}</span><strong>来对任意</strong><span class="math-inline">t</span><strong>步的</strong><span class="math-inline">\mathbf{x}</em>{t}</span><strong>进行采样</strong>：<span class="math-inline">\mathbf{x}<em>{t}\sim q(\mathbf{x}_t \vert \mathbf{x}_0)</span>。这里定义<span class="math-inline">\alpha_t = 1 - \beta_t</span> <span class="math-inline">\bar{\alpha}_t = \prod</em>{i=1}^t \alpha_i</span>，通过<strong>重参数技巧</strong>（和VAE类似），那么有：</p>
+<p><div class="math-display">\begin{aligned} \mathbf{x}<em>t  &amp;= \sqrt{\alpha_t}\mathbf{x}</em>{t-1} + \sqrt{1 - \alpha_t}\mathbf{\epsilon}<em>{t-1} &amp; \text{ ;where } \mathbf{\epsilon}</em>{t-1}, \mathbf{\epsilon}<em>{t-2}, \dots \sim \mathcal{N}(\mathbf{0}, \mathbf{I}) \ &amp;= \sqrt{\alpha_t}(\sqrt{\alpha</em>{t-1}}\mathbf{x}<em>{t-2} + \sqrt{1 - \alpha</em>{t-1}}\mathbf{\epsilon}<em>{t-2}) + \sqrt{1 - \alpha_t}\mathbf{\epsilon}</em>{t-1} \ &amp;= \sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}<em>{t-2} + \sqrt{\sqrt {\alpha_t-\alpha_t \alpha</em>{t-1}}^2+\sqrt{1-\alpha_t }^2} \bar{\mathbf{\epsilon}}<em>{t-2} &amp; \text{ ;where } \bar{\mathbf{\epsilon}}</em>{t-2} \text{ merges two Gaussians (*).} \ &amp;= \sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}<em>{t-2} + \sqrt{1 - \alpha_t \alpha</em>{t-1}} \bar{\mathbf{\epsilon}}_{t-2} \ &amp;= \dots \ &amp;= \sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1 - \bar{\alpha}_t}\mathbf{\epsilon}  \end{aligned}\</div></p>
+<p>上述推到过程利用了两个方差不同的高斯分布<span class="math-inline">\mathcal{N}(\mathbf{0}, \sigma_1^2\mathbf{I})</span> <span class="math-inline">\mathcal{N}(\mathbf{0}, \sigma_2^2\mathbf{I})</span> 加等于一个新的高斯分布<span class="math-inline">\mathcal{N}(\mathbf{0}, (\sigma_1^2 + \sigma_2^2)\mathbf{I})</span>。反重参数化后，我们得到：</p>
+<p><div class="math-display">q(\mathbf{x}_t \vert \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1 - \bar{\alpha}_t)\mathbf{I}) \</div></p>
+<p>扩散过程的这个特性很重要。首先，我们可以看到<span class="math-inline">\mathbf{x}<em>{t}</span> 实可以看成是原始数据<span class="math-inline">\mathbf{x}</em>{0}</span> 随机噪音<span class="math-inline">\mathbf{\epsilon}</span> 线性组合，其中<span class="math-inline">\sqrt{\bar \alpha_t}</span> <span class="math-inline">\sqrt{1 - \bar{\alpha}<em>t}</span> 组合系数，它们的平方和等于1，我们也可以称两者分别为<code>signal_rate</code>和<code>noise_rate</code>。更近一步地，我们可以基于<span class="math-inline">\bar \alpha_t</span> 不是<span class="math-inline">\beta_t</span> 定义<strong>noise schedule</strong>（见<a href="https://arxiv.org/abs/2102.09672">Improved Denoising Diffusion Probabilistic Models</a>所设计的cosine schedule），因为这样处理更直接，比如我们直接将<span class="math-inline">\bar \alpha_T</span> 定为一个接近0的值，那么就可以保证最终得到的<span class="math-inline">\mathbf{x}</em>{T}</span> 似为一个随机噪音。其次，后面的建模和分析过程将使用这个特性。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128484.jpg" />  </p>
+<h3 id="反向过程">反向过程<a class="anchor-link" href="#反向过程" title="Permanent link">&para;</a></h3>
+<p>扩散过程是将数据噪音化，那么反向过程就是<strong>一个去噪的过程</strong>，如果我们知道反向过程的每一步的真实分布<span class="math-inline">q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)</span>，那么从一个随机噪音<span class="math-inline">\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})</span> 始，逐渐去噪就能生成一个真实的样本，所以反向过程也就是<strong>生成数据的过程</strong>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128485.jpg" /><br />
+ 估计分布<span class="math-inline">q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)</span> 要用到整个训练样本，我们可以用神经网络来估计这些分布。这里，我们将反向过程也定义为一个马尔卡夫链，只不过它是由一系列<strong>用神经网络参数化的高斯分布</strong>来组成：</p>
+<p><div class="math-display">p_\theta(\mathbf{x}<em>{0:T}) = p(\mathbf{x}_T) \prod^T</em>{t=1} p_\theta(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t) \quad p</em>\theta(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t) = \mathcal{N}(\mathbf{x}</em>{t-1}; \boldsymbol{\mu}<em>\theta(\mathbf{x}_t, t), \boldsymbol{\Sigma}</em>\theta(\mathbf{x}_t, t))\</div></p>
+<p>这里<span class="math-inline">p(\mathbf{x}<em>T)= \mathcal{N}(\mathbf{x}_T;\mathbf{0}, \mathbf{I})</span>，而<span class="math-inline">p</em>\theta(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t)</span> 参数化的高斯分布，它们的均值和方差由训练的网络<span class="math-inline">\boldsymbol{\mu}</em>\theta(\mathbf{x}<em>t, t)</span> <span class="math-inline">\boldsymbol{\Sigma}</em>\theta(\mathbf{x}_t, t)</span> 出。实际上，<strong>扩散模型就是要得到这些训练好的网络，因为它们构成了最终的生成模型</strong>。 </p>
+<p>虽然分布<span class="math-inline">q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t)</span> 不可直接处理的，但是加上条件<span class="math-inline">\mathbf{x}_0</span> 后验分布<span class="math-inline">q(\mathbf{x}</em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)</span> 是可处理的，这里有：</p>
+<p><div class="math-display">q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\mathbf{x}</em>{t-1}; \color{blue}{\tilde{\boldsymbol{\mu}}}(\mathbf{x}_t, \mathbf{x}_0), \color{red}{\tilde{\beta}_t} \mathbf{I}) \</div></p>
+<p>下面我们来具体推导这个分布，首先根据贝叶斯公式，我们有：</p>
+<p><div class="math-display">q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)  = q(\mathbf{x}_t \vert \mathbf{x}</em>{t-1}, \mathbf{x}<em>0) \frac{ q(\mathbf{x}</em>{t-1} \vert \mathbf{x}_0) }{ q(\mathbf{x}_t \vert \mathbf{x}_0) }\</div></p>
+<p>由于扩散过程的马尔卡夫链特性，我们知道分布<span class="math-inline">q(\mathbf{x}<em>t \vert \mathbf{x}</em>{t-1}, \mathbf{x}<em>0)=q(\mathbf{x}_t \vert \mathbf{x}</em>{t-1})=\mathcal{N}(\mathbf{x}<em>t; \sqrt{1 - \beta_t} \mathbf{x}</em>{t-1}, \beta_t\mathbf{I})</span>（这里条件<span class="math-inline">\mathbf{x}_0</span> 多余的），而由前面得到的扩散过程特性可知：</p>
+<p><div class="math-display">q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_0)=\mathcal{N}(\mathbf{x}</em>{t-1}; \sqrt{\bar{\alpha}<em>{t-1}} \mathbf{x}_0, (1 - \bar{\alpha}</em>{t-1})\mathbf{I})，q(\mathbf{x}_t \vert \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1 - \bar{\alpha}_t)\mathbf{I}) \</div></p>
+<p>所以，我们有：</p>
+<p><div class="math-display">\begin{aligned} q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)  &amp;= q(\mathbf{x}_t \vert \mathbf{x}</em>{t-1}, \mathbf{x}<em>0) \frac{ q(\mathbf{x}</em>{t-1} \vert \mathbf{x}<em>0) }{ q(\mathbf{x}_t \vert \mathbf{x}_0) } \ &amp;\propto \exp \Big(-\frac{1}{2} \big(\frac{(\mathbf{x}_t - \sqrt{\alpha_t} \mathbf{x}</em>{t-1})^2}{\beta_t} + \frac{(\mathbf{x}<em>{t-1} - \sqrt{\bar{\alpha}</em>{t-1}} \mathbf{x}<em>0)^2}{1-\bar{\alpha}</em>{t-1}} - \frac{(\mathbf{x}<em>t - \sqrt{\bar{\alpha}_t} \mathbf{x}_0)^2}{1-\bar{\alpha}_t} \big) \Big) \ &amp;= \exp \Big(-\frac{1}{2} \big(\frac{\mathbf{x}_t^2 - 2\sqrt{\alpha_t} \mathbf{x}_t \color{blue}{\mathbf{x}</em>{t-1}} \color{black}{+ \alpha_t} \color{red}{\mathbf{x}<em>{t-1}^2} }{\beta_t} + \frac{ \color{red}{\mathbf{x}</em>{t-1}^2} \color{black}{- 2 \sqrt{\bar{\alpha}<em>{t-1}} \mathbf{x}_0} \color{blue}{\mathbf{x}</em>{t-1}} \color{black}{+ \bar{\alpha}<em>{t-1} \mathbf{x}_0^2}  }{1-\bar{\alpha}</em>{t-1}} - \frac{(\mathbf{x}<em>t - \sqrt{\bar{\alpha}_t} \mathbf{x}_0)^2}{1-\bar{\alpha}_t} \big) \Big) \ &amp;= \exp\Big( -\frac{1}{2} \big( \color{red}{(\frac{\alpha_t}{\beta_t} + \frac{1}{1 - \bar{\alpha}</em>{t-1}})} \mathbf{x}<em>{t-1}^2 - \color{blue}{(\frac{2\sqrt{\alpha_t}}{\beta_t} \mathbf{x}_t + \frac{2\sqrt{\bar{\alpha}</em>{t-1}}}{1 - \bar{\alpha}<em>{t-1}} \mathbf{x}_0)} \mathbf{x}</em>{t-1} \color{black}{ + C(\mathbf{x}_t, \mathbf{x}_0) \big) \Big)} \end{aligned}\</div></p>
+<p>这里的<span class="math-inline">C(\mathbf{x}<em>t, \mathbf{x}_0)</span> 一个和<span class="math-inline">\mathbf{x}</em>{t-1}</span> 关的部分，所以省略。根据高斯分布的概率密度函数定义和上述结果（配平方），我们可以得到后验分布<span class="math-inline">q(\mathbf{x}<em>{t-1} \vert \mathbf{x}</em>{t}, \mathbf{x}_0)</span> 均值和方差：</p>
+<p><div class="math-display">\begin{aligned} \tilde{\beta}<em>t  &amp;= 1/(\frac{\alpha_t}{\beta_t} + \frac{1}{1 - \bar{\alpha}</em>{t-1}})  = 1/(\frac{\alpha_t - \bar{\alpha}<em>t + \beta_t}{\beta_t(1 - \bar{\alpha}</em>{t-1})}) = \color{green}{\frac{1 - \bar{\alpha}<em>{t-1}}{1 - \bar{\alpha}_t} \cdot \beta_t} \ \tilde{\boldsymbol{\mu}}_t (\mathbf{x}_t, \mathbf{x}_0) &amp;= (\frac{\sqrt{\alpha_t}}{\beta_t} \mathbf{x}_t + \frac{\sqrt{\bar{\alpha}</em>{t-1} }}{1 - \bar{\alpha}<em>{t-1}} \mathbf{x}_0)/(\frac{\alpha_t}{\beta_t} + \frac{1}{1 - \bar{\alpha}</em>{t-1}}) \ &amp;= (\frac{\sqrt{\alpha_t}}{\beta_t} \mathbf{x}<em>t + \frac{\sqrt{\bar{\alpha}</em>{t-1} }}{1 - \bar{\alpha}<em>{t-1}} \mathbf{x}_0) \color{green}{\frac{1 - \bar{\alpha}</em>{t-1}}{1 - \bar{\alpha}<em>t} \cdot \beta_t} \ &amp;= \frac{\sqrt{\alpha_t}(1 - \bar{\alpha}</em>{t-1})}{1 - \bar{\alpha}<em>t} \mathbf{x}_t + \frac{\sqrt{\bar{\alpha}</em>{t-1}}\beta_t}{1 - \bar{\alpha}_t} \mathbf{x}_0\ \end{aligned}\</div></p>
+<p>可以看到方差是一个定量（扩散过程参数固定），而均值是一个依赖<span class="math-inline">\mathbf{x}_0</span> <span class="math-inline">\mathbf{x}_t</span> 函数。这个分布将会被用于推导扩散模型的优化目标。</p>
+<h3 id="优化目标">优化目标<a class="anchor-link" href="#优化目标" title="Permanent link">&para;</a></h3>
+<p>上面介绍了扩散模型的扩散过程和反向过程，现在我们来从另外一个角度来看扩散模型：如果我们把中间产生的变量看成隐变量的话，那么扩散模型其实是包含<span class="math-inline">T</span> 隐变量的<strong>隐变量模型（latent variable model）</strong>，它可以看成是一个特殊的<strong>Hierarchical VAEs</strong>（见<a href="https://arxiv.org/abs/2208.11970">Understanding Diffusion Models: A Unified Perspective</a>）： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128486.jpg" /><br />
+相比VAE来说，扩散模型的隐变量是和原始数据同维度的，而且encoder（即扩散过程）是固定的。既然扩散模型是隐变量模型，那么我们可以就可以基于<strong>变分推断</strong>来得到<a href="https://en.wikipedia.org/wiki/Evidence_lower_bound">variational lower bound</a>（<strong>VLB</strong>，又称<strong>ELBO</strong>）作为最大化优化目标，这里有：</p>
+<p><div class="math-display">\begin{aligned} \log p_\theta(\mathbf{x}<em>0)  &amp;=\log\int p</em>\theta(\mathbf{x}<em>{0:T}) d\mathbf{x}</em>{1:T}\ &amp;=\log\int \frac{p_\theta(\mathbf{x}<em>{0:T}) q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})}{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})} d\mathbf{x}</em>{1:T}\ &amp;\geq \mathbb{E}<em>{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})}[\log \frac{p</em>\theta(\mathbf{x}<em>{0:T})}{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}_{0})}]\ \end{aligned}\</div></p>
+<p>这里最后一步是利用了<a href="https://en.wikipedia.org/wiki/Jensen's_inequality">Jensen's inequality</a>（不采用这个不等式的推导见博客<a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">What are Diffusion Models?</a>），对于网络训练来说，其训练目标为<strong>VLB取负</strong>：</p>
+<p><div class="math-display">L=-L_{\text{VLB}}=\mathbb{E}<em>{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})}[-\log \frac{p</em>\theta(\mathbf{x}<em>{0:T})}{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})}]=\mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})}[\log \frac{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})}{p_\theta(\mathbf{x}_{0:T})}] \</div><br />
+我们近一步对训练目标进行分解可得：</p>
+<p><div class="math-display">\begin{aligned} L  &amp;= \mathbb{E}<em>{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})} \Big[ \log\frac{q(\mathbf{x}</em>{1:T}\vert\mathbf{x}<em>0)}{p</em>\theta(\mathbf{x}<em>{0:T})} \Big] \ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ \log\frac{\prod_{t=1}^T q(\mathbf{x}<em>t\vert\mathbf{x}</em>{t-1})}{ p_\theta(\mathbf{x}<em>T) \prod</em>{t=1}^T p_\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t) } \Big] \ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ -\log p_\theta(\mathbf{x}<em>T) + \sum</em>{t=1}^T \log \frac{q(\mathbf{x}<em>t\vert\mathbf{x}</em>{t-1})}{p_\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)} \Big] \ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ -\log p_\theta(\mathbf{x}<em>T) + \sum</em>{t=2}^T \log \frac{q(\mathbf{x}<em>t\vert\mathbf{x}</em>{t-1})}{p_\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)} + \log\frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)} \Big] \ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ -\log p_\theta(\mathbf{x}<em>T) + \sum</em>{t=2}^T \log \frac{q(\mathbf{x}<em>t\vert\mathbf{x}</em>{t-1}, \mathbf{x}<em>{0})}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)} + \log\frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)} \Big] &amp; \text{ ;use } q(\mathbf{x}_t \vert \mathbf{x}</em>{t-1}, \mathbf{x}<em>0)=q(\mathbf{x}_t \vert \mathbf{x}</em>{t-1})\ &amp;= \mathbb{E}<em>{q(\mathbf{x}</em>{1:T}\vert \mathbf{x}<em>{0})} \Big[ -\log p</em>\theta(\mathbf{x}<em>T) + \sum</em>{t=2}^T \log \Big( \frac{q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)}\cdot \frac{q(\mathbf{x}_t \vert \mathbf{x}_0)}{q(\mathbf{x}</em>{t-1}\vert\mathbf{x}<em>0)} \Big) + \log \frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)} \Big] &amp; \text{ ;use Bayes' Rule }\ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ -\log p_\theta(\mathbf{x}<em>T) + \sum</em>{t=2}^T \log \frac{q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)} + \sum</em>{t=2}^T \log \frac{q(\mathbf{x}<em>t \vert \mathbf{x}_0)}{q(\mathbf{x}</em>{t-1} \vert \mathbf{x}<em>0)} + \log\frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)} \Big] \  &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ -\log p_\theta(\mathbf{x}<em>T) + \sum</em>{t=2}^T \log \frac{q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)} + \log\frac{q(\mathbf{x}_T \vert \mathbf{x}_0)}{q(\mathbf{x}_1 \vert \mathbf{x}_0)} + \log \frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)} \Big]\ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{1:T}\vert \mathbf{x}</em>{0})} \Big[ \log\frac{q(\mathbf{x}<em>T \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>T)} + \sum</em>{t=2}^T \log \frac{q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)} - \log p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1) \Big] \ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{T}\vert \mathbf{x}</em>{0})}\Big[\log\frac{q(\mathbf{x}<em>T \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>T)}\Big]+\sum</em>{t=2}^T \mathbb{E}<em>{q(\mathbf{x}</em>{t}, \mathbf{x}<em>{t-1}\vert \mathbf{x}</em>{0})}\Big[\log \frac{q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)}\Big] - \mathbb{E}</em>{q(\mathbf{x}<em>{1}\vert \mathbf{x}</em>{0})}\Big[\log p_\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)\Big] \ &amp;= \mathbb{E}</em>{q(\mathbf{x}<em>{T}\vert \mathbf{x}</em>{0})}\Big[\log\frac{q(\mathbf{x}<em>T \vert \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>T)}\Big]+\sum</em>{t=2}^T \mathbb{E}<em>{q(\mathbf{x}</em>{t}\vert \mathbf{x}<em>{0})}\Big[q(\mathbf{x}</em>{t-1} \vert \mathbf{x}<em>t, \mathbf{x}_0)\log \frac{q(\mathbf{x}</em>{t-1} \vert \mathbf{x}<em>t, \mathbf{x}_0)}{p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)}\Big] - \mathbb{E}</em>{q(\mathbf{x}<em>{1}\vert \mathbf{x}</em>{0})}\Big[\log p_\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)\Big] \ &amp;= \underbrace{D</em>\text{KL}(q(\mathbf{x}<em>T \vert \mathbf{x}_0) \parallel p</em>\theta(\mathbf{x}<em>T))}</em>{L_T} + \sum_{t=2}^T \underbrace{\mathbb{E}<em>{q(\mathbf{x}</em>{t}\vert \mathbf{x}<em>{0})}\Big[D</em>\text{KL}(q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) \parallel p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t))\Big]}</em>{L_{t-1}} -\underbrace{\mathbb{E}<em>{q(\mathbf{x}</em>{1}\vert \mathbf{x}<em>{0})}\log p</em>\theta(\mathbf{x}<em>0 \vert \mathbf{x}_1)}</em>{L_0}  \end{aligned}</div> </p>
+<p>可以看到最终的优化目标共包含<span class="math-inline">T+1</span> ，其中<span class="math-inline">L_0</span> 以看成是原始数据重建，优化的是负对数似然，<span class="math-inline">L_0</span> 以用估计的<span class="math-inline">\mathcal{N}(\mathbf{x}<em>0; \boldsymbol{\mu}</em>\theta(\mathbf{x}<em>1, 1), \boldsymbol{\Sigma}</em>\theta(\mathbf{x}_1, 1))</span> 构建一个离散化的decoder来计算（见DDPM论文3.3部分）： </p>
+<p><span class="math-inline">p_{\theta}(\mathbf{x}<em>0\vert\mathbf{x}_1)=\prod^D</em>{i=1}\int ^{\delta_+(x_0^i)}<em>{\delta</em>-(x_0^i)}\mathcal{N}(x_0; \mu^i_\theta(x_1, 1), \Sigma^i_\theta(x_1, 1))dx\  \delta_+(x)= \begin{cases} \infty&amp; \text{ if } x=1 \ x+\frac{1}{255}&amp; \text{ if } x &lt;1 \end{cases} \ \delta_+(x)= \begin{cases} -\infty&amp; \text{ if } x=-1 \ x-\frac{1}{255}&amp; \text{ if } x &gt;-1 \end{cases} </span> </p>
+<p>在DDPM中，会将原始图像的像素值从[0, 255]范围归一化到[-1, 1]，像素值属于离散化值，这样不同的像素值之间的间隔其实就是2/255，我们可以计算高斯分布落在以ground truth为中心且范围大小为2/255时的概率积分即CDF，具体实现见<a href="https://github.com/hojonathanho/diffusion/blob/master/diffusion_tf/utils.py#L116-L133">https://github.com/hojonathanho/diffusion/blob/master/diffusion_tf/utils.py#L116-L133</a>（不过后面我们的简化版优化目标并不会计算这个对数似然）。</p>
+<p>而<span class="math-inline">L_T</span> 算的是最后得到的噪音的分布和先验分布的KL散度，这个KL散度没有训练参数，近似为0，因为先验<span class="math-inline">p(\mathbf {x}<em>T)=\mathcal{N}(\mathbf{0}, \mathbf{I})</span> 扩散过程最后得到的随机噪音<span class="math-inline">q(\mathbf{x}</em>{T}\vert \mathbf{x}<em>{0})</span> 近似为<span class="math-inline">\mathcal{N}(\mathbf{0}, \mathbf{I})</span>；而<span class="math-inline">L</em>{t-1}</span> 是计算的是估计分布<span class="math-inline">p_\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)</span> 真实后验分布<span class="math-inline">q(\mathbf{x}</em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)</span> KL散度，这里希望我们估计的去噪过程和依赖真实数据的去噪过程近似一致： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128487.jpg" /><br />
+之所以前面我们将<span class="math-inline">p_\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)</span> 义为一个用网络参数化的高斯分布<span class="math-inline">\mathcal{N}(\mathbf{x}</em>{t-1}; \boldsymbol{\mu}<em>\theta(\mathbf{x}_t, t), \boldsymbol{\Sigma}</em>\theta(\mathbf{x}<em>t, t))</span>，是因为要匹配的后验分布<span class="math-inline">q(\mathbf{x}</em>{t-1} \vert \mathbf{x}<em>t, \mathbf{x}_0)</span> 是一个高斯分布。对于训练目标<span class="math-inline">L_0</span> <span class="math-inline">L</em>{t-1}</span> 说，都是希望得到训练好的网络<span class="math-inline">\boldsymbol{\mu}<em>\theta(\mathbf{x}_t, t)</span> <span class="math-inline">\boldsymbol{\Sigma}</em>\theta(\mathbf{x}<em>t, t)</span>（对于<span class="math-inline">L_0</span>，<span class="math-inline">t=1</span>）。DDPM对<span class="math-inline">p</em>\theta(\mathbf{x}<em>{t-1} \vert\mathbf{x}_t)</span> 了近一步简化，<strong>采用固定的方差</strong>：<span class="math-inline">\boldsymbol{\Sigma}</em>\theta(\mathbf{x}_t, t)=</span> <span class="math-inline">\sigma_t^2\mathbf{I}</span>，这里的<span class="math-inline">\sigma_t^2</span> 以设定为<span class="math-inline">\beta _t</span> 者<span class="math-inline">\tilde{\beta}_t</span>（这其实是两个极端，分别是上限和下限，也可以采用可训练的方差，见论文<a href="https://arxiv.org/abs/2102.09672">https://arxiv.org/abs/2102.09672</a>和<a href="https://arxiv.org/abs/2201.06503">https://arxiv.org/abs/2201.06503</a>）。这里假定<span class="math-inline">\sigma_t^2=\tilde{\beta}_t</span>，那么： </p>
+<p><div class="math-display">q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)=\mathcal{N}(\mathbf{x}</em>{t-1}; {\tilde{\boldsymbol{\mu}}} (\mathbf{x}<em>t, \mathbf{x}_0), {\sigma_t^2} \mathbf{I})<span class="math-inline"> </span>p</em>\theta(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t) = \mathcal{N}(\mathbf{x}</em>{t-1}; \boldsymbol{\mu}_\theta(\mathbf{x}_t, t), {\sigma_t^2} \mathbf{I})</div> </p>
+<p>对于两个高斯分布的KL散度，其计算公式为（具体推导见<a href="https://zhuanlan.zhihu.com/p/452743042">https://zhuanlan.zhihu.com/p/452743042</a>）：</p>
+<p><div class="math-display">\text{KL}(p_1||p_2) = \frac{1}{2}(\text{tr}(\boldsymbol{\Sigma}_2^{-1}\boldsymbol{\Sigma}_1)+(\boldsymbol{\mu_2}-\boldsymbol{\mu_1})^{\top}\boldsymbol{\Sigma}_2^{-1}(\boldsymbol{\mu_2}-\boldsymbol{\mu_1})-n+\log\frac{\det(\boldsymbol{\Sigma_2})}{\det(\boldsymbol{\Sigma_1})}) \</div></p>
+<p>那么就有：</p>
+<p><div class="math-display">\begin{aligned} D_\text{KL}(q(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)\parallel p</em>\theta(\mathbf{x}<em>{t-1} \vert \mathbf{x}_t)) &amp;=D</em>\text{KL}(\mathcal{N}(\mathbf{x}<em>{t-1}; {\tilde{\boldsymbol{\mu}}} (\mathbf{x}_t, \mathbf{x}_0), {\sigma_t^2} \mathbf{I}) \parallel \mathcal{N}(\mathbf{x}</em>{t-1}; \boldsymbol{\mu}<em>\theta(\mathbf{x}_t, t), {\sigma_t^2} \mathbf{I})) \  &amp;=\frac{1}{2}(n+\frac{1}{{\sigma_t^2}}|\tilde{\boldsymbol{\mu}}_t(\mathbf{x}_t, \mathbf{x}_0) - {\boldsymbol{\mu}</em>\theta(\mathbf{x}<em>t, t)} |^2 -n+\log1)  \ &amp;=\frac{1}{2{\sigma_t^2}}|\tilde{\boldsymbol{\mu}}_t(\mathbf{x}_t, \mathbf{x}_0) - {\boldsymbol{\mu}</em>\theta(\mathbf{x}_t, t)} |^2 \end{aligned}\</div></p>
+<p>那么优化目标<span class="math-inline">L_{t-1}</span> 为：</p>
+<p><div class="math-display">L_{t-1}=\mathbb{E}<em>{q(\mathbf{x}</em>{t}\vert \mathbf{x}<em>{0})}\Big[ \frac{1}{2{\sigma_t^2}}|\tilde{\boldsymbol{\mu}}_t(\mathbf{x}_t, \mathbf{x}_0) - {\boldsymbol{\mu}</em>\theta(\mathbf{x}_t, t)} |^2\Big] \</div></p>
+<p>从上述公式来看，我们是希望网络学习到的均值<span class="math-inline">\boldsymbol{\mu}_\theta(\mathbf{x}_t, t)</span> 后验分布的均值<span class="math-inline">{\tilde{\boldsymbol{\mu}}} (\mathbf{x}_t, \mathbf{x}_0)</span> 致。不过DDPM发现预测均值并不是最好的选择。根据前面得到的扩散过程的特性，我们有：</p>
+<p><span class="math-inline">\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon})=\sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1 - \bar{\alpha}_t}\mathbf{\epsilon} \quad \text{ where } \mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I}) \</span></p>
+<p>将这个公式带入上述优化目标（注意这里的损失我们加上了对 <span class="math-inline">\mathbf{x}_0</span> 的数学期望），可以得到：</p>
+<p><span class="math-inline">\begin{aligned} L_{t-1}&amp;=\mathbb{E}<em>{\mathbf{x}</em>{0}}\Big(\mathbb{E}<em>{q(\mathbf{x}</em>{t}\vert \mathbf{x}<em>{0})}\Big[ \frac{1}{2{\sigma_t^2}}|\tilde{\boldsymbol{\mu}}_t(\mathbf{x}_t, \mathbf{x}_0) - {\boldsymbol{\mu}</em>\theta(\mathbf{x}<em>t, t)} |^2\Big]\Big) \ &amp;=\mathbb{E}</em>{\mathbf{x}<em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ \frac{1}{2{\sigma_t^2}}|\tilde{\boldsymbol{\mu}}_t\Big(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), \frac{1}{\sqrt{\bar \alpha_t}} \big(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}) - \sqrt{1 - \bar{\alpha}_t} \mathbf{\epsilon} \big)\Big ) - {\boldsymbol{\mu}</em>\theta(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), t)} |^2\Big] \ &amp;=\mathbb{E}<em>{\mathbf{x}</em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ \frac{1}{2{\sigma_t^2}}|\Big (\frac{\sqrt{\alpha_t}(1 - \bar{\alpha}<em>{t-1})}{1 - \bar{\alpha}_t} \mathbf{x}_t(\mathbf{x_0},\mathbf{\epsilon}) + \frac{\sqrt{\bar{\alpha}</em>{t-1}}\beta_t}{1 - \bar{\alpha}<em>t} \frac{1}{\sqrt{\bar \alpha_t}} \big(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}) - \sqrt{1 - \bar{\alpha}_t} \mathbf{\epsilon} \big) \Big) - {\boldsymbol{\mu}</em>\theta(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), t)} |^2\Big] \ &amp;=\mathbb{E}<em>{\mathbf{x}</em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ \frac{1}{2{\sigma_t^2}}|\frac{1}{\sqrt{\alpha_t}}\Big( \mathbf{x}<em>t(\mathbf{x_0},\mathbf{\epsilon}) - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}}\mathbf{\epsilon}\Big) - {\boldsymbol{\mu}</em>\theta(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), t)} |^2\Big] \end{aligned}\</span></p>
+<p>近一步地，我们对<span class="math-inline">\boldsymbol{\mu}_\theta(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), t)</span> 进行重参数化，变成：</p>
+<p><span class="math-inline">\boldsymbol{\mu}<em>\theta(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), t)=\frac{1}{\sqrt{\alpha_t}}\Big( \mathbf{x}_t(\mathbf{x_0},\mathbf{\epsilon}) - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}}\mathbf{\epsilon}</em>\theta\big(\mathbf{x}_t(\mathbf{x_0},\mathbf{\epsilon}), t\big)\Big) \</span></p>
+<p>这里的<span class="math-inline">\mathbf{\epsilon}_\theta</span> 一个基于神经网络的拟合函数，这意味着我们<strong>由原来的预测均值而换成预测噪音</strong><span class="math-inline">\mathbf{\epsilon}</span>。我们将上述等式带入优化目标，可以得到：</p>
+<p><span class="math-inline">\begin{aligned} L_{t-1}&amp;=\mathbb{E}<em>{\mathbf{x}</em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ \frac{1}{2{\sigma_t^2}}|\frac{1}{\sqrt{\alpha_t}}\Big( \mathbf{x}<em>t(\mathbf{x_0},\mathbf{\epsilon}) - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}}\mathbf{\epsilon}\Big) - {\boldsymbol{\mu}</em>\theta(\mathbf{x_t}(\mathbf{x_0},\mathbf{\epsilon}), t)} |^2\Big] \ &amp;= \mathbb{E}<em>{\mathbf{x}</em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ \frac{\beta_t^2}{2{\sigma_t^2}\alpha_t(1-\bar{\alpha}<em>t)}| \mathbf{\epsilon}- \mathbf{\epsilon}</em>\theta\big(\mathbf{x}<em>t(\mathbf{x_0},\mathbf{\epsilon}), t\big)|^2\Big]\ &amp;=\mathbb{E}</em>{\mathbf{x}<em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ \frac{\beta_t^2}{2{\sigma_t^2}\alpha_t(1-\bar{\alpha}_t)}| \mathbf{\epsilon}- \mathbf{\epsilon}</em>\theta\big(\sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1 - \bar{\alpha}_t}\mathbf{\epsilon}, t\big)|^2\Big] \end{aligned}\</span></p>
+<p>DDPM近一步对上述目标进行了简化，即去掉了权重系数，变成了： <br />
+<div class="math-display">L_{t-1}^{\text{simple}}=\mathbb{E}<em>{\mathbf{x}</em>{0},\mathbf{\epsilon}\sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Big[ | \mathbf{\epsilon}- \mathbf{\epsilon}_\theta\big(\sqrt{\bar{\alpha}_t}\mathbf{x}_0 + \sqrt{1 - \bar{\alpha}_t}\mathbf{\epsilon}, t\big)|^2\Big]</div></p>
+<p>这里的<span class="math-inline">t</span> [1, T]范围内取值（如前所述，其中取1时对应<span class="math-inline">L_0</span>）。由于去掉了不同<span class="math-inline">t</span> 权重系数，所以这个简化的目标其实是VLB优化目标进行了reweight。从DDPM的对比实验结果来看，预测噪音比预测均值效果要好，采用简化版本的优化目标比VLB目标效果要好： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128488.jpg" /><br />
+虽然扩散模型背后的推导比较复杂，但是我们最终得到的优化目标非常简单，就是让网络预测的噪音和真实的噪音一致。DDPM的训练过程也非常简单，如下图所示：随机选择一个训练样本-&gt;从1-T随机抽样一个t-&gt;随机产生噪音-计算当前所产生的带噪音数据（红色框所示）-&gt;输入网络预测噪音-&gt;计算产生的噪音和预测的噪音的L2损失-&gt;计算梯度并更新网络。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128489.jpg" /><br />
+ 一旦训练完成，其采样过程也非常简单，如上所示：我们从一个随机噪音开始，并用训练好的网络预测噪音，然后计算条件分布的均值（红色框部分），然后用均值加标准差乘以一个随机噪音，直至t=0完成新样本的生成（最后一步不加噪音）。不过实际的代码实现和上述过程略有区别（见<a href="https://github.com/hojonathanho/diffusion/issues/5">https://github.com/hojonathanho/diffusion/issues/5</a>：先基于预测的噪音生成<span class="math-inline">\mathbf{x}_0</span>，并进行了<strong>clip处理</strong>（范围[-1, 1]，原始数据归一化到这个范围），然后再计算均值。我个人的理解这应该算是一种约束，既然模型预测的是噪音，那么我们也希望用预测噪音重构处理的原始数据也应该满足范围要求。</p>
+<h2 id="模型设计">模型设计<a class="anchor-link" href="#模型设计" title="Permanent link">&para;</a></h2>
+<p>前面我们介绍了扩散模型的原理以及优化目标，那么扩散模型的核心就在于训练噪音预测模型，由于噪音和原始数据是同维度的，所以我们可以选择采用<strong>AutoEncoder架构</strong>来作为噪音预测模型。DDPM所采用的模型是一个基于residual block和attention block的<strong>U-Net模型</strong>。如下所示： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128490.jpg" /><br />
+ U-Net属于encoder-decoder架构，其中encoder分成不同的stages，每个stage都包含下采样模块来降低特征的空间大小（H和W），然后decoder和encoder相反，是将encoder压缩的特征逐渐恢复。U-Net在decoder模块中还引入了<strong>skip connection</strong>，即concat了encoder中间得到的同维度特征，这有利于网络优化。DDPM所采用的U-Net每个stage包含<strong>2个residual block</strong>，而且部分stage还加入了<strong>self-attention模块</strong>增加网络的全局建模能力。 另外，扩散模型其实需要的是<span class="math-inline">T</span> 噪音预测模型，实际处理时，我们可以增加一个<strong>time embedding</strong>（类似transformer中的position embedding）来将timestep编码到网络中，从而只需要训练一个共享的U-Net模型。具体地，DDPM在各个residual block都引入了<strong>time embedding</strong>，如上图所示。</p>
+<h2 id="代码实现">代码实现<a class="anchor-link" href="#代码实现" title="Permanent link">&para;</a></h2>
+<p>最后，我们基于PyTorch框架给出DDPM的具体实现，这里主要参考了三套代码实现：</p>
+<ul>
+<li><a href="https://github.com/hojonathanho/diffusion">https://github.com/hojonathanho/diffusion</a>（官方TensorFlow实现）</li>
+<li><a href="https://github.com/openai/improved-diffusion">https://github.com/openai/improved-diffusion</a> （OpenAI基于PyTorch实现的DDPM+）</li>
+<li><a href="https://github.com/lucidrains/denoising-diffusion-pytorch">https://github.com/lucidrains/denoising-diffusion-pytorch</a></li>
+</ul>
+<p>首先，是time embeding，这里是采用<a href="https://arxiv.org/abs/1706.03762">https://arxiv.org/abs/1706.03762</a>中所设计的<strong>sinusoidal position embedding</strong>，只不过是用来编码timestep：</p>
+<pre><code># use sinusoidal position embedding to encode time step (https://arxiv.org/abs/1706.03762)   
+def timestep_embedding(timesteps, dim, max_period=10000):
+    &quot;&quot;&quot;
+    Create sinusoidal timestep embeddings.
+    :param timesteps: a 1-D Tensor of N indices, one per batch element.
+                      These may be fractional.
+    :param dim: the dimension of the output.
+    :param max_period: controls the minimum frequency of the embeddings.
+    :return: an [N x dim] Tensor of positional embeddings.
+    &quot;&quot;&quot;
+    half = dim // 2
+    freqs = torch.exp(
+        -math.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half
+    ).to(device=timesteps.device)
+    args = timesteps[:, None].float() * freqs[None]
+    embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
+    if dim % 2:
+        embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
+    return embedding
+</code></pre>
+<p>由于只有residual block才引入time embedding，所以可以定义一些辅助模块来自动处理，如下所示：</p>
+<pre><code># define TimestepEmbedSequential to support `time_emb` as extra input
+class TimestepBlock(nn.Module):
+    &quot;&quot;&quot;
+    Any module where forward() takes timestep embeddings as a second argument.
+    &quot;&quot;&quot;
+
+    @abstractmethod
+    def forward(self, x, emb):
+        &quot;&quot;&quot;
+        Apply the module to `x` given `emb` timestep embeddings.
+        &quot;&quot;&quot;
+
+
+class TimestepEmbedSequential(nn.Sequential, TimestepBlock):
+    &quot;&quot;&quot;
+    A sequential module that passes timestep embeddings to the children that
+    support it as an extra input.
+    &quot;&quot;&quot;
+
+    def forward(self, x, emb):
+        for layer in self:
+            if isinstance(layer, TimestepBlock):
+                x = layer(x, emb)
+            else:
+                x = layer(x)
+        return x
+</code></pre>
+<p>这里所采用的U-Net采用<strong>GroupNorm进行归一化</strong>，所以这里也简单定义了一个norm layer以方便使用：</p>
+<pre><code># use GN for norm layer
+def norm_layer(channels):
+    return nn.GroupNorm(32, channels)
+</code></pre>
+<p>U-Net的核心模块是residual block，它包含两个卷积层以及shortcut，同时也要引入time embedding，这里额外定义了一个linear层来将time embedding变换为和特征维度一致，第一conv之后通过加上time embedding来编码time：</p>
+<pre><code># Residual block
+class ResidualBlock(TimestepBlock):
+    def __init__(self, in_channels, out_channels, time_channels, dropout):
+        super().__init__()
+        self.conv1 = nn.Sequential(
+            norm_layer(in_channels),
+            nn.SiLU(),
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
+        )
+
+        # pojection for time step embedding
+        self.time_emb = nn.Sequential(
+            nn.SiLU(),
+            nn.Linear(time_channels, out_channels)
+        )
+
+        self.conv2 = nn.Sequential(
+            norm_layer(out_channels),
+            nn.SiLU(),
+            nn.Dropout(p=dropout),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
+        )
+
+        if in_channels != out_channels:
+            self.shortcut = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+        else:
+            self.shortcut = nn.Identity()
+
+
+    def forward(self, x, t):
+        &quot;&quot;&quot;
+        `x` has shape `[batch_size, in_dim, height, width]`
+        `t` has shape `[batch_size, time_dim]`
+        &quot;&quot;&quot;
+        h = self.conv1(x)
+        # Add time step embeddings
+        h += self.time_emb(t)[:, :, None, None]
+        h = self.conv2(h)
+        return h + self.shortcut(x)
+</code></pre>
+<p>这里还在部分residual block引入了attention，这里的attention和transformer的self-attention是一致的：</p>
+<pre><code># Attention block with shortcut
+class AttentionBlock(nn.Module):
+    def __init__(self, channels, num_heads=1):
+        super().__init__()
+        self.num_heads = num_heads
+        assert channels % num_heads == 0
+
+        self.norm = norm_layer(channels)
+        self.qkv = nn.Conv2d(channels, channels * 3, kernel_size=1, bias=False)
+        self.proj = nn.Conv2d(channels, channels, kernel_size=1)
+
+    def forward(self, x):
+        B, C, H, W = x.shape
+        qkv = self.qkv(self.norm(x))
+        q, k, v = qkv.reshape(B*self.num_heads, -1, H*W).chunk(3, dim=1)
+        scale = 1. / math.sqrt(math.sqrt(C // self.num_heads))
+        attn = torch.einsum(&quot;bct,bcs-&gt;bts&quot;, q * scale, k * scale)
+        attn = attn.softmax(dim=-1)
+        h = torch.einsum(&quot;bts,bcs-&gt;bct&quot;, attn, v)
+        h = h.reshape(B, -1, H, W)
+        h = self.proj(h)
+        return h + x
+</code></pre>
+<p>对于上采样模块和下采样模块，其分别可以采用插值和stride=2的conv或者pooling来实现：</p>
+<pre><code># upsample
+class Upsample(nn.Module):
+    def __init__(self, channels, use_conv):
+        super().__init__()
+        self.use_conv = use_conv
+        if use_conv:
+            self.conv = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        x = F.interpolate(x, scale_factor=2, mode=&quot;nearest&quot;)
+        if self.use_conv:
+            x = self.conv(x)
+        return x
+
+# downsample
+class Downsample(nn.Module):
+    def __init__(self, channels, use_conv):
+        super().__init__()
+        self.use_conv = use_conv
+        if use_conv:
+            self.op = nn.Conv2d(channels, channels, kernel_size=3, stride=2, padding=1)
+        else:
+            self.op = nn.AvgPool2d(stride=2)
+
+    def forward(self, x):
+        return self.op(x)
+</code></pre>
+<p>上面我们实现了U-Net的所有组件，就可以进行组合来实现U-Net了：</p>
+<pre><code># The full UNet model with attention and timestep embedding
+class UNetModel(nn.Module):
+    def __init__(
+        self,
+        in_channels=3,
+        model_channels=128,
+        out_channels=3,
+        num_res_blocks=2,
+        attention_resolutions=(8, 16),
+        dropout=0,
+        channel_mult=(1, 2, 2, 2),
+        conv_resample=True,
+        num_heads=4
+    ):
+        super().__init__()
+
+        self.in_channels = in_channels
+        self.model_channels = model_channels
+        self.out_channels = out_channels
+        self.num_res_blocks = num_res_blocks
+        self.attention_resolutions = attention_resolutions
+        self.dropout = dropout
+        self.channel_mult = channel_mult
+        self.conv_resample = conv_resample
+        self.num_heads = num_heads
+
+        # time embedding
+        time_embed_dim = model_channels * 4
+        self.time_embed = nn.Sequential(
+            nn.Linear(model_channels, time_embed_dim),
+            nn.SiLU(),
+            nn.Linear(time_embed_dim, time_embed_dim),
+        )
+
+        # down blocks
+        self.down_blocks = nn.ModuleList([
+            TimestepEmbedSequential(nn.Conv2d(in_channels, model_channels, kernel_size=3, padding=1))
+        ])
+        down_block_chans = [model_channels]
+        ch = model_channels
+        ds = 1
+        for level, mult in enumerate(channel_mult):
+            for _ in range(num_res_blocks):
+                layers = [
+                    ResidualBlock(ch, mult * model_channels, time_embed_dim, dropout)
+                ]
+                ch = mult * model_channels
+                if ds in attention_resolutions:
+                    layers.append(AttentionBlock(ch, num_heads=num_heads))
+                self.down_blocks.append(TimestepEmbedSequential(*layers))
+                down_block_chans.append(ch)
+            if level != len(channel_mult) - 1: # don't use downsample for the last stage
+                self.down_blocks.append(TimestepEmbedSequential(Downsample(ch, conv_resample)))
+                down_block_chans.append(ch)
+                ds *= 2
+
+        # middle block
+        self.middle_block = TimestepEmbedSequential(
+            ResidualBlock(ch, ch, time_embed_dim, dropout),
+            AttentionBlock(ch, num_heads=num_heads),
+            ResidualBlock(ch, ch, time_embed_dim, dropout)
+        )
+
+        # up blocks
+        self.up_blocks = nn.ModuleList([])
+        for level, mult in list(enumerate(channel_mult))[::-1]:
+            for i in range(num_res_blocks + 1):
+                layers = [
+                    ResidualBlock(
+                        ch + down_block_chans.pop(),
+                        model_channels * mult,
+                        time_embed_dim,
+                        dropout
+                    )
+                ]
+                ch = model_channels * mult
+                if ds in attention_resolutions:
+                    layers.append(AttentionBlock(ch, num_heads=num_heads))
+                if level and i == num_res_blocks:
+                    layers.append(Upsample(ch, conv_resample))
+                    ds //= 2
+                self.up_blocks.append(TimestepEmbedSequential(*layers))
+
+        self.out = nn.Sequential(
+            norm_layer(ch),
+            nn.SiLU(),
+            nn.Conv2d(model_channels, out_channels, kernel_size=3, padding=1),
+        )
+
+    def forward(self, x, timesteps):
+        &quot;&quot;&quot;
+        Apply the model to an input batch.
+        :param x: an [N x C x H x W] Tensor of inputs.
+        :param timesteps: a 1-D batch of timesteps.
+        :return: an [N x C x ...] Tensor of outputs.
+        &quot;&quot;&quot;
+        hs = []
+        # time step embedding
+        emb = self.time_embed(timestep_embedding(timesteps, self.model_channels))
+
+        # down stage
+        h = x
+        for module in self.down_blocks:
+            h = module(h, emb)
+            hs.append(h)
+        # middle stage
+        h = self.middle_block(h, emb)
+        # up stage
+        for module in self.up_blocks:
+            cat_in = torch.cat([h, hs.pop()], dim=1)
+            h = module(cat_in, emb)
+        return self.out(h)
+</code></pre>
+<p>对于扩散过程，其主要的参数就是timesteps和noise schedule，DDPM采用范围为[0.0001, 0.02]的线性noise schedule，其默认采用的总扩散步数为<strong>1000</strong>。</p>
+<pre><code># beta schedule
+def linear_beta_schedule(timesteps):
+    scale = 1000 / timesteps
+    beta_start = scale * 0.0001
+    beta_end = scale * 0.02
+    return torch.linspace(beta_start, beta_end, timesteps, dtype=torch.float64)
+</code></pre>
+<p>我们定义个扩散模型，它主要要提前根据设计的noise schedule来计算一些系数，并实现一些扩散过程和生成过程：</p>
+<pre><code>class GaussianDiffusion:
+    def __init__(
+        self,
+        timesteps=1000,
+        beta_schedule='linear'
+    ):
+        self.timesteps = timesteps
+
+        if beta_schedule == 'linear':
+            betas = linear_beta_schedule(timesteps)
+        elif beta_schedule == 'cosine':
+            betas = cosine_beta_schedule(timesteps)
+        else:
+            raise ValueError(f'unknown beta schedule {beta_schedule}')
+        self.betas = betas
+
+        self.alphas = 1. - self.betas
+        self.alphas_cumprod = torch.cumprod(self.alphas, axis=0)
+        self.alphas_cumprod_prev = F.pad(self.alphas_cumprod[:-1], (1, 0), value=1.)
+
+        # calculations for diffusion q(x_t | x_{t-1}) and others
+        self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
+        self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - self.alphas_cumprod)
+        self.log_one_minus_alphas_cumprod = torch.log(1.0 - self.alphas_cumprod)
+        self.sqrt_recip_alphas_cumprod = torch.sqrt(1.0 / self.alphas_cumprod)
+        self.sqrt_recipm1_alphas_cumprod = torch.sqrt(1.0 / self.alphas_cumprod - 1)
+
+        # calculations for posterior q(x_{t-1} | x_t, x_0)
+        self.posterior_variance = (
+            self.betas * (1.0 - self.alphas_cumprod_prev) / (1.0 - self.alphas_cumprod)
+        )
+        # below: log calculation clipped because the posterior variance is 0 at the beginning
+        # of the diffusion chain
+        self.posterior_log_variance_clipped = torch.log(self.posterior_variance.clamp(min =1e-20))
+
+        self.posterior_mean_coef1 = (
+            self.betas * torch.sqrt(self.alphas_cumprod_prev) / (1.0 - self.alphas_cumprod)
+        )
+        self.posterior_mean_coef2 = (
+            (1.0 - self.alphas_cumprod_prev)
+            * torch.sqrt(self.alphas)
+            / (1.0 - self.alphas_cumprod)
+        )
+
+    # get the param of given timestep t
+    def _extract(self, a, t, x_shape):
+        batch_size = t.shape[0]
+        out = a.to(t.device).gather(0, t).float()
+        out = out.reshape(batch_size, *((1,) * (len(x_shape) - 1)))
+        return out
+
+    # forward diffusion (using the nice property): q(x_t | x_0)
+    def q_sample(self, x_start, t, noise=None):
+        if noise is None:
+            noise = torch.randn_like(x_start)
+
+        sqrt_alphas_cumprod_t = self._extract(self.sqrt_alphas_cumprod, t, x_start.shape)
+        sqrt_one_minus_alphas_cumprod_t = self._extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape)
+
+        return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
+
+    # Get the mean and variance of q(x_t | x_0).
+    def q_mean_variance(self, x_start, t):
+        mean = self._extract(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
+        variance = self._extract(1.0 - self.alphas_cumprod, t, x_start.shape)
+        log_variance = self._extract(self.log_one_minus_alphas_cumprod, t, x_start.shape)
+        return mean, variance, log_variance
+
+    # Compute the mean and variance of the diffusion posterior: q(x_{t-1} | x_t, x_0)
+    def q_posterior_mean_variance(self, x_start, x_t, t):
+        posterior_mean = (
+            self._extract(self.posterior_mean_coef1, t, x_t.shape) * x_start
+            + self._extract(self.posterior_mean_coef2, t, x_t.shape) * x_t
+        )
+        posterior_variance = self._extract(self.posterior_variance, t, x_t.shape)
+        posterior_log_variance_clipped = self._extract(self.posterior_log_variance_clipped, t, x_t.shape)
+        return posterior_mean, posterior_variance, posterior_log_variance_clipped
+
+    # compute x_0 from x_t and pred noise: the reverse of `q_sample`
+    def predict_start_from_noise(self, x_t, t, noise):
+        return (
+            self._extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t -
+            self._extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * noise
+        )
+
+    # compute predicted mean and variance of p(x_{t-1} | x_t)
+    def p_mean_variance(self, model, x_t, t, clip_denoised=True):
+        # predict noise using model
+        pred_noise = model(x_t, t)
+        # get the predicted x_0: different from the algorithm2 in the paper
+        x_recon = self.predict_start_from_noise(x_t, t, pred_noise)
+        if clip_denoised:
+            x_recon = torch.clamp(x_recon, min=-1., max=1.)
+        model_mean, posterior_variance, posterior_log_variance = \
+                    self.q_posterior_mean_variance(x_recon, x_t, t)
+        return model_mean, posterior_variance, posterior_log_variance
+
+    # denoise_step: sample x_{t-1} from x_t and pred_noise
+    @torch.no_grad()
+    def p_sample(self, model, x_t, t, clip_denoised=True):
+        # predict mean and variance
+        model_mean, _, model_log_variance = self.p_mean_variance(model, x_t, t,
+                                                    clip_denoised=clip_denoised)
+        noise = torch.randn_like(x_t)
+        # no noise when t == 0
+        nonzero_mask = ((t != 0).float().view(-1, *([1] * (len(x_t.shape) - 1))))
+        # compute x_{t-1}
+        pred_img = model_mean + nonzero_mask * (0.5 * model_log_variance).exp() * noise
+        return pred_img
+
+    # denoise: reverse diffusion
+    @torch.no_grad()
+    def p_sample_loop(self, model, shape):
+        batch_size = shape[0]
+        device = next(model.parameters()).device
+        # start from pure noise (for each example in the batch)
+        img = torch.randn(shape, device=device)
+        imgs = []
+        for i in tqdm(reversed(range(0, timesteps)), desc='sampling loop time step', total=timesteps):
+            img = self.p_sample(model, img, torch.full((batch_size,), i, device=device, dtype=torch.long))
+            imgs.append(img.cpu().numpy())
+        return imgs
+
+    # sample new images
+    @torch.no_grad()
+    def sample(self, model, image_size, batch_size=8, channels=3):
+        return self.p_sample_loop(model, shape=(batch_size, channels, image_size, image_size))
+
+    # compute train losses
+    def train_losses(self, model, x_start, t):
+        # generate random noise
+        noise = torch.randn_like(x_start)
+        # get x_t
+        x_noisy = self.q_sample(x_start, t, noise=noise)
+        predicted_noise = model(x_noisy, t)
+        loss = F.mse_loss(noise, predicted_noise)
+        return loss
+</code></pre>
+<p>其中几个主要的函数总结如下：</p>
+<ul>
+<li><code>q_sample</code>：实现的从<span class="math-inline">\mathbf{x}_0</span> <span class="math-inline">\mathbf{x}_t</span> 散过程；</li>
+<li><code>q_posterior_mean_variance</code>：实现的是后验分布的均值和方差的计算公式；</li>
+<li><code>predict_start_from_noise</code>：<code>q_sample</code>的逆过程，根据预测的噪音来生成<span class="math-inline">\mathbf{x}_0</span>；</li>
+<li><code>p_mean_variance</code>：根据预测的噪音来计算<span class="math-inline">p_\theta(\mathbf{x}_{t-1} \vert \mathbf{x}_t)</span> 均值和方差；</li>
+<li><code>p_sample</code>：单个去噪step；</li>
+<li><code>p_sample_loop</code>：整个去噪音过程，即生成过程。</li>
+</ul>
+<p>扩散模型的训练过程非常简单，如下所示：</p>
+<pre><code># train
+epochs = 10
+
+for epoch in range(epochs):
+    for step, (images, labels) in enumerate(train_loader):
+        optimizer.zero_grad()
+
+        batch_size = images.shape[0]
+        images = images.to(device)
+
+        # sample t uniformally for every example in the batch
+        t = torch.randint(0, timesteps, (batch_size,), device=device).long()
+
+        loss = gaussian_diffusion.train_losses(model, images, t)
+
+        if step % 200 == 0:
+            print(&quot;Loss:&quot;, loss.item())
+
+        loss.backward()
+        optimizer.step()
+</code></pre>
+<p>这里我们以mnist数据简单实现了一个<a href="https://github.com/xiaohu2015/nngen/blob/main/models/diffusion_models/ddpm_mnist.ipynb">https://github.com/xiaohu2015/nngen/blob/main/models/diffusion_models/ddpm_mnist.ipynb</a>，下面是一些生成的样本： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128491.jpg" /><br />
+ 对生成过程进行采样，如下所示展示了如何从一个随机噪音生成一个手写字体图像： </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128492.jpg" /><br />
+ 另外这里也提供了CIFAR10数据集的demo：<a href="https://github.com/xiaohu2015/nngen/blob/main/models/diffusion_models/ddpm_cifar10.ipynb">https://github.com/xiaohu2015/nngen/blob/main/models/diffusion_models/ddpm_cifar10.ipynb</a>，不过只训练了200epochs，生成的图像只是初见成效。 </p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410131128493.jpg" />  </p>
+<h2 id="小结">小结<a class="anchor-link" href="#小结" title="Permanent link">&para;</a></h2>
+<p>相比VAE和GAN，扩散模型的理论更复杂一些，不过其优化目标和具体实现却并不复杂，这其实也让人感叹<strong>：一堆复杂的数据推导，最终却得到了一个简单的结论</strong>。要深入理解扩散模型，<strong>DDPM只是起点</strong>，后面还有比较多的改进工作，比如加速采样的<a href="https://arxiv.org/abs/2010.02502">https://arxiv.org/abs/2010.02502</a>以及DDPM的改进版本<a href="https://arxiv.org/abs/2102.09672">https://arxiv.org/abs/2102.09672</a>和<a href="https://arxiv.org/abs/2105.05233">https://arxiv.org/abs/2105.05233</a>。 </p>
+<p><em>这篇文章特别参考了OpenAI研究员的博客</em><a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">https://lilianweng.github.io/posts/2021-07-11-diffusion-models/</a><em>（部分公式在此基础上进行加工修改）以及谷歌研究员的论文</em><a href="https://arxiv.org/abs/2208.11970">https://arxiv.org/abs/2208.11970</a><em>。</em>**</p>
+<p><em>注：本人水平有限，如有谬误，欢迎讨论交流。</em></p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/563661713">扩散模型之DDPM</a></li>
+<li><a href="https://arxiv.org/abs/2006.11239">https://arxiv.org/abs/2006.11239</a></li>
+<li><a href="https://arxiv.org/abs/2208.11970">https://arxiv.org/abs/2208.11970</a></li>
+<li><a href="https://spaces.ac.cn/archives/9119/comment-page-1">https://spaces.ac.cn/archives/9119/comment-page-1</a></li>
+<li><a href="https://keras.io/examples/generative/ddim/">https://keras.io/examples/generative/ddim/</a></li>
+<li><a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">https://lilianweng.github.io/posts/2021-07-11-diffusion-models/</a></li>
+<li><a href="https://cvpr2022-tutorial-diffusion-models.github.io/">https://cvpr2022-tutorial-diffusion-models.github.io/</a></li>
+<li><a href="https://github.com/openai/improved-diffusion">https://github.com/openai/improved-diffusion</a></li>
+<li><a href="https://huggingface.co/blog/annotated-diffusion">https://huggingface.co/blog/annotated-diffusion</a></li>
+<li><a href="https://github.com/lucidrains/denoising-diffusion-pytorch">https://github.com/lucidrains/denoising-diffusion-pytorch</a></li>
+<li><a href="https://github.com/hojonathanho/diffusion">https://github.com/hojonathanho/diffusion</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

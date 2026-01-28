@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#理论推导">理论推导</a></li>
+<li><a href="#矩阵形式的self-attention">矩阵形式的Self-Attention</a></li>
+<li><a href="#整体回顾self-attention的矩阵操作">整体回顾Self-attention的矩阵操作</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/04.Transformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="理论推导">理论推导<a class="anchor-link" href="#理论推导" title="Permanent link">&para;</a></h2>
+<p>Self-Attention的Input，是一串的Vector，那<strong>这个Vector可能是你整个Network的Input，它也可能是某个Hidden Layer的Output</strong>，所以用 <span class="math-inline">a</span> 表示它：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002352.png" alt="image-20210404202435331" style="zoom: 50%;" /></div>
+
+<p>Input一排<span class="math-inline">a</span>向量以后，Self-Attention要Output另外一排b向量。每一个b都是考虑了所有的a以后才生成出来的，<span class="math-inline">b^1</span> 虑了<span class="math-inline">a^1 \dots a^4</span>，<span class="math-inline">b^2</span> 虑了<span class="math-inline">a^1 \dots a^4</span> ，<span class="math-inline">b^3,b^4</span> 是一样，考虑整个input的sequence，才产生出来的。</p>
+<p><strong>关于如何产生<span class="math-inline">b^1</span> 个向量</strong>，这里有一个<strong>特别的机制</strong>，这个机制是根据 <span class="math-inline">a^1</span> 个向量，找出整个很长的sequence里面，到底哪些部分是重要的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002074.png" alt="image-20210404202942477" style="zoom: 50%;" /></div>
+
+<p><strong>每一个向量跟 <span class="math-inline">a^1</span> 关联的程度，用一个数值叫 <span class="math-inline">\alpha</span> 来表示。</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002378.png" alt="image-20210404204458431" style="zoom: 60%;" /></div>
+
+<p>计算这个<span class="math-inline">\alpha</span> 数值有各种不同的做法</p>
+<ul>
+<li>
+<p><strong>dot product</strong>：输入的这两个向量分别乘上两个不同的矩阵，左边这个向量乘上<span class="math-inline">W^q</span> 矩阵得到矩阵<span class="math-inline">q</span>，右边这个向量乘上<span class="math-inline">W^k</span> 矩阵得到矩阵<span class="math-inline">k</span>，再把<span class="math-inline">q</span> <span class="math-inline">k</span> 做dot product，就是把他们做element-wise 的相乘，再全部加起来以后就得到一个 scalar，这个scalar就是<span class="math-inline">\alpha</span>，这是一种计算<span class="math-inline">\alpha</span> 方式（Transformer）。</p>
+</li>
+<li>
+<p><strong>Additive</strong>：把同样这两个向量通过<span class="math-inline">W^q</span> <span class="math-inline">W^k</span>，得到<span class="math-inline">q</span> <span class="math-inline">k</span>，拼接这两个向量，然后输入到Activation Function，再通过一个Transform，然后得到<span class="math-inline">\alpha</span>。</p>
+</li>
+</ul>
+<p>那你就要把这边的<span class="math-inline">a^1</span> 跟这边的<span class="math-inline">a^2 a^3 a^4</span>，分别都去计算他们之间的关联性，也就是计算他们之间的<span class="math-inline">\alpha</span></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002686.png" alt="image-20210404211656032" style="zoom: 60%;" /></div>
+
+<p><span class="math-inline">a^1</span> 乘上<span class="math-inline">W^q</span> 到<span class="math-inline">q^1</span>，这个<span class="math-inline">q</span> 做<strong>Query</strong>，它就像搜寻相关文章的关键字。接下来，<span class="math-inline">a^2 a^3 a^4</span> 要去把它乘上<span class="math-inline">W^k</span>，得到<span class="math-inline">k</span> 个Vector，<span class="math-inline">k</span> 个Vector叫做<strong>Key</strong>，那你把这个<strong>Query <span class="math-inline">q^1</span>，跟这个Key <span class="math-inline">k^2</span>，算Inner-Product就得到<span class="math-inline">\alpha</span></strong>。我们这边用<span class="math-inline">\alpha_{1，2}</span> 代表说，Query是1提供的，Key是2提供的时候，1跟2他们之间的关联性<span class="math-inline">\alpha</span> 做<strong>Attention的Score</strong>，即Attention的分数，接下来也要跟<span class="math-inline">a^3,a^4</span> 计算</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002138.png" alt="image-20210404211950882" style="zoom: 70%;" /></div>
+
+<p>把<span class="math-inline">a_3</span> 上<span class="math-inline">W^k</span>，得到另外一个Key也就是<span class="math-inline">k^3</span>，<span class="math-inline">a^4</span> 上<span class="math-inline">W^k</span> 到<span class="math-inline">k^4</span>，然后你再把<span class="math-inline">k^3</span> 个Key，跟<span class="math-inline">q^1</span> 个Query做Inner-Product，得到1跟3之间的关联性，得到1跟3的Attention，你把<span class="math-inline">k^4</span> <span class="math-inline">q^1</span> Dot-Product，得到<span class="math-inline">\alpha_{1，4}</span>，得到1跟4之间的关联性。其实一般在实作时候，<strong><span class="math-inline">q^1</span> 会跟自己算关联性</strong>。</p>
+<p>计算出<span class="math-inline">a^1</span> 每一个向量的关联性以后，接下来这边会<strong>接入一个Soft-Max</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002620.png" alt="image-20210404212945356" style="zoom:80%;" /></div>
+
+<p><strong>这个Soft-Max跟分类的时候的那个Soft-Max是一模一样的</strong>，所以Soft-Max的输出就是一排<span class="math-inline">\alpha</span>，所以本来有一排<span class="math-inline">\alpha</span>，通过Soft-Max就得到<span class="math-inline">\alpha'</span>，这边你<strong>不一定要用Soft-Max，用别的替代也没问题</strong>，比如说有人尝试过说用ReLU，结果发现还比Soft-Max好一点，Soft-Max是最常见的。接下来得到这个<span class="math-inline">\alpha'</span> 后，我们就要根据这个<span class="math-inline">\alpha'</span> 抽取出这个Sequence里面重要的资讯，根据这个<span class="math-inline">\alpha</span> 们已经知道说，哪些向量跟<span class="math-inline">a^1</span> 最有关系的，怎么抽取重要的资讯呢？</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002079.png" alt="image-20210404213559086" style="zoom:80%;" /></div>
+
+<ul>
+<li>
+<p>首先把<span class="math-inline">a^1</span> <span class="math-inline">a^4</span> 每一个向量，乘上<span class="math-inline">W^v</span> 到新的向量，这边分别就是用<span class="math-inline">v^1 v^2 v^3 v^4</span> 表示</p>
+</li>
+<li>
+<p>接下来把这边的<span class="math-inline">v^1</span> <span class="math-inline">v^4</span>，每一个向量都去乘上Attention的分数，都去乘上<span class="math-inline">\alpha'</span></p>
+</li>
+<li>
+<p>然后再把它加起来，得到<span class="math-inline">b^1</span></p>
+</li>
+</ul>
+<p><div class="math-display"><br />
+b^1=\sum_i\alpha'_{1，i}v^i<br />
+</div></p>
+<p>如果某一个向量它得到的分数越高，比如说如果<span class="math-inline">a^1</span> <span class="math-inline">a^2</span> 关联性很强，这个<span class="math-inline">\alpha'</span> 到的值很大，那我们今天在做Weighted Sum以后，得到的<span class="math-inline">b^1</span> 值，就可能会比较接近<span class="math-inline">v^2</span></p>
+<p>所以<strong>谁的那个Attention的分数最大，谁的那个<span class="math-inline">v</span> 会Dominant你抽出来的结果</strong></p>
+<p>至此，从一整个Sequence 就得到了<span class="math-inline">b^1</span></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002745.png" alt="image-20210409092350116" style="zoom:80%;" /></div>
+
+<p>从这一排 vector 得到 <span class="math-inline">b^1</span>，跟从这一排 vector 得到 <span class="math-inline">b^2</span>，它的操作是一模一样的。要强调一点是，这边的 <span class="math-inline">b^1</span> 到 <span class="math-inline">b^4</span>，它们并<strong>不需要依序产生</strong>，它们是一次同时被计算出来的</p>
+<p>怎么计算这个 <span class="math-inline">b^2</span>？我们现在的主角，就变成 <span class="math-inline">a^2</span></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002127.png" alt="image-20210409093744204" style="zoom:80%;" /></div>
+
+<ul>
+<li>
+<p>把 <span class="math-inline">a^2</span> 乘上一个 matrix，变成 <span class="math-inline">q^2</span></p>
+</li>
+<li>
+<p>然后接下来根据 <span class="math-inline">q^2</span>，去对<span class="math-inline">a^1</span>  <span class="math-inline">a^4</span> 这四个位置，都去计算 attention 的 score</p>
+</li>
+<li>
+<p>把 <span class="math-inline">q^2</span> 跟 <span class="math-inline">k^1</span> 做个这个 dot product</p>
+</li>
+<li>把 <span class="math-inline">q^2</span> 跟 <span class="math-inline">k^2</span> 也做个 dot product</li>
+<li>把 <span class="math-inline">q^2</span> 跟 <span class="math-inline">k^3</span> 也做 dot product</li>
+<li>
+<p>把 <span class="math-inline">q^2</span> 跟 <span class="math-inline">k^4</span> 也做 dot product，得到四个分数</p>
+</li>
+<li>
+<p>得到这四个分数以后，可能还会做一个 normalization，比如说 softmax，然后得到最后的 attention 的 score，<span class="math-inline">\alpha'<em>{2，1} \space \alpha'</em>{2，2}  \space \alpha'<em>{2，3}  \space \alpha'</em>{2，4}</span> 我们这边用 <span class="math-inline">\alpha'</span> 示经过 normalization 以后的attention score</p>
+</li>
+<li>
+<p>接下来拿这四个数值，分别乘上 <span class="math-inline">v^1  \space  v^2 \space  v^3 \space  v^4</span></p>
+</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002562.png" alt="image-20210409094148657" style="zoom:80%;" /></div>
+
+<ul>
+<li>把 <span class="math-inline">\alpha'_{2，1}</span> 上 <span class="math-inline">v^1</span></li>
+<li>把 <span class="math-inline">\alpha'_{2，2}</span> 乘上 <span class="math-inline">v^2</span></li>
+<li>把 <span class="math-inline">\alpha'_{2，3}</span> 乘上 <span class="math-inline">v^3</span></li>
+<li>把 <span class="math-inline">\alpha'_{2，4}</span> 乘上 <span class="math-inline">v^4</span>，然后全部加起来就是 <span class="math-inline">b^2</span></li>
+</ul>
+<p><div class="math-display"><br />
+  b^2=\sum_iα'_{2，i}v^i<br />
+  </div></p>
+<p>同理就可以，由 <span class="math-inline">a^3</span> 乘一个 transform 得到 <span class="math-inline">q^3</span>，然后就计算 <span class="math-inline">b^3</span>，从 <span class="math-inline">a^4</span> 乘一个 transform 得到 <span class="math-inline">q^4</span>，就计算 <span class="math-inline">b^4</span>，以上说的是  Self-attention 它运作的过程。</p>
+<h2 id="矩阵形式的self-attention">矩阵形式的Self-Attention<a class="anchor-link" href="#矩阵形式的self-attention" title="Permanent link">&para;</a></h2>
+<p>我们现在已经知道每一个 <span class="math-inline">a</span> 都产生 <span class="math-inline">q \quad k\quad v</span></p>
+<p><img alt="image-20221125214408693" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211252144771.png" /></p>
+<p>我们每一个 <span class="math-inline">a</span>，都乘上一个矩阵，我们这边用 <span class="math-inline">W^q</span> 来表示它，得到 <span class="math-inline">q^i</span>，每一个<span class="math-inline">a</span> 要乘上 <span class="math-inline">W^q</span>，得到<span class="math-inline">q^i</span>，<strong>这些不同的 <span class="math-inline">a</span> 把它合起来，当作一个矩阵来看待</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002140.png" alt="image-20210409100755718"  /></div>
+
+<p>一样<span class="math-inline">a^2\space a^3\space a^4</span> 都乘上 <span class="math-inline">W^q</span> 得到<span class="math-inline">q^2 q^3</span>  <span class="math-inline">q^4</span>，那你可以<strong>把 a1 到 a4 拼起来</strong>，看作是一个矩阵，这个矩阵我们用 <span class="math-inline">I</span> 来表示，这个矩阵的四个 column 就是 <span class="math-inline">a^1</span> 到 <span class="math-inline">a^4</span>。<span class="math-inline">I</span> 乘上 <span class="math-inline">W^q</span> 就得到另外一个矩阵，我们用 <span class="math-inline">Q</span> 来表示它，这个 <span class="math-inline">Q</span> 就是把 <span class="math-inline">q^1</span> 到 <span class="math-inline">q^4</span> 这四个 vector 拼起来，就是 <span class="math-inline">Q</span> 的四个 column，所以我们从 <span class="math-inline">a^1</span> 到 <span class="math-inline">a^4</span>，得到  <span class="math-inline">q^1</span> 到 <span class="math-inline">q^4</span> 操作，其实就是<strong>把<span class="math-inline">I</span> 这个矩阵，乘上另外一个矩阵 <span class="math-inline">W^q</span>，得到矩阵<span class="math-inline">Q</span></strong>。<span class="math-inline">I</span> 这个矩阵它里面的 column就是我们 Self-attention 的 input <span class="math-inline">a^1</span> 到 <span class="math-inline">a^4</span>；<strong><span class="math-inline">W^q</span> 是 network 的参数，它是等一下会被learn出来的</strong> ；<span class="math-inline">Q</span> 的四个 column，就是  <span class="math-inline">q^1</span> 到 <span class="math-inline">q^4</span>。</p>
+<p>接下来产生 <span class="math-inline">k</span> 跟<span class="math-inline">v</span> 的操作跟 <span class="math-inline">q</span> 是一样的</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002625.png" alt="image-20210409101331347" /></div>
+
+<p>所以每一个 <span class="math-inline">a</span> 得到<span class="math-inline">q\quad k \quad v</span> ，其实就是把输入的这个，vector sequence 乘上三个不同的矩阵。</p>
+<p>下一步是，每一个 <span class="math-inline">q</span> 都会去跟每一个 <span class="math-inline">k</span>，去计算这个 inner product，去<strong>得到这个 attention 的分数</strong></p>
+<p>那得到 attention 分数这一件事情，如果从矩阵操作的角度来看，它在做什么样的事情呢</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002193.png" alt="image-20210409102703364" style="zoom: 80%;" /></div>
+
+<p>你就是把 <span class="math-inline">q^1</span> 跟 <span class="math-inline">k^1</span> 做 inner product，得到 <span class="math-inline">\alpha_{1,1}</span>，所以 <span class="math-inline">\alpha_{1,1}</span> 是 <span class="math-inline">q^1</span> 跟<span class="math-inline">k^1</span> 的 inner product，那这边我就把这个，<span class="math-inline">k^1</span> 背后的这个向量，把它画成比较宽一点代表说它是 transpose</p>
+<p>同理 <span class="math-inline">\alpha_{1,2}</span> 就是 <span class="math-inline">q^1</span> 跟 <span class="math-inline">k^2</span>，做 inner product， <span class="math-inline">\alpha_{1,3}</span>  就是 <span class="math-inline">q^1</span> 跟 <span class="math-inline">k^3</span> 做 inner product，这个  <span class="math-inline">\alpha_{1,4}</span>  就是 <span class="math-inline">q^1</span> 跟 <span class="math-inline">k^4</span> 做 inner product</p>
+<p>那这个四个步骤的操作，你其实可以把它拼起来，看作是<strong>矩阵跟向量相乘</strong></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002534.png" alt="image-20210409102832459" /></div>
+
+<p>这四个动作，你可以看作是我们<strong>把 <span class="math-inline">k^1</span> 到 <span class="math-inline">k^4</span> 拼起来，当作是一个矩阵的四个 row</strong></p>
+<p>那我们刚才讲过说，我们不只是 <span class="math-inline">q^1</span>，要对<span class="math-inline">k^1</span> 到 <span class="math-inline">k^4</span> 计算 attention，<span class="math-inline">q^2，q^3，q^4</span> 要对 <span class="math-inline">k^1</span> 到 <span class="math-inline">k^4</span> 计算 attention，操作其实都是一模一样的</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002607.png" alt="image-20210409103622596" /></div>
+
+<p>所以这些 <strong>attention 的分数可以看作是两个矩阵的相乘</strong>，一个矩阵它的 row，就是 <span class="math-inline">k^1</span> 到 <span class="math-inline">k^4</span>，另外一个矩阵它的 column。 </p>
+<p>我们会在 attention 的分数，<strong>做一下 normalization</strong>，比如说你会做 softmax，你会对这边的每一个 column 做 softmax，让每一个 column 里面的值相加是 1，之前有讲过说，其实这边做 <strong>softmax不是唯一的选项</strong>，你完全可以选择其他的操作，比如说 ReLU 之类的，那其实得到的结果也不会比较差，通过了 softmax 以后，它得到的值有点不一样了，所以我们用 <span class="math-inline">A'</span>，来表示通过 softmax 以后的结果。</p>
+<p>我们已经计算出 <span class="math-inline">A'</span>，那我们把这个<span class="math-inline">v^1</span> 到 <span class="math-inline">v^4</span> 上这边的 <span class="math-inline">\alpha</span> 以后，就可以得到 <span class="math-inline">b</span></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002010.png" alt="image-20210409105513608" style="zoom:67%;" /></div>
+
+<p><strong>把 <span class="math-inline">v^1</span> 到 <span class="math-inline">v^4</span> 成是V 这个矩阵的四个 column</strong>，把它拼起来，然后接下来你把 <span class="math-inline">V</span> 上<span class="math-inline">A'</span> 的第一个 column 以后，你得到的结果就是 <span class="math-inline">b^1</span></p>
+<p>如果你是用矩阵操作的角度来看它，就是把<span class="math-inline">A'</span> 的第一个 column 乘上 <span class="math-inline">V</span>，就得到 <span class="math-inline">b^1</span>，然后接下来就是以此类推</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002358.png" alt="image-20210409105935046" style="zoom: 67%;" /></div>
+
+<p>就是以此类推，把 <span class="math-inline">A'</span> 的第二个 column 乘上 <span class="math-inline">V</span>，就得到 <span class="math-inline">b^2</span>，<span class="math-inline">A'</span> 的第三个 column 乘上 <span class="math-inline">V</span> 就得到 <span class="math-inline">b^3</span>，<span class="math-inline">A'</span> 的最后一个 column 乘上 <span class="math-inline">V</span>，就得到 <span class="math-inline">b^4</span></p>
+<p>所以我们等于就是把 <span class="math-inline">A'</span> 这个矩阵，乘上 <span class="math-inline">V</span> 这个矩阵，得到 <span class="math-inline">O</span> 这个矩阵，<span class="math-inline">O</span> 这个矩阵里面的每一个 column，就是 Self-attention 的输出，也就是 <span class="math-inline">b^1</span> 到 <span class="math-inline">b^4</span>。</p>
+<h2 id="整体回顾self-attention的矩阵操作">整体回顾Self-attention的矩阵操作<a class="anchor-link" href="#整体回顾self-attention的矩阵操作" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161002724.png" alt="image-20210409110638357" /></div>
+
+<ul>
+<li>
+<p><span class="math-inline">I</span> 是 Self-attention 的 input，Self-attention 的 input 是一排的vector，这排 vector 拼起来当作矩阵的 column，就是 <span class="math-inline">I</span></p>
+</li>
+<li>
+<p>这个 input 分别乘上三个矩阵，<span class="math-inline">W^q</span> <span class="math-inline">W^k</span> 跟<span class="math-inline">W^v</span>，得到 <span class="math-inline">Q</span> <span class="math-inline">K</span> <span class="math-inline">V</span></p>
+</li>
+<li>这三个矩阵，接下来 <span class="math-inline">Q</span> 乘上 <span class="math-inline">K</span> 的 transpose，得到 <span class="math-inline">A</span> 这个矩阵，<span class="math-inline">A</span> 的矩阵你可能会做一些处理，得到 <span class="math-inline">A'</span>，那有时候我们会把这个 <span class="math-inline">A'</span>，叫做 <strong>Attention Matrix</strong>，<strong>生成 <span class="math-inline">Q</span> 矩阵就是为了得到Attention的score</strong></li>
+<li>然后接下来你把 <span class="math-inline">A'</span> 再乘上 <span class="math-inline">V</span>，就得到 <span class="math-inline">O</span>，<span class="math-inline">O</span> 就是 Self-attention 这个 layer 的输出，<strong>生成<span class="math-inline">V</span> 为了计算最后的<span class="math-inline">b</span>，也就是矩阵<span class="math-inline">O</span></strong></li>
+</ul>
+<p>所以 Self-attention 输入是 <span class="math-inline">I</span>，输出是 <span class="math-inline">O</span>，那你会发现说虽然是叫 attention，但是<strong>其实 Self-attention layer 里面，唯一需要学的参数，就只有 <span class="math-inline">W^q</span> <span class="math-inline">W^k</span> 跟<span class="math-inline">W^v</span> 而已，只有<span class="math-inline">W^q</span> <span class="math-inline">W^k</span> 跟<span class="math-inline">W^v</span> 未知的</strong>，是需要透过我们的训练资料把它找出来的。但是其他的操作都没有未知的参数，都是我们人为设定好的，都不需要透过 training data 找出来，那这整个就是 Self-attention 的操作，从 <span class="math-inline">I</span> 到 <span class="math-inline">O</span> 就是做了 Self-attention。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

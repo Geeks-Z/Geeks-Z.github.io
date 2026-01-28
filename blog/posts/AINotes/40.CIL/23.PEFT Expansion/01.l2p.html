@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#learning-to-prompt-for-continual-learning">Learning to Prompt for Continual Learning</a></li>
+<li><a href="#大模型译-arrow_down">大模型译 :arrow_down:</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-持续学习">2.1. 持续学习</a></li>
+<li><a href="#22-基于提示的学习和基线">2.2. 基于提示的学习和基线</a></li>
+<li><a href="#23-提示迁移学习">2.3. 提示迁移学习</a></li>
+</ul>
+</li>
+<li><a href="#3-预备知识">3. 预备知识</a><ul>
+<li><a href="#31-持续学习协议">3.1. 持续学习协议</a></li>
+<li><a href="#32-基于提示的学习和基线">3.2. 基于提示的学习和基线</a></li>
+</ul>
+</li>
+<li><a href="#4-学习提示l2p">4. 学习提示（L2P）</a><ul>
+<li><a href="#41-从提示到提示池">4.1. 从提示到提示池</a></li>
+<li><a href="#42-实例级提示查询">4.2. 实例级提示查询</a></li>
+<li><a href="#43-l2p-的优化目标">4.3. L2P 的优化目标</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-比较方法">5.1. 比较方法</a></li>
+<li><a href="#52-数据集和实验细节">5.2. 数据集和实验细节</a></li>
+<li><a href="#53-主要结果">5.3. 主要结果</a></li>
+<li><a href="#54-核心设计的有效性">5.4. 核心设计的有效性</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+<li><a href="#a-潜在的负面社会影响">A. 潜在的负面社会影响</a></li>
+<li><a href="#b-局限性">B. 局限性</a></li>
+<li><a href="#c-数据集详情和许可信息">C. 数据集详情和许可信息</a></li>
+<li><a href="#d-算法细节">D. 算法细节</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="learning-to-prompt-for-continual-learning"><a href="https://arxiv.org/abs/2112.08654">Learning to Prompt for Continual Learning</a><a class="anchor-link" href="#learning-to-prompt-for-continual-learning" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://github.com/google-research/l2p">Code</a> |  CVPR 2022</p>
+</blockquote>
+<h2 id="大模型译-arrow_down">大模型译 :arrow_down:<a class="anchor-link" href="#大模型译-arrow_down" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>在持续学习的背后主流范式是适应模型参数以适应非平稳数据分布，其中灾难性遗忘是核心挑战。典型方法依赖于复现缓冲区或在测试时已知的任务身份来检索学到的知识和解决遗忘问题，而这项工作提出了一种新的持续学习范式，旨在训练一个更简洁的内存系统，在测试时不访问任务身份。我们的方法学会动态提示（L2P）预训练模型，顺序地在不同任务转换下学习任务。在我们的提议框架中，提示是小的可学习参数，它们被维护在内存空间中。目标是优化提示以指导模型预测，并显式管理任务不变和任务特定知识，同时保持模型的可塑性。我们在不同的挑战性持续学习设置下，对流行的图像分类基准进行了全面实验，L2P 在所有基准上始终优于之前的最佳方法。令人惊讶的是，即使没有复现缓冲区，L2P 也取得了与基于复现的方法相媲美的结果，并且可以直接应用于具有挑战性的任务不可知持续学习。源代码可在 https://github.com/google-research/l2p 上找到。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>与在独立同分布（i.i.d.）数据上训练的普通监督学习不同，持续学习解决的是训练一个单一模型在非平稳数据分布上的问题，其中不同的分类任务是顺序呈现的。然而，由于模型只在学习周期的各个阶段访问当前数据，因此它容易过度拟合当前可用的数据，并且由于灾难性遗忘，对之前训练过的数据的性能会恶化 [37]。</p>
+<p>在持续学习中的大部分工作遵循的范式是通过持续适应整个或部分模型权重来学习，随着数据分布的转移，重点是保留过去的知识 [9,34]。尽管许多类型的方法取得了良好的结果，但仍有一些关键限制需要解决。首先，根据海马体的情节记忆根据互补学习系统（CLS）理论 [23,36]，许多最先进的方法 [3,4,8] 依赖于复现缓冲区来重新训练过去的例子的一部分。然而，它们在缓冲区大小较小时会遭受严重的性能恶化 [4]，并且在不允许复现缓冲区的情况下变得无效——例如，在数据隐私至关重要的真实世界场景中 [54]。这表明，简单地缓冲过去数据并重新训练模型可能不是检索过去知识的最佳方法。在没有访问复现缓冲区的情况下，另一部分工作 [19,26,45] 通过假设在测试时已知任务身份来绕过遗忘问题，以便它们能够在共享模型上附加任务独立模块进行推理。然而，知道测试时的任务身份限制了实际使用。</p>
+<p>先前工作的局限性在持续学习中提出了关键问题 [13,16]：（1）情节记忆的形式能否超越缓冲过去数据到更智能和简洁的情节记忆系统？（2）如何在不知道其任务身份的情况下自动选择任意样本的相关知识组件？</p>
+<p>为了回答第一个问题，我们从最近基于提示的学习（提示）中汲取灵感，这是自然语言处理（NLP）领域中的一种新的迁移学习技术。提示技术设计模型文本输入，用包含额外任务特定信息的模板化或可学习的提示标记，以便预训练的语言模型可以处理参数化输入以执行特定于提示的预测 [25,27,53]。直观地说，基于提示的学习将下游任务的学习重新定义为不是直接适应模型权重，而是设计“指导”模型有条件执行任务的提示。提示编码任务特定知识，并且比普通微调更有效地利用预训练的冻结模型 [25,47]。因此，利用提示来学习知识，并进一步存储学到的知识，在持续学习的背景下是很有希望的。</p>
+<p>然而，如何将提示应用于直接解决持续学习中的上述第二个问题尚不清楚：一方面，如果我们在持续学习背景下为不同任务训练不同的提示，在测试时仍然需要任务身份以使用适当的任务特定提示进行预测。另一方面，作为迁移学习技术，提示的目标是使冻结的预训练模型在下游单独实现良好的性能，而不是顺序地。因此，如果我们改为对所有任务维护一个单一共享提示，灾难性遗忘的问题可能仍然存在（见第 5.4 节）。</p>
+<p>为此，我们提出了一种新的持续学习方法，称为学习提示以进行持续学习（L2P），它与流行的基于复现的方法正交，并且适用于实际持续学习场景，无需已知的任务身份或边界。图 1 给出了我们的方法与典型持续学习方法的对比概述。L2P 利用预训练模型的代表性特征；然而，与在持续学习过程中调整参数不同，L2P 保持预训练模型不变，而是学习一组动态指导模型解决相应任务的提示。具体来说，提示被结构化为一个称为提示池的键值共享内存空间中，我们设计了一个查询机制，根据实例输入特征动态查找任务相关的提示子集。与监督损失联合优化的提示池确保共享提示编码共享知识以进行知识转移，而不共享的提示编码任务特定知识，有助于保持模型的可塑性。我们的显式设计分离了共享和任务特定知识，从而在优化过程中大大减少了任务特定知识之间的干扰，导致没有复现缓冲区的灾难性遗忘。逐实例查询机制消除了知道任务身份或边界的必要性，使得最具有挑战性但研究不足的任务不可知持续学习成为可能。然后，所选提示被添加到输入嵌入（图 2）之前，这隐式地为预训练模型添加了与任务相关的指令，以便模型回忆起进行相应任务最相关的特征。总之，这项工作做出了以下贡献：</p>
+<ol>
+<li>
+<p>我们提出了 L2P，一种基于提示的持续学习新框架，为持续学习提供了一种通过学习提示池内存空间来应对持续学习挑战的新机制，这些提示池作为参数化的“指令”，用于预训练模型顺序学习任务。该方法适用于处理最具挑战性的任务不可知持续学习。</p>
+</li>
+<li>
+<p>我们在多个持续学习基准上进行了全面实验，包括类别和领域增量，以及任务不可知设置。提出的 L2P 在所有基准上始终优于之前的最佳方法。令人惊讶的是，即使没有复现缓冲区，L2P 仍然取得了与基于复现的方法相媲美的结果，这在复现缓冲区被禁止的真实世界场景中是理想的。</p>
+</li>
+<li>
+<p>据我们所知，我们是第一个在持续学习领域引入提示概念的人。我们期望我们的方法为解决持续学习前沿挑战提供了不同的视角。</p>
+</li>
+</ol>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p>在这里我们建立联系并讨论我们的方法与相关工作之间的差异。</p>
+<h3 id="21-持续学习">2.1. 持续学习<a class="anchor-link" href="#21-持续学习" title="Permanent link">&para;</a></h3>
+<p>持续学习通常被定义为在顺序任务的非平稳数据上训练机器学习模型。我们定义一系列任务 <span class="math-inline">D = {D_1, \cdots, D_T}</span>，其中第 <span class="math-inline">t</span> 个任务 <span class="math-inline">D_t = {(x_t^i, y_t^i)}^{n_t}<em>{i=1}</span> 包含输入样本 <span class="math-inline">x_t^i \in X</span> 及其相应的标签 <span class="math-inline">y_t^i \in Y</span> 的元组。目标是训练一个由 <span class="math-inline">\theta</span> 参数化的单一模型 <span class="math-inline">f</em>{\theta} : X \rightarrow Y</span>，使得它能够预测给定来自任意任务的未见过的测试样本 <span class="math-inline">x</span> 的标签 <span class="math-inline">y = f_{\theta}(x) \in Y</span>。在训练未来任务时，可能不再看到之前任务的数据。根据任务转换环境，持续学习可以分为多个具有略微不同挑战的设置。常见的任务、类别和领域增量设置假设任务数据 <span class="math-inline">D_t</span> 以序列 <span class="math-inline">t = {1, \cdots, T}</span> 的方式到达。与类别增量不同，任务增量学习假设在测试时知道任务身份，通常被认为是最简单的设置 [34,38]。与任务和类别增量设置不同，每个任务都有不同的类别，领域增量学习保持了每个任务相同的类别集合，只通过任务改变了 <span class="math-inline">x</span> 的分布。在更具挑战性的任务不可知设置中，任务数据在 <span class="math-inline">D</span> 中平滑变化，任务身份 <span class="math-inline">t</span> 是未知的。本文解决了更具挑战性的类别增量和领域增量设置，并进一步探索了任务不可知设置。</p>
+<h3 id="22-基于提示的学习和基线">2.2. 基于提示的学习和基线<a class="anchor-link" href="#22-基于提示的学习和基线" title="Permanent link">&para;</a></h3>
+<p>基于提示的学习是 NLP 中的新兴技术。与传统的监督微调不同，这类方法设计了特定于任务的提示函数，以指导预训练模型执行相应任务的条件 [29]。最近的一项技术，提示调整（PT）[25]，提出了通过学习提示参数来条件冻结的 T5 类语言模型 [47]，以执行下游 NLP 任务，这些提示参数被添加到输入标记以指导模型预测。不失一般性，这里我们使用图像模态的变换器基础序列模型 [10,56] 来介绍 PT 的定义。该定义很容易推广到其他模态和基于序列的模型。给定一个 2D 图像 <span class="math-inline">x \in RH \times W \times C</span> 和一个预训练的视觉变换器（ViT）<span class="math-inline">f = fr \circ fe</span>（不包括分类头），其中 <span class="math-inline">fe</span> 是输入嵌入层，<span class="math-inline">fr</span> 代表自注意力层的堆栈 [10]。图像被重塑为一个扁平的 2D 块序列 <span class="math-inline">x_p \in RL \times (S^2 \cdot C)</span>，其中 <span class="math-inline">L</span> 是标记长度，即块的数量，<span class="math-inline">S</span> 是块大小，<span class="math-inline">C</span> 是原始通道数。为了简化符号，我们假设 <span class="math-inline">x_p</span> 的第一个标记是预训练模型的一部分 [class] 标记 [10]。预训练的嵌入层 <span class="math-inline">fe : RL \times (S^2 \cdot C) \rightarrow RL \times D</span> 将补丁图像投影到嵌入特征 <span class="math-inline">x_e = fe(x) \in RL \times D</span> 中，其中 <span class="math-inline">D</span> 是嵌入维度。在解决多个下游任务时，我们保持大型预训练主干冻结，以维护其通用性，遵循 PT。PT 的直接应用是在嵌入特征 <span class="math-inline">x_p = [P_e; x_e]</span> 之前添加可学习的参数 <span class="math-inline">P_e \in RL_p \times D</span>，称为提示，并把扩展序列输入到模型函数 <span class="math-inline">fr(x_p)</span> 以执行分类任务。不同任务有独立的提示并共享一个大型模型。与普通的微调相比，文献表明，基于提示的学习导致基于序列的模型具有更高的学习能力 [25,29]。尽管在迁移学习中训练每个任务的单独提示取得了成功，但提示不能直接应用于测试时任务身份未知的持续学习场景。</p>
+<h3 id="23-提示迁移学习">2.3. 提示迁移学习<a class="anchor-link" href="#23-提示迁移学习" title="Permanent link">&para;</a></h3>
+<p>提示的核心思想是将一个函数应用于修改输入文本，以便语言模型能够获得关于任务的额外信息。然而，提示函数的设计是具有挑战性的，需要依赖启发式方法。最近的工作，包括提示调整（PT）和前缀调整（Prefix Tuning）[27]，试图通过在连续空间中应用可学习的提示来解决这个问题，它们在迁移学习中取得了优异的表现。提示以比竞争对手更小的额外参数捕获特定任务的知识，例如 Adapter[43,58] 和 LoRA[18]。提示的核心思想主要是为迁移学习设计的。注意，直接将提示应用于持续学习是非平凡的。我们提出的新框架揭示了其对持续学习问题的价值。</p>
+<h2 id="3-预备知识">3. 预备知识<a class="anchor-link" href="#3-预备知识" title="Permanent link">&para;</a></h2>
+<h3 id="31-持续学习协议">3.1. 持续学习协议<a class="anchor-link" href="#31-持续学习协议" title="Permanent link">&para;</a></h3>
+<p>持续学习通常被定义为在顺序任务的非平稳数据上训练机器学习模型。我们定义一系列任务 <span class="math-inline">D = {D_1, \cdots, D_T}</span>，其中第 <span class="math-inline">t</span> 个任务 <span class="math-inline">D_t = {(x_t^i, y_t^i)}<em>{i=1}^{n_t}</span> 包含输入样本 <span class="math-inline">x_t^i \in X</span> 及其相应的标签 <span class="math-inline">y_t^i \in Y</span> 的元组。目标是训练一个单一模型 <span class="math-inline">f</em>{\theta} : X \rightarrow Y</span>，参数化为 <span class="math-inline">\theta</span>，使得它能够预测给定来自任意任务的未见过的测试样本 <span class="math-inline">x</span> 的标签 <span class="math-inline">y = f_{\theta}(x) \in Y</span>。在训练未来任务时，可能不再看到之前任务的数据。根据任务转换环境，持续学习可以分为多个具有略微不同挑战的设置。常见的任务、类别和领域增量设置假设任务数据 <span class="math-inline">D_t</span> 以序列 <span class="math-inline">t = {1, \cdots, T}</span> 的方式到达。与类别增量不同，任务增量学习假设在测试时知道任务身份，通常被认为是最简单的设置 [34,38]。与任务和类别增量设置不同，每个任务都有不同的类别，领域增量学习保持了每个任务相同的类别集合，只通过任务改变了 <span class="math-inline">x</span> 的分布。在更具挑战性的任务不可知设置中，任务数据在 <span class="math-inline">D</span> 中平滑变化，任务身份 <span class="math-inline">t</span> 是未知的。本文解决了更具挑战性的类别增量和领域增量设置，并进一步探索了任务不可知设置。</p>
+<h3 id="32-基于提示的学习和基线">3.2. 基于提示的学习和基线<a class="anchor-link" href="#32-基于提示的学习和基线" title="Permanent link">&para;</a></h3>
+<p>基于提示的学习是 NLP 中的新兴技术。与传统的监督微调不同，这类方法设计了特定于任务的提示函数，以指导预训练模型执行相应任务的条件 [29]。最近的一项技术，提示调整（PT）[25]，提出了通过学习提示参数来条件冻结的 T5 类语言模型 [47]，以执行下游 NLP 任务，这些提示参数被添加到输入标记以指导模型预测。不失一般性，这里我们使用图像模态的变换器基础序列模型 [10,56] 来介绍 PT 的定义。该定义很容易推广到其他模态和基于序列的模型。给定一个 2D 图像 <span class="math-inline">x \in RH \times W \times C</span> 和一个预训练的视觉变换器（ViT）<span class="math-inline">f = fr \circ fe</span>（不包括分类头），其中 <span class="math-inline">fe</span> 是输入嵌入层，<span class="math-inline">fr</span> 代表自注意力层的堆栈 [10]。图像被重塑为一个扁平的 2D 块序列 <span class="math-inline">x_p \in RL \times (S^2 \cdot C)</span>，其中 <span class="math-inline">L</span> 是标记长度，即块的数量，<span class="math-inline">S</span> 是块大小，<span class="math-inline">C</span> 是原始通道数。为了简化符号，我们假设 <span class="math-inline">x_p</span> 的第一个标记是预训练模型的一部分 [class] 标记 [10]。预训练的嵌入层 <span class="math-inline">fe : RL \times (S^2 \cdot C) \rightarrow RL \times D</span> 将补丁图像投影到嵌入特征 <span class="math-inline">x_e = fe(x) \in RL \times D</span> 中，其中 <span class="math-inline">D</span> 是嵌入维度。在解决多个下游任务时，我们保持大型预训练主干冻结，以维护其通用性，遵循 PT。PT 的直接应用是在嵌入特征 <span class="math-inline">x_p = [P_e; x_e]</span> 之前添加可学习的参数 <span class="math-inline">P_e \in RL_p \times D</span>，称为提示，并把扩展序列输入到模型函数 <span class="math-inline">fr(x_p)</span> 以执行分类任务。不同任务有独立的提示并共享一个大型模型。与普通的微调相比，文献表明，基于提示的学习导致基于序列的模型具有更高的学习能力 [25,29]。尽管在迁移学习中训练每个任务的单独提示取得了成功，但提示不能直接应用于测试时任务身份未知的持续学习场景。</p>
+<h2 id="4-学习提示l2p">4. 学习提示（L2P）<a class="anchor-link" href="#4-学习提示l2p" title="Permanent link">&para;</a></h2>
+<h3 id="41-从提示到提示池">4.1. 从提示到提示池<a class="anchor-link" href="#41-从提示到提示池" title="Permanent link">&para;</a></h3>
+<p>引入提示池的动机有三个。首先，测试时不知道任务身份，因此训练任务独立的提示是不可行的。其次，即使可以在测试时知道与任务无关的提示，它阻止了类似任务之间的知识共享 [16]。第三，虽然学习一个单一共享提示用于所有任务的简单方法可以共享知识，但它仍然会导致严重的遗忘问题（见第 5.4 节）。理想情况下，我们希望能够学习一个模型，当任务相似时能够共享知识，同时保持知识的独立性。因此，我们提出使用提示池来存储编码的知识，它可以被灵活地组合作为输入提供给模型。提示池定义为：<br />
+<div class="math-display"><br />
+    P = {P_1, P_2, \cdots, P_M}, M = \text{总提示数}<br />
+</div><br />
+其中 <span class="math-inline">P_j \in RL_p \times D</span> 是一个单独的提示，具有标记长度 <span class="math-inline">L_p</span>，与 <span class="math-inline">x_e</span> 相同的嵌入大小 <span class="math-inline">D</span>。根据第 3.2 节中的符号，让 <span class="math-inline">x</span> 和 <span class="math-inline">x_e = fe(x)</span> 分别是输入及其相应的嵌入特征。注意，在我们的符号中省略了 <span class="math-inline">x</span> 的任务索引 <span class="math-inline">t</span>，因为我们的方法足够通用，适用于任务不可知设置。让 <span class="math-inline">{s_i}<em>{i=1}^N</span> 作为来自 <span class="math-inline">[1, M]</span> 的 N 个索引的子集，然后我们可以如下适应输入嵌入：<br />
+<div class="math-display"><br />
+    x_p = [P</em>{s_1}; \cdots; P_{s_N}; x_e], 1 \leq N \leq M<br />
+</div><br />
+其中；表示沿标记长度维度的连接。提示可以自由组合，因此它们可以共同编码知识（例如视觉特征或任务信息），供模型处理。理想情况下，我们希望通过提示组合实现更细粒度的知识共享方案：类似的输入倾向于共享更多的共同提示，反之亦然。</p>
+<h3 id="42-实例级提示查询">4.2. 实例级提示查询<a class="anchor-link" href="#42-实例级提示查询" title="Permanent link">&para;</a></h3>
+<p>我们设计了一个基于键值对的查询策略，为不同输入动态选择适当的提示（见图 2）。这种基于键值的记忆查询机制与其他领域的一些方法有一些设计原则相同，例如可微神经计算机 [14] 和 VQ-VAE[41]，它们具有外部记忆以维护，并将其用于不同的目的。我们将每个提示作为值与一个可学习的键关联起来：{(k_1, P_1), (k_2, P_2), \cdots, (k_M, P_M)}，其中 <span class="math-inline">k_i \in RD_k</span>。我们用 <span class="math-inline">K = {k_i}<em>{i=1}^M</span> 表示所有键的集合。理想情况下，我们希望输入实例本身通过查询键匹配来决定选择哪些提示。为此，我们引入了一个查询函数 <span class="math-inline">q : RH \times W \times C \rightarrow RD_k</span>，将输入 <span class="math-inline">x</span> 编码到与键相同的维度。此外，<span class="math-inline">q</span> 应该是一个确定性函数，对于不同任务没有可学习的参数。我们直接使用整个预训练模型作为一个冻结的特征提取器来获得查询特征：<span class="math-inline">q(x) = f(x)[0, :]</span>（我们使用对应于 [class] 的特征向量）。其他特征提取器，如 ConvNet，也是可行的。让 <span class="math-inline">\gamma : RD_k \times RD_k \rightarrow R</span> 是一个函数，用于评分查询和提示键之间的匹配程度（我们发现余弦距离效果很好）。给定一个输入 <span class="math-inline">x</span>，我们使用 <span class="math-inline">q(x)</span> 查找前 <span class="math-inline">N</span> 个键，通过简单地解决目标：<br />
+<div class="math-display"><br />
+    K_x = \argmin</em>{{s_i}<em>{i=1}^N \subseteq [1,M]} \sum</em>{i=1}^N \gamma(q(x), k_{s_i}),<br />
+</div><br />
+其中 <span class="math-inline">K_x</span> 表示为 <span class="math-inline">x</span> 从 <span class="math-inline">K</span> 中特别选择的子集。注意，这种键值策略的设计将查询机制学习和提示学习过程解耦，这在实验上已被证明是关键的（见第 5.4 节）。此外，查询提示是逐实例完成的，这使得整个框架成为任务不可知的，意味着该方法在训练期间不需要明确任务边界，也不需要在测试时知道任务身份。可选地多样化提示选择。尽管我们的方法不需要任务边界信息，但在真实世界场景和实验数据集中，任务转换通常是离散的，因此在训练时知道任务边界是很常见的。我们发现将这种先验加入我们的框架可以帮助模型更好地学习任务特定的提示，特别是当任务具有高度多样性时。为此，我们提出了一个简单的扩展，以添加任务边界先验，这对于 L2P 来说是可选的。在训练任务 <span class="math-inline">t</span> 期间，我们维护一个提示频率表 <span class="math-inline">H_t = [h_1, h_2, \cdots, h_M]</span>，其中每个条目代表直到任务 <span class="math-inline">t-1</span> 为止被选择的提示 <span class="math-inline">P_i</span> 的归一化频率。为了鼓励查询机制选择多样化的提示，我们修改方程 3 为<br />
+<div class="math-display"><br />
+    K_x = \argmin_{{s_i}<em>{i=1}^N \subseteq [1,M]} \sum</em>{i=1}^N \gamma(q(x), k_{s_i}) \cdot h_{s_i},<br />
+</div><br />
+其中 <span class="math-inline">h_{s_i}</span> 惩罚频繁使用的提示被选择，以鼓励多样化选择。方程 4 仅在训练期间适用；在测试时，使用方程 3。</p>
+<h3 id="43-l2p-的优化目标">4.3. L2P 的优化目标<a class="anchor-link" href="#43-l2p-的优化目标" title="Permanent link">&para;</a></h3>
+<p>在每个训练步骤中，根据上述查询策略选择 <span class="math-inline">N</span> 个提示后，适应的嵌入特征 <span class="math-inline">x_p</span> 被输入到预训练模型 <span class="math-inline">fr</span> 的其余部分，并通过最终分类器 <span class="math-inline">g_{\phi}</span> 参数化为 <span class="math-inline">\phi</span>。总体上，我们寻求最小化端到端训练损失函数：<br />
+<div class="math-display"><br />
+    \min_{P,K,\phi} L(g_{\phi}(f_{\text{avg}}^r(x_p)), y) + \lambda \sum_{k \in K_x} \gamma(q(x), k_{s_i}),<br />
+</div><br />
+其中 <span class="math-inline">f_{\text{avg}}^r = \text{AvgPool}(f^r(x_p)[0 : N L_p, :])</span>，即，在分类头之前，对应于 <span class="math-inline">N \cdot L_p</span> 提示位置的输出隐藏向量被平均。第一项是 softmax 交叉熵损失，第二项是一个替代损失，用于拉近所选键与相应查询特征的距离。<span class="math-inline">\lambda</span> 是一个标量，用于权衡损失。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>为了评估提出的 L2P，我们紧密跟随之前工作 [32,55,66] 的设置，并进行了全面的实验。特别是，我们主要考虑（1）类别增量设置，其中在推理期间任务身份是未知的；（2）领域增量设置，其中输入领域随时间变化；（3）任务不可知设置，其中没有明确任务边界。我们仔细比较了不同类别的 L2P 与最先进的（SOTA）方法在适当的实验设置下的表现。此外，我们进行了广泛的消融研究，以更深入地理解我们的方法。</p>
+<h3 id="51-比较方法">5.1. 比较方法<a class="anchor-link" href="#51-比较方法" title="Permanent link">&para;</a></h3>
+<p>我们比较了 L2P 与几个基线和最先进的（SOTA）持续学习方法。我们的方法基于预训练的 ViT-B/16[11,67]，这已成为先进视觉社区的共同资产。我们仔细选择了在相同环境下进行比较的方法，以进行公平比较。许多最近的方法声称在最简单的任务增量设置中实现了 SOTA 性能，其中在测试时知道任务身份 [19,45,57]。我们不包括这些方法，因为它们不适用于更一般的类别增量设置。我们参考了多篇最近的综述论文 [9,34] 和最近的工作 [3,4,46]，选择了最被认可和表现最好的方法。为了完整性，我们还包括了简单的顺序训练方法和代表性的基于正则化的方法。此外，我们参考了原始代码库以实现和超参数选择，以确保最佳可能的性能。</p>
+<p>基线方法。上界是通常的监督微调方法，对所有任务的 i.i.d.数据进行微调，通常被认为是方法可以达到的上界性能。</p>
+<p>FT-seq-frozen 是预训练模型冻结的简单顺序微调方法。FT-seq 代替微调预训练模型权重。EWC[21] 和 LwF[28] 是广泛比较的代表性基于正则化的方法。</p>
+<p>SOTA 基于复现的方法。我们选择了 5 个先进的基于复现的方法进行比较，包括 ER[8,17]、GDumb[46]、BiC[61]、DER++[3] 和 Co2L[4]。ER 和 GDumb 在概念上很简单，但它们不仅在自己的工作中，而且在后来的文献 [3,34] 中也取得了非常强的性能。DER++ 和 Co2L 是最新的 SOTA 方法。</p>
+<p>SOTA 基于架构的方法。我们选择了两个代表性的基于架构的方法进行比较。SupSup[60] 和 DualNet[44] 都基于 ResNet18。</p>
+<h3 id="52-数据集和实验细节">5.2. 数据集和实验细节<a class="anchor-link" href="#52-数据集和实验细节" title="Permanent link">&para;</a></h3>
+<p>数据集。我们使用 Split CIFAR-100[22] 和 5datasets[12] 进行类别增量设置，CORE50[30] 进行领域增量设置，以及 Gaussian scheduled CIFAR-100[52] 进行任务不可知设置，以评估我们方法的有效性。数据集的详细信息在附录 C 中介绍。</p>
+<p>评估指标。对于具有任务边界和每个任务都有相关测试集的设置，我们使用两个指标，平均准确率（越高越好）和遗忘（越低越好），这些在以前的工作中广泛使用 [7,32,34]。对于没有任务边界或只有一个测试集可用的设置，我们遵循常见协议报告最终测试准确率 [30,52]。</p>
+<p>训练细节。对于 L2P，我们使用 Adam[20] 训练所有模型，其中 <span class="math-inline">\beta_1 = 0.9</span> 和 <span class="math-inline">\beta_2 = 0.999</span>，批量大小为 128，所有设置中恒定的学习率为 0.03。输入图像调整为 224×224 大小，并标准化到 [0,1] 范围，以匹配预训练设置。正如 [3] 所指出的，每个任务训练多个周期可以将可能的欠拟合效应与遗忘分开。因此，我们在类别和领域增量设置中每个任务训练 5 个周期。然而，在没有任务概念的任务不可知设置中，我们遵循 [52] 每个批次只训练一次。我们为所有基于 CIFAR100 的数据集和 CORE50 设置 <span class="math-inline">M = 10</span>，<span class="math-inline">N = 5</span>，<span class="math-inline">L_p = 5</span>。对于 5-datasets，我们使用 <span class="math-inline">M = 20</span>，<span class="math-inline">N = 4</span>，<span class="math-inline">L_p = 5</span>。提示只向原始预训练模型添加了 46,080 和 92,160 个参数，分别导致总参数增加了 0.05% 和 0.11%。我们对 5-datasets 应用了在 4.2 节中引入的可选提示选择策略。我们发现方程 5 中的 <span class="math-inline">\lambda</span> 不敏感，并且在所有数据集上表现良好，因此我们一致地将 <span class="math-inline">\lambda = 0.5</span> 设置为所有数据集。主要实验结果平均了 3 次运行，并且报告了相应的标准差。</p>
+<h3 id="53-主要结果">5.3. 主要结果<a class="anchor-link" href="#53-主要结果" title="Permanent link">&para;</a></h3>
+<p>类别增量学习结果。表 1 总结了这两个类别增量基准的结果。L2P 在不同配置下一致地超越了所有比较的方法，无论是在平均准确率还是遗忘方面。我们观察到，当缓冲区大小相对较大时，L2P 不仅超越了所有其他方法，而且还显著缩小了与 i.i.d.设置下上界性能的差距。当缓冲区大小变小时，L2P 以更大的优势超越了其他方法。最后，当没有缓冲区时，基于复现的方法不再适用，而 L2P 仍然通过击败基于正则化的方法并超越几乎所有小缓冲区的基于复现的方法而保持优越性能。</p>
+<p>表 2 显示了 L2P 与基于架构的方法在 Split CIFAR-100 上的比较。我们不是用平均准确率的绝对性能来衡量每种方法的性能，而是用与上界（Diff）的差异来衡量给定特定架构的每种方法的性能。我们观察到，L2P 无论是有（DualNet）还是没有（SupSup）复现缓冲区，都以较大的优势超越了这两种方法。</p>
+<p>L2P 在所有竞争方法中的卓越性能表明，我们提出的提示池成功地积累了经验知识，因此它能够总体上提高学习性能，即使没有复现缓冲区，也能减轻灾难性遗忘。</p>
+<p>领域增量学习结果。表 3 总结了领域增量设置的结果。L2P 与其他方法相比，保持了最佳性能。有趣的是，所有基于复现的比较方法表现相当接近（除了 GDumb）。基线方法与上界结果之间的性能差距相对较小的观察结果也在 [30] 中报告，因此我们的方法与其他方法之间确实存在显著的性能差距。</p>
+<p>任务不可知学习结果。尽管任务不可知设置通常被认为更具挑战性 [52]，但这个话题的研究还不足。</p>
+<p>我们对任务不可知设置进行了更多的探索性研究。表 4 总结了在具有挑战性的任务不可知学习设置上的结果。我们不与 LwF、BiC 和 Co2L 进行比较，因为它们需要任务边界来保存模型快照并计算蒸馏损失。扩展它们到这个设置的范围超出了我们的能力。我们还使用了 [5] 提出的在线版本的 EWC 来应对任务不可知设置。由于所有比较的方法都基于预训练模型，绝对数字与上界并不太远。可以看出，基于复现的方法有明显的优势。然而，即使缓冲区大小为零，L2P 仍然在所有方法中取得了最佳性能，包括那些有复现缓冲区的方法。我们认为，任务的更平滑过渡隐式地帮助 L2P 将知识巩固到提示中。由于我们有更好的提示，复现缓冲区的好处自然被削弱了。</p>
+<h3 id="54-核心设计的有效性">5.4. 核心设计的有效性<a class="anchor-link" href="#54-核心设计的有效性" title="Permanent link">&para;</a></h3>
+<p>L2P 的提示相关组件的有效性。表 5（第 1 行）去除了提示池设计，并使用单一提示顺序训练。性能显著下降，表明单一提示遭受了严重的灾难性遗忘和任务间知识干扰，而我们的提示池设计很好地编码了任务不变和任务特定知识。表 5（第 2 行）去除了与提示相关的可学习键，并直接使用提示的平均值作为键。结果表明，可学习的键在解耦查询和提示学习过程中发挥了重要作用。表 5（第 3 行）去除了多样化提示选择（仅在 5-datasets 实验中使用）。基本上，去除它允许不同任务的实例自由选择提示。性能下降表明，当任务多样化时，增加这种策略确实减少了不必要的知识共享，从而减轻了不相关任务之间的干扰。为了更好地理解提示选择机制，我们在图 3 中为 Split CIFAR-100 和 5-datasets 绘制了每个任务的最佳参数设置下的提示选择直方图。从 Split CIFAR-100 的图表（左）中，任务在很大程度上共享所有提示，这意味着我们的提示选择机制鼓励在类似任务之间共享更多知识。相比之下，在 5-datasets 的图表（右）中，多样化的任务需要更多的任务特定提示，共享更少。L2P 的超参数的有效性。回想一下，有三个关键超参数，包括提示池的大小 <span class="math-inline">M</span>，单个提示的长度 <span class="math-inline">L_p</span>，以及用作模型输入的选择大小 <span class="math-inline">N</span>。直观地说，<span class="math-inline">M</span> 决定了可学习提示的总容量。<span class="math-inline">L_p</span> 决定了单个提示的容量（它共同编码了某些知识），而 <span class="math-inline">L_p \times N</span> 决定了附加到输入的总大小。Split CIFAR-100 和 5-datasets 的结果（图 4，左中）表明，过小的 <span class="math-inline">L_p</span> 总是对结果产生负面影响，而过大的提示可能会引入知识欠拟合。我们假设合理的单个提示容量对于编码某些方面的共享知识至关重要。增加提示池大小对性能有积极影响，如图 4（右）所示的 5-datasets，尽管在 Split CIFAR-100 上效果不那么明显，表明需要足够大的池大小来编码任务特定知识，当任务多样化时。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>本文提出了一种新方法来解决持续学习中的一些关键挑战，该方法能够在不需要复现和任务身份的情况下实现强大的性能。L2P 将基于提示的学习引入持续学习，并提出了一种新技术，使单一预训练模型能够通过共享提示池适应顺序任务，成功地减轻了灾难性遗忘问题。结果表明，该方法在多个持续学习问题上显著优于以前的 SOTA，包括类别增量和领域增量。我们展示了我们的方法足够通用，能够处理更具挑战性的任务不可知设置，以前的方法无法应对。</p>
+<h2 id="a-潜在的负面社会影响">A. 潜在的负面社会影响<a class="anchor-link" href="#a-潜在的负面社会影响" title="Permanent link">&para;</a></h2>
+<p>L2P 是一种强大的持续学习方法，有很大的潜力被应用在各个领域。然而，它也有可能被滥用的方式。我们的方法采用一个预训练的模型作为主干，因此原始模型中的任何偏见和公平性问题 [38] 可能会在持续学习过程中被继承。我们鼓励任何用户彻底检查预训练模型，以减轻任何偏见和公平性问题。此外，该方法可能被部署在安全关键的应用中，例如自动驾驶系统 [15]，这可能在对抗性攻击 [33] 方面带来潜在的安全问题。我们建议在未来的工作中测试我们方法的鲁棒性，并设计相应的防御技术来应对潜在的安全问题。</p>
+<h2 id="b-局限性">B. 局限性<a class="anchor-link" href="#b-局限性" title="Permanent link">&para;</a></h2>
+<p>尽管我们的方法在视觉模型上进行了演示，但它并没有对模态做出任何假设。我们将探索其他模态的工作留作未来的研究。此外，L2P 假设存在预训练的基于序列的模型。虽然它们已经成为先进社区中的常见资产和未来方向，但如何将我们的框架推广到其他视觉架构（例如 ConvNet）可能是一个吸引人的研究方向。实现能够满足现实世界要求的持续学习是一个重要的研究方向，这仍然是一个挑战。例如，任务不可知设置被认为是最具挑战性的设置，非常接近现实世界场景。尽管我们的方法朝着这个目标迈进了一步，但是目前常用的高斯调度 CIFAR-100 是合成的，仍然远离现实。因此，我们认为也需要更复杂的基准来评估任务不可知持续学习方法的能力，并推动这一现实世界挑战的进步。</p>
+<h2 id="c-数据集详情和许可信息">C. 数据集详情和许可信息<a class="anchor-link" href="#c-数据集详情和许可信息" title="Permanent link">&para;</a></h2>
+<p>Split CIFAR-100（类别增量）。这个数据集将原始的 CIFAR-100[22] 分成 10 个任务，每个任务有 10 个不相交的类别。由于任务来自同一个原始数据集，它们之间存在一些相似性，一些类别可能来自同一个超类别。尽管 CIFAR-100 是一个简单的图像分类数据集，它对持续学习研究来说仍然相当具有挑战性，特别是在类别增量设置中 [34]。</p>
+<p>5-datasets（类别增量）。我们还使用了 [12] 中提出的一个具有挑战性的数据集。这个数据集由五个图像分类数据集组成：CIFAR-10、MNIST[24]、Fashion-MNIST[62]、SVHN[40] 和 notMNIST[2]。尽管每个数据集本身并不难，但它们的顺序训练即使使用 ImageNet 预训练的模型也是相当具有挑战性的，因为模型在任务多样化时容易遗忘 [39]。</p>
+<p>CORE50（领域增量）。这是一个特别为持续目标识别设计的广泛使用的数据集 [30]。它收集了 50 个对象，分布在 11 个不同的领域中，其中 8 个领域（120,000 个样本）用于训练，其余的被视为单个测试集（45,000 个样本）。方法按领域顺序训练。</p>
+<p>高斯调度 CIFAR-100（任务不可知）。数据的分布在整个学习过程中逐渐变化 [52]，一个类别在批次中出现的概率遵循以间隔为中心的高斯分布。批次之间没有明确的任务边界，因此需要方法能够在不使用任何任务特定信息的情况下隐式适应非平稳数据分布，无论是在训练还是推理期间。</p>
+<ul>
+<li>CIFAR-10 和 CIFAR-100[22]，Fashion-MNIST[62] 在 MIT 许可下授权。</li>
+<li>MNIST[24] 在创作共用署名 3.0 许可下授权。</li>
+<li>CORE50[30] 在创作共用署名 4.0 国际许可下授权。</li>
+<li>SVHN[40] 和 notMNIST[2] 的许可信息不可用。</li>
+</ul>
+<h2 id="d-算法细节">D. 算法细节<a class="anchor-link" href="#d-算法细节" title="Permanent link">&para;</a></h2>
+<p>为了更好地说明我们提出的方法，我们在算法 1 中展示了训练程序的完整图景。注意，对于预测，我们简单地将损失计算替换为标签预测。可选地，当已知任务边界先验时，我们可以用方程 4 替换顶部 N 个键的查找。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241202180724.png" style="zoom: 80%;" /></div>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

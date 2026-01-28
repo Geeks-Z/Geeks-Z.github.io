@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a></li>
+<li><a href="#3-初步分析">3. 初步分析</a><ul>
+<li><a href="#31-基于提示的持续学习的公式化">3.1 基于提示的持续学习的公式化</a></li>
+<li><a href="#32-预训练范式的实证研究">3.2 预训练范式的实证研究</a></li>
+</ul>
+</li>
+<li><a href="#4-理论基础与我们的方法">4. 理论基础与我们的方法</a><ul>
+<li><a href="#41-持续学习目标的层次化分解">4.1 持续学习目标的层次化分解</a></li>
+<li><a href="#42-基于提示的持续学习的">4.2 基于提示的持续学习的</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实验设置">5.1 实验设置</a></li>
+</ul>
+</li>
+<li><a href="#6-讨论与结论">6. 讨论与结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>基于提示的持续学习利用预训练知识进行下游持续学习，在监督预训练下几乎达到了性能的顶峰。然而，我们的实证研究表明，当前策略在更现实的自监督预训练下未能充分发挥其潜力，而自监督预训练对于处理实践中大量未标记数据至关重要。这主要是由于任务特定知识难以通过提示参数融入到指导表示中，并且在测试时由未指导表示进行预测。为了克服这种次优性，我们对预训练背景下的持续学习目标进行了理论分析，并将其分解为层次化组件：任务内预测、任务身份推断和任务自适应预测。基于这些实证和理论见解，我们提出了层次化分解（HiDe-）提示，这是一种创新方法，通过任务特定提示的集成以及未指导和指导表示的统计信息，显式优化层次化组件，并通过对比正则化策略进行协调。我们的大量实验证明了 HiDe- 提示的卓越性能及其在持续学习中对预训练范式的鲁棒性（例如，在 Split CIFAR-100 和 Split ImageNet-R 上分别领先 15.01% 和 9.61%）。我们的代码可在 https://github.com/thu-ml/HiDe-Prompt 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>在人工智能领域，持续学习已成为一个备受关注的领域。预训练是极大地促进这一领域的关键技术之一，它不仅提供了正向的知识迁移，还增强了对灾难性遗忘的抵抗力 [27, 23, 37, 26, 43]。最近的一项创新是基于提示的方法，该方法冻结了预训练的 Transformer 骨干，并使用少量提示参数来引导表示学习。这类方法通常涉及为每个任务构建自适应提示，并在测试阶段推断适当的提示。通过探索提示架构以容纳任务共享和任务特定知识，这一新兴方向展示了明显的优势，几乎达到了在监督预训练下持续学习性能的上限。</p>
+<p>然而，鉴于强大的预训练模型通常需要以自监督方式学习大量未标记数据，预训练范式对基于提示的持续学习有效性的影响是一个重要且未解决的问题。为了回答这个问题，我们首先进行了广泛的实证研究，结果表明在更现实的自监督预训练下，最近的基于提示的方法表现不佳。由于自监督表示往往更为通用，任务特定知识难以通过提示参数融入到指导表示中，并且在测试时由未指导表示进行预测。因此，许多最近的方法，如 L2P [41]、DualPrompt [40]、S-Prompt [39] 和 CODA-Prompt [30]，表现严重受损。我们进一步揭示了为所有任务进行自适应预测的重要性，这可以在一定程度上缓解上述缺点。</p>
+<p>基于这些观察，我们对预训练背景下的持续学习目标进行了深入的理论分析，可以将其分解为层次化组件，如任务内预测、任务身份推断和任务自适应预测。由于充分的预训练导致表示分布良好，可以通过构建任务特定提示的集成并利用未指导和指导表示的统计信息来显式优化这些层次化组件。进一步设计了一种新颖的对比正则化来协调这些层次化组件。我们将这种方法称为层次化分解（HiDe-）提示，并通过广泛的持续学习实验证明了其优越性，尤其是在更现实的自监督预训练下。</p>
+<p>我们的贡献包括：(1) 我们在自监督预训练下进行了广泛的实证研究，证明了当前基于提示的持续学习进展的次优性；(2) 为了克服这种次优性，我们从理论上分析了预训练背景下的持续学习目标，并将其分解为层次化组件以进行模型设计；(3) 通过任务特定提示和表示统计信息，我们提出了一种创新方法来显式优化层次化组件；(4) 在各种持续学习基准和预训练范式中，我们的方法在无排练的情况下明显达到了最先进的性能。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<p><strong>持续学习</strong>：持续学习的能力对于人工神经网络适应现实世界的变化至关重要 [37, 35]。在这一方向上，许多努力致力于克服灾难性遗忘 [22, 34, 33]。根据最近的调查 [37]，代表性策略包括选择性稳定网络参数、重放少量旧训练样本、显式操作优化程序、利用分布良好的表示、构建任务特定参数等。这些策略的性能因持续学习的特定设置而异。作为最具挑战性和代表性的设置之一，类增量学习（CIL）[31, 37] 要求持续学习模型在没有任务身份的情况下执行所有旧任务（或类）。强大的 CIL 方法通常依赖于旧训练样本的存储和重放 [28, 8, 38]，这导致了效率和隐私问题。</p>
+<p><strong>自监督学习与预训练</strong>：利用分布良好的表示，特别是大规模预训练的成功，为下游持续学习带来了显著的好处 [37, 27, 23]。由于在许多实际应用中显式标记的稀缺性和昂贵性，自监督学习通常涉及预训练阶段以应对大量未标记数据。特别是，实例判别 [4, 7] 与对比学习 [25] 已成为主导策略，旨在最大化同一实例的表示相似性并最小化不同实例的表示相似性。此外，自监督范式在上游持续学习中对灾难性遗忘的敏感性较低 [9]，提供了一种从野外数据中丰富预训练知识的实用方法。</p>
+<p><strong>基于提示的方法</strong>：受 NLP 中参数高效微调技术的启发 [11, 10]，最近的基于提示的方法 [3, 41, 40, 39, 30] 被开发出来，以自适应地利用预训练知识进行下游持续学习。基本思想包括为每个任务构建和推断自适应提示，以指导冻结的 Transformer 骨干。前者主要探索提示架构以指导表示，涉及任务共享和任务特定知识，与持续学习中模型架构的讨论密切相关 [37, 36]，而后者尝试使用未指导表示预测适当的（组合）提示。尽管这些方法在监督预训练下取得了显著强大的性能，但这些优势在更现实的自监督预训练下是否一致仍有待探索。一项并行研究 [43] 观察到，自监督预训练对于需要微调骨干的持续学习方法更具挑战性，暗示了预训练范式对下游持续学习的非平凡影响。</p>
+<h2 id="3-初步分析">3. 初步分析<a class="anchor-link" href="#3-初步分析" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先介绍基于提示的持续学习的问题公式，然后通过广泛的实证研究评估预训练范式的影响。</p>
+<h3 id="31-基于提示的持续学习的公式化">3.1 基于提示的持续学习的公式化<a class="anchor-link" href="#31-基于提示的持续学习的公式化" title="Permanent link">&para;</a></h3>
+<p><strong>持续学习</strong>旨在学习一系列任务在其各自的训练集 <span class="math-inline">\mathcal{D}<em>{1},...,\mathcal{D}</em>{T}</span> 上，并在其相应的测试集上表现出色。任务 <span class="math-inline">t</span> 的训练集通常由各种数据 - 标签对 <span class="math-inline">\mathcal{D}<em>{t}={({\boldsymbol{x}}</em>{t,n},y_{t,n})}<em>{n=1}^{N</em>{t}}</span> 组成，其中 <span class="math-inline">{\boldsymbol{x}}<em>{t,n}\in\mathcal{X}</em>{t}</span> 和 <span class="math-inline">y_{t,n}\in\mathcal{Y}<em>{t}</span> 分别表示样本和标签元素。我们将使用 <span class="math-inline">|\cdot|</span> 表示集合的基数，并使用 <span class="math-inline">[N]={1,2,\cdots,N}</span> 表示从 1 到 <span class="math-inline">N</span> 的整数集。考虑一个具有由 <span class="math-inline">\theta</span> 参数化的骨干 <span class="math-inline">f</em>{\theta}</span> 和由 <span class="math-inline">\psi</span> 参数化的输出层 <span class="math-inline">h_{\psi}</span> 的神经网络模型。该模型寻求学习从 <span class="math-inline">\mathcal{X}=\bigcup_{t=1}^{T}\mathcal{X}<em>{t}</span> 到 <span class="math-inline">\mathcal{Y}=\bigcup</em>{t=1}^{T}\mathcal{Y}<em>{t}</span> 的投影，旨在预测从先前任务中抽取的未见测试样本 <span class="math-inline">{\boldsymbol{x}}</span> 的标签 <span class="math-inline">y=h</em>{\psi}(f_{\theta}({\boldsymbol{x}}))\in\mathcal{Y}</span>。骨干函数 <span class="math-inline">f_{\theta}</span> 假设使用大量额外的训练样本进行预训练，这些样本不在每个 <span class="math-inline">\mathcal{D}<em>{t}</span> 中。持续学习通常有三种不同的设置 [31]：任务增量学习、领域增量学习和类增量学习（TIL、DIL 和 CIL）。具体来说，<span class="math-inline">\mathcal{Y}</em>{1},...,\mathcal{Y}<em>{T}</span> 在 DIL 中是相同的，而在 TIL 和 CIL 中是不相交的。任务身份在 TIL 的测试时提供，但在 DIL 和 CIL 中不可用。因此，CIL 通常被认为更具代表性和挑战性。值得注意的是，持续学习过程是无排练的 [30]——只有在学习任务 <span class="math-inline">t</span> 时，<span class="math-inline">\mathcal{D}</em>{t}</span> 的所有元素才可用。</p>
+<p><strong>基于提示的方法</strong>进一步将骨干 <span class="math-inline">f_{\theta}</span> 指定为预训练的视觉 Transformer（ViT），其中多个连续的多头自注意力（MSA）层可以将输入样本转换为序列化的输出表示 <span class="math-inline">{\boldsymbol{h}}\in\mathbb{R}^{L_{\boldsymbol{h}}\times D}</span>，序列长度为 <span class="math-inline">L_{\boldsymbol{h}}</span>，嵌入维度为 <span class="math-inline">D</span>。骨干参数 <span class="math-inline">{\boldsymbol{p}}\in\mathbb{R}^{L_{\boldsymbol{p}}\times D}</span>，序列长度为 <span class="math-inline">L_{\boldsymbol{p}}</span>，嵌入表示。少量提示参数 <span class="math-inline">{\boldsymbol{p}}\in\mathbb{R}^{L_{\boldsymbol{p}}\times D}</span>，序列长度为 <span class="math-inline">L_{\boldsymbol{p}}</span>，嵌入维度为 <span class="math-inline">D</span>，被预置到 <span class="math-inline">{\boldsymbol{h}}</span> 以自适应地利用预训练知识。这里我们将第 <span class="math-inline">l</span> 个 MSA 层的输入表示为 <span class="math-inline">{\boldsymbol{h}}^{l}\in\mathbb{R}^{L_{\boldsymbol{h}l}\times D}</span>，它由查询 <span class="math-inline">{\boldsymbol{h}}^{l}<em>{Q}</span>、键 <span class="math-inline">{\boldsymbol{h}}^{l}</em>{K}</span> 和值 <span class="math-inline">{\boldsymbol{h}}^{l}<em>{V}</span> 组成，并将提示表示为 <span class="math-inline">{\boldsymbol{p}}^{l}\in\mathbb{R}^{L</em>{\boldsymbol{p}l}\times D}</span>。为了符号清晰，我们以一个 MSA 层为例，并在不需要时省略层标签 <span class="math-inline">l</span>。然后，该 MSA 层的输出为<br />
+<div class="math-display"><br />
+    \textrm{MSA}({\boldsymbol{h}}<em>{Q},{\boldsymbol{h}}</em>{K},{\boldsymbol{h}}<em>{V})=\textrm{Concat}(h</em>{1},...,h_ {m})W_{O},<br />
+    \tag{1}<br />
+</div></p>
+<p><div class="math-display"><br />
+    h_{i}=\textrm{Attention}({\boldsymbol{h}}<em>{Q}W</em>{Q,i},{\boldsymbol{h}}<em>{K}W</em>{K,i},{\boldsymbol{h}}<em>{V} W</em>{V,i}),i\in[m],<br />
+    \tag{2}<br />
+</div><br />
+其中 <span class="math-inline">W_{O}</span>、<span class="math-inline">W_{Q,i}</span>、<span class="math-inline">W_{K,i}</span> 和 <span class="math-inline">W_{V,i}</span> 是投影矩阵，<span class="math-inline">m</span> 是头数，且 <span class="math-inline">{\boldsymbol{h}}<em>{Q}={\boldsymbol{h}}</em>{K}={\boldsymbol{h}}<em>{V}</span> 在 ViT 中。基于提示的方法主要有两种实现 [40]，即提示调优（ProT）[18] 和前缀调优（Pref）[19]。具体来说，ProT 将相同的 <span class="math-inline">{\boldsymbol{p}}</span> 预置到 <span class="math-inline">{\boldsymbol{h}}</em>{Q}</span>、<span class="math-inline">{\boldsymbol{h}}<em>{K}</span> 和 <span class="math-inline">{\boldsymbol{h}}</em>{V}</span>：<br />
+<div class="math-display"><br />
+    f_{\textrm{PreT}}({\boldsymbol{p}},{\boldsymbol{h}})=\textrm{MSA}([{\boldsymbol{p}};{\boldsymbol{h}}<em>{Q}],[{\boldsymbol{p }};{\boldsymbol{h}}</em>{K}],[{\boldsymbol{p}};{\boldsymbol{h}}<em>{V}]),<br />
+    \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">[\cdot;\cdot]</span> 表示沿序列长度维度的连接操作，输出在 <span class="math-inline">\mathbb{R}^{(L</em>{\boldsymbol{h}}+L_{\boldsymbol{p}})\times D}</span> 中具有增加的维度。相比之下，PreT 将 <span class="math-inline">{\boldsymbol{p}}</span> 拆分为 <span class="math-inline">{\boldsymbol{p}}<em>{K}\in\mathbb{R}^{L</em>{\boldsymbol{p}}/2\times D}</span> 和 <span class="math-inline">{\boldsymbol{p}}<em>{V}\in\mathbb{R}^{L</em>{\boldsymbol{p}}/2\times D}</span>，仅用于 <span class="math-inline">{\boldsymbol{h}}<em>{K}</span> 和 <span class="math-inline">{\boldsymbol{h}}</em>{V}</span>：<br />
+<div class="math-display"><br />
+    f_{\textrm{Pref}}({\boldsymbol{p}},{\boldsymbol{h}})=\textrm{MSA}({\boldsymbol{h}}<em>{Q},[{\boldsymbol{p}}</em>{K};{\boldsymbol{ h}}<em>{K}],[{\boldsymbol{p}}</em>{V};{\boldsymbol{h}}<em>{V}]),<br />
+    \tag{4}<br />
+</div><br />
+其中输出维度与输入 <span class="math-inline">{\boldsymbol{h}}\in\mathbb{R}^{L</em>{\boldsymbol{h}}\times D}</span> 相同。随着每个任务的训练样本依次引入，基于提示的持续学习需要将任务特定知识融入到提示参数中，同时克服其灾难性遗忘。主流思想是为每个任务构建自适应提示，然后在测试时推断适当的（组合）提示。这里我们从这两个方面比较了最先进的方法，如图 1 所示：</p>
+<p><strong>L2P</strong>[41] 构建了一个提示池 <span class="math-inline">{\boldsymbol{P}}={{\boldsymbol{p}}<em>{1},...,{\boldsymbol{p}}</em>{M}}</span>，可能由所有任务共享，其中 <span class="math-inline">M</span> 是提示的总数，然后以 ProT 方式指导最后一个 MSA 层。每个提示 <span class="math-inline">{\boldsymbol{p}}<em>{i}</span> 与一个可学习键 <span class="math-inline">{\boldsymbol{k}}</em>{i}\in\mathbb{R}^{D}</span> 相关联，通过查询函数 <span class="math-inline">q({\boldsymbol{x}})=f_{\theta}({\boldsymbol{x}})[0]</span> 与顶部 <span class="math-inline">N</span> 键的余弦距离 <span class="math-inline">\gamma(q({\boldsymbol{x}}),{\boldsymbol{k}}_{i})</span> 进行优化。因此，可以使用未指导表示选择最相关的键和相应的提示进行推断。</p>
+<p><strong>DualPrompt</strong>[40] 构建任务共享提示 <span class="math-inline">\boldsymbol{g}^{i}</span> 和任务特定提示 <span class="math-inline">\boldsymbol{e}<em>{t}^{i}</span>，以 Pref 方式指导不同的 MSA 层。所有属于同一任务的 <span class="math-inline">\boldsymbol{e}</em>{t}^{i}</span> 与任务特定键 <span class="math-inline">\boldsymbol{k}<em>{t}\in\mathbb{R}^{D}</span> 相关联，通过 <span class="math-inline">\gamma(q(\boldsymbol{x}),\boldsymbol{k}</em>{t})</span> 进行优化，并选择最佳匹配键的索引进行推断。</p>
+<p><strong>S-Prompt</strong>[39] 仅为每个任务构建任务特定提示 <span class="math-inline">\boldsymbol{e}<em>{t}</span>，并采用类似于 L2P 的 ProT 策略来指导最后一个 MSA 层。任务身份的推断通过简单的 KNN 策略实现，以找到最近的任务质心。与其他方法不同，S-Prompt 为每个任务 <span class="math-inline">t=1,...,T</span> 关联一个独占的输出头 <span class="math-inline">\psi</em>{t}</span>。</p>
+<p><strong>CODA-Prompt</strong>[30] 通过其加权求和利用提示池 <span class="math-inline">\boldsymbol{P}</span>，即 <span class="math-inline">\boldsymbol{p}=\sum_{i=1}^{M}\alpha_{i}\boldsymbol{p}<em>{i}</span>，其中 <span class="math-inline">\alpha</em>{i}=\gamma(q(\boldsymbol{x}),\boldsymbol{k}<em>{i})</span> 是加权因子，并采用类似于 DualPrompt 的 Pref 策略来指导多个 MSA 层。<span class="math-inline">\alpha</em>{i}</span> 的推断使得能够构建自适应提示。</p>
+<h3 id="32-预训练范式的实证研究">3.2 预训练范式的实证研究<a class="anchor-link" href="#32-预训练范式的实证研究" title="Permanent link">&para;</a></h3>
+<p>无论是显式还是隐式，上述基于提示的方法都将每个任务的知识融入到提示参数中，并从未指导表示中预测其身份。为了评估预训练范式的影响，我们使用广泛使用的 CIL 基准（如 Split CIFAR-100 和 Split ImageNet-R [41, 40]）进行了实证研究。除了 ImageNet-21K [29] 的监督预训练（记为 Sup-21K）外，我们还考虑了几个强大的自监督模型，这些模型发布了 ViT 检查点 2，如 IBOT [44]、DINO [2] 和 MoCo v3 [5]。</p>
+<p>我们仔细评估了所有基线的官方实现，以确保公平比较。我们基本上遵循了 L2P [41] 和 DualPrompt [40] 的训练方案，这些方案基本一致。由于 S-Prompt [39] 最初是为 DIL 设计的，我们略微修改了其实现，将任务特定提示插入到与 DualPrompt 相同的层中（即第 1-5 层），以 Pref 方式评估提示架构的影响。输出层保留了与任务身份关联的多个头（仍记为 S-Prompt），或与其他基线一样使用单个头（记为 S-Prompt++）。CODA-Prompt [30] 在 DualPrompt 类似的架构中正式实现，但严重依赖于使用较小的学习率与余弦衰减。这里我们展示了其在使用默认和降低学习率下的性能。使用与 [41, 39] 相同的学习率，我们网格搜索适当的 epoch 数（详见附录 D），并报告所有基线的最佳性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250211214523.png" style="zoom: 80%;" /></div>
+
+<p>如图 2 所示，上述基于提示的方法在 Sup-21K 下表现出色，其中使用任务特定提示明显优于任务共享提示（即 S-Prompt++ <span class="math-inline">\approx</span> CODA-Prompt <span class="math-inline">&gt;</span> DualPrompt <span class="math-inline">&gt;</span> L2P），因为明确避免了灾难性遗忘。然而，在更现实的自监督预训练下，四个基线<strong>表现显著下降</strong>。特别是，提示架构之间的性能差异变得小得多，表明任务特定和任务共享知识没有得到很好的区分。此外，CODA-Prompt 通常可以取得领先性能，这主要是由于学习率（LR）的降低，而不是提示架构。</p>
+<p>我们进行了两个额外的实验来证明<strong>隐藏的次优性</strong>。首先，我们通过学习任务特定提示评估未指导和指导表示的 CKA 相似性（图 2，c）。自监督预训练的 CKA 相似性显著更高，表明提示参数融入任务特定知识的难度更大。其次，我们评估了从未指导表示和任务特定键预测任务身份的能力，其中自监督预训练的准确性要低得多（图 2，d）。有趣的是，尽管只有不到 40% 的任务身份被正确预测，S-Prompt++ 仍然可以取得相当（尽管次优）的性能，这归功于使用单头输出层的补偿效果（图 2，e）。结合图 2，c，d 中的结果，可以想象使用“错误”提示不会严重影响指导表示，这些表示仍然可以在平衡良好的单头输出层中正确预测。相比之下，S-Prompt 的表现比 S-Prompt++ 差得多，因为其多头输出层承担了任务身份推断的所有错误。</p>
+<h2 id="4-理论基础与我们的方法">4. 理论基础与我们的方法<a class="anchor-link" href="#4-理论基础与我们的方法" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先提出了在预训练背景下改进持续学习的充分和必要条件的理论分析，然后提出了一种创新的基于提示的持续学习方法来实现这一目标。</p>
+<h3 id="41-持续学习目标的层次化分解">4.1 持续学习目标的层次化分解<a class="anchor-link" href="#41-持续学习目标的层次化分解" title="Permanent link">&para;</a></h3>
+<p>对于顺序到达的 <span class="math-inline">\mathcal{D}<em>{t}</span> 的持续学习，<span class="math-inline">\mathcal{X}</em>{t}</span> 和 <span class="math-inline">\mathcal{Y}<em>{t}</span> 是任务 <span class="math-inline">t</span> 的域和标签。这里我们以 CIL 为典型场景进行理论分析，其中 <span class="math-inline">\mathcal{Y}</em>{t}\cap\mathcal{Y}<em>{t^{\prime}}=\emptyset,\forall t\neq t^{\prime}</span>（参见附录 A 中的 DIL 和 TIL）。设 <span class="math-inline">\mathcal{X}</em>{t}=\bigcup_{j}\mathcal{X}<em>{t,j}</span> 和 <span class="math-inline">\mathcal{Y}</em>{t}={\mathcal{Y}<em>{t,j}}</span>，其中 <span class="math-inline">j\in[|\mathcal{Y}</em>{t}|]</span> 示任务<span class="math-inline">t</span> 的第<span class="math-inline">j</span> 。现在假设我们有一个基础事件<span class="math-inline">\mathcal{D}={\mathcal{D}<em>{1},...,\mathcal{D}</em>{t}}</span> 一个预训练模型<span class="math-inline">f_{\theta}</span>。对于任何样本<span class="math-inline">\boldsymbol{x}\in\bigcup_{k=1}^{t}\mathcal{X}<em>{k}</span>，CIL 问题的一般目标是学习<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}</em>{i,j}|\mathcal{D},\theta)</span>，其中<span class="math-inline">i\in[t]</span> <span class="math-inline">j\in[|\mathcal{Y}<em>{i}|]</span>。这可以分解为两个概率，包括任务身份推断（TII）和任务内预测（WTP），分别记为<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}</em>{i}|\mathcal{D},\theta)</span> <span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}<em>{i,j}|\boldsymbol{x}\in\mathcal{X}</em>{i},\mathcal{D},\theta)</span>。根据贝叶斯定理，我们有<br />
+<div class="math-display"><br />
+P(\boldsymbol{x}\in\mathcal{X}<em>{i,j}|\mathcal{D},\theta)=P(\boldsymbol{x}\in\mathcal{X}</em>{i,j}|\boldsymbol{x}\in\mathcal{X}<em>{i},\mathcal{D},\theta)P(\boldsymbol{x}\in\mathcal{X}</em>{i}|\mathcal{D},\theta). \tag{5}<br />
+</div></p>
+<p>设<span class="math-inline">\bar{t}\in[t]</span> <span class="math-inline">\bar{j}\in[|\mathcal{Y}<em>{i}|]</span> <span class="math-inline">\boldsymbol{x}</span> 于任务身份和任务内索引的真实值。公式 (5) 表明，如果我们能够提高 WTP 性能<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}</em>{\bar{i},\bar{j}}|\boldsymbol{x}\in\mathcal{X}<em>{\bar{i}},\mathcal{D},\theta)</span>、TII 性能<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}</em>{\bar{i}}|\mathcal{D},\theta)</span> 两者，那么 CIL 性能<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}<em>{\bar{i},\bar{j}}|\mathcal{D},\theta)</span> 会提高。然而，这种改进是有限的，因为它受限于 WTP 或 TII。为了进一步提高 CIL 性能，我们提出了其目标的层次化分解。也就是说，除了提高<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}</em>{\bar{i},\bar{j}}|\mathcal{D},\theta)</span> 性能外，我们还需要提高任务自适应预测（TAP）的性能，记为<span class="math-inline">P(\boldsymbol{x}\in\mathcal{X}^{y}|\mathcal{D},\theta)</span>，其中<span class="math-inline">\mathcal{X}^{y}</span> 示所有先前任务中类<span class="math-inline">y</span> 域，且<span class="math-inline">y=\mathcal{Y}<em>{\bar{i},\bar{j}}</span> <span class="math-inline">\boldsymbol{x}</span> 真实标签。然后，CIL 的最终目标被表述为一个多目标优化问题，即<span class="math-inline">\max[P(\boldsymbol{x}\in\mathcal{X}</em>{\bar{i},\bar{j}}|\mathcal{D},\theta),P(\boldsymbol{x}\in\mathcal{X}^{y}|\mathcal{D},\theta)]</span>。注意，TII 概率是所有观察到任务<span class="math-inline">t</span> 分类分布，而 TAP 概率是所有观察到类<span class="math-inline">\bigcup_{k=1}^{t}\mathcal{Y}<em>{k}</span> 分类分布。 为了解决上述问题，我们在广泛使用的交叉熵损失的背景下推导了充分和必要条件。具体来说，我们定义<br />
+<div class="math-display"><br />
+{H}</em>{\rm{WTP}}(\boldsymbol{x}) = \mathcal{H}(\boldsymbol{1}<em>{\bar{j}},{P(\boldsymbol{x} \in \mathcal{X}</em>{\bar{i},j}|\boldsymbol{x} \in \mathcal{X}_{\bar{i}},\mathcal{D},\theta)}_j),\tag{6}<br />
+</div></p>
+<p><div class="math-display"><br />
+{H}<em>{\rm{TII}}(\boldsymbol{x}) = \mathcal{H}(\boldsymbol{1}</em>{\bar{i}},{P(\boldsymbol{x} \in \mathcal{X}<em>{i}|\mathcal{D},\theta)}</em>{i}), \tag{7}<br />
+</div></p>
+<p><div class="math-display"><br />
+{H}<em>{\rm{TAP}}(\boldsymbol{x}) = \mathcal{H}(\boldsymbol{1}</em>{\bar{c}}, {P(\boldsymbol{x} \in \mathcal{X}^{c}|\mathcal{D},\theta)}_{c} ),\tag{8}<br />
+</div></p>
+<p>其中<span class="math-inline">H_{\text{WTP}}</span>、<span class="math-inline">H_{\text{TII}}</span> <span class="math-inline">H_{\text{TAP}}</span> 别是 WTP、TII 和 TAP 的交叉熵值。操作<span class="math-inline">\mathcal{H}(p,q)\triangleq-\mathbb{E}<em>{p}[\log q]=-\sum</em>{i}p_{i}\log q_{i}</span>。<span class="math-inline">\boldsymbol{1}_{\cdot}</span> 一个独热编码函数。 我们现在在 CIL 场景下提出第一个定理（详见附录 A 的详细证明）： </p>
+<p><strong>定理 1</strong>：对于预训练背景下的持续学习，如果<span class="math-inline">\mathbb{E}<em>{\boldsymbol{x}}[H</em>{\text{WTP}}(\boldsymbol{x})]\leq\delta</span>，<span class="math-inline">\mathbb{E}<em>{\boldsymbol{x}}[H</em>{\text{TII}}(\boldsymbol{x})]\leq\epsilon</span>，且<span class="math-inline">\mathbb{E}<em>{\boldsymbol{x}}[H</em>{\text{TAP}}(\boldsymbol{x})]\leq\eta</span>，则损失误差<span class="math-inline">\mathcal{L}\in[0,\max{\delta+\epsilon,\eta}]</span>，无论 WTP、TII 和 TAP 是否一起训练。 通过使用交叉熵，持续学习性能随着边界的收紧而趋于更好。在定理 1 中，我们已经证明了 WTP、TII 和 TAP 的良好性能足以保证 CIL 的良好性能。为了完整性，我们现在在定理 2 中研究了一个表现良好的 CIL 模型的必要条件。 </p>
+<p><strong>定理 2</strong>：对于预训练背景下的持续学习，如果损失误差<span class="math-inline">\mathcal{L}\leq\xi</span>，则总是存在： (1) 一个 WTP，使得<span class="math-inline">H_{\text{WTP}}\leq\xi</span>；(2) 一个 TII，使得<span class="math-inline">H_{\text{TII}}\leq\xi</span>；(3) 一个 TAP，使得<span class="math-inline">H_{\text{TAP}}\leq\xi</span>。 定理 2 表明，如果一个持续学习模型训练良好（即损失低），那么顺序任务的 WTP、TII 和 TAP 总是隐含地较小。值得注意的是，如果没有<span class="math-inline">\theta</span> 带的预训练知识，定理 1 和定理 2 将退化为先前理论研究 [13] 的主要结论，表明所提出的定理特别针对预训练对持续学习的影响（详见附录 B）。此外，预训练范式确实与持续学习的性能相关，因为它可以影响<span class="math-inline">f_{\theta}</span> 表示分布，进而影响 WTP、TII 和 TAP。先前的工作已经证明，自监督表示对参数变化的鲁棒性比监督表示更强 [9, 21, 37]，这对于积累预训练知识（如果适用）是有益的，但对于持续适应下游任务具有挑战性（见图 2，c，d）。</p>
+<h3 id="42-基于提示的持续学习的">4.2 基于提示的持续学习的<a class="anchor-link" href="#42-基于提示的持续学习的" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212085321.png" style="zoom: 80%;" /></div>
+
+<p>HiDe-Prompt 基于上述实证和理论见解，我们提出显式优化层次化组件（即 WTP、TII 和 TAP）用于基于提示的持续学习，如图 3 所示。我们的提议源于预训练的一个特殊优势，即未指导和指导表示的分布可以通过其统计信息有效保留。在分类的情况下，例如，由于每个类往往具有单峰表示（参见附录 D，图 5 和图 6），我们可以自然地用高斯分布近似它们。为了通用性，这里我们将未指导和指导(uninstructed and instructed)表示的近似分布分别表示为每个类<span class="math-inline">c\in\mathcal{Y}<em>{i},i\in[t-1]</span> <span class="math-inline">\hat{\mathcal{G}}</em>{c}</span> <span class="math-inline">\mathcal{G}_{c}</span>，并稍后讨论它们的具体形式。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212085142.png" style="zoom: 80%;" /></div
+
+首先，我们通过有效融入任务特定知识来改进**WTP**。我们构建了一个可扩展的提示池，仅包含任务特定提示<span class="math-inline">\boldsymbol{e}_{t}</span> 融入<span class="math-inline">\mathcal{D}_{t}</span> 知识，并通过交叉熵（CE）损失优化<span class="math-inline">H_{\textsf{WTP}}</span>。先前的提示<span class="math-inline">\boldsymbol{e}_{1},...,\boldsymbol{e}_{t-1}</span> 冻结以避免灾难性遗忘。为了有效地学习每个任务，我们采用了一种**提示集成**（PE）策略，其中当前提示由最后一个提示<span class="math-inline">\boldsymbol{e}_{t}\leftarrow\boldsymbol{e}_{t-1}</span> 始化，然后通过所有先前提示的加权组合进行优化<span class="math-inline">\boldsymbol{p}_{t}=\alpha\sum_{i=1}^{t-1}\boldsymbol{e}_{i}+(1-\alpha)\boldsymbol{e}_{i}</span>。<span class="math-inline">\alpha</span> 一个超参数，控制继承旧知识的强度，以促进<span class="math-inline">\boldsymbol{p}_{t}</span> 习当前任务。同时，<span class="math-inline">\boldsymbol{p}_{t}</span> 指导表示虽然允许新任务表现良好，但可能与旧任务的重叠，从而影响 TAP。为了克服这个问题，我们利用指导表示的旧任务统计信息（由<span class="math-inline">f_{\theta}</span> <span class="math-inline">\boldsymbol{p}_{t}</span> 集，<span class="math-inline">i=1,...,t-1</span>），其中对于分类，我们计算每个类<span class="math-inline">c\in\mathcal{Y}_{i}</span> <span class="math-inline">\mathcal{G}_{c}</span> 均值<span class="math-inline">\boldsymbol{\mu}_{c}</span>，并设计了一种**对比正则化**（CR）：
+<div class="math-display">
+ \mathcal{L}_{{\rm{CR}}}( \boldsymbol{p}_{t}) =  \sum_{\boldsymbol{h} \in \mathcal{H}_{t}}  % \frac{1}{|\mathcal{D}_{t}|}
+ \frac{1}{\sum_{i=1}^{t-1} |\mathcal{Y}_i|} \sum_{i=1}^{t-1} \sum_{c \in \mathcal{Y}_i} 
+ \log \frac{\exp (\boldsymbol{h} \cdot \boldsymbol{\mu}_c / \tau)}
+ {\sum_{\boldsymbol{h}' \in \mathcal{H}_{t}} \exp (\boldsymbol{h} \cdot \boldsymbol{h}' / \tau) + \sum_{i=1}^{t-1} \sum_{c \in \mathcal{Y}_i} \exp (\boldsymbol{h} \cdot \boldsymbol{\mu}_c / \tau)}, \tag{9}
+</div>
+
+其中<span class="math-inline">\mathcal{H}_{t}</span> <span class="math-inline">\mathcal{D}_{t}</span> 过<span class="math-inline">f_{\theta}</span> <span class="math-inline">\boldsymbol{p}_{t}</span> 嵌入变换。<span class="math-inline">\tau</span> 温度系数，在实践中设置为 0.8。值得注意的是，这里我们仅使用<span class="math-inline">\boldsymbol{\mu}_{c}</span> 表示每个类以提高效率，可以选择从<span class="math-inline">\mathcal{G}_{c}</span> 采样以获得更好的性能。 然后，WTP 的损失函数可以定义为
+
+<div class="math-display">
+\mathcal{L}_{{\rm{WTP}}}( \psi, \boldsymbol{p}_{t}) = \mathcal{L}_{{\rm{CE}}}(\psi, \boldsymbol{p}_{t}) + \lambda \mathcal{L}_{{\rm{CR}}}(\boldsymbol{p}_{t}). \tag{10}
+</div>
+
+因此，新类的指导表示可以很好地区分 WTP，同时避免与先前类的重叠。<span class="math-inline">\lambda</span> 一个超参数，用于平衡旧类的影响。 其次，我们通过利用未指导和指导表示的近似分布来改进**TII**和**TAP**。对于 TII，我们构建了一个辅助输出层<span class="math-inline">\hat{h}_{\omega}:\mathbb{R}^{D}\rightarrow\mathbb{R}^{T}</span>，参数化为<span class="math-inline">\omega</span>，通过交叉熵显式学习从未指导表示到任务身份的投影（即<span class="math-inline">\hat{H}_{\textbf{TII}}</span>）：
+
+<div class="math-display">
+\mathcal{L}_{{\rm{TII}}}(\omega) = \frac{1}{\sum_{i=1}^{t} |\mathcal{Y}_i|} \sum_{i=1}^{t} \sum_{c \in \mathcal{Y}_i} \sum_{\hat{\boldsymbol{h}} \in \hat{\mathcal{H}}_{i,c}} - \log \frac{\exp(\hat{h}_{\omega}(\hat{\boldsymbol{h}})[i])}{\sum_{j=1}^{t} \exp(\hat{h}_{\omega}(\hat{\boldsymbol{h}})[j])},\tag{11}
+</div>
+
+其中<span class="math-inline">\hat{\mathcal{H}}_{i,c}</span> 过从<span class="math-inline">\hat{\mathcal{G}}_{c}</span> 采样等量的伪表示构建，<span class="math-inline">c\in\mathcal{Y}_{i}</span> <span class="math-inline">i\in[t]</span>。与其他基线冻结旧任务的投影（即先前的键）不同，我们的<span class="math-inline">\hat{h}_{\omega}</span> 续适应所有任务，从而极大地促进了 TII。 类似地，最终输出层<span class="math-inline">h_{\psi}:\mathbb{R}^{D}\rightarrow\mathbb{R}^{|\mathcal{Y}|}</span> 以进一步优化 TAP（即<span class="math-inline">H_{\textbf{TAP}}</span>）：
+
+<div class="math-display">
+\mathcal{L}_{{\rm{TAP}}}(\psi) = \frac{1}{\sum_{i=1}^{t} |\mathcal{Y}_i|} \sum_{i=1}^{t} 
+\sum_{c \in \mathcal{Y}_i} \sum_{\boldsymbol{h} \in \mathcal{H}_{i,c}} - \log \frac{\exp(h_{\psi}(\boldsymbol{h})[c])}{\sum_{j=1}^{t}\sum_{c' \in \mathcal{Y}_j} \exp(h_{\psi}(\boldsymbol{h})[c'])}, \tag{12}
+</div>
+
+其中<span class="math-inline">\mathcal{H}_{i,c}</span> 过从<span class="math-inline">\mathcal{G}_{c}</span> 采样等量的伪表示构建，<span class="math-inline">c\in\mathcal{Y}_{i}</span> <span class="math-inline">i=1,...,t</span>。由于<span class="math-inline">\omega</span> <span class="math-inline">\psi</span> 常是**轻量级**的，TII 和 TAP 的优化在计算上是高效的。在测试时，HiDe-Prompt 预测任务身份<span class="math-inline">i=\hat{h}_{\omega}(f_{\theta}(\boldsymbol{x}))</span>，然后预测标签<span class="math-inline">y=h_{\psi}(f_{\theta}(\boldsymbol{x};\boldsymbol{p}_{t}))</span>。更多细节请参见附录算法 3。 由于预训练表示通常分布良好，有许多合理的策略来建模<span class="math-inline">\hat{\mathcal{G}}_{c}</span> <span class="math-inline">\mathcal{G}_{c}</span>。默认情况下，未指导和指导表示的分布可以通过将每个类建模为具有专用均值和协方差的高斯分布来忠实恢复。在充分预训练的情况下，协方差可以进一步简化为方差以提高效率。或者，这种统计建模可以采用从 KNN 获得的多个质心并添加高斯噪声，这也是一种高效的选择，并适用于其他任务类型。 
+
+<div align=center>
+</div>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们首先描述了实验设置，然后展示了实验结果。</p>
+<h3 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>基准</strong>：我们考虑了多个广泛用于基于提示的持续学习的 CIL 基准 [41, 40, 30]。具体来说，Split CIFAR-100 [14] 包括 100 类小规模图像，随机分为 10 个不相交类的增量任务。Split ImageNet-R [14] 包括 200 类大规模图像，这些图像是 ImageNet [29] 的难例或不同风格的新收集示例，随机分为 10 个不相交类的增量任务。5-Datasets [6] 包括 CIFAR-10 [14]、MNIST [15]、Fashion-MNIST [42]、SVHN [24] 和 notMNIST [1] 数据集，每个数据集被视为一个增量任务，以评估大任务间差异的影响。Split CUB-200 [32] 包括 200 类细粒度鸟类图像，随机分为 10 个不相交类的增量任务。</p>
+<p><strong>基线</strong>：我们比较了四种代表性的基于提示的方法，如第 3.1 节中讨论的 L2P [41]、DualPrompt [40]、S-Prompt++ [39] 和 CODA-Prompt [30]。为了评估持续学习的性能，我们记录了学习每个任务后所有见过类的平均准确率，将最后一个任务的平均准确率（FAA）作为最终平均准确率，并将其历史平均准确率（CAA）[37] 作为累积平均准确率。我们还展示了所有任务的最终遗忘度量（FFM）[37]。我们考虑了 ImageNet-21K 和 ImageNet-1K 的多种预训练范式，包括 Sup-21K、iBOT-21K、iBOT-1K、DINO-1K 和 MoCo-1K，如第 3.2 节所述。</p>
+<p><strong>实现</strong>：我们遵循了先前工作 [41, 40, 30] 的类似实现。具体来说，我们采用了预训练的 ViT-B/16 骨干，并使用 Adam 优化器（<span class="math-inline">\beta_{1}=0.9</span>，<span class="math-inline">\beta_{2}=0.999</span>）、批量大小为 128 和恒定学习率 0.005（除了 CODA-Prompt 使用余弦衰减学习率 0.001）进行训练，并网格搜索适当的 epoch 数。图像输入调整为<span class="math-inline">224\times 224</span> 归一化为<span class="math-inline">[0,1]</span>。更多细节请参见附录 C。</p>
+<p><strong>整体性能</strong>：表 1 展示了所有方法的主要结果。与第 3.2 节中的观察结果一致，代表性的基于提示的方法在监督预训练（即 Sup-21K）下表现出色，而在更现实的自监督预训练下表现显著较差。特别是，最近的 CODA-Prompt [30] 总体上优于其他基线（这里我们以 FAA 为主要指标），但对学习率敏感（见图 2，a，b 和附录表 6）。相比之下，我们的 HiDe-Prompt 在总体上取得了最高的 FAA、CAA 和最低的 FFM，因此明显优于所有竞争对手。这一优势在自监督预训练下更为显著，例如在 Split CIFAR-100 和 Split ImageNet-R 上分别领先<strong>15.01%</strong>和<strong>9.61%</strong>。当考虑大任务间差异和细粒度分类时（见表 2），我们的方法在自监督预训练下的性能优势变得更加显著，例如在 5-Datasets 和 Split CUB-200 上分别领先<strong>12.63%</strong>和<strong>30.44%</strong>。我们进一步评估了与下游任务不相交的预训练知识的影响，遵循了最近工作 [12] 的设置。具体来说，我们在 ImageNet 的一个子集上进行了 Split CIFAR-100 的预训练，其中移除了 389 个相似类。5-Prompt++、CODA-Prompt 和 HiDe-Prompt 的 FAA 分别为 69.00%、65.07% 和 88.05%。所有上述结果证明了我们方法的优势，这归功于显式优化层次化组件，克服了潜在的次优性。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212093855.png" style="zoom: 80%;" /><div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212092842.png" style="zoom: 80%;" /></div>
+</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212092855.png" style="zoom: 80%;" /></div>
+
+<p>这里我们更深入地探讨了 HiDe-Prompt 的特性。首先，HiDe-Prompt 需要比 CODA-Prompt 小得多的 GPU 内存（例如，在 Split CIFAR-100 上为 16141MB vs 25325MB），因为我们将适当提示的构建和推断作为层次化组件分别优化，而不是以端到端的方式联合优化。与其他基线相比（除了 L2P 需要更小的 epoch 数），我们方法的计算成本在数量级上是可比的。例如，使用相同的单卡 A100 GPU，L2P、DualPrompt、S-Prompt++、CODA-Prompt 和 HiDe-Prompt 在 Split CIFAR-100 上的训练时间分别为 0.55h、2.00h、2.01h、2.08h 和 2.80h。至于统计建模的影响，为每个类保留约 5 个质心的性能与单个高斯分布相当（见附录表 7），这确保了存储效率，并可能推广到其他任务类型。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212093338.png" style="zoom: 80%;" /></div>
+
+<p><strong>消融研究</strong>：我们在表 3 中进行了广泛的消融研究，以验证 HiDe-Prompt 中层次化组件的有效性。我们首先构建了一个任务特定提示的朴素架构作为基线，然后逐步纳入第 4.2 节中的个别设计。总体而言，每个组件的优化，如任务内预测（WTP）、任务身份推断（TII）和任务自适应预测（TAP），都带来了明显的收益，并共同促成了 HiDe-Prompt 的强大性能。有趣的是，TII 的改进仅在 WTP+TAP 时变得明显，而不是仅在 WTP 时，表明这些层次化组件是高度<strong>协同</strong>的，而不是孤立运行的。所提出的对比正则化（CR）有助于各个任务的指导表示相互兼容并避免任务间重叠，从而进一步促进了 WTP+TII+TAP 的性能。此外，我们观察到 WTP、TII、TAP 和 CR 的改进在<strong>自监督预训练</strong>下通常更为显著，这归功于有效解决了隐藏的次优性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212093415.png" style="zoom: 80%;" /></div>
+
+<p><strong>详细分析</strong>：现在我们进一步分析了三个组件对持续学习的贡献。首先，我们在图 4，a 中评估了学习每个新任务的平均性能，其中 WTP 明显优于朴素架构，表明解决每个任务的知识更好地融入了任务特定提示中。其次，我们在图 4，b 中展示了从未指导表示预测任务身份的准确性，通过显式优化 TII 显著提高了（高达 67.74%）。第三，我们在表 4 中评估了 CR 对仅 WTP 和完整 HiDe-Prompt 模型（即 WTP+TII+TAP）的影响。增加 CR 的强度会降低 WTP 的性能，因为任务特定提示包含了更多关于其他任务的知识，但提高了 HiDe-Prompt 的性能，因为任务间表示变得更加兼容。这些结果表明了 WTP 和 TAP 知识之间的潜在<strong>权衡</strong>，可以通过 CR 显式调节。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250212093513.png" style="zoom: 80%;" /></div>
+
+<h2 id="6-讨论与结论">6. 讨论与结论<a class="anchor-link" href="#6-讨论与结论" title="Permanent link">&para;</a></h2>
+<p>在这项工作中，我们从实证和理论角度广泛分析了先进的基于提示的持续学习。一个重要发现是，持续学习目标（在预训练背景下可以分解为 WTP、TII 和 TAP）未能充分实现，这种次优性在更现实的自监督预训练下明显暴露。通过利用未指导和指导表示的统计信息，我们提出了一种强大的方法来显式优化层次化组件，在各种预训练范式中取得了卓越的性能。特别是，我们的理论分析和提出的方法可以作为在持续学习中实现参数高效微调技术（例如提示、适配器、LoRA、FiLM 等）的通用框架，这些技术仅在任务特定参数的形式上有所不同。有趣的是，我们的提议与神经科学的最新进展一致 [17, 16]，其中非记忆细胞和记忆细胞（及其特定群体）的激活是内部切换的。基于这些结果，我们期望后续工作进一步探索持续学习的架构和优化，有效利用预训练知识。</p>
+<p>这项研究仍存在一些潜在的<strong>局限性</strong>。首先，我们假设充分的预训练提供了有意义的表示，这在某些应用中可能不可用。其次，基于提示的策略主要适用于 Transformer 骨干，而不是其他骨干架构。第三，Transformer 骨干被冻结并通过提示参数适应下游任务，这阻止了预训练知识的丰富和更新。作为机器学习的基础研究，潜在的<strong>负面社会影响</strong>在现阶段并不明显。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

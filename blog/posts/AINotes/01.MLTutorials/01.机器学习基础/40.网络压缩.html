@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#network-pruning修剪">Network Pruning（修剪）</a><ul>
+<li><a href="#introduction">INTRODUCTION</a></li>
+<li><a href="#why-pruning">Why Pruning</a></li>
+<li><a href="#lottery-ticket-hypothesis大乐透假说">Lottery Ticket Hypothesis(大乐透假说)</a></li>
+<li><a href="#rethinking-the-value-of-network-pruning">Rethinking the Value of Network Pruning</a></li>
+<li><a href="#practical-issue">Practical Issue</a></li>
+</ul>
+</li>
+<li><a href="#knowledge-distillation知识蒸馏">Knowledge Distillation(知识蒸馏)</a><ul>
+<li><a href="#student-and-teacher">Student and Teacher</a></li>
+<li><a href="#ensemble合奏">Ensemble（合奏）</a></li>
+<li><a href="#temperature">Temperature</a></li>
+</ul>
+</li>
+<li><a href="#parameter-quantization参数量化">Parameter Quantization（参数量化）</a><ul>
+<li><a href="#less-bits">less bits</a></li>
+<li><a href="#weight-clustering">weight clustering</a></li>
+<li><a href="#binary-weights">Binary Weights</a></li>
+</ul>
+</li>
+<li><a href="#architecture-design架构设计">Architecture Design(架构设计)</a><ul>
+<li><a href="#low-rank-approximation低秩近似">Low rank approximation(低秩近似)</a></li>
+<li><a href="#depthwise-separable-convolution深度可分离卷积">Depthwise Separable Convolution(深度可分离卷积)</a></li>
+</ul>
+</li>
+<li><a href="#dynamic-computation">Dynamic Computation</a><ul>
+<li><a href="#train-multiple-classifiers训练大量的分类器从小到大">Train multiple classifiers（训练大量的分类器(从小到大))</a></li>
+<li><a href="#classifiers-at-the-intermedia-layer使用中间层输出">Classifiers at the intermedia layer(使用中间层输出)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="network-pruning修剪">Network Pruning（修剪）<a class="anchor-link" href="#network-pruning修剪" title="Permanent link">&para;</a></h2>
+<h3 id="introduction">INTRODUCTION<a class="anchor-link" href="#introduction" title="Permanent link">&para;</a></h3>
+<p>神经网络的参数很多，但其中有些参数对最终的输出结果贡献不大而显得冗余，将这些冗余的参数剪掉的技术称为剪枝。剪枝可以减小模型大小、提升运行速度，同时还可以防止过拟合。</p>
+<p>剪枝分为one-shot和iteration剪枝：</p>
+<ol>
+<li>
+<p>one-shot剪枝过程：训练模型–&gt; 评估神经元（或者kernel、layer）的重要性–&gt;去掉最不重要的神经元–&gt; fine-tuning–&gt;停止剪枝。</p>
+</li>
+<li>
+<p>iteration剪枝过程：训练模型–&gt; 评估神经元（或者kernel、layer）的重要性–&gt;去掉最不重要的神经元–&gt; fine-tuning–&gt;判断是不是要继续剪枝，如果是回到第二步（评估神经元的重要性），否则停止剪枝。</p>
+</li>
+</ol>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111976.png" /></p>
+<p>剪枝还分为结构化剪枝和非结构化剪枝：</p>
+<ol>
+<li>结构化剪枝：直接去掉整个kernel的结构化信息；</li>
+<li>非结构化剪枝：考虑每个kernel的每个元素，删除kernel中不重要的参数；也称为稀疏剪枝。</li>
+</ol>
+<p>重要性判断：</p>
+<p>那么怎么判断哪些参数是冗余或者不重要的呢？</p>
+<ul>
+<li>对权重(weight)而言，我们可以通过计算它的<code>l1</code>,<code>l2</code>值来判断重要程度</li>
+<li>对neuron而言，我们可以给出一定的数据集，然后查看在计算这些数据集的过程中neuron参数为0的次数，如果次数过多，则说明该neuron对数据的预测结果并没有起到什么作用，因此可以去除。</li>
+</ul>
+<h3 id="why-pruning">Why Pruning<a class="anchor-link" href="#why-pruning" title="Permanent link">&para;</a></h3>
+<p>那我们不禁要问，既然最后要得到一个小的network，那<strong>为什么不直接在数据集上训练小的模型，而是先训练大模型?</strong></p>
+<ul>
+<li>解释一</li>
+</ul>
+<p>一个比较普遍接受的解释是因为模型越大，越容易在数据集上找到一个局部最优解，而小模型比较难训练，有时甚至无法收敛。</p>
+<ul>
+<li>解释二</li>
+</ul>
+<p>2018年的一个发表在ICLR的<strong>大乐透假设</strong>(<a href="https://arxiv.org/abs/1803.03635">Lottery Ticket Hypothesis</a>)观察到下面的现象</p>
+<h3 id="lottery-ticket-hypothesis大乐透假说">Lottery Ticket Hypothesis(大乐透假说)<a class="anchor-link" href="#lottery-ticket-hypothesis大乐透假说" title="Permanent link">&para;</a></h3>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111241.png" /></p>
+<p>我们先对一个network进行初始化（红色的weight），再得到训练好的network（紫色的weight），再进行pruned，得到一个pruned network</p>
+<ul>
+<li>如果我们使用pruned network的结构，再进行随机初始化random init（绿色的weight），会发现这个network不能train下去</li>
+<li>如果我们使用pruned network的结构，再使用原始随机初始化original random init（红色的weight），会发现network可以得到很好的结果</li>
+</ul>
+<p>作者由此提出：<code>可能神经元会不会被训练起来，与初始值有很大关系，是一种大乐透现象。</code></p>
+<blockquote>
+<p>关于大乐透假说，更多的可以参考：</p>
+<ul>
+<li>👉 <a href="https://arxiv.org/abs/1803.03635">The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks</a></li>
+<li>👉 <a href="https://zhuanlan.zhihu.com/p/65161889">《彩票假设》ICLR 2019 best paper 阅读笔记</a></li>
+</ul>
+</blockquote>
+<h3 id="rethinking-the-value-of-network-pruning">Rethinking the Value of Network Pruning<a class="anchor-link" href="#rethinking-the-value-of-network-pruning" title="Permanent link">&para;</a></h3>
+<p>作者通过数个网络和数据集的prune 测试，得到了三个观察和结论：</p>
+<ol>
+<li>如果有一个确定的“压缩”模型，训练一个大网络不是必要的；</li>
+<li>在prune算法中，我们所认为“重要”的权重，其实对裁剪的小模型来说，并不是那么有用；</li>
+<li>对于最终的压缩小模型来说，通过prune算法得到的网络架构，比通过prune得到的“重要”的权重更加重要。</li>
+</ol>
+<p>并得出一个最终结论：对于SOT的剪枝算法而言，使用裁剪的权重来fine-tune只能得到类似的或者更差的效果；对于通过剪枝算法得到的特定网络模型，可以直接随机初始化训练，而不用经历传统的裁剪管道（训练大网络，裁剪出权重，finetune小网络）。</p>
+<p>同时，作者对彩票假说（Lottery Tickety Hypothesis）进行了对比，发现使用所谓最佳学习率的“中奖彩票”初始化，并未必随机初始化有更好的结果。</p>
+<p>传统的prune算法有三个通道：（1）训练一个大模型；（2）按某指标来裁剪一个训练好的大模型；（3）finetune裁剪模型以获得因prune而损失的性能；<br />
+在传统的prune观念中，有两个“通识”：（1）训练大模型是必要的，可以从大模型中无损裁剪。一系列工作认为从大模型变小模型，要比直接训练一个小模型要好；（2）裁剪下来的权重和网络架构都是重要的。所以，裁剪算法大都会选择fine-tune而不是重头训练它。<br />
+本文提出，<strong>对于结构化裁剪，上述观点都不重要</strong>。对于统一裁剪（使用百分比，在每个layer上都裁剪百分比的channal数）的小网络，也是随机初始化重头训练效果来得好；对于使用Prune算法自动获得模型结构的小网络，仍需一个较大网络，最后随机初始化训练比较好。<br />
+但对于非结构化裁剪（权重系数化等），从头训练并不能达到较好的效果。</p>
+<p>同时，作者认为，通过prune算法裁剪出来的模型可以为设计高效网络架构提供设计指导。</p>
+<blockquote>
+<p>具体的可以参考:</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1810.05270">Rethinking the Value of Network Pruning</a></li>
+<li><a href="https://blog.csdn.net/qq_19784349/article/details/107202447">【论文阅读笔记】Rethinking the value of Network Pruning</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/50565186">Rethinking the value of network pruning</a></li>
+</ul>
+</blockquote>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111196.png" alt="img" style="zoom:67%;" /></p>
+<h3 id="practical-issue">Practical Issue<a class="anchor-link" href="#practical-issue" title="Permanent link">&para;</a></h3>
+<p>如果我们现在进行weight pruning，进行weight pruning之后的network会变得不规则，有些neural有2个weight，有些neural有4个weight，这样的network是不好implement（实行）出来的；</p>
+<p>GPU对矩阵运算进行加速，但现在我们的weight是不规则的，并不能使用GPU加速；</p>
+<p>实做的方法是将pruning的weight写成0，仍然在做矩阵运算，仍然可以使用GPU进行加速；但这样也会带来一个新的问题，我们并没有将这些weight给pruning掉，只是将它写成0了而已</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111313.png" /></p>
+<p>实际上做weight pruning是很麻烦的，通常我们都进行neuron pruning，可以更好地进行implement，也很容易进行speedup</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111343.png" /></p>
+<h2 id="knowledge-distillation知识蒸馏">Knowledge Distillation(知识蒸馏)<a class="anchor-link" href="#knowledge-distillation知识蒸馏" title="Permanent link">&para;</a></h2>
+<h3 id="student-and-teacher">Student and Teacher<a class="anchor-link" href="#student-and-teacher" title="Permanent link">&para;</a></h3>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111435.png" alt="img" style="zoom:67%;" /></p>
+<p>训练一个大网络，用小网络（Student Net）学习大网络。并计算两者之间的cross-entropy，使其最小化，从而可以使两者的输出分布相近。</p>
+<p>teacher提供了比label data更丰富的资料，比如teacher net不仅给出了输入图片和1很像的结果，还说明了1和7长得很像，1和9长得很像；所以，student跟着teacher net学习，是可以得到更多的information的。</p>
+<p>为什么这样有用？因为小网络学的是一个基于大网络的 distillation 。不仅仅学到一个输出神经元的价值，而是多个神经元的输出。</p>
+<h3 id="ensemble合奏">Ensemble（合奏）<a class="anchor-link" href="#ensemble合奏" title="Permanent link">&para;</a></h3>
+<p>在实际生活中，设备往往放不下太多的model，这时我们就可以使用Knowledge Distillation的思想，使用student net来对teacher进行学习，在实际的应用中，我们只需要student net的model就好</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111463.png" /></p>
+<h3 id="temperature">Temperature<a class="anchor-link" href="#temperature" title="Permanent link">&para;</a></h3>
+<p>那Student Net到底如何学习呢？首先回顾一下在多类别分类任务中，我们用到的是softmax来计算最终的概率，即<br />
+<div class="math-display"><br />
+y_i = \frac{exp(x_i)}{\sum_jexp(x_j)}<br />
+</div></p>
+<p>但是这样有一个缺点，因为使用了指数函数，如果在使用softmax之前的预测值是<span class="math-inline">x_1=100,x_2=10,x_3=1</span>,那么使用softmax之后三者对应的概率接近于<span class="math-inline">y_1 = 1 , y_2 = 0 , y_3 = 0 </span>，那这和常规的label无异了，所以为了解决这个问题就引入了一个新的参数TT,称之为<strong>Temperature</strong>,即有:<br />
+<div class="math-display"><br />
+y_i = \frac{exp(x_i/T)}{\sum_j exp(x_j/T)}<br />
+</div></p>
+<p>此时，如果我们令T=100T=100,那么最后的预测概率是<span class="math-inline">y_1 = 0.56 , y_2 = 0.23 , y_3 = 0.21 </span>。（不过李宏毅老师在视频里提到说这个方法在实际使用时貌似用处不大。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222135570.png" alt="image-20220922213530514" style="zoom:80%;" /></p>
+<blockquote>
+<p>最后，关于Knowledge Distillation可以看下这篇文章👉 <a href="https://zhuanlan.zhihu.com/p/102038521">【经典简读】知识蒸馏(Knowledge Distillation) 经典之作</a></p>
+</blockquote>
+<h2 id="parameter-quantization参数量化">Parameter Quantization（参数量化）<a class="anchor-link" href="#parameter-quantization参数量化" title="Permanent link">&para;</a></h2>
+<h3 id="less-bits">less bits<a class="anchor-link" href="#less-bits" title="Permanent link">&para;</a></h3>
+<p>一个很直观的方法就是使用更少bit来存储数值，例如一般默认是32位，那我们可以用16或者8位来存数据</p>
+<h3 id="weight-clustering">weight clustering<a class="anchor-link" href="#weight-clustering" title="Permanent link">&para;</a></h3>
+<p>如下图所示，最左边表示网络中正常权重矩阵，之后我们对这个权重参数做聚类，比如最后得到了4个聚类，那么为了表示这4个聚类我们只需要2个bit，即用00,01,10,11来表示不同聚类。之后每个聚类的值就用均值来表示。这样的一个缺点就是误差可能会比较大。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111655.png" /></p>
+<p>如图，只要保存各个参数的类别，以及类别对应的数值表就可以。</p>
+<p>此外，还可以进行哈夫曼编码等压缩。</p>
+<h3 id="binary-weights">Binary Weights<a class="anchor-link" href="#binary-weights" title="Permanent link">&para;</a></h3>
+<p><strong>Binary Weights</strong>是以一种更加极致的思路来对模型进行压缩，即<strong>每个节点只有1或-1来表示</strong>,则参数就可以用一个位来表示了。。比较具有代表性的论文如下：</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1511.00363">BInary Connect</a></li>
+<li><a href="https://arxiv.org/abs/1602.02830">BInary Network</a></li>
+<li><a href="https://arxiv.org/abs/1603.05279">XNOR-Net</a></li>
+</ul>
+<p>下面简单介绍一下<strong>Binary Connect</strong>的思路，如下图示，灰色节点表示使用binary weight的神经元，蓝色节点可以是随机初始化的参数，也可以是真实的权重参数。</p>
+<p>第一步我们先计算出和蓝色节点最接近的二元节点，并计算出其梯度方向（红色剪头）。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111798.png" alt="img" style="zoom:50%;" /></p>
+<p>第二步，蓝色节点的更新方向则是按照红色箭头方向更新，而不是按照他自身的梯度方向更新。如下图示，梯度下降后，蓝色节点到了一个新的位置。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111024.png" alt="img" style="zoom:33%;" /></p>
+<p>最后在满足一定条件后(例如训练之最大epoch),用离得最近的Binary Weight作为结果。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111057.png" alt="img" style="zoom:50%;" /></p>
+<p>我们来看一下整个过程：</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111079.gif" alt="img" style="zoom:50%;" /></p>
+<hr />
+<p>结果还不错，可以看到把权重限制为+1或者-1相当于加上了正则化。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111429.png" /></p>
+<h2 id="architecture-design架构设计">Architecture Design(架构设计)<a class="anchor-link" href="#architecture-design架构设计" title="Permanent link">&para;</a></h2>
+<h3 id="low-rank-approximation低秩近似">Low rank approximation(低秩近似)<a class="anchor-link" href="#low-rank-approximation低秩近似" title="Permanent link">&para;</a></h3>
+<p>下图是低秩近似的简单示意图，左边是一个普通的全连接层，可以看到权重矩阵大小为M×NM×N，而低秩近似的原理就是在两个全连接层之间再插入一层K。是不是很反直观？插入一层后，参数还能变少？</p>
+<p>没错，的确变少了，我们可以看看新插入一层后的参数数量为:N × K + K × M = K × ( M + N ) N×K+K×M=K×(M+N)N×K+K×M=K×(M+N),因为K &lt; M , K &lt; N K&lt;M,K&lt;NK&lt;M,K&lt;N,所以参数减少了。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111434.png" alt="img" style="zoom:67%;" /></p>
+<p>但是低秩近似之所以叫<strong>低秩</strong>，是因为原来的矩阵的秩最大可能是m i n ( M , N ) min(M,N)min(M,N),而新增一层后可以看到矩阵U UU和V VV的秩都是小于等于K KK的，我们知道r a n k ( A B ) ≤ m i n ( r a n k ( A ) , r a n k ( B ) ) rank(AB)≤min(rank(A),rank(B))rank(AB)≤min(rank(A),rank(B)), 所以相乘之后的矩阵的秩一定还是小于等于K KK。那么这样会带来什么影响呢？那就是原先全连接层能表示更大的空间，而现在只能表示小一些的空间了。</p>
+<h3 id="depthwise-separable-convolution深度可分离卷积">Depthwise Separable Convolution(深度可分离卷积)<a class="anchor-link" href="#depthwise-separable-convolution深度可分离卷积" title="Permanent link">&para;</a></h3>
+<p>如图，标准的CNN架构，其中两个通道，4个filter，一共有72个参数。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111558.png" alt="img" style="zoom:67%;" /></p>
+<p>而Depthwise Separable卷积分成了两步，如下图示。</p>
+<p>首先是输入数据的每个通道只由一个二维的卷积核负责，即卷积核通道数固定为1，而不是像上面那样，每个卷积核的通道数和输入通道数保持一致。这样最后得到的输出特征图的通道数等于输入通道数。</p>
+<p>因为第一步得到的输出特征图是用不同卷积核计算得到的，所以不同通道之间是独立的，因此我们还需要对不同通道之间进行关联。为了实现关联，在第二步中使用了1 ∗ 1 1 * 11∗1大小的卷积核，通道数量等于输入数据的通道数量。另外1 ∗ 1 1<em>11∗1卷积核的数量等于预期输出特征图的通道数，在这里等于4。最后我们可以得到和标准卷积一样的效果，而且参数数量更少：3 ∗ 3 ∗ 2 + ( 1 ∗ 1 ∗ 2 ) ∗ 4 = 26 3</em>3<em>2+(1</em>1<em>2)</em>4=263∗3∗2+(1∗1∗2)∗4=26。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111559.png" alt="img" style="zoom:67%;" /></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111564.png" alt="img" style="zoom:67%;" /></p>
+<p>下面我们算一下标准卷积和Depthwise Separable卷积参数数量大小关系：假设输入特征图通道数为II,输出特征图通道数为O,卷积核大小为k×k。</p>
+<p>标准卷积参数数量=k × k × I × O k×k×I×Ok×k×I×O<br />
+Depthwise Separable卷积参数数量=k × k × I + I × O k×k×I+I×Ok×k×I+I×O<br />
+因为通常输出特征图的通道数O会设置的比较大，所以可以看到Depthwise Separable卷积的参数量会明显少于标准卷积。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111731.png" alt="img" style="zoom:67%;" /></p>
+<p>这样的卷积设计广泛运用在各种小网络上，如(附带paper)</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1602.07360">SqueezeNet</a></li>
+<li><a href="https://arxiv.org/abs/1704.04861">MobileNet</a></li>
+<li><a href="https://arxiv.org/abs/1707.01083">ShuffleNet</a></li>
+<li><a href="https://arxiv.org/abs/1610.02357">Xception</a></li>
+</ul>
+<h2 id="dynamic-computation">Dynamic Computation<a class="anchor-link" href="#dynamic-computation" title="Permanent link">&para;</a></h2>
+<p>该方法的主要思路是如果目前的资源充足（比如你的手机电量充足），那么算法就尽量做到最好，比如训练更久，或者训练更多模型等；反之，如果当前资源不够（如电量只剩10%），那么就先算出一个过得去的结果。</p>
+<p>那么如何实现呢？</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111903.png" alt="img" style="zoom:67%;" /></p>
+<h3 id="train-multiple-classifiers训练大量的分类器从小到大">Train multiple classifiers（训练大量的分类器(从小到大))<a class="anchor-link" href="#train-multiple-classifiers训练大量的分类器从小到大" title="Permanent link">&para;</a></h3>
+<p>比如说我们提前训练多种网络，比如大网络，中等网络和小网络，那么我们就可以根据资源情况来选择不同的网络。但是这样的缺点是我们需要保存多个模型，这在移动设备上的可操作性不高。</p>
+<h3 id="classifiers-at-the-intermedia-layer使用中间层输出">Classifiers at the intermedia layer(使用中间层输出)<a class="anchor-link" href="#classifiers-at-the-intermedia-layer使用中间层输出" title="Permanent link">&para;</a></h3>
+<p>这样的思路其实也挺直观的，就是比如说我们做分类任务，当资源有限时，我们可能只是基于前面几层提取到的特征做分类预测，但是一般而言这样得到的结果会打折扣，因为前面提取到的特征是比较细腻度的，可能只是一些纹理，而不是比较高层次抽象的特征。</p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111093.png" /></p>
+<p>这里简单列出两个缺点：</p>
+<ol>
+<li>前面的layer抽取的feature对于做分类效果不好（CNN的前面的隐藏层抽取的特征比较小，不适合分类）。也就是说,越靠近输入，预测结果越差</li>
+</ol>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111101.png" /></p>
+<ol start="2">
+<li>由于中间接了Classifier，会影响最终的分类结果，因为在训练的时候中间层就想要做分类，所以模型会促使参数在第一层就抽取大特征，这样会使得后面的结果变差。</li>
+</ol>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111105.png" /></p>
+<blockquote>
+<p><code>解决方案：</code> 👉 <a href="https://arxiv.org/abs/1703.09844">Multi-Scale Dense Networks for Resource Efficient Image Classification</a>。</p>
+</blockquote>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222111146.png" /></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

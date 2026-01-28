@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多模态超详细解读 (七)：BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数</title>
+    <meta name="description" content="多模态超详细解读 (七)：BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#专栏目录">专栏目录</a></li>
+<li><a href="#本文目录">本文目录</a><ul>
+<li><a href="#太长不看版">太长不看版</a></li>
+</ul>
+</li>
+<li><a href="#1-blip-2节约多模态训练成本冻结预训练好的视觉语言模型参数">1 BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>多模态超详细解读 (七)：BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/12.多模态</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="多模态超详细解读-七blip-2节约多模态训练成本冻结预训练好的视觉语言模型参数">多模态超详细解读 (七)：BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数<a class="anchor-link" href="#多模态超详细解读-七blip-2节约多模态训练成本冻结预训练好的视觉语言模型参数" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> 科技猛兽</p>
+<p><strong>Date:</strong> 2023-06-25</p>
+<p><strong>Link:</strong> https://zhuanlan.zhihu.com/p/628375255</p>
+<p><strong>本系列已授权极市平台，未经允许不得二次转载，如有需要请私信作者。</strong></p>
+<h2 id="专栏目录">专栏目录<a class="anchor-link" href="#专栏目录" title="Permanent link">&para;</a></h2>
+<p><a href="https://zhuanlan.zhihu.com/p/625926419"><img alt="" src="https://pica.zhimg.com/v2-dde47004792ffb4259ccdb1783fa303e.png?source=7e7ef6e2&amp;needBackground=1" />科技猛兽：多模态大模型超详细解读 (目录)672 赞同 · 44 评论</a> 文章</p>
+<h2 id="本文目录">本文目录<a class="anchor-link" href="#本文目录" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>1 BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数 (ICML 2023)</strong><br />
+(来自 Salesforce，ALBEF，BLIP 作者团队)<br />
+1.1 背景和动机<br />
+1.2 BLIP-2 架构<br />
+1.3 Q-Former 训练第1步：联合视觉编码器训练<br />
+1.4 Q-Former 训练第2步：联合视觉编码器和大型语言模型训练<br />
+1.5 BLIP-2 预训练方法<br />
+1.6 实验结果<br />
+1.7 BLIP-2 的局限性</p>
+</blockquote>
+<h3 id="太长不看版">太长不看版<a class="anchor-link" href="#太长不看版" title="Permanent link">&para;</a></h3>
+<p>BLIP-2 是一种多模态 Transformer 模型，主要针对以往的视觉-语言预训练 (Vision-Language Pre-training, VLP) 模型端到端训练导致计算代价过高的问题。</p>
+<p>所以，如果能够使用<strong>预训练好的视觉模型和语言模型，我把参数冻结</strong>，应该能够节约不少的计算代价。</p>
+<p>BLIP-2 就是这样，这个工作提出了一种借助现成的<strong>冻结参数的预训练视觉模型</strong>和<strong>大型语言模型</strong>的，高效的视觉语言预训练方法。</p>
+<p>但是，简单的冻结预训练好的视觉模型的参数或者语言模型的参数会带来一个问题：就是视觉特征的空间和文本特征的空间，它不容易对齐。那么为了解决这个问题，BLIP-2 提出了一个轻量级的 Querying Transformer，该 Transformer 分两个阶段进行预训练。第一阶段从冻结的视觉编码器中引导多模态学习，第二阶段从冻结的文本编码器中引导多模态学习。</p>
+<p>经过这样的流程，BLIP-2 在各种视觉语言任务上实现了最先进的性能，同时需要训练的参数也大大减少。</p>
+<h2 id="1-blip-2节约多模态训练成本冻结预训练好的视觉语言模型参数"><strong>1</strong> BLIP-2：节约多模态训练成本：冻结预训练好的视觉语言模型参数<a class="anchor-link" href="#1-blip-2节约多模态训练成本冻结预训练好的视觉语言模型参数" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>论文名称：BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models</strong></p>
+</blockquote>
+<p><strong>论文地址：</strong></p>
+<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/pdf/2301.12597.pdf"></a></p>
+<p><strong>代码地址：</strong></p>
+<p><a href="https://link.zhihu.com/?target=https%3A//github.com/salesforce/LAVIS/tree/main/projects/blip2"></a></p>
+<p><strong>Demo 地址：</strong></p>
+<p><a href="https://link.zhihu.com/?target=https%3A//huggingface.co/spaces/Salesforce/BLIP2"></a></p>
+<ul>
+<li><strong>1 BLIP-2 论文解读：</strong></li>
+</ul>
+<p><strong>1.1 背景和动机</strong></p>
+<p>视觉语言训练 (Vision-Language Pre-training, VLP) 的研究在过去几年中取得了快速的发展，研究者们开发了规模越来越大的预训练模型，不断推动各种下游任务的发展。但是，因为使用了大模型。大数据集，而且采取了端到端的训练，大多数最先进的视觉语言模型在预训练过程中会产生很高的计算代价和经济成本。</p>
+<p>多模态的研究属于是视觉和语言研究领域的交叉，因此大家很自然地期望视觉和语言模型可以从现成的视觉，语言的预训练模型中获得。为了节约视觉语言模型在预训练过程的计算代价，本文提出的 BLIP-2 希望借助现成的预训练好的单模态视觉模型和单模态文本模型。</p>
+<p>这样做的好处是：预训练的视觉模型能够提供高质量的视觉表征。预训练的语言模型，尤其是大型语言模型 (LLM)，提供了强大的语言生成和零样本迁移能力。为了减少计算成本并抵消灾难性遗忘的问题，单模态预训练模型在预训练期间保持冻结。</p>
+<p>但是，简单的冻结预训练好的视觉模型的参数或者语言模型的参数会带来一个问题：就是<strong>视觉特征的空间和文本特征的空间不容易对齐</strong>。出现这个问题的原因是：文本模型 LLM 在单模态预训练期间没有看过对应的图片，视觉模型在单模态预训练期间没有看过对应的文本，所以这个对齐特别具有挑战性。</p>
+<p>为了解决这个问题，BLIP-2 提出了一个轻量级的 Querying Transformer，如下图1所示。该 Transformer 分两个阶段进行预训练。Q-Former 是一个轻量级 Transformer，它使用一组可学习的 Query 向量从冻结的视觉编码器中提取视觉特征，并充当视觉编码器和文本编码器之间的瓶颈。Q-Former 把关键的视觉信息传递给 LLM，第一个预训练阶段，强制 Q-Former 学习与文本最相关的视觉表征。第二个预训练阶段，通过将 Q-Former 的输出连接到冻结的 LLM 来执行视觉语言生成学习，使其输出的视觉表征可以直接由 LLM 解释。这样一来，Q-Former 就可以有效地利用冻结的预训练图像模型和语言模型。</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-fe33323e1deced16d57e9068e6c62c49_1440w.jpg" /></p>
+<p>图1：BLIP-2 模型。通过提出的 Q-Former 对齐视觉模态和文本模态</p>
+<p><strong>1.2 BLIP-2 架构</strong></p>
+<p>BLIP-2 由预训练好的，冻结参数的视觉模型和文本模型，外加所提出的可训练的 Q-Former 构成。固定的图像编码器从输入图片中提取视觉特征，Q-Former 架构是由2个 Transformer 子模块构成，其中注意 Self-Attention 是共享的，可以理解为 Self-Attention 的输入有2个，即：Queries 和 Text。</p>
+<p><strong>第1个 Transformer 子模块：</strong>是 Image Transformer，它与图像编码器交互，用于视觉特征提取。它的输入是可学习的 Queries，它们先通过 Self-Attention 建模互相之间的依赖关系，再通过 <a href="https://zhida.zhihu.com/search?content_id=227770505&amp;content_type=Article&amp;match_order=1&amp;q=Cross-Attention&amp;zhida_source=entity">Cross-Attention</a> 建模 Queries 和图片特征的依赖关系。因为两个 Transformer 的子模块是共享参数的，所以 Queries 也可以与文本输入做交互。</p>
+<p><strong>第2个 Transformer 子模块：</strong>是 Text Transformer，它既可以作为文本编码器，也可以充当文本解码器。</p>
+<p>Q-Former 一共包含了 188M 参数，其权重使用 BERT-Base 做初始化，Cross-Attention 的参数做随机初始化。作者使用 32 个 Queries，其中每个 Queries 的维度为 768。Queries 随着预训练目标一起训练，迫使它们提取到与文本最相关的视觉信息。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-a2a58d3db4409d4321c6d629a51725fe_1440w.jpg" /></p>
+<p>图2：Q-Former 训练的第1步，架构是由2个 Transformer 子模块构成，其中注意 Self-Attention 是共享的，可以理解为 Self-Attention 的输入有2个，即：Queries 和 Text</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-eaf05c548dcd6cbae775884566cb6860_1440w.jpg" /></p>
+<p>图3：3个目标函数对应的 Attention 的 Mask</p>
+<p><strong>1.3 Q-Former 训练第1步：联合视觉编码器训练</strong></p>
+<p>Q-Former 训练的第一步，作者将 Q-Former 连接到冻结参数的图像编码器，并使用图像-文本对进行预训练，那么这一步的目标是训练好 Q-Former，以便 Queries 可以学习到如何更好地结合文本提取图片信息。</p>
+<p>训练的目标函数，作者遵循 BLIP 的做法，联合优化3个具有相同输入格式和模型参数的预训练目标，每个目标函数使用不同的 mask Attention 来控制注意力的交互。</p>
+<p><strong>1 图文对比学习 (Image-Text Contrastive Learning, ITC)</strong></p>
+<p>这是多模态预训练中的经典目标函数，旨在<strong>对齐图像和文本的表征，使其互信息最大化</strong>。</p>
+<p>ITC 实现的方式是：让正样本 (配对的图片文本对) 的相似度尽量高，同时让负样本 (不配对的图片文本对) 的相似度尽量低。那么对于 Q-Former 作者实现 ITC 的方法是计算 Queries 的输出 <span class="math-inline">Z</span> 和 Text Transformer 的 [CLS] token 输出 <span class="math-inline">t</span> 的对比学习损失。因为 <span class="math-inline">Z</span> 包含了多个 Queries 的输出，因此作者首先计算每个 Queries 的输出和 <span class="math-inline">t</span> 之间的成对相似度，然后选择最高的一个作为最终的图文相似度。ITC 的 Attention Mask 方法如图3的最右侧所示，属于 Uni-modal Self-Attention Mask，不允许 Queries 和 Text 相互看到 (相互之间的注意力值为0)。</p>
+<p><strong>2 基于图像的文本生成 (Image-Grounded Text Generation, ITG)</strong></p>
+<p>ITG 给定一张输入图片，旨在训练 Q-Former 生成对应的文本描述。</p>
+<p>要实现这一目的，视觉编码器和文本解码器之间应该有交互。而 Q-Former 恰恰阻止了这种直接交互，因此 Queries 在这里就扮演了提取出来生成文本所需要的信息，然后通过 Self-Attention 层传递给 Text token。简而言之，Queries 应该具备这样一种能力：<strong>提取捕获了所有文本信息的视觉特征</strong>。因此，ITG 的 Attention Mask 方法如图3中间所示，属于 Multi-modal Causal Self-Attention Mask，允许 Text 看到 Queries (Queries 里面有视觉信息)，同时每个 Text token 只能看到它之前的 Text token (生成式任务的基本做法)。但是不允许 Queries 看到 Text 的信息，只能看到自己的信息。此外作者还将 [CLS] token 替换为一个新的 [DEC] token 作为第一个 Text token 来指示解码任务。</p>
+<p><strong>3 图文匹配任务 (Image-Text Matching, ITM)</strong></p>
+<p>这是多模态预训练中的经典目标函数，旨在<strong>更加细粒度地对齐图像和文本的表征，使其互信息最大化</strong>。ITM 是个二分类任务，要求模型预测图像-文本对是正样本 (匹配) 还是负样本 (不匹配)。ITM 的 Attention Mask 方法如图3的最左侧所示，属于 Bi-directional Self-Attention Mask，允许 Queries 和 Text 相互看到。</p>
+<p>Queries 的输出 <span class="math-inline">Z</span> 捕获了多模态信息，把每个输出的 Queries Embedding 通过一个二类线性分类器中以获得 logit，并将 logit 的输出做平均作为最终的分数。</p>
+<p>BLIP-2 的 ITM 目标函数同样使用了 ALBEF 中的 hard negative mining 策略。</p>
+<p><strong>1.4 Q-Former 训练第2步：联合视觉编码器和大型语言模型训练</strong></p>
+<p>在生成预训练的阶段，作者把 Q-Former 和冻结参数的 LLM 连接起来，以利用 LLM 的文本生成能力。首先输入图片还是直接输入冻结参数的 Image Encoder，得到图像的表征。然后图像的表征和 Queries 一起送入 Q-Former，得到 Queries 的输出 <span class="math-inline">Z</span> ，经过一个全连接层与 Text token 的维度对齐之后输入给 LLM Decoder。这个 Queries 的输出就蕴含了视觉信息，在输入给 LLM 的时候就充当了 Soft Visual Prompt 的作用。</p>
+<p>Queries 在经过了第1阶段的训练之后，已经学习到了如何更好地结合文本提取图片信息，因此它可以有效地将最有用的图片信息提供给 LLM，同时删除不相关的视觉信息。这减少了 LLM 学习视觉语言对齐的负担。</p>
+<p>作者尝试了2种大型语言模型，分别是基于纯 Decoder 架构的和基于 Encoder-Decoder 架构的。对于基于纯 Decoder 架构的模型，使用语言建模目标函数进行训练。冻结参数的 LLM 的任务是根据 Q-Former 提供的视觉表征来生成文本。对于基于 Encoder-Decoder 架构的模型，把文本分成两段，前缀随着 Queries 的输出喂给 LLM 的 Encoder，希望 Decoder 输出后缀。</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-322028c3cc0e96e9681278ada0ab0978_1440w.jpg" /></p>
+<p>图3：Q-Former 训练的第2步</p>
+<p><strong>1.5 BLIP-2 预训练方法</strong></p>
+<p><strong>预训练数据集</strong></p>
+<p>和 BLIP 一样使用下面6个数据集，图片数加起来大概是 129M。</p>
+<ul>
+<li>Conceptual Captions</li>
+<li>SBU Captions</li>
+<li>COCO</li>
+<li>Visual Genome</li>
+<li>噪声更大的 Conceptual 12M 数据集 (有的数据失效了)</li>
+<li>额外的 web 数据集 LAION400M 的一部分，该数据集包含 115M 图像，具有更多的噪声文本</li>
+</ul>
+<p>采用了 BLIP 里面提出的 CapFilt 方法为网络图像创建合成标题。</p>
+<p><strong>预训练好的视觉模型和 LLM</strong></p>
+<p>视觉模型使用：</p>
+<ol>
+<li><a href="https://zhida.zhihu.com/search?content_id=227770505&amp;content_type=Article&amp;match_order=1&amp;q=CLIP&amp;zhida_source=entity">CLIP</a><a href="#ref_1">[1]</a> 训练的 ViT-L/14</li>
+<li><a href="https://zhida.zhihu.com/search?content_id=227770505&amp;content_type=Article&amp;match_order=1&amp;q=EVA-CLIP&amp;zhida_source=entity">EVA-CLIP</a><a href="#ref_2">[2]</a> 训练的 ViT-g/14</li>
+</ol>
+<p>LLM 模型使用：</p>
+<ol>
+<li>OPT<a href="#ref_3">[3]</a></li>
+<li><a href="https://zhida.zhihu.com/search?content_id=227770505&amp;content_type=Article&amp;match_order=1&amp;q=FlanT5&amp;zhida_source=entity">FlanT5</a><a href="#ref_4">[4]</a></li>
+</ol>
+<p><strong>1.6 实验结果</strong></p>
+<p>先来看几张 Zero-shot 指令控制图文生成任务的实验结果，包括视觉知识推理、视觉常识推理、视觉对话、个性化图像到文本生成如下图4和5所示。只需在视觉提示之后附加文本提示作为 LLM 的输入。</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-5b8e49a434be2abaff079e395f9e45ba_1440w.jpg" /></p>
+<p>图4：Zero-shot 指令控制图文生成任务的实验结果</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-975734ee3679562c5c67ffb9e7e41bed_1440w.jpg" /></p>
+<p>图5：Zero-shot 指令控制图文生成任务的实验结果</p>
+<p><strong>Zero-Shot 视觉语言任务</strong></p>
+<p>下图6概述了 BLIP-2 在各种 Zero-Shot 视觉语言任务上的性能。与之前最先进的模型相比，BLIP-2 在视觉语言预训练期间实现了更好的性能，同时需要更少的可训练参数数量。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-b9c4f514d731588784d70e74baf292ff_1440w.jpg" /></p>
+<p>图6：BLIP-2 在各种 Zero-Shot 视觉语言任务上的性能</p>
+<p><strong>Zero-shot VQA 任务</strong></p>
+<p>作者对 Zero-Shot VQA 任务进行了定量的评估，对于 OPT 的语言模型，Prompt 设置为 "Question: {} Answer:"。对于 FlanT5 模型，Prompt 设置为 "Question: {} Short answer:"。BLIP-2 在 VQAv2 和 GQA 数据集上取得了最先进的结果。它在可训练参数减少 54 倍的情况下，VQAv2 上的表现优于 Flamingo80B。在 OK-VQA 数据集上，BLIP-2 没打败 Flamingo80B。图7还说明了更大的视觉模型或者文本模型都有助于性能的提升。</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-70d67876f3230391233901f81b59e084_1440w.jpg" /></p>
+<p>图7：Zero-shot VQA 任务实验结果</p>
+<p><strong>视觉语言表征学习的影响</strong></p>
+<p>BLIP-2 第一阶段的表征学习预训练 Q-Former 来学习与文本相关的视觉特征，这减少了 LLM 学习视觉语言的负担。如下图8所示是第一阶段的表征学习对生成学习的影响。在没有表征学习的情况下，这两种类型的 LLM 在 Zero-Shot VQA 上的性能都要低得多。而且，OPT 会有灾难性遗忘的问题，即随着训练的进行，性能会急剧下降。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-26a5481de2729a0aabfb7f1dd89b8d14_1440w.jpg" /></p>
+<p>图8：视觉语言表征学习的影响</p>
+<p><strong>图像字幕实验结果</strong></p>
+<p>图像字幕任务要求模型为图像的视觉内容生成文本描述，实验结果如下图9所示。作者使用提示 "a photo of" 作为 LLM 的初始输入，并使用语言建模损失函数来训练模型生成字幕。作者在微调期间保持 LLM 冻结，并将 Q-Former 的参数与图像编码器一起更新。微调数据集使用 COCO，同时在 COCO 测试集和 NoCaps 验证集上评测。BLIP-2 在 NoCaps 上比现有方法取得了显着的改进实现了最先进的性能，显示出对域外图像的强大泛化能力。</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-052a495e92823ef9c92df283d21b050e_1440w.jpg" /></p>
+<p>图9：图像字幕实验结果</p>
+<p><strong>视觉问答实验结果</strong></p>
+<p>给定带注释的 VQA 数据，作者在保持 LLM 冻结的同时微调 Q-Former 和图像编码器的参数。VQA 微调的模型架构如图10所示，LLM 接收 Q-Former 的输出和问题作为输入，并希望生成答案。为了提取与问题更相关的图像特征，作者还给 Q-Former 额外输入问题，使其借助 Self-Attention 与可学习的 Queries 交互。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-32e8dd0fa3c15cd36e14b4de2797af14_1440w.jpg" /></p>
+<p>图10：VQA 微调的模型架构</p>
+<p>实验结果如下图11所示，BLIP-2 属于开放式生成模型，并取得了最佳的性能。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-6c47d00b3f7c73484c695c3085fb5fa5_1440w.jpg" /></p>
+<p>图11：视觉问答实验结果</p>
+<p><strong>图文检索实验结果</strong></p>
+<p>图像文本检索不涉及语言生成，所以作者直接微调第1阶段预训练模型。作者使用与预训练相同的目标函数，即 ITC、ITM 和 ITG。数据集使用 COCO，微调 Q-Former 和图像编码器。评测数据使用 COCO 和 Flickr30K，任务是 image-to-text retrieval 和 text-to-image retrieval。实验结果如图12所示，BLIP-2 在 Zero-Shot 的图像文本检索方面实现了最先进的性能，与现有方法相比有了显着改进。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-c66281999c7cbad4b9b423787383c2fb_1440w.jpg" /></p>
+<p>图12：图文检索实验结果</p>
+<p><strong>1.7 BLIP-2 的局限性</strong></p>
+<p>LLM 一般具备 In-Contet Learning 的能力，但是在 In-Context VQA 的场景下，BLIP-2 没观察到好的结果。对于这种上下文学习能力的缺失，作者把原因归结为预训练数据集中的每个数据只包含一个图像-文本对，导致 LLM 无法从中学习单个序列中多个图像-文本对之间的相关性。</p>
+<p>BLIP-2 的图文生成能力不够令人满意，可能是 LLM 知识不准确带来的。同时 BLIP-2 继承了冻结参数的 LLM 的风险，比如输出攻击性语言，传播社会偏见。解决的办法是指令微调，或者过滤掉有害的数据集。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#ref_1_0">^</a>Learning transferable visual models from natural language supervision</li>
+<li><a href="#ref_2_0">^</a>EVA: Exploring the Limits of Masked Visual Representation Learning at Scale</li>
+<li><a href="#ref_3_0">^</a>OPT: Open Pre-trained Transformer Language Models</li>
+<li><a href="#ref_4_0">^</a>Scaling Instruction-Finetuned Language Models</li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

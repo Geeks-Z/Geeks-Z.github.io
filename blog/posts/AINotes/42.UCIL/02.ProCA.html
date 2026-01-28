@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#chatgpt全文翻译-arrow_down">ChatGPT全文翻译 :arrow_down:</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-无监督领域自适应">2.1 无监督领域自适应</a></li>
+<li><a href="#22-类别增量领域自适应">2.2 类别增量领域自适应</a></li>
+</ul>
+</li>
+<li><a href="#3-问题定义">3. 问题定义</a></li>
+<li><a href="#4-基于原型引导的持续适应">4. 基于原型引导的持续适应</a><ul>
+<li><a href="#41-标签原型识别">4.1 标签原型识别</a></li>
+<li><a href="#42-基于原型的对齐与重播">4.2 基于原型的对齐与重播</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实验设置">5.1 实验设置</a></li>
+<li><a href="#52-与现有方法的比较">5.2 与现有方法的比较</a></li>
+<li><a href="#53-用于增强部分领域自适应的应用">5.3 用于增强部分领域自适应的应用</a></li>
+<li><a href="#54-消融研究">5.4 消融研究</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/42.UCIL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="chatgpt全文翻译-arrow_down">ChatGPT全文翻译 :arrow_down:<a class="anchor-link" href="#chatgpt全文翻译-arrow_down" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>本文研究了一个新颖、实际但具有挑战性的问题，称为<strong>类别增量无监督领域自适应（Class-Incremental Unsupervised Domain Adaptation, CI-UDA）</strong>，其中有标签的源域包含所有类别，但目标域中的类别会逐步增加。这个问题的难点在于两个方面：首先，源域和目标域的标签集在每个时间步骤上都不一致，这使得准确的领域对齐变得困难。其次，先前的目标类别在当前步骤中不可用，导致前期知识的遗忘。为了解决这个问题，我们提出了一种新颖的<strong>基于原型引导的持续适应（Prototype-guided Continual Adaptation, ProCA）</strong>方法，该方法包括两个策略：1）标签原型识别：通过检测目标样本的累计预测概率来识别共享类别的目标标签原型。2）基于原型的对齐与重播：在识别出的标签原型基础上，对齐两个领域并强制模型保留先前的知识。通过这两个策略，ProCA 能够有效地将源模型适应到一个类别增量的无标签目标域。大量实验表明，ProCA 在解决 CI-UDA 方面具有有效性和优越性。源代码可在 <a href="https://github.com/Hongbin98/ProCA.git">此处</a> 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>无监督领域自适应（Unsupervised Domain Adaptation, UDA）旨在通过知识转移利用一个有标签的源域来提高在无标签目标域上的性能。UDA 的关键挑战是源域和目标域之间的分布偏移。为了应对这一问题，现有的 UDA 方法要么通过领域不变特征学习来进行领域对齐，要么通过图像转换来实现。</p>
+<p>然而，大多数现有的 UDA 方法假设所有目标数据都可以提前获得。然而，在实践中，目标数据往往以流的形式随不同类别逐步到来。例如，一个实际的场景是将素描图像的知识转移到现实世界中的动物识别，如图 1 所示，其中大量带标签的素描图像可以提前收集，但无标签的现实世界图像则逐步增量提供。在这种情况下，等待所有动物图像可用可能既不经济也不高效。因此，模型需要先适应来自陆地动物的目标图像，然后再适应来自海洋动物的图像。在此过程中，当适应海洋动物时，先前的陆地动物样本将不可用以节省数据存储成本。在这种情况下，现有的 UDA 方法假设所有目标类别均可提前获得，因此往往会失败。为了解决这个问题，我们探索了一个新的、实用的任务，称为类别增量无监督领域自适应（CI-UDA），其中有标签的源样本始终可用，但无标签的目标样本逐步增量且一次只能提供部分目标类别。</p>
+<p>CI-UDA 有两个特点：1）当前时间步骤的目标类别以前从未见过，并且只占源标签空间的一部分；2）先前看到的类别的目标样本在后续适应中将不可用。因此，除了 UDA 中常见的领域偏移挑战外，CI-UDA 还提出了两个新挑战。首先是如何在每个时间步骤中检测源域和目标域之间的共享类别。由于每个时间步骤只提供部分目标数据，目标域的标签空间与源标签空间不一致，这使得领域对齐变得困难。其次是如何在学习新的目标类别时缓解旧类别知识的灾难性遗忘。</p>
+<p>在 CI-UDA 中，关键是要在没有先前目标样本的情况下不断进行领域自适应。为了应对知识遗忘，最近的一项工作表明，存储先前类别的图像原型有助于保留知识。此外，特征原型还可用于领域对齐。换句话说，标签原型为同时处理所有挑战提供了机会。然而，现有方法的简单组合对 CI-UDA 并不可行，因为获取图像原型需要数据标签，而 CI-UDA 中的目标域完全无标签。此外，特征原型无法更新特征提取器，因此简单地检测它们无法克服 CI-UDA 中特征提取器的知识遗忘问题。</p>
+<p>为了更好地处理 CI-UDA，我们开发了一种新的<strong>基于原型引导的持续适应（ProCA）</strong>方法。具体来说，ProCA 提出了两个解决策略：1）标签原型识别策略：通过检测源域和目标域之间的共享类别来识别目标标签原型。鉴于源域和目标域在不同时间步骤具有不同的标签空间，识别标签原型具有挑战性。因此，检测共享类别至关重要，但由于缺乏目标标签，这一过程十分困难。为克服这一问题，我们深入研究了共享类别和源私有类别之间的区别，经验性地观察到共享类别的累计概率通常高于源私有类别。基于这一发现，我们利用目标样本的累计概率来检测共享类别，并利用检测到的共享类别来识别目标标签原型。2）基于原型的对齐与重播策略：基于识别出的标签原型，我们通过将每个目标标签原型对齐到同类的源中心进行领域自适应，并通过强制模型保留从先前类别中学习到的知识来克服灾难性遗忘。</p>
+<p>在三个基准数据集（Office-31-CI、Office-Home-CI 和 ImageNet-Caltech-CI）上的大量实验表明，ProCA 能够处理 CI-UDA。此外，我们经验性地表明，ProCA 还可以用于改进现有的部分 UDA 方法，以应对 CI-UDA，验证了我们方法的适用性。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-无监督领域自适应">2.1 无监督领域自适应<a class="anchor-link" href="#21-无监督领域自适应" title="Permanent link">&para;</a></h3>
+<p>封闭集无监督领域自适应（Closed-set UDA）。UDA 的目标是通过基于一个有标签的相关源域来提高在无标签目标域上的模型性能。在这个领域中，最常见的任务是封闭集 UDA，它假设源域和目标域共享相同的类别集。现有的 UDA 方法在通过匹配分布的高阶矩、通过对抗学习学习领域不变特征或通过生成对抗模型进行图像转换来减轻领域偏移方面取得了很大进展。最近，OP-GAN 将 UDA 与自监督学习相结合，涉及一个自监督模块，以强制图像内容的一致性。</p>
+<p>部分领域自适应（PDA）。与封闭集 UDA 相比，PDA 假设目标标签集是源标签集的子集，而不是限制在相同的标签集内。一般来说，PDA 旨在将从大规模有标签的源域训练的深度模型转移到小规模的无标签目标域。为了处理标签空间不一致问题，大多数现有方法为源样本分配类别级或实例级的可传递性权重。为了减少源私有类别引起的负迁移，BA3US 通过扩展目标域进行平衡的对抗对齐，而 DPDAN 通过将源域分布分解为两个部分来将源域的正部分与目标域对齐。</p>
+<p>持续领域自适应（CDA）。不同于上述任务，CDA 假设多个无标签目标域逐步到来，并寻求逐步将模型适应每个新的目标域而不遗忘先前的知识。为此，Dlow 通过生成连续的中间状态来桥接源域和多个目标域，而 VDFR 提出通过重播变分领域不可知特征来应对领域偏移和任务转移。最近，GRCL 通过正则化损失梯度来学习判别特征并保留先前知识。</p>
+<p>总的来说，由于两方面的原因，上述方法在 CI-UDA 中不适用。一方面，封闭集 UDA 和 PDA 方法依赖于假设所有目标数据提前可用。换句话说，这些方法没有考虑保留先前知识。另一方面，CDA 假设每个目标域的标签集与源标签集相同，忽略了领域共享类别的检测。因此，它们难以处理 CI-UDA 这一具有挑战性的任务。</p>
+<h3 id="22-类别增量领域自适应">2.2 类别增量领域自适应<a class="anchor-link" href="#22-类别增量领域自适应" title="Permanent link">&para;</a></h3>
+<p>类别增量领域自适应与类别增量学习（CIL）相关，CIL 通过从数据流中连续学习模型，其中类别逐渐增加，每次只提供新类别。CIL 要求模型能够分类到目前为止观察到的所有类别样本。为了克服灾难性遗忘问题，现有的 CIL 方法通过存储或生成先前类别的数据，或通过保留先前类别的相关模型权重来保留旧类别的知识。</p>
+<p>最近，研究人员将 CIL 扩展到领域自适应并研究了一个新的任务，称为类别增量领域自适应。具体来说，该任务旨在减轻领域之间的偏移并逐步学习目标域中的私有类别。为此，CIDA 在源自由领域自适应场景下，利用部分标注的目标私有样本生成类特定</p>
+<p>原型并学习目标特定潜在空间以获取中心点，CBSC 利用监督对比学习进行新类别的适应和领域不变特征提取。</p>
+<p>上述类别增量领域自适应与 CI-UDA 在两个方面有所不同：1）目标：类别增量领域自适应旨在逐步学习目标私有类别，而 CI-UDA 旨在处理无私有类别的类别增量目标域中的领域自适应问题。2）目标标签：类别增量领域自适应需要先验标注的目标样本，而 CI-UDA 假设目标域完全无标签。因此，直接应用现有方法解决 CI-UDA 是不可行的。相反，ProCA 通过识别目标标签原型进行无监督领域对齐和知识重播，从而提供了第一个可行的 CI-UDA 解决方案。</p>
+<h2 id="3-问题定义">3. 问题定义<a class="anchor-link" href="#3-问题定义" title="Permanent link">&para;</a></h2>
+<p>标注。设 <span class="math-inline">D_s={(x_j^s, y_j^s) | y_j^s \in C_s}<em>{j=1}^{n_s}</span> 表示源域，其中 <span class="math-inline">n_s</span> 是源数据对的数量 <span class="math-inline">(x^s, y^s)</span> 且 <span class="math-inline">C_s</span> 表示源标签集，其类别数量为 <span class="math-inline">|C_s| = K</span>。此外，我们将无标签的目标域表示为 <span class="math-inline">D_t={x_i}</em>{i=1}^{n_t}</span>，其中 <span class="math-inline">n_t</span> 是目标样本的数量。 <span class="math-inline">C_t</span> 表示目标标签集。</p>
+<p>类别增量无监督领域自适应。无监督领域自适应（UDA）旨在将知识从一个有标签的源域 <span class="math-inline">D_s</span> 转移到一个无标签的目标域 <span class="math-inline">D_t</span> 上。解决 UDA 的关键是进行领域对齐以减轻领域偏移。现有的 UDA 方法通常假设所有目标样本都可以提前获取，并且其标签空间与源域相同（即 <span class="math-inline">C_t = C_s</span>）。然而，在实际应用中，目标样本往往以流的形式到来，同时，目标类别的数量可能会逐步增加。为了解决这个问题，我们探索了一个更为实际的任务，即<strong>类别增量无监督领域自适应（CI-UDA）</strong>，其中有标签的源样本始终可用，但无标签的目标样本逐步增量，且一次只能提供部分目标类别。这里，我们重复使用 <span class="math-inline">D_t</span> 表示当前时间的无标签目标域。需要注意的是，每个时间步骤的目标数据的标签集是源域标签集的子集，即 <span class="math-inline">C_t \subset C_s</span>。</p>
+<p>除了所有 UDA 方法解决的领域偏移问题外，CI-UDA 还提出了两个新挑战：1）如何识别两个域之间在每个时间步骤中的共享类别；2）如何在学习新的目标类别时缓解旧类别知识的遗忘。由于这些挑战的整合，现有的 UDA 方法无法处理 CI-UDA。因此，如何处理这一实际但困难的任务仍是一个未解决的问题。</p>
+<h2 id="4-基于原型引导的持续适应">4. 基于原型引导的持续适应<a class="anchor-link" href="#4-基于原型引导的持续适应" title="Permanent link">&para;</a></h2>
+<p>先前的研究表明，标签原型在分别处理 UDA 或类别增量学习任务中有效。尽管这些方法无法直接用于处理 CI-UDA，但它们启发我们探索一种统一的基于原型的方法来同时处理 CI-UDA 中的所有挑战。然而，这一想法在实践中探索并不容易。由于源域和目标域在不同时间步骤具有不同的标签空间，识别目标标签原型变得困难。为了解决这些挑战，我们提出了一种新颖的基于原型引导的持续适应（ProCA）方法。</p>
+<p><strong>方法概述</strong>。我们在图 2 中总结了 ProCA 的整体训练方案。ProCA 包括两个解决策略，即 1）标签原型识别和 2）基于原型的对齐与重播。下面我们简要介绍这两个策略。</p>
+<p>首先，我们开发了一种标签原型识别策略，在源域和目标域标签空间不一致的情况下，在每个时间步骤识别目标标签原型。为此，我们首先提出了一种共享类别检测方法，以区分领域共享类别和源私有类别。基于检测到的共享标签集和通过聚类生成的目标伪标签，我们为每个共享类别识别目标标签原型并构建一个自适应记忆库 P 来记录它们。</p>
+<p>其次，基于识别出的标签原型，我们提出了一种基于原型的对齐与重播策略，通过训练特征提取器 G 学习领域不变特征，通过监督对比损失 <span class="math-inline">L_{\text{con}}</span> 进行原型对齐，同时通过采用知识蒸馏损失 <span class="math-inline">L_{\text{dis}}</span> 来强制模型保留从先前类别中学习到的知识。此外，基于伪标注的目标数据和有标签的源数据，我们通过标准的交叉熵损失 <span class="math-inline">L_{\text{ce}}</span> 训练整个模型 <span class="math-inline">{G, C}</span>。</p>
+<p>总体而言，ProCA 的训练目标如下：</p>
+<p><div class="math-display"><br />
+    \min_{{\theta_g, \theta_c}} L_{\text{ce}}(\theta_g, \theta_c) + \lambda L_{\text{con}}(\theta_g) + \eta L_{\text{dis}}(\theta_g, \theta_c),<br />
+</div></p>
+<p>其中 <span class="math-inline">\theta_g</span> 和 <span class="math-inline">\theta_c</span> 分别表示特征提取器 <span class="math-inline">G</span> 和分类器 <span class="math-inline">C</span> 的参数。此外，<span class="math-inline">\lambda</span> 和 <span class="math-inline">\eta</span> 是权衡参数。</p>
+<h3 id="41-标签原型识别">4.1 标签原型识别<a class="anchor-link" href="#41-标签原型识别" title="Permanent link">&para;</a></h3>
+<p>我们提出的 ProCA 中的关键步骤是识别目标标签原型，这在 CI-UDA 设置中是非平凡的。为此，我们提出了一种标签原型识别策略，该策略由四个组成部分构成：1）共享类别检测；2）为目标数据生成伪标签；3）构建原型记忆库；4）更新原型记忆库。</p>
+<p><strong>共享类别检测</strong>。当新的无标签目标样本到达时，由于目标样本没有标签，检测源域和目标域之间的共享类别变得困难。为了解决这个问题，我们深入研究了预训练源模型在预测共享类别和源私有类别时的差异。如图 3 所示，我们发现目标样本关于共享类别的累计预测概率通常高于源私有类别的累计预测概率。根据这一发现，我们提出通过目标样本的累计概率来检测共享类别。具体来说，如图 4 所示，我们利用源预训练模型 <span class="math-inline">M</span> 来推断每个时间步骤中的所有目标样本，并通过以下公式获得每个类别 k 的累计概率：</p>
+<p><div class="math-display"><br />
+    u_k = \sum_{i=1}^{n_t} C_k(G(x_i)),<br />
+</div></p>
+<p>其中 <span class="math-inline">C_k(\cdot)</span> 表示 softmax 输出预测中的第 k 个元素，<span class="math-inline">n_t</span> 表示当前时间的目标样本数量。为了增强泛化能力，我们将累计概率 <span class="math-inline">u_k</span> 归一化为 [0, 1]：</p>
+<p><div class="math-display"><br />
+    u_k = \frac{u_k - \min(u)}{\max(u) - \min(u)},<br />
+</div></p>
+<p>其中 <span class="math-inline">u = [u_0, u_1, \dots, u_K]</span> 是所有 K 个类别的概率向量。基于累计概率 <span class="math-inline">u_k</span> 和预定义的阈值 <span class="math-inline">\alpha</span>，对类别 <span class="math-inline">k</span> 的判断如下：如果 <span class="math-inline">u_k \geq \alpha</span>，则类别 <span class="math-inline">k</span> 为共享类别；否则，类别 <span class="math-inline">k</span> 为源私有类别。</p>
+<p><strong>为目标数据生成伪标签</strong>。基于识别出的共享类别，接下来我们通过自监督伪标签策略为无标签目标样本生成伪标签。具体来说，令 <span class="math-inline">q_i = G(x_i)</span> 为提取的特征，<span class="math-inline">\hat{y}_i^k = C_k(q_i)</span> 为分类器关于类别 k 的预测概率，我们首先通过以下公式为共享标签集中的每个类别 k 获取初始中心点：</p>
+<p><div class="math-display"><br />
+    c_k = \frac{\sum_{i=1}^{n_t} \hat{y}<em>i^k q_i}{\sum</em>{i=1}^{n_t} \hat{y}_i^k},<br />
+</div></p>
+<p>这种初始化能够很好地描述不同类别的分布。基于这些中心点，第 i 个目标数据的伪标签通过最近中心点方法获得：</p>
+<p><div class="math-display"><br />
+    \bar{y}_i = \arg\max_k \phi(q_i, c_k),<br />
+</div></p>
+<p>其中 <span class="math-inline">\phi(\cdot, \cdot)</span> 表示余弦相似度，伪标签 <span class="math-inline">\bar{y}_i</span> 为标量。在生成伪标签的过程中，我们通过以下公式更新每个类别的中心点，并根据公式（4）再更新一次伪标签：</p>
+<p><div class="math-display"><br />
+    c_k = \frac{\sum_{i=1}^{n_t} I(\bar{y}<em>i = k) q_i}{\sum</em>{i=1}^{n_t} I(\bar{y}_i = k)},<br />
+</div></p>
+<p>其中 <span class="math-inline">I(\cdot)</span> 是指示函数。请注意</p>
+<p>，我们只计算共享类别的类别中心点。</p>
+<p><strong>原型记忆库的构建</strong>。基于检测到的共享标签集和生成的目标伪标签，接下来我们为每个共享类别识别目标标签原型。具体来说，我们维护一个记忆库 <span class="math-inline">P = {(p_i, h_i, \bar{y}<em>i)}</em>{i=1}^N</span> 来记录所有检测到的共享类别的原型，其中 <span class="math-inline">p_i</span>、<span class="math-inline">h_i</span>、<span class="math-inline">\bar{y}<em>i</span> 和 N 分别表示图像原型、预测的软标签、预测的硬伪标签和原型数量。此外，我们将所有看到的目标标签集记为 <span class="math-inline">C</em>{\text{at}}</span>，并在记忆库中为每个类别保存 M 个图像原型，即 <span class="math-inline">N = |C_{\text{at}}| M</span>。在训练过程中，当出现一个新的伪标注目标类别时，我们通过添加相应的目标原型来扩展记忆库。正式地，对于第 k 个类别，我们将伪标注目标域表示为 <span class="math-inline">D_k^t = {x_i^k}_{i=1}^{n_k}</span>，并通过以下公式获取其特征中心点：</p>
+<p><div class="math-display"><br />
+    f_k^t = \frac{1}{n_k} \sum_{i=1}^{n_k} G(x_i^k)。<br />
+</div></p>
+<p>受 iCaRL 的启发，我们通过基于目标特征中心点的最近邻方法选择第 k 个类别的图像原型：</p>
+<p><div class="math-display"><br />
+    p_m^k = \arg\min_{x^k \in D_k^t} \left| f_k^t - \frac{1}{m} \left[ G(x^k) + \sum_{i=1}^{m-1} G(p_i^k) \right] \right|_2,<br />
+</div></p>
+<p>其中 m 是迭代索引范围从 1 到 M。请注意，我们迭代公式（5）M 次以获取 M 个原型。</p>
+<p><strong>原型记忆库的更新</strong>。在共享类别检测过程中，可能存在错误的共享类别，干扰目标数据的伪标签生成。在这种情况下，这些类别的图像原型需要更新。为此，我们设计了一种基于累计概率 <span class="math-inline">u_k</span> 的更新策略。具体来说，对于记忆库中存在的目标类别 k，当出现更高的 <span class="math-inline">u_k</span> 时，我们会更新其原型。例如，在图 3 中，当时间步骤 2 中第 16 类的累计概率高于时间步骤 1 时，第 16 类的图像原型将通过公式（5）更新。</p>
+<h3 id="42-基于原型的对齐与重播">4.2 基于原型的对齐与重播<a class="anchor-link" href="#42-基于原型的对齐与重播" title="Permanent link">&para;</a></h3>
+<p>基于目标标签原型，我们开发了一种新的基于原型的对齐与重播策略，以解决领域偏移和灾难性遗忘问题。</p>
+<p><strong>基于原型的领域对齐</strong>。基于目标标签原型，我们能够进行类别级对齐以显式减轻领域偏移。为此，我们提出通过训练特征提取器 G 学习领域不变特征，并通过监督对比损失 <span class="math-inline">L_{\text{con}}</span> 进行原型对齐。具体来说，对于第 k 个类别，我们首先通过以下公式获得源特征中心点：</p>
+<p><div class="math-display"><br />
+    f_k^s = \frac{\sum_{j=1}^{n_s} I(y_j^s = k) G(x_j^s)}{\sum_{j=1}^{n_s} I(y_j^s = k)}。<br />
+</div></p>
+<p>然后，对于任何作为锚点的图像原型 <span class="math-inline">p_i</span>，我们通过对比损失进行原型对齐：</p>
+<p><div class="math-display"><br />
+    L_{\text{con}} = - \log \frac{\exp(v_i^\top f_{y_i}^s / \tau)}{\exp(v_i^\top f_{y_i}^s / \tau) + \sum_{j=1, j \neq y_i}^{K-1} \exp(v_i^\top f_j^s / \tau)},<br />
+</div></p>
+<p>其中 <span class="math-inline">v_i = G(p_i)</span> 表示提取的图像原型特征，<span class="math-inline">y_i</span> 为其伪标签，<span class="math-inline">\tau</span> 表示温度因子。此损失使特征提取器 G 能够学习领域不变特征，有助于减轻领域差异。</p>
+<p><strong>基于原型的知识重播</strong>。由于先前类别的目标样本不可用，模型在 CI-UDA 期间会遭受灾难性遗忘。为克服这一问题，我们基于识别出的带有软标签的原型，采用知识蒸馏来强制模型保留从先前类别中获得的知识：</p>
+<p><div class="math-display"><br />
+    L_{\text{dis}} = - \frac{1}{N} \sum_{i=1}^{N} h_i^\top \log C(G(p_i))，<br />
+</div></p>
+<p>其中 N 表示原型的数量。</p>
+<p>最后，我们在算法 1 中总结了 ProCA 的伪代码，而原型识别方案的伪代码放在附录 B 中。</p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<h3 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h3>
+<p>为了验证所提方法的有效性，我们在以下实验设置的基础上进行了实证研究。</p>
+<p><strong>数据集</strong>。我们基于基准 UDA 数据集构建了三个数据集变体，以模拟类别增量场景，即 Office-31、Office-Home 和 ImageNet-Caltech。1）Office-31-CI 由三个不同的领域组成，即 Amazon (A)、Webcam (W) 和 DSLR (D)。三个领域共享 31 个类别。我们将每个领域分为三个不相交的子集，每个子集包含按字母顺序排列的 10 个类别。2）Office-Home-CI 包含四个不同的领域，即艺术图片 (Ar)、剪贴画 (Cl)、产品图片 (Pr) 和现实世界图片 (Rw)，每个领域有 65 个类别。对于每个领域，我们构建了六个不相交的子集，每个子集包含随机顺序的 10 个类别。3）ImageNet-Caltech-CI 包括 ImageNet-1K 和 Caltech-256。基于共享的 84 个类别，我们形成了两个任务：ImageNet (1000) → Caltech (84) 和 Caltech (256) → ImageNet (84)。对于目标域，我们构建了八个不相交的子集，每个子集包含 10 个类别。有关数据构建的更多详细信息，请参见附录 C。</p>
+<p><strong>实现细节</strong>。我们在 PyTorch 中实现了我们的方法，并报告了三次不同运行的均值 ± 标准差结果。ResNet-50，在 ImageNet 上预训练的模型，作为网络骨干。在 ProCA 中，我们使用学习率为 0.001 的 SGD 优化器训练模型。此外，训练周期为 10 个 Office-31-CI、30 个 Office-Home-CI 和 15 个 ImageNet-Caltech-CI。对于超参数，我们将 <span class="math-inline">\lambda</span>、<span class="math-inline">\eta</span>、<span class="math-inline">\alpha</span> 和 M 分别设置为 0.1、1、0.15 和 10。更多 ProCA 的训练细节在附录 D 中。</p>
+<p><strong>比较方法</strong>。我们将 ProCA 与四类基线进行了比较：（1）仅源数据：ResNet-50；（2）无监督领域自适应：DANN；（3）部分领域自适应：PADA、ETN、BA3US；（4）类别增量领域自适应：CIDA。</p>
+<p><strong>评价协议</strong>。为了全面评估所提出的方法，我们报告了三种类型的准确性度量。1）最终准确性：CI-UDA 的最终时间步骤中的分类准确性。2）步骤级准确性：每个时间步骤的准确性，以评估连续学习的能力。3）最终 S-1 准确性：最终时间步骤中的步骤 1 类的平均准确性，以评估处理灾难性遗忘的能力。</p>
+<h3 id="52-与现有方法的比较">5.2 与现有方法的比较<a class="anchor-link" href="#52-与现有方法的比较" title="Permanent link">&para;</a></h3>
+<p>我们首先在最终准确性方面将我们的 ProCA 与现有方法进行了比较。结果如表 1 和表 2 所示，给出了以下观察结果。1）ProCA 在平均最终准确性方面远远超出所有比较方法。具体来说，ProCA 在所有迁移任务（例如 Office-Home-CI 上的 Ar→Cl）上表现最佳或相当，这证明了我们方法的有效性。2）与 PDA 方法（即 PADA、ETN 和 BA3US）相比，我们方法的优越性能表明，保留从先前类别中学习到的知识对处理 CI-UDA 非常重要。3）由于 CIDA 还设计了一个正则化项以防止灾难性遗忘，因此在 CI-UDA 中表现优于 PDA 方法。然而，CIDA 忽略了 CI-UDA 中的源私有类别，这可能导致负迁移，因此无法很好地处理 CI-UDA。4）领域自适应方法甚至表现不如 ResNet-50，这表明仅进行对齐可能会使模型偏向于当前步骤的目标类别，导致遗忘先前类别的知识。</p>
+<p>我们还在表 3 中报告了所有方法的步骤级准确性。如果只考虑时间步骤 1，CI-UDA 退化为一个标准的 PDA 问题。在这种情况下，现有的 P</p>
+<p>DA 方法（即 PADA、ETN 和 BA3US）表现良好。然而，在新的时间步骤学习新的目标样本时，这些方法的性能严重下降，而我们的 ProCA 则保持了相对稳定且令人满意的性能。为了探究原因，我们展示了这些步骤 1 类别在时间步骤 1 与每个后续时间步骤之间的准确性下降百分比。如图 5 所示，当学习新的目标类别时，由于缺少先前类别的目标样本，最先进的 PDA 方法会遗忘先前的知识，导致步骤 1 类别的严重准确性下降。相反，ProCA 有效地处理了灾难性遗忘，并在步骤级准确性方面显示了令人满意的结果。由于篇幅限制，我们将三数据集中每个子任务在步骤级准确性和最终 S-1 准确性方面的更多详细结果放在了附录 H 中。</p>
+<h3 id="53-用于增强部分领域自适应的应用">5.3 用于增强部分领域自适应的应用<a class="anchor-link" href="#53-用于增强部分领域自适应的应用" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们探讨了 ProCA 是否可以用于增强现有的 PDA 方法，这些方法在 CI-UDA 中无法克服先前类别的灾难性遗忘。为此，我们将 ProCA 应用于改进经典的 PDA 方法（即 PADA 和 BA3US），通过将它们与我们的标签原型识别策略结合。正如表 4 所示，结合 ProCA 显著提高了 PDA 方法的性能，证明了我们的方法在处理 CI-UDA 方面提升现有 PDA 方法的适用性。通过附录 E 中将 ProCA 应用于改进 ETN 的结果也支持了这一观察。</p>
+<h3 id="54-消融研究">5.4 消融研究<a class="anchor-link" href="#54-消融研究" title="Permanent link">&para;</a></h3>
+<p>为了检查 ProCA 中损失函数的有效性，我们展示了由不同损失函数优化的模型的定量结果。正如表 5 所示，引入 <span class="math-inline">L_{\text{dis}}</span> 或 <span class="math-inline">L_{\text{con}}</span> 可增强模型性能，相比之下仅通过 <span class="math-inline">L_{\text{ce}}</span> 优化模型。另一方面，这一结果验证了基于原型的知识重播能够减轻灾难性遗忘，从而提升最终 S-1 准确性。另一方面，它还验证了基于原型的领域对齐能够减轻领域偏移，从而提升最终准确性。当结合所有损失（即 <span class="math-inline">L_{\text{ce}}</span>、<span class="math-inline">L_{\text{dis}}</span>、<span class="math-inline">L_{\text{con}}</span>）时，我们获得了最佳性能。</p>
+<p>此外，我们还研究了超参数的影响。附录 F 中的结果表明 ProCA 对 <span class="math-inline">\lambda</span> 和 <span class="math-inline">\eta</span> 不敏感，通常可以通过设置 <span class="math-inline">\lambda = 0.1</span> 和 <span class="math-inline">\eta = 1</span> 来获得最佳性能。此外，我们建议将 <span class="math-inline">\alpha</span> 设置为 0.15，因为高阈值有助于过滤掉领域共享类别。此外，我们还研究了附录 F 中原型数量和增量类别数量的影响，并评估了附录 G 中共享类别检测策略的有效性。</p>
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>在本文中，我们探讨了一个实用的迁移学习任务，即类别增量无监督领域自适应。为了解决这一具有挑战性的任务，我们提出了一种新颖的<strong>基于原型引导的持续适应（ProCA）</strong>方法，该方法提出了两个解决策略：1）标签原型识别：我们通过一种新的共享类别检测策略识别目标标签原型。2）基于原型的对齐与重播：基于识别出的标签原型，我们通过基于原型引导的对比对齐和知识重播分别解决领域差异和灾难性遗忘问题。在三个基准数据集（Office-31-CI、Office-Home-CI 和 ImageNet-Caltech-CI）上的大量实验表明，ProCA 在处理类别增量无监督领域自适应方面具有有效性。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

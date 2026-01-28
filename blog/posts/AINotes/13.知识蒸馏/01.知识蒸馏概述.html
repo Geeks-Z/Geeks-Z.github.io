@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-介绍">1 介绍</a><ul>
+<li><a href="#11-论文提出的背景">1.1. 论文提出的背景</a></li>
+<li><a href="#12-思想歧路">1.2. “思想歧路”</a></li>
+</ul>
+</li>
+<li><a href="#2-知识蒸馏的理论依据">2 知识蒸馏的理论依据</a><ul>
+<li><a href="#21-teacher-model和student-model">2.1. Teacher Model和Student Model</a></li>
+<li><a href="#22-知识蒸馏的关键点">2.2. 知识蒸馏的关键点</a></li>
+<li><a href="#23-softmax函数">2.3. softmax函数</a></li>
+</ul>
+</li>
+<li><a href="#3-知识蒸馏的具体方法">3 知识蒸馏的具体方法</a><ul>
+<li><a href="#31-通用的知识蒸馏方法">3.1. 通用的知识蒸馏方法</a></li>
+<li><a href="#32-一种特殊情形-直接match-logits不经过softmax">3.2. 一种特殊情形: 直接match logits(不经过softmax)</a></li>
+</ul>
+</li>
+<li><a href="#4-关于温度的讨论">4 关于"温度"的讨论</a><ul>
+<li><a href="#41-温度的特点">4.1. 温度的特点</a></li>
+<li><a href="#42-温度代表了什么如何选取合适的温度">4.2. 温度代表了什么，如何选取合适的温度？</a></li>
+</ul>
+</li>
+<li><a href="#qa">Q&amp;A</a></li>
+<li><a href="#5-参考">5 参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/13.知识蒸馏</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <p>知识蒸馏是一种模型压缩方法，是一种基于“教师-学生网络思想”的训练方法，由于其简单，有效，在工业界被广泛应用。这一技术的理论来自于2015年Hinton发表的一篇神作 <a href="http://arxiv.org/abs/1503.02531">Distilling the Knowledge in a Neural Network</a></p>
+<p>Knowledge Distillation，简称KD，顾名思义，就是将已经训练好的模型包含的知识(”Knowledge”)，蒸馏("Distill")提取到另一个模型里面去。</p>
+<hr />
+<h2 id="1-介绍">1 介绍<a class="anchor-link" href="#1-介绍" title="Permanent link">&para;</a></h2>
+<h3 id="11-论文提出的背景">1.1. 论文提出的背景<a class="anchor-link" href="#11-论文提出的背景" title="Permanent link">&para;</a></h3>
+<p>虽然在一般情况下，我们不会去区分训练和部署使用的模型，但是训练和部署之间存在着一定的不一致性:</p>
+<ul>
+<li>在训练过程中，我们需要使用复杂的模型，大量的计算资源，以便从非常大、高度冗余的数据集中提取出信息。在实验中，效果最好的模型往往规模很大，甚至由多个模型集成得到。而大模型不方便部署到服务中去，常见的瓶颈如下:</li>
+</ul>
+<ol>
+<li>推断速度慢</li>
+<li>对部署资源要求高(内存，显存等)</li>
+</ol>
+<ul>
+<li>在部署时，我们对延迟以及计算资源都有着严格的限制。</li>
+</ul>
+<p>因此，模型压缩（在保证性能的前提下减少模型的参数量）成为了一个重要的问题。而”模型蒸馏“属于模型压缩的一种方法。</p>
+<p><strong>插句题外话</strong>，我们可以从模型参数量和训练数据量之间的相对关系来理解underfitting和overfitting。AI领域的从业者可能对此已经习以为常，但是为了力求让小白也能读懂本文，还是引用我同事的解释（我印象很深）形象地说明一下:</p>
+<blockquote>
+<p>模型就像一个容器，训练数据中蕴含的知识就像是要装进容器里的水。当数据知识量(水量)超过模型所能建模的范围时(容器的容积)，加再多的数据也不能提升效果(水再多也装不进容器)，因为模型的表达空间有限(容器容积有限)，就会造成<strong>underfitting</strong>；而当模型的参数量大于已有知识所需要的表达空间时(容积大于水量，水装不满容器)，就会造成<strong>overfitting</strong>，即模型的variance会增大(想象一下摇晃半满的容器，里面水的形状是不稳定的)。</p>
+</blockquote>
+<h3 id="12-思想歧路">1.2. “思想歧路”<a class="anchor-link" href="#12-思想歧路" title="Permanent link">&para;</a></h3>
+<p>上面容器和水的比喻非常经典和贴切，但是会引起一个误解: 人们在直觉上会觉得，要保留相近的知识量，必须保留相近规模的模型。也就是说，一个模型的参数量基本决定了其所能捕获到的数据内蕴含的“知识”的量。</p>
+<p>这样的想法是基本正确的，但是需要注意的是:</p>
+<ol>
+<li>模型的参数量和其所能捕获的“知识“量之间并非稳定的线性关系(下图中的1)，而是接近边际收益逐渐减少的一种增长曲线(下图中的2和3)</li>
+<li>完全相同的模型架构和模型参数量，使用完全相同的训练数据，能捕获的“知识”量并不一定完全相同，另一个关键因素是训练的方法。合适的训练方法可以使得在模型参数总量比较小时，尽可能地获取到更多的“知识”(下图中的3与2曲线的对比).</li>
+</ol>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202506051754809.jpeg" style="zoom:50%;" /></p>
+<h2 id="2-知识蒸馏的理论依据">2 知识蒸馏的理论依据<a class="anchor-link" href="#2-知识蒸馏的理论依据" title="Permanent link">&para;</a></h2>
+<h3 id="21-teacher-model和student-model">2.1. Teacher Model和Student Model<a class="anchor-link" href="#21-teacher-model和student-model" title="Permanent link">&para;</a></h3>
+<p>知识蒸馏使用的是Teacher—Student模型，其中teacher是“知识”的输出者，student是“知识”的接受者。知识蒸馏的过程分为2个阶段:</p>
+<ol>
+<li>原始模型训练: 训练"Teacher模型", 简称为Net-T，它的特点是模型相对复杂，也可以由多个分别训练的模型集成而成。我们对"Teacher模型"不作任何关于模型架构、参数量、是否集成方面的限制，唯一的要求就是，对于输入X, 其都能输出Y，其中Y经过softmax的映射，输出值对应相应类别的概率值。</li>
+<li>精简模型训练: 训练"Student模型", 简称为Net-S，它是参数量较小、模型结构相对简单的单模型。同样的，对于输入X，其都能输出Y，Y经过softmax映射后同样能输出对应相应类别的概率值。</li>
+</ol>
+<p>在本论文中，作者将问题限定在<strong>分类问题</strong>下，或者其他本质上属于分类问题的问题，该类问题的共同点是模型最后会有一个softmax层，其输出值对应了相应类别的概率值。</p>
+<h3 id="22-知识蒸馏的关键点">2.2. 知识蒸馏的关键点<a class="anchor-link" href="#22-知识蒸馏的关键点" title="Permanent link">&para;</a></h3>
+<p>如果回归机器学习最基础的理论，我们可以很清楚地意识到一点(而这一点往往在我们深入研究机器学习之后被忽略): <strong>机器学习最根本的目的</strong>在于训练出在某个问题上泛化能力强的模型。</p>
+<ul>
+<li><strong>泛化能力强</strong>: 在某问题的所有数据上都能很好地反应输入和输出之间的关系，无论是训练数据，还是测试数据，还是任何属于该问题的未知数据。</li>
+</ul>
+<p>而现实中，由于我们不可能收集到某问题的所有数据来作为训练数据，并且新数据总是在源源不断的产生，因此我们只能退而求其次，训练目标变成在已有的训练数据集上建模输入和输出之间的关系。由于训练数据集是对真实数据分布情况的采样，训练数据集上的最优解往往会多少偏离真正的最优解(这里的讨论不考虑模型容量)。</p>
+<p>而在知识蒸馏时，由于我们已经有了一个泛化能力较强的Net-T，我们在利用Net-T来蒸馏训练Net-S时，可以直接让Net-S去学习Net-T的泛化能力。</p>
+<p>一个很直白且高效的迁移泛化能力的方法就是：使用softmax层输出的类别的概率来作为“soft target”。</p>
+<p><strong>【KD的训练过程和传统的训练过程的对比】</strong></p>
+<ol>
+<li>传统training过程(<strong>hard targets</strong>): 对ground truth求极大似然</li>
+<li>KD的training过程(<strong>soft targets</strong>): 用large model的class probabilities作为soft targets</li>
+</ol>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202506051754587.jpeg" style="zoom:150%;" /></p>
+<blockquote>
+<p>上图: Hard Target 下图: Soft Target</p>
+</blockquote>
+<p><strong>KD的训练过程为什么更有效?</strong></p>
+<p>softmax层的输出，除了正例之外，<strong>负标签也带有大量的信息</strong>，比如某些负标签对应的概率远远大于其他负标签。而在传统的训练过程(hard target)中，所有负标签都被统一对待。也就是说，<strong>KD的训练方式使得每个样本给Net-S带来的信息量大于传统的训练方式</strong>。</p>
+<p>【<strong>举个例子】</strong></p>
+<p>在手写体数字识别任务MNIST中，输出类别有10个。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202506051757185.jpeg" style="zoom:150%;" /></p>
+<p>MNIST任务</p>
+<p>假设某个输入的“2”更加形似"3"，softmax的输出值中"3"对应的概率为0.1，而其他负标签对应的值都很小，而另一个"2"更加形似"7"，"7"对应的概率为0.1。这两个"2"对应的hard target的值是相同的，但是它们的soft target却是不同的，由此我们可见soft target蕴含着比hard target多的信息。并且soft target分布的熵相对高时，其soft target蕴含的知识就更丰富。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202506051757231.jpeg" style="zoom:50%;" /></p>
+<blockquote>
+<p>两个”2“的hard target相同而soft target不同</p>
+</blockquote>
+<p>这就解释了为什么通过蒸馏的方法训练出的Net-S相比使用完全相同的模型结构和训练数据只使用hard target的训练方法得到的模型，拥有更好的泛化能力。</p>
+<h3 id="23-softmax函数">2.3. softmax函数<a class="anchor-link" href="#23-softmax函数" title="Permanent link">&para;</a></h3>
+<p>先回顾一下原始的softmax函数:<br />
+<div class="math-display"><br />
+q_{i}=\frac{\exp \left(z_{i}\right)}{\sum_{j} \exp \left(z_{j} \right)}<br />
+</div><br />
+但要是直接使用softmax层的输出值作为soft target, 这又会带来一个问题: 当softmax输出的概率分布熵相对较小时，负标签的值都很接近0，对损失函数的贡献非常小，小到可以忽略不计。因此<strong>温度</strong>这个变量就派上了用场。</p>
+<p>下面的公式时加了温度这个变量之后的softmax函数:<br />
+<div class="math-display"><br />
+q_{i}=\frac{\exp \left(z_{i} / T\right)}{\sum_{j} \exp \left(z_{j} / T\right)}<br />
+</div></p>
+<ul>
+<li>这里的 <span class="math-inline">T</span> 就是<strong>温度</strong>。</li>
+<li>原来的softmax函数是 <span class="math-inline">T = 1</span> 的特例。 <span class="math-inline">T</span> 越高，softmax的output probability distribution越趋于平滑，其分布的熵越大，负标签携带的信息会被相对地放大，模型训练将更加关注负标签。</li>
+</ul>
+<h2 id="3-知识蒸馏的具体方法">3 知识蒸馏的具体方法<a class="anchor-link" href="#3-知识蒸馏的具体方法" title="Permanent link">&para;</a></h2>
+<h3 id="31-通用的知识蒸馏方法">3.1. 通用的知识蒸馏方法<a class="anchor-link" href="#31-通用的知识蒸馏方法" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>第一步</strong>是训练Net-T；<strong>第二步</strong>是在高温 <span class="math-inline">T</span> 下，蒸馏Net-T的知识到Net-S</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250605194059.png" style="zoom: 60%;" /></div>
+
+<blockquote>
+<p>知识蒸馏示意图(来自https://intellabs.github.io/distiller/knowledge_distillation.html)</p>
+</blockquote>
+<p>训练Net-T的过程很简单，下面详细讲讲第二步: 高温蒸馏的过程。高温蒸馏过程的目标函数由distill loss(对应soft target)和student loss(对应hard target)加权得到。示意图如上。<br />
+<div class="math-display"><br />
+L=\alpha L_{soft}+\beta L_{hard}<br />
+</div></p>
+<ul>
+<li><span class="math-inline">v_i</span>: Net-T的logits</li>
+<li><span class="math-inline">z_i</span>: Net-S的logits</li>
+<li><span class="math-inline">p^T_i</span>: Net-T的在温度=T下的softmax输出在第i类上的值</li>
+<li><span class="math-inline">q^T_i</span>: Net-S的在温度=T下的softmax输出在第i类上的值</li>
+<li><span class="math-inline">c_i</span>: 在第i类上的ground truth值, <span class="math-inline">c_i\in{0,1}</span>, 正标签取1，负标签取0.</li>
+<li><span class="math-inline">N</span>: 总标签数量</li>
+<li>Net-T 和 Net-S同时输入 transfer set (这里可以直接复用训练Net-T用到的training set), 用Net-T产生的softmax distribution (with high temperature) 来作为soft target，Net-S在相同温度 <span class="math-inline">T</span> 条件下的softmax输出和soft target的cross entropy就是<strong>Loss函数的第一部分</strong> <span class="math-inline">L_{soft}</span></li>
+</ul>
+<p><div class="math-display"><br />
+L_{soft}=-\sum_j^N p^T_j\log(q^T_j)<br />
+</div></p>
+<p>其中 <span class="math-inline">p^T_i=\frac{\exp(v_i/T)}{\sum_k^N \exp(v_k/T)}</span> , <span class="math-inline">q^T_i=\frac{\exp(z_i/T)}{\sum_k^N \exp(z_k/T)}</span></p>
+<ul>
+<li>Net-S在 <span class="math-inline">T=1</span> 的条件下的softmax输出和ground truth的cross entropy就是<strong>Loss函数的第二部分</strong> <span class="math-inline">L_{hard}</span> 。</li>
+</ul>
+<p><div class="math-display"><br />
+L_{hard}=-\sum_j^N c_j\log(q^1_j)<br />
+</div></p>
+<p>其中 <span class="math-inline">q^1_i=\frac{\exp(z_i)}{\sum_k^N \exp(z_k)}</span></p>
+<ul>
+<li>第二部分Loss <span class="math-inline">L_{hard}</span> 的必要性其实很好理解: Net-T也有一定的错误率，使用ground truth可以有效降低错误被传播给Net-S的可能。打个比方，老师虽然学识远远超过学生，但是他仍然有出错的可能，而这时候如果学生在老师的教授之外，可以同时参考到标准答案，就可以有效地降低被老师偶尔的错误“带偏”的可能性。</li>
+</ul>
+<p><strong>【讨论】</strong></p>
+<ul>
+<li>实验发现第二部分所占比重比较小的时候，能产生最好的结果，这是一个经验的结论。一个可能的原因是，由于soft target产生的gradient与hard target产生的gradient之间有与 <span class="math-inline">T</span> 相关的比值。原论文中只是一笔带过，我在下面补充了一些简单的推导。(ps. 下面推导可能有些错误，如果有读者能够正确推出来请私信我～)</li>
+<li><strong>Soft Target:</strong> <span class="math-inline">L_{soft}</span></li>
+</ul>
+<p><div class="math-display"><br />
+L_{soft}=-\sum_j^N p^T_j\log(q^T_j)=-\sum_j^N \frac{z_j/T\times\exp(v_j/T)}{\sum_k^N \exp(v_k/T)}\left(\frac{1}{\sum_k^N \exp(z_k/T)}-\frac{\exp (z_j / T) }{\left(  \sum_k^N \exp(z_k/ T)\right) ^ 2}\right)\<br />
+\approx -\frac{1}{T\sum_k^N \exp(v_k/T)}\left(\frac{\sum_j^Nz_j\exp(v_j/T)}{\sum_k^N \exp(z_k/T)}-\frac{\sum_j^N z_j\exp (z_j/ T)\exp(v_j/T) }{\left(  \sum_k^N \exp(z_k / T)\right) ^ 2} \right)<br />
+</div></p>
+<p><div class="math-display"></p>
+<ul>
+<li><strong>Hard Target:</strong> <span class="math-inline">L_{hard}</span></li>
+</ul>
+<p></div><br />
+L_{hard}=-\sum_j^N c_j\log(q^1_j)=-\left(\frac{\sum_j^N c_jz_j }{ \sum_k^N \exp(z_k )}-\frac{\sum_j^N c_jz_j\exp (z_j) }{\left(  \sum_k^N \exp(z_k)\right) ^ 2} \right)<br />
+<div class="math-display"></p>
+<ul>
+<li>由于 <span class="math-inline">\frac{\partial L_{soft}}{\partial z_i}</span>的magnitude大约是 <span class="math-inline">\frac{\partial L_{hard}}{\partial z_i}</span> 的 <span class="math-inline">\frac{1}{T^2}</span> ，因此在同时使用soft target和hard target的时候，需要在soft target之前乘上<span class="math-inline">T^{2}</span>的系数，这样才能保证soft target和hard target贡献的梯度量基本一致。</li>
+</ul>
+<p><strong>【注意】</strong> 在Net-S训练完毕后，做inference时其softmax的温度 <span class="math-inline">T</span> 要恢复到1.</p>
+<h3 id="32-一种特殊情形-直接match-logits不经过softmax">3.2. 一种特殊情形: 直接match logits(不经过softmax)<a class="anchor-link" href="#32-一种特殊情形-直接match-logits不经过softmax" title="Permanent link">&para;</a></h3>
+<p>直接match logits指的是，直接使用softmax层的输入logits（而不是输出）作为soft targets，需要最小化的目标函数是Net-T和Net-S的logits之间的平方差。</p>
+<p><strong>直接上结论: 直接match logits的做法是</strong> <span class="math-inline">T \rightarrow \infty</span> <strong>的情况下的特殊情形。</strong></p>
+<p>由单个case贡献的loss，推算出对应在Net-S每个logit <span class="math-inline">z_i</span> 上的gradient:<br />
+</div><br />
+\frac{\partial L_{soft}}{\partial z_{i}}=\frac{1}{T}\left(q_{i}-p_{i}\right)=\frac{1}{T}\left(\frac{e^{z_{i} / T}}{\sum_{j} e^{z_{j} / T}}-\frac{e^{v_{i} / T}}{\sum_{j} e^{v_{j} / T}}\right)$​<br />
+<div class="math-display"><br />
+当 <span class="math-inline">T \rightarrow \infty</span> 时，我们使用 <span class="math-inline">1+x/T</span> 来近似 <span class="math-inline">e^{x/T}</span> ，于是得到<br />
+</div><br />
+\frac{\partial L_{soft}}{\partial z_{i}} \approx \frac{1}{T}\left(\frac{1+z_{i} / T}{N+\sum_{j} z_{j} / T}-\frac{1+v_{i} / T}{N+\sum_{j} v_{j} / T}\right)$​<br />
+<div class="math-display"><br />
+如果再加上logits是零均值的假设 <span class="math-inline">\sum_{j} z_{j}=\sum_{j} v_{j}=0</span></p>
+<p>那么上面的公式可以简化成<br />
+</div><br />
+\frac{\partial L_{soft}}{\partial z_{i}} \approx \frac{1}{N T^{2}}\left(z_{i}-v_{i}\right)$​<br />
+<div class="math-display"><br />
+也就是等价于minimise下面的损失函数<br />
+</div><br />
+L_{soft}'=1 / 2\left(z_{i}-v_{i}\right)^{2}<br />
+$$</p>
+<h2 id="4-关于温度的讨论">4 关于"温度"的讨论<a class="anchor-link" href="#4-关于温度的讨论" title="Permanent link">&para;</a></h2>
+<p>【问题】 我们都知道“蒸馏”需要在高温下进行，那么这个“蒸馏”的温度代表了什么，又是如何选取合适的温度？</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202506052122406.jpeg" /></p>
+<p>随着温度 <span class="math-inline">T</span> 的增大，概率分布的熵逐渐增大</p>
+<h3 id="41-温度的特点">4.1. 温度的特点<a class="anchor-link" href="#41-温度的特点" title="Permanent link">&para;</a></h3>
+<p>在回答这个问题之前，先讨论一下<strong>温度 <span class="math-inline">T</span> 的特点</strong></p>
+<ol>
+<li>原始的softmax函数是 <span class="math-inline">T=1 </span> 时的特例， <span class="math-inline">T&lt;1</span> 时，概率分布比原始更“陡峭”， <span class="math-inline">T&gt;1</span> 时，概率分布比原始更“平缓”。</li>
+<li>温度越高，softmax上各个值的分布就越平均（思考极端情况: (i) <span class="math-inline">T=\infty</span> , 此时softmax的值是平均分布的；(ii) <span class="math-inline">T\rightarrow0</span>，此时softmax的值就相当于 <span class="math-inline">argmax</span> , 即最大的概率处的值趋近于1，而其他值趋近于0）</li>
+<li>不管温度 <span class="math-inline">T</span> 怎么取值，Soft target都有忽略相对较小的 <span class="math-inline">p_i</span> 携带的信息的倾向</li>
+</ol>
+<h3 id="42-温度代表了什么如何选取合适的温度"><strong>4.2. 温度代表了什么，如何选取合适的温度？</strong><a class="anchor-link" href="#42-温度代表了什么如何选取合适的温度" title="Permanent link">&para;</a></h3>
+<p><strong>温度的高低改变的是Net-S训练过程中对负标签的关注程度</strong>: 温度较低时，对负标签的关注，尤其是那些显著低于平均值的负标签的关注较少；而温度较高时，负标签相关的值会相对增大，Net-S会相对多地关注到负标签。</p>
+<p>实际上，负标签中包含一定的信息，尤其是那些值显著<strong>高于</strong>平均值的负标签。但由于Net-T的训练过程决定了负标签部分比较noisy，并且负标签的值越低，其信息就越不可靠。因此温度的选取比较empirical，本质上就是在下面两件事之中取舍:</p>
+<ol>
+<li>从有部分信息量的负标签中学习 --&gt; 温度要高一些</li>
+<li>防止受负标签中噪声的影响 --&gt;温度要低一些</li>
+</ol>
+<p>总的来说，<span class="math-inline">T</span> 的选择和Net-S的大小有关，Net-S参数量比较小的时候，相对比较低的温度就可以了（因为参数量小的模型不能capture all knowledge，所以可以适当忽略掉一些负标签的信息）</p>
+<h2 id="qa">Q&amp;A<a class="anchor-link" href="#qa" title="Permanent link">&para;</a></h2>
+<ol>
+<li>损失函数L中两个权重系数alpha和Beta是超参还是需要训练的参数呢? 在复现的过程中发现我的loss值很大，是因为T设置的问题吗？因为乘上T^2后，相对而言alpha要比Beta大很多？</li>
+</ol>
+<p>【回答】 <span class="math-inline">L=\alpha L_{soft}+\beta L_{hard}</span> 中的alpha和beta都是超参数。由本文第3部分的推导可得alpha中包含T^2的部分，所以T比较大的时候， <span class="math-inline">\alpha L_{soft}</span> 会比较大。</p>
+<p>2 Hinton开篇指出，所提方法是为了'压缩模型'，KD能够让<a href="https://zhida.zhihu.com/search?content_id=110806173&amp;content_type=Article&amp;match_order=1&amp;q=Student+model&amp;zhida_source=entity">Student model</a>获取<a href="https://zhida.zhihu.com/search?content_id=110806173&amp;content_type=Article&amp;match_order=1&amp;q=Teacher+model&amp;zhida_source=entity">Teacher model</a>的泛化能力，也即让小模型能够干大事情。但KD仍然要训练Teacher model，并且Student model需要依靠Teacher model得到的soft targets，意味着Teacher model是不可或缺，那这样的话，'压缩模型'地目的是否真的达到了呢？</p>
+<p>【回答】压缩模型的对象一般是指的部署上线的模型，而Teacher model只在训练的过程中用到。并且同一个Teacher model可以用于蒸馏多个student model。</p>
+<h2 id="5-参考">5 参考<a class="anchor-link" href="#5-参考" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="https://zhuanlan.zhihu.com/p/102038521">【经典简读】知识蒸馏(Knowledge Distillation) 经典之作</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/24337627">深度压缩之蒸馏模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/83456418">知识蒸馏Knowledge Distillation</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//towardsdatascience.com/knowledge-distillation-simplified-dd4973dbc764">https://towardsdatascience.com/knowledge-distillation-simplified-dd4973dbc764</a></li>
+<li><a href="https://link.zhihu.com/?target=https%3A//nervanasystems.github.io/distiller/knowledge_distillation.html">https://nervanasystems.github.io/distiller/knowledge_distillation.html</a></li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#摘要">摘要</a></li>
+<li><a href="#1-引言">1 引言</a></li>
+<li><a href="#3-问题定义">3 问题定义</a><ul>
+<li><a href="#31-任务增量学习">3.1 任务增量学习</a></li>
+<li><a href="#32-任务增量广义零样本学习">3.2 任务增量广义零样本学习</a></li>
+</ul>
+</li>
+<li><a href="#4-提出的方法">4 提出的方法</a><ul>
+<li><a href="#41-基于校正的知识保留">4.1 基于校正的知识保留</a></li>
+<li><a href="#42-减少权重校正的参数">4.2 减少权重校正的参数</a><ul>
+<li><a href="#421-卷积层">4.2.1 卷积层</a></li>
+<li><a href="#422-全连接层">4.2.2 全连接层</a></li>
+</ul>
+</li>
+<li><a href="#43-带有任务标签的测试过程">4.3 带有任务标签的测试过程</a></li>
+<li><a href="#44-没有任务标签的测试过程">4.4 没有任务标签的测试过程</a></li>
+</ul>
+</li>
+<li><a href="#5-任务增量学习实验非零样本设置">5 任务增量学习实验（非零样本设置）</a><ul>
+<li><a href="#51-数据集">5.1 数据集</a></li>
+<li><a href="#52-实现细节">5.2 实现细节</a></li>
+<li><a href="#53-任务感知-cifar-结果">5.3 任务感知 CIFAR 结果</a></li>
+<li><a href="#54-任务感知-imagenet-结果">5.4 任务感知 ImageNet 结果</a></li>
+<li><a href="#55-任务感知-svhn-结果">5.5 任务感知 SVHN 结果</a></li>
+<li><a href="#56-任务不可知-svhn-结果">5.6 任务不可知 SVHN 结果</a></li>
+<li><a href="#57-任务不可知-cifar-结果">5.7 任务不可知 CIFAR 结果</a></li>
+<li><a href="#58-任务不可知-imagenet-结果">5.8 任务不可知 ImageNet 结果</a></li>
+</ul>
+</li>
+<li><a href="#6-任务增量学习实验广义零样本设置">6 任务增量学习实验（广义零样本设置）</a><ul>
+<li><a href="#61-测试过程">6.1 测试过程</a></li>
+<li><a href="#62-数据集">6.2 数据集</a></li>
+<li><a href="#63-实现细节">6.3 实现细节</a></li>
+<li><a href="#64-任务感知结果">6.4 任务感知结果</a></li>
+<li><a href="#65-任务不可知的结果">6.5 任务不可知的结果</a></li>
+</ul>
+</li>
+<li><a href="#7-结论">7 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/41.Feature Rectify</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>Rectification-Based Knowledge Retention for Task Incremental Learning<br />
+<a href="https://mp.weixin.qq.com/s/cakOgXWGyMW7AUMc9i-0Gw">TPAMI 2024 | 无需重训练即可掌握新技能，深度学习模型实现终身学习革命！</a></p>
+</blockquote>
+<h2 id="摘要">摘要<a class="anchor-link" href="#摘要" title="Permanent link">&para;</a></h2>
+<p>在任务增量学习问题中，深度学习模型在训练新类别/任务时会遭受之前见过的类别/任务的灾难性遗忘。当一些测试类别不属于训练类集时，这个问题变得更加困难，即任务增量广义零样本学习问题。我们提出了一种新的方法来解决非零样本和零样本设置中的任务增量学习问题。我们提出的方法，称为基于校正的知识保留（Rectification-based Knowledge Retention,RKR），通过应用权重校正和仿射变换来使模型适应任何任务。在测试期间，我们的方法可以使用任务标签信息（任务感知）来快速适应网络到该任务。我们还扩展了我们的方法，使其在测试期间任务标签信息不可用时也能工作（任务不可知）。具体来说，给定一系列测试数据，我们的方法预测任务并快速适应网络到预测的任务。我们通过多个基准数据集的实验表明，我们提出的方法在非零样本和零样本任务增量学习方面都取得了最先进的结果。</p>
+<h2 id="1-引言">1 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>深度学习模型在许多任务上的表现已超越人类，并越来越多地被用来解决现实世界的问题。然而，这类模型仍存在一个缺陷，即当它们开始训练时，需要所有训练数据都是可用的。如果训练数据是顺序出现的，那么这些模型就会遭受之前类别或任务的灾难性遗忘，并且对这些类别/任务的性能会下降。这与人类形成鲜明对比，人类可以递增地学习新任务或数据类别，而不会忘记之前获得的知识。这被称为终身学习/持续学习/增量学习问题。深度学习模型的另一个要求是，模型应该处理的所有类别数据都应在训练数据中出现。取而代之的是，如果在测试集中有在训练数据中未出现的类别，深度学习模型的性能就会显著下降。为了解决这个问题，研究人员提出了零样本学习。如果将增量学习问题与零样本学习问题结合起来，那么整体问题将变得更加困难。在这项工作中，我们在零样本和非零样本设置中解决了任务增量学习问题，并证明了我们的方法在这些设置中实现了最先进的性能。</p>
+<p>在任务增量学习问题中，训练数据以任务为单位逐渐变得可用。每个任务包含一组类别的训练样本，我们假设每个任务中的类别不重叠。此外，当开始训练新任务时，之前任务的数据对模型来说变得不可访问。这些限制在训练期间提出了挑战。如果我们将通用的训练过程应用于仅对新任务的数据进行训练，模型将忘记从之前的任务中获得的知识。因此，在这种情况下的任何方法的目标都是防止在训练新任务时对之前任务获得的知识发生灾难性遗忘。同样，任务增量广义零样本学习问题也涉及顺序到达的任务的训练。然而，每个任务包含一组已见类别和未见类别（不是训练数据的一部分）。在这种情况下，模型的目标是在训练新任务时保留对之前所有任务的已见和未见类别的分类能力。</p>
+<p>在本文中，我们提出了一种称为基于校正的知识保留（Rectification-based Knowledge Retention,<br />
+RKR）的新方法，用于解决非零样本和零样本设置中的任务增量学习问题。我们提出的RKR方法学习所需的校正，以使网络适应新任务。在测试期间，它可以快速地将网络适应任何给定的任务，通过简单地将这些权重校正应用于网络层的权重。RKR使用一种参数高效技术来学习这些权重校正，以限制模型大小。此外，RKR还学习了仿射变换（缩放因子），以更好地适应网络的所有中间输出到给定任务。在我们之前的工作中，我们假设模型在测试时可以访问测试样本的任务标签（任务感知），我们利用这些信息通过应用该任务的权重校正和仿射变换来快速适应网络。而在这项工作中，我们扩展了我们的方法，也支持在测试期间模型无法访问任务标签的情况（任务不可知）。我们扩展了我们的方法，可以从测试图像的输出逻辑值中预测任务标签，然后快速适应网络到预测的任务，并在该任务上进行分类。因此，我们的方法减轻了测试过程中对任务标签的需求，无论是零样本还是非零样本设置，使其成为任务不可知的[5]。RKR可以在测试期间快速适应任何任务，因为它只涉及向网络权重添加相应的权重校正，并应用相应的缩放因子到中间网络输出。</p>
+<p>我们对多个基准数据集进行了各种实验，以展示我们的方法在零样本和非零样本设置中解决任务增量学习问题的效率。我们还进行了各种消融实验，以验证我们方法的组成部分。我们的贡献可以总结如下：</p>
+<ul>
+<li>我们提出了一种新的方法，用于解决零样本和非零样本设置中的任务增量学习问题，该方法学习权重校正和缩放因子，以使网络适应各自的任务。 </li>
+<li>我们提出的方法RKR在训练期间引入的参数非常少，用于学习权重校正和缩放因子。与其他基于动态网络的任务增量学习方法相比，我们方法的模型大小增长显著降低。 </li>
+<li>我们通过实验表明，我们的方法基于校正的知识保留（RKR）在测试期间任务标签可用（任务感知）时，显著优于现有的最先进的方法。 </li>
+<li>我们的方法即使在测试期间任务标签信息缺失（任务不可知）时也能工作。我们的方法可以自动预测任何测试数据连续体的任务和类别。我们的方法在任务不可知非零样本增量学习设置中实现了最先进的性能。 </li>
+<li>我们还通过实验表明，对于任务不可知广义零样本增量学习设置，我们的方法实现了最先进的性能，并且显著优于即使在测试期间需要任务标签的现有方法。 </li>
+</ul>
+<h2 id="3-问题定义">3 问题定义<a class="anchor-link" href="#3-问题定义" title="Permanent link">&para;</a></h2>
+<h3 id="31-任务增量学习">3.1 任务增量学习<a class="anchor-link" href="#31-任务增量学习" title="Permanent link">&para;</a></h3>
+<p>在任务增量学习设置中，网络接收一系列包含新类别集的任务。当新任务变得可用时，之前任务的数据将无法访问。任务增量学习的目标是获得一个模型，该模型在当前任务以及之前的任务上都能表现良好。</p>
+<h3 id="32-任务增量广义零样本学习">3.2 任务增量广义零样本学习<a class="anchor-link" href="#32-任务增量广义零样本学习" title="Permanent link">&para;</a></h3>
+<p>任务增量广义零样本学习设置同样涉及对一系列任务的训练，但每个任务包含一组已见和未见类别，最终模型应能在当前任务以及之前任务的已见和未见类别上表现良好。对于这个问题，我们遵循[34]中定义的设置，其中每个任务是单独的数据集。当新任务用于训练时，旧任务将不再可用于进一步的训练/微调。</p>
+<h2 id="4-提出的方法">4 提出的方法<a class="anchor-link" href="#4-提出的方法" title="Permanent link">&para;</a></h2>
+<h3 id="41-基于校正的知识保留">4.1 基于校正的知识保留<a class="anchor-link" href="#41-基于校正的知识保留" title="Permanent link">&para;</a></h3>
+<p>我们提出了一种名为基于校正的知识保留（Rectification-based Knowledge Retention,<br />
+RKR）的任务增量学习方法，该方法通过应用网络权重校正和缩放变换来适应不同的任务。</p>
+<p>假设我们有一个深度神经网络包含N层，即  。每层可能是卷积层或全连接层。设  表示网络层<br />
+的参数权重。如果我们在这个网络上训练一个包含一组类别的任务，网络将为每层 l  学习参数权重<br />
+。然而，如果我们接着在新任务（带有一组新类别）上训练网络，它将学习新的参数权重  来适应这个任务，并将失去有关之前任务的信息（灾难性遗忘）。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGvIqX1RO6iapZjQMAqvWk4cRhfoPWwhcWcWrSeqWCTk5jaPVwwLEvzYg/640?wx_fmt=png&amp;from=appmsg" /><br />
+<img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatG9Wz1kClicySuXveZKQuTc7dnpbiaxlIvb5htrsiaiabmQkA1Y9UibE4cic5w/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>我们提议使用动态网络方法避免这个问题。对于每个任务，我们学习所需的校正来适应网络层的权重以适应该任务。设  指适应任务 t 所需的第 l<br />
+层网络权重的校正。我们使用校正生成器（Rectification Generator, RG）来学习这些校正。RG 使用很少的参数来学习权重校正，如第<br />
+4.2 节所述。权重校正  被加到每层  的权重  上（见图 1 和图 2）：</p>
+<p>其中  指的是网络层 l 的权重，  表示为任务 t 学习权重层 l 的校正，  指的是任务 t 经校正后层 l 的权重，'+' 表示逐元素加法。层权重<br />
+仅在第一个任务上训练，并使用针对所有任务学习得到的权重校正  来适应给定任务，以获得  。</p>
+<p>除了权重校正，我们还学习缩放因子以对网络每层生成的中间输出执行仿射变换。我们使用缩放因子生成器（Scaling Factor Generator,<br />
+SFG）来学习缩放因子。在全连接层 l 的情况下，缩放因子  的大小与层输出  相同，我们将它们逐元素乘以  的每个分量（见图 2）。在卷积层 l<br />
+的情况下，缩放因子  的元素数量与  中的特征图数量相同，我们将它们乘以  的相应特征图（见图<br />
+1）。这些学习到的缩放因子表示适应中间网络输出到相应任务所需的校正：</p>
+<p>其中  指的是网络层 l 的输出，  指的是为网络层 l 的输出在任务 t 上学习到的缩放因子，'  ' 表示缩放操作，  表示任务 t<br />
+经过缩放后的层输出。</p>
+<p>我们的方法应用权重校正和缩放因子来适应任何任务 t。</p>
+<h3 id="42-减少权重校正的参数">4.2 减少权重校正的参数<a class="anchor-link" href="#42-减少权重校正的参数" title="Permanent link">&para;</a></h3>
+<h4 id="421-卷积层">4.2.1 卷积层<a class="anchor-link" href="#421-卷积层" title="Permanent link">&para;</a></h4>
+<p>卷积层的权重校正需要与卷积层权重大小相同。设  分别为卷积层  中每个滤波器的宽度、高度和通道数，  是  中使用的滤波器数量。因此，卷积层权重的总大小为<br />
+。层  的权重校正  也必须具有相同的大小。为了减少生成这些权重校正所需参数的数量，我们使用校正生成器（RG）。校正生成器（RG）学习两个较小尺寸的矩阵，即<br />
+的尺寸为  和  的尺寸为  ，其中 '  ' 表示标量乘法。这里，  且<br />
+。这个过程确保我们引入的参数数量非常少以生成这些权重校正。这两个矩阵的乘积产生权重校正，它们被重塑为  的大小，并逐元素加到卷积层权重上。因此，RG<br />
+计算任务 t 的权重校正  如下：</p>
+<p>其中 MATMUL 指矩阵乘法。</p>
+<p>我们应用适应后的卷积层权重  到输入  上，尺寸假设为  ，以获得尺寸为  的输出。这里，  分别指应用卷积前后特征图的宽度，<br />
+分别指应用卷积前后特征图的高度。然后我们对输出  应用缩放变换。缩放因子生成器 (SFG) 为每个特征图学习一个缩放参数。因此，SFG<br />
+引入的参数数量非常少，即  ，等于  中特征图的数量。</p>
+<p>对于每个卷积层，我们方法引入的额外参数百分比为：</p>
+<h4 id="422-全连接层">4.2.2 全连接层<a class="anchor-link" href="#422-全连接层" title="Permanent link">&para;</a></h4>
+<p>全连接层的权重校正需要与层权重  相同大小。设  的尺寸为  。这里  和  分别指全连接层的输入和输出大小。为了减少生成权重校正所需参数的数量，校正生成器<br />
+(RG) 学习两个较小尺寸的矩阵，即  的尺寸为  和  的尺寸为  。这里，  且  。因此，增加的总参数量不会显著。这两个矩阵的乘积将给出尺寸为<br />
+的权重校正，我们将其逐元素加到层权重  上，以产生适应后的层权重  。因此，RG 计算任务 t 的权重校正  如下：</p>
+<p>其中 MATMUL 指矩阵乘法。</p>
+<p>我们将应用适应后的全连接层权重  到输入  上，其尺寸为  ，以获得尺寸为  的输出  （见图 2）。然后我们对输出 O 应用缩放变换。缩放因子生成器<br />
+(SFG) 为  的每个分量学习一个参数。因此，SFG 引入的参数数量非常少，即  。</p>
+<p>对于每个全连接层，我们方法引入的额外参数百分比为：</p>
+<p>因此，我们的方法在增量学习设置中为每项任务引入了很少的参数，以学习权重校正和缩放因子，例如，对于使用 ResNet-18 架构的 ImageNet-1K<br />
+任务，RKR 每项任务只引入了 0.5% 的额外参数。直观地说，这使用很少的参数模拟了每个任务的独立网络，例如，我们的模型对于 10 项任务的<br />
+ImageNet-1K 拥有 (100 + 10 * 0.5)% 的容量。然而，如果直接使用独立的网络将导致一个不切实际的模型，其容量为 (100 -<br />
+10)%。</p>
+<h3 id="43-带有任务标签的测试过程">4.3 带有任务标签的测试过程<a class="anchor-link" href="#43-带有任务标签的测试过程" title="Permanent link">&para;</a></h3>
+<p>在任务感知测试设置中，模型在测试期间可以访问任务标签[22]、[24]、[26]，每个测试样本由测试图像 (  )、实际类别标签 (  ) 和任务标签 (<br />
+) 组成。给定训练有素的深层神经网络，包含层  ，我们使用每个网络层针对任务  学习到的权重校正和缩放因子来快速适应网络。具体来说，我们利用公式 (1)<br />
+将权重校正加到网络层的权重上，并使用公式 (2)<br />
+对网络的中间输出进行缩放，以适应给定的任务。最后，我们利用这个适应后的网络对测试样本进行分类，预测其类别标签。</p>
+<h3 id="44-没有任务标签的测试过程">4.4 没有任务标签的测试过程<a class="anchor-link" href="#44-没有任务标签的测试过程" title="Permanent link">&para;</a></h3>
+<p>在任务不可知测试设置中，模型在测试期间无法访问任务标签，测试数据以连续体的形式接收，未知的任务 t（类似于 [5]）。设  指的是由相同任务 t 生成的包含<br />
+个测试样本的数据连续体，使得对于所有的 i  ，  。然而，任务标签 (t) 对模型来说是未知的。</p>
+<p>我们提出的方法需要任务标签来适应给定的任务。因此，在任务不可知测试设置中，我们必须在进行测试过程之前识别数据连续体的任务。首先，我们适应网络到任何任务<br />
+t，通过应用该任务的权重校正和缩放因子。接下来，我们为数据连续体 DC 中的每个样本获得任务 t 的输出逻辑值，并存储 DC<br />
+中每个样本的最大逻辑值。然后，我们通过计算 DC 中所有样本的最大逻辑值的平均值来计算平均最大逻辑值<br />
+(AML)。我们为所有任务重复这个过程。因此，我们为数据连续体的每个任务获得了平均最大逻辑值。理想情况下，平均最大逻辑值最高的任务应该是数据连续体的正确任务。然而，在我们的方法中，模型没有在所有任务上共同训练。因此，给定来自特定任务<br />
+ta 的测试数据连续体，适应到另一个任务 tb 的模型（a ≠<br />
+b）从未见过这种类型的数据。但是，神经网络即使对于它从未训练过的类别的图像也能产生高逻辑值。因此，上述过程甚至对于错误的任务也可能导致高平均最大逻辑值，即<br />
+tb 的 AML 可能高于 ta 的 AML。</p>
+<p>为了解决这个问题，我们提出了一种新颖的方法。具体来说，我们建议为每个任务共同学习一个单一的超参数，该超参数将用于重新加权给定数据连续体的每个任务的平均最大逻辑值（见公式<br />
+(7) 和 (8)）。我们将这些超参数称为任务权重 (TW) 超参数。</p>
+<p>其中，  指数据连续体 DC 对于任务 ti 的平均最大逻辑值。  指适应任务 ti 的模型。  指将模型  应用于 DC 中的每个样本。  指为 DC<br />
+中的每个样本找到最大逻辑值的函数。  指计算 DC 中样本的最大逻辑值的平均值的函数。  指任务 ti 的任务权重超参数。  指使用任务 ti<br />
+的任务权重超参数重新加权任务 ti 的 AML。  指找到加权 AML 最大的任务的函数。  指预测的任务。</p>
+<p>为了找到合适的 TW 超参数值，我们使用验证数据。验证数据只包含每个任务的一个数据连续体。我们使用验证数据执行任务预测操作，并为该操作找到最合适的 TW<br />
+超参数。请注意，一个验证数据连续体将有一个单一预测的任务。因此，对于 t 个任务，我们在验证集中只有 t 个数据点。使用这些少量数据点获得的 TW<br />
+超参数值将不足以适用于任何给定的测试数据连续体。因此，我们通过用其余任务的验证数据连续体中的样本随机替换一个验证数据连续体中的一些样本来创建多个损坏的数据点。由于我们在验证数据连续体中替换的样本非常少，损坏的数据连续体中的大多数样本仍然属于原始任务，因此我们假设新的损坏数据连续体的任务标签与原始验证数据连续体相同。这个过程在每个验证数据连续体中引入了一种噪声/损坏，并帮助识别的<br />
+TW 超参数更具普适性。对于每个新的损坏验证数据连续体，我们逐步适应网络到每个看到的任务 t，并像前面描述的那样获得每个任务的<br />
+AML。接下来，我们将每个任务的 AML 乘以相应任务的 TW 超参数。最后，我们比较加权 AML，以获得损坏的验证数据连续体的最高加权 AML<br />
+的任务。我们使用交叉熵损失对预测的和实际的任务的验证数据连续体进行优化 TW 超参数，只迭代很少的次数（2-5 次迭代，总共需要大约 2-3 秒在<br />
+GeForce GTX 1080 Ti 图形处理单元上）。最后，在测试期间，使用最优的 TW 超参数重新加权每个测试数据连续体的任务加权<br />
+AML，然后比较任务加权 AML。</p>
+<p>我们还通过在测试期间使用数据增强方法进一步改进我们的任务预测方法。我们使用不同的数据增强方法为测试数据连续体创建新视图。我们使用与训练模型时相同的数据增强方法进行此过程。这是因为，在数据连续体的增强视图中，适应正确任务的模型已经看过具有这种增强的类似数据，因此其<br />
+AML 仍然保持较高。然而，适应到任何错误任务的模型没有看过这种增强的类似数据，因此同一个错误任务在该数据连续体的不同增强视图中仍然具有高 AML<br />
+的可能性很低。因此，当我们考虑同一测试数据连续体的所有不同增强视图的任务加权 AML 的平均值时，正确任务具有最高平均加权 AML 的可能性更高。我们在表<br />
+9 中验证了这一发现。这一观察可以用来进一步提高我们方法的任务预测准确性。</p>
+<p>基于上述观察，我们提出了任务不可知设置的最终测试程序如下。首先，我们通过应用不同的数据增强方法为给定的测试数据连续体 DC<br />
+创建多个视图。接下来，对于数据连续体的每个增强视图，我们使用前面提到的过程获得任务加权平均最大逻辑值。我们使用前面描述的过程获得的相应 TW 对任务加权<br />
+AMLs 进行重新加权。最后，我们计算同一测试数据连续体的所有不同增强视图的任务加权 AML 的平均值，并预测平均加权 AML<br />
+最高的任务作为给定测试数据连续体的任务（见公式 (9)，(10) 和 (11)）。获得预测任务  后，我们通过使用公式 (1)<br />
+将权重校正加到网络层权重上，并使用公式 (2) 对网络的中间输出进行缩放，快速适应网络到相应任务。与 iTAML [5]<br />
+相反，我们的方法在这个过程中不需要任何微调或更新。最后，我们使用这个适应后的网络预测数据连续体中的样本类别标签。为了公平比较，我们使用与 [5]<br />
+中相同的数据连续体大小。</p>
+<p>其中，  指使用数据增强 vj 的 DC 的增强视图。  指任务 ti 对于 DC_{vj} 的平均最大逻辑值。  指的是对于任务 ti，不同增强视图的<br />
+DC 的加权 AMLs 的平均值。  指任务 ti 对于 DC 的平均加权 AML。  指预测的任务。</p>
+<p>我们通过实验验证了我们方法中的所有设计选择，这些将在第 5.7 节中展示。</p>
+<p>由于篇幅较长，我将继续从上一个回答中断的地方开始翻译：</p>
+<p>其中，  表示使用数据增强方法  得到的测试数据连续体 DC 的增强视图。  表示对于任务  ，增强视图  的平均最大逻辑值（AML）。  指的是对于任务<br />
+，不同增强视图下的加权 AMLs 的平均值。  表示任务  对于数据连续体 DC 的平均加权 AML。  表示预测的任务。</p>
+<p>我们通过实验验证了我们方法中的所有设计选择，这些将在第 5.7 节中展示。</p>
+<h2 id="5-任务增量学习实验非零样本设置">5 任务增量学习实验（非零样本设置）<a class="anchor-link" href="#5-任务增量学习实验非零样本设置" title="Permanent link">&para;</a></h2>
+<h3 id="51-数据集">5.1 数据集<a class="anchor-link" href="#51-数据集" title="Permanent link">&para;</a></h3>
+<p>我们在非零样本设置下，对 CIFAR [38]、SVHN [39]、ImageNet-100 和 ImageNet-1K [40]<br />
+数据集进行了任务感知增量学习实验。我们在 CIFAR-100 数据集上进行了 10 个类别/任务的增量学习实验。对于 CIFAR-10/100<br />
+的分割实验，我们使用 CIFAR-10 的所有类别作为第一任务，并随机选择 5 个任务，每个任务包含 CIFAR-100 的 10<br />
+个类别。因此，在这个设置中我们有 6 个任务。在 ImageNet-1K 的情况下，我们将 1000 个类别分为 10 个任务，每个任务包含 100<br />
+个类别。在 ImageNet-100 的情况下，我们将 100 个类别分为 10 个任务，每个任务包含 10<br />
+个类别。对于模型在测试时无法访问任务标签的任务不可知实验设置，我们在 SVHN、CIFAR-100、ImageNet-100 和 ImageNet-1K<br />
+数据集上进行了实验。在 CIFAR-100 的实验中，我们分别进行了每任务 5、10、20 个类别的实验，分别产生了 20、10 和 5 个任务。在<br />
+SVHN 的情况下，我们有 5 个任务，每个任务包含 2 个类别。ImageNet-100 和 ImageNet-1K 的任务数量与之前的设置相同，都是<br />
+10 个。</p>
+<h3 id="52-实现细节">5.2 实现细节<a class="anchor-link" href="#52-实现细节" title="Permanent link">&para;</a></h3>
+<p>在我们的方法中，我们为网络的每个卷积层和全连接层（除了分类层）学习权重校正和缩放因子。我们首先在第一任务上训练整个网络（基础网络）。对于每个新任务，我们只学习所有网络层的权重校正和缩放因子，以适应新任务。</p>
+<p>对于 CIFAR-100 实验，我们使用 ResNet-18 架构 [41]。对于分割的 CIFAR-10/100 实验，我们使用 ResNet-32 架构<br />
+[41]。对于任务不可知的 CIFAR-100 实验，我们也使用 ResNet-18/3 架构进行了实验，以便与 [5]<br />
+进行公平比较。ResNet-18/3 实际上是 ResNet-18 架构，但每层的滤波器数量减少了三倍。在上述实验中，我们每个任务训练网络 150<br />
+个周期，初始学习率为 0.01，并在第 50、100 和 125 个周期时将学习率乘以 0.1。我们还使用 LeNet 架构 [42] 在<br />
+CIFAR-100 任务上进行了每任务 10 个类别的实验。我们每个任务训练网络 100 个周期，初始学习率为 0.01，并在第 20、40、60 和 80<br />
+个周期时将学习率乘以 0.5。对于 SVHN 数据集，我们使用 ResNet-18 架构进行实验。为了与 [5] 进行公平比较，我们还使用<br />
+ResNet-18/3 架构进行了任务不可知的 SVHN 实验。我们每个任务训练网络 150 个周期，初始学习率为 0.01，并在第 50、100 和<br />
+125 个周期时将学习率乘以 0.1。对于 ImageNet-100 和 ImageNet-1K 实验，我们使用 ResNet-18<br />
+架构，并每个任务训练网络 70 个周期，初始学习率为 0.01，并在第 20、40 和 60 个周期时将学习率乘以 0.2。我们在所有实验中都使用 SGD<br />
+优化器。我们使用 K = 2 进行 RKR 实验，因为这是在额外参数/准确率权衡方面一个不错的选择，如表 2 所示。</p>
+<p>我们的方法可以在测试期间使用任务标签（任务感知），类似于<br />
+[22]、[24]、[26]，并且即使在测试期间不使用任务标签（任务不可知）也能表现良好。对于任务不可知测试，我们的方法在一个数据连续体上进行评估，类似于<br />
+[5]。对于 CIFAR-100 实验，数据连续体大小为 20，用于 5、10、20 任务实验。对于 SVHN 实验，数据连续体大小为 50。对于<br />
+ImageNet-100 和 ImageNet-1K 实验，数据连续体大小分别为 50 和 100。我们使用与 [5]<br />
+中相同的数据连续体大小，以进行公平比较。在确定 TW 超参数合适值的过程中，我们通过用其余任务的验证数据连续体中的样本替换每个验证数据连续体中的 20%<br />
+样本，创建了每个验证数据连续体的多个损坏版本。我们在表 8 中验证了这一选择。我们只运行了 2 次迭代来确定 CIFAR-100 和 SVHN 数据集的<br />
+TW 超参数，并使用学习率为 1e-1。我们为 ImageNet 数据集运行了 5 次迭代。我们为 5<br />
+个随机选择的任务顺序运行了所有实验，每个任务顺序都有一个不同的第一任务，并报告平均准确率。</p>
+<h3 id="53-任务感知-cifar-结果">5.3 任务感知 CIFAR 结果<a class="anchor-link" href="#53-任务感知-cifar-结果" title="Permanent link">&para;</a></h3>
+<p>在任务感知增量学习实验中，我们在 CIFAR-100 数据集上进行了每任务包含 10 个类别的实验，比较了多种方法，包括 CCLL [26]、SI<br />
+[17]、EWC [16]、iCARL [6]、RPS [23]、Superposition [27] 和 PackNet [28]。CCLL<br />
+在测试时使用任务标签，我们为了让 SI 和 EWC 也能在测试期间使用任务标签，对它们进行了相应的修改，以实现公平的比较。我们在图 3<br />
+中观察到，我们提出的方法 RKR 在这种设置中优于所有现有方法。具体来说，RKR 比 CCLL [26] 在总体准确率上提高了 5.1%<br />
+的绝对幅度。随着更多任务的加入，我们的方法性能始终优于其他所有方法。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGmPUBhRSmmSYUTfI5Z99Jjbug0Sz5yUD1ibG6YgQ2ozDQHA4ma7FWxrw/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>我们的方法 RKR 通过应用权重校正来适应新任务，这是一种非常自然直观的方式，因为在新任务上的训练会改变网络层的权重，从而相应地改变特征。相比之下，CCLL<br />
+[26] 仅通过校准卷积层输出的特征图来适应新任务，这些特征图偏向于初始任务。这就是我们在 RKR 和 CCLL<br />
+之间观察到显著性能差距的原因。如果新任务与初始任务非常不同，那么在初始任务上训练的模型提取的特征对于新任务将不再相关，校准特征图以正确估计新任务的特征图将非常困难。例如，如果在初始任务上采用<br />
+MNIST 图像，并在接下来的 10 个任务中采用 CIFAR-100，RKR 与 CCLL 之间的性能差距从 5.1% 增加到 16% 的绝对幅度。</p>
+<p>我们还使用 LeNet 架构 [42]（20-50-800-500）在 CIFAR-100 数据集上进行了每任务 10<br />
+个类别的任务感知非零样本增量学习实验，如 [24] 中所用。表 1 中比较的所有方法都在测试期间使用任务标签（任务感知）。表 1 显示，我们的方法 RKR<br />
+优于现有的最先进方法。我们还报告了 RKR-Lite 的结果，它仅对卷积层使用权重校正，对全连接层仅使用缩放因子。RKR-Lite 引入的参数数量与<br />
+CCLL 相同，但在绝对幅度上比 CCLL 高出 2.61%。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGWjd5ZiaHx32C64obNuYxbSQtLeibNG7BIwbBT46CNORbOBs2KJphFZtg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>对于分割的 CIFAR-10/100 任务，我们使用 ResNet-32 架构，并与当前最先进方法 CCLL 和 HNET [43]<br />
+进行比较，这些方法在测试期间也使用任务标签。我们在图 4 中观察到，RKR 不仅像 CCLL 和 HNET<br />
+一样防止了灾难性遗忘，而且还优于这些方法。因此，RKR 有助于避免灾难性遗忘，而不会显著影响网络学习每个任务的能力。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGFzN4HbkLUcaiaia6AueSfhStFaBxkTQwB7RKk85hR3Te73vHQia4h5Bgg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>我们还在不同的第一任务下进行了实验，以研究不同任务顺序下 RKR 的性能。从图 5 中，我们观察到 RKR 在不同的第一任务和不同的任务顺序下性能稳定。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGZCkmXL2kt1L2V7twMCfzYS8SLiaWtK7XkQyndpHOXGu6j9otcPQmiaEw/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>我们还对使用 ResNet-18 的 CIFAR-100 数据集上的 RKR 进行了不同 K 值的实验。表 2 显示，K = 2<br />
+是一个在额外参数/准确率权衡方面的良好选择。因此，我们在所有实验中使用 K = 2。我们还观察到，由于 RKR 引入的浮点运算（FLOPs）增加非常小。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatG0jktdp68yHX0CvEc7ibTT2nul8GJpbKpW3V5LztHIWuibEmBw6Sr80zg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>我们在表 3 中观察到，如果没有权重校正，模型的性能将分别下降 7.3% 和 8.4% 的绝对幅度，对于使用 LeNet 和 ResNet-18 的<br />
+CIFAR-100。如果没有缩放，模型性能会略有下降。这是因为 LeNet 和 ResNet-18<br />
+主要包含卷积层，而缩放因子对于全连接层更有效。在卷积层中，我们为整个特征图（卷积层输出的一个通道）学习一个单一的缩放因子。而在全连接层中，我们为全连接层输出的每个分量学习一个缩放因子。因此，为全连接层学习到的缩放因子在适当适应给定任务方面更有效。我们在任务增量广义零样本学习中观察到，缩放有助于提高<br />
+RKR 性能（见第 6.4 节）。这是因为在此设置中考虑的视觉特征编码器仅包含全连接层。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGxkXXicFKP4quyric18j2aHtEjKC7a0sCKS0iadZJ0U6aZlLEmWsKy95HA/640?wx_fmt=png&amp;from=appmsg" /><br />
+我们进行了实验，以研究如果不在第一任务上训练基础网络，而只学习所有任务的权重校正和缩放因子，将会怎样。表 4<br />
+中的结果表明，当基础网络没有训练而是在冻结前随机初始化时，模型的性能急剧下降。这是因为 RKR<br />
+每项任务引入的校正参数非常少，而这些少量的参数不足以正确地从任务的训练数据中学习。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatG21fBypXdD5Jpa0UFgfuJwwMImnEElDKGQ3ialOfxD5xnmN2AaOQ89LA/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>我们还研究了正向知识传递的效果。在提出的方法中，当我们在新任务上训练模型时，我们从上一个任务初始化 RG 和 SFG<br />
+的参数。如果我们为每个新任务从零开始训练这些参数，那么对于使用 ResNet-18 的 CIFAR-100，模型的性能将下降 1.45% 的绝对幅度。这表明<br />
+RKR 中存在知识正向传递。</p>
+<h3 id="54-任务感知-imagenet-结果">5.4 任务感知 ImageNet 结果<a class="anchor-link" href="#54-任务感知-imagenet-结果" title="Permanent link">&para;</a></h3>
+<p>我们在表 5 中观察到，RKR 显著优于现有的 CCLL 方法，无论是在 ImageNet-100 还是 ImageNet-1K<br />
+数据集上。具体来说，我们的方法在 ImageNet-100 和 ImageNet-1K 数据集上的 top-5 准确率分别比 CCLL 高出 0.8% 和<br />
+3.1% 的绝对幅度，尽管 RKR 和 CCLL 每项任务都只引入了大约 0.5% 的额外参数。还应注意，CCLL 引入了 0.98% 的额外<br />
+FLOPs，而 RKR 引入的额外 FLOPs 仅为 2.8e-4%，这是非常小的。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGVOUe5J4B5CKxn0Vl5e0iaGTgyicqpr7RHwBPmBMlyibPeVw4GlQVlud3g/640?wx_fmt=png&amp;from=appmsg" /></p>
+<h3 id="55-任务感知-svhn-结果">5.5 任务感知 SVHN 结果<a class="anchor-link" href="#55-任务感知-svhn-结果" title="Permanent link">&para;</a></h3>
+<p>我们在表 6 中报告了 SVHN 数据集上的任务感知非零样本增量学习实验的结果。报告的结果是模型在所有五个 SVHN<br />
+任务上训练后的最终第五阶段（A5）的平均类别预测准确率。我们观察到，我们提出的方法 RKR 使用 ResNet-18 架构优于 CCLL。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatG2b7SeTxtGzgv5tm1IiaZ73h2ibHRFNk0MldOmpibmz1sgzMyVExOsBozQ/640?wx_fmt=png&amp;from=appmsg" /></p>
+<h3 id="56-任务不可知-svhn-结果">5.6 任务不可知 SVHN 结果<a class="anchor-link" href="#56-任务不可知-svhn-结果" title="Permanent link">&para;</a></h3>
+<p>对于任务不可知的 SVHN 非零样本任务增量学习实验，我们将 RKR 与 EWC [16]、Online-EWC [19]、SI [17]、MAS<br />
+[15]、RPS-Net [23] 和 iTAML [5] 等几种方法进行了比较。我们报告了所有方法的最终阶段准确率（A5）。在表 6<br />
+中，我们观察到，我们的方法 RKR 使用 ResNet-18/3 在所有比较的方法中表现最佳，并且比使用相同架构的 iTAML 高出 3.74%<br />
+的绝对幅度。我们还观察到，使用 ResNet-18 的 RKR 也优于所有其他方法。我们方法的平均任务预测准确率在这个设置中超过了 98%。</p>
+<h3 id="57-任务不可知-cifar-结果">5.7 任务不可知 CIFAR 结果<a class="anchor-link" href="#57-任务不可知-cifar-结果" title="Permanent link">&para;</a></h3>
+<p>对于 CIFAR-100 数据集上的任务不可知非零样本增量学习实验，我们将我们的方法 RKR 与 DMC [14]、MAS [15]、LwF [12]、SI<br />
+[17]、EWC [16]、RWalk [18]、iCARL [6]、RPS [23] 和 iTAML [5] 等方法进行了比较。图 6 展示了<br />
+CIFAR-100 实验中每任务 5、10 和 20 个类别的非零样本实验结果。从结果中，我们观察到当任务数量增加时，iTAML<br />
+及其他方法的性能显著下降。然而，RKR 的性能随着任务数量的增加而相对稳定。我们的结果表明，在每任务 10 个类别的实验中，我们提出的方法 RKR 使用<br />
+ResNet-18/3 比同样使用 ResNet-18/3 的 iTAML 高出 6.22% 的绝对幅度。同样，在每任务 20 和 5<br />
+个类别的实验中，RKR 使用 ResNet-18/3 分别比 iTAML 高出 7.07% 和 5.4% 的绝对幅度。在这些设置中，使用 ResNet-18<br />
+的 RKR 在每种情况下都优于所有其他方法。我们方法的平均任务预测准确率在这些实验中超过了 90%。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGibzsew4HaDu7IcplD2GGLiby6INx7J5P2VPt3QJPhgPzs9P8k4vYDoHQ/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>任务不可知测试过程的组成部分的意义：我们在表 7 中观察到，使用任务权重超参数可以为使用 ResNet-18 的 CIFAR-100<br />
+提高模型性能，绝对幅度提高了 1.52%。此外，如第 4.4 节所述，在测试过程中使用数据增强方法进一步提高了模型性能，绝对幅度提高了 1.29%。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGyibRxroUNvWWZoiaxAcNhE5pIiawSWaX8r0cZuSPHxtqA8GqXZI8bESfg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>污染水平：在我们的提出方法中，我们在验证数据连续体中引入了污染，以增加识别 TW 超参数合适值的过程的数据点。我们进行了实验以确定最合适的污染水平。我们在表<br />
+8 中观察到，20% 的污染是最合适的水平。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGtm7VicOTjHtSNGhszjhx1U0uiaqTCu9UCTomGN5Fqu4HgHAct5H2iaheA/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>数据增强在任务不可知测试过程中的有效性：如第 4.4 节所讨论的，同一数据连续体的不同增强视图有助于正确识别 DC 的正确任务。结果表明，即使原始 DC<br />
+对错误任务具有最高的 AML，正确任务在 DC 的不同增强视图上的平均 AML 最高，从而帮助正确识别 DC 的任务。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGy35N4TT9ayvKujYUzLFxyrpXF9aGOn6hNkq86qaCjibdEudpPiaLb9KQ/640?wx_fmt=png&amp;from=appmsg" /></p>
+<h3 id="58-任务不可知-imagenet-结果">5.8 任务不可知 ImageNet 结果<a class="anchor-link" href="#58-任务不可知-imagenet-结果" title="Permanent link">&para;</a></h3>
+<p>我们在大规模的 ImageNet-100 和 ImageNet-1K 数据集上进行了任务不可知非零样本增量学习实验。结果表明，RKR<br />
+显著优于现有方法。具体来说，RKR 分别在 ImageNet-100 和 ImageNet-1K 数据集上比 iTAML 高出 9.0% 和 13.8%<br />
+的绝对幅度。在这种设置中，RKR 的平均最终会话任务预测准确率超过了 ImageNet-100 的 99% 和 ImageNet-1K 的 90%。</p>
+<h2 id="6-任务增量学习实验广义零样本设置">6 任务增量学习实验（广义零样本设置）<a class="anchor-link" href="#6-任务增量学习实验广义零样本设置" title="Permanent link">&para;</a></h2>
+<p>[34] 中的作者提出了使用 CADA-VAE [33]<br />
+作为基础架构的任务增量广义零样本学习设置。这个设置涉及对包含广义零样本学习的已见和未见类别的数据集序列进行网络训练。网络中的图像/视觉特征编码器对所有数据集都是通用的，在这种设置中会遭受灾难性遗忘。我们应用我们提出的方法<br />
+RKR<br />
+来解决任务增量广义零样本学习问题。具体来说，我们学习权重校正和缩放因子来适应任何之前见过的数据集/任务，而无需进行微调。有关更多详细信息，请参见在线提供的补充材料。</p>
+<h3 id="61-测试过程">6.1 测试过程<a class="anchor-link" href="#61-测试过程" title="Permanent link">&para;</a></h3>
+<p>在任务感知增量广义零样本学习设置中，模型在测试时可以访问数据集/任务标签 [34]。因此，RKR<br />
+使用相应的权重校正和缩放因子快速适应图像编码器到各自的数据集，并执行广义零样本分类。</p>
+<p>我们还探索了任务不可知增量广义零样本学习设置，其中模型在测试时无法访问数据集标签，而是在测试时接收一个包含未知数据集/任务的已见/未见类测试数据连续体。为了解决这个问题，我们修改了我们的方法，类似于非零样本设置。我们按照第<br />
+4.4 节中描述的过程预测测试数据连续体的数据集。</p>
+<h3 id="62-数据集">6.2 数据集<a class="anchor-link" href="#62-数据集" title="Permanent link">&para;</a></h3>
+<p>我们在四个基准数据集上进行了任务增量广义零样本学习（GZSL）问题实验，即 Attribute Pascal and Yahoo (aPY)<br />
+[44]、Animals with Attributes 1 (AWA1) [45]、Caltech-UCSD-Birds 200-2011 (CUB)<br />
+[46] 和 SUN Attribute 数据集 (SUN) [47]。我们从预训练的 ImageNet ResNet-101 的最终池化层中提取了<br />
+2048 维的图像特征。我们遵循 [45] 中提出的训练分割，以确保测试类别与训练类别不重叠。</p>
+<h3 id="63-实现细节">6.3 实现细节<a class="anchor-link" href="#63-实现细节" title="Permanent link">&para;</a></h3>
+<p>在这种设置中，RKR 将权重校正和缩放变换应用于 CADA-VAE 框架中的视觉特征编码器（请参阅在线提供的补充材料以获取更多详细信息）。我们使用 K =<br />
+16 生成权重校正，并报告我们方法的 5 次运行的平均结果。CADA-VAE 框架在这种设置中仅包含全连接层。CCLL [26] 的 SCM<br />
+模块仅校准卷积层输出（特征图）。因此，CCLL 与 CADA-VAE 不兼容。我们将我们的方法 RKR 与 LZSL [34] 以及 [34]<br />
+中提出的基线方法进行比较，即 a) 顺序微调 (SFT)：模型按顺序在新任务上进行微调，模型参数从之前任务训练的模型初始化，b) L1 正则化<br />
+(L1)：模型权重以之前任务训练的模型权重初始化，并在当前网络权重与之前网络权重之间使用 L1 正则化损失进行训练，c) L2 正则化 (L2)：与 (b)<br />
+相同，但使用 L2 正则化损失，d) “Base”：模型按顺序在所有任务上训练，不使用任何增量学习方法或微调，e)<br />
+“Original”：为每个任务训练单独的网络。</p>
+<p>对于任务不可知设置，我们使用大小为 100 的测试数据连续体。LZSL [34] 在测试期间也需要数据集/任务标签。我们使用与第 5.2<br />
+节中描述的相同的设置来确定 TW 超参数的合适值。因此，为了公平比较，我们对 LZSL 应用了相同的数据集预测方法。</p>
+<h3 id="64-任务感知结果">6.4 任务感知结果<a class="anchor-link" href="#64-任务感知结果" title="Permanent link">&para;</a></h3>
+<p>表 10 比较了我们的方法（任务感知）与其他基线和 LZSL [34] 使用三个评估指标的性能：未见类别平均准确率 (U)、已见类别平均准确率 (S)<br />
+以及两者的调和平均值 (H)。任务/数据集的序列是 aPY、AWA1、CUB 和 SUN，以便与其他方法进行公平比较。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGu2KhWEzJiaC1KOnh4CHhrTfKhiak0q1mXa11icK3ex2paibjEvqoK19xrQ/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>表 10 还报告了每种方法所需的总内存。LZSL 需要 200%<br />
+的内存用于图像特征编码器，因为它存储了之前任务上训练的图像特征编码器，以计算知识蒸馏损失。L1 和 L2 基线也需要 200%<br />
+的内存，因为它们存储了之前任务上训练的图像特征编码器，以计算两个编码器权重之间的 L1/L2 损失。“Original”<br />
+模型为四个任务训练了四个单独的网络，需要 400% 的总内存。我们的方法 RKR 每项任务大约需要额外 3.28% 的参数。因此，在四项任务中，RKR<br />
+总共需要大约 113% 的图像特征编码器内存。</p>
+<p>“Base” 模型在前三项任务上表现非常差，明显表现出灾难性遗忘。SFT<br />
+模型比“Base”模型表现更好，因为它在新任务上对模型进行了微调。然而，随着学习新任务，其对旧任务的性能开始下降，遗忘在 SFT<br />
+中较低，但仍然很大。我们观察到 L1 和 L2 基线也有类似的遗忘。我们的方法 RKR 显著优于 LZSL [34] 以及所有基线方法。具体来说，RKR 在<br />
+aPY、AWA1、CUB 和 SUN 数据集上分别比当前最先进的方法 LZSL 高出 5.65%、6.91%、6.33% 和 2.53%<br />
+的绝对幅度。我们还比较了四个数据集上的平均 H 值。基线、SFT、L1、L2 和 LZSL [34] 的平均 H 值分别为<br />
+10.2%、36.73%、38.03%、36.73% 和 42.48%。而我们的方法 RKR 的平均 H 值为 47.83%，"Original"<br />
+模型的平均 H 值为 49.82%。因此，与 LZSL 相比，RKR 的性能更接近 "Original" 模型。</p>
+<p>不同的第一个任务的结果：表 11 包含了不同任务/数据集序列的第一个数据集的结果，这些序列具有不同的第一个数据集。当第一个数据集分别为 aPY、CUB 和<br />
+SUN 时，AWA1 数据集的 H 值分别为 63.64%、62.24% 和 62.46%。考虑到 aPY、CUB 和 SUN<br />
+在类别数量上有很大的变化（aPY = 32，CUB = 200，SUN =<br />
+717），这种结果的变化是很小的。我们观察到其他三个任务，当第一个任务不同时，也呈现出相同的模式。因此，我们的方法在这个设置中表现良好，无论第一个任务的选择如何。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGGpvbQhC8TWPvaicY5oPfRhPNia2skSkaTjYDW5XWqflhFDad4QEAvQGg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>组成部分的意义：我们在表 12 中观察到，如果没有权重校正，RKR 在 AWA1、CUB 和 SUN 数据集上的性能分别比有权重校正时低<br />
+6.8%、9.28% 和 6.24% 的绝对幅度。同样，如果没有缩放，RKR 在 AWA1、CUB 和 SUN 数据集上的性能分别比有缩放时低<br />
+3.71%、4.57% 和 3.59% 的绝对幅度。因此，权重校正和缩放因子在这种设置中都是至关重要的。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGrzz6mbnibmicPFH2riamp4D43SyWmnOV0kmbp5nKnB2ib7yQ7KKYiaLMfMg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>K 的值：表 13 报告了 RKR 在不同 K 值下的性能。我们观察到，K = 16 的 RKR 在大多数数据集上的性能接近 K = 32 的<br />
+RKR，但所需的总内存显著减少，即 113% 相对于 126%。因此，我们选择 K = 16 作为我们所有实验的设置，这显著优于当前的最先进方法。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatG1qS2xHeEHxloZKTsNlxrNlUkN5eut3xJQkZdv8kAAW1mZXsKYuoJlg/640?wx_fmt=png&amp;from=appmsg" /></p>
+<p>正向知识传递：在 RKR 中，当新任务可用于训练时，我们从上一个任务初始化 RG 和 SFG 参数。我们还尝试了为每个任务从头开始训练这些参数。表 14<br />
+报告了我们的方法 RKR（任务感知）在两种类型的初始化下的性能。当我们从头开始初始化这些参数时，模型的性能在 AWA1、CUB 和 SUN<br />
+数据集上分别比另一种情况低 3.72%、7.57% 和 7.14% 的绝对幅度。因此，RKR 中发生了正向知识传递。</p>
+<p><img alt="" src="https://mmbiz.qpic.cn/mmbiz_png/u5nCGgYiaI4UdBmv6ktzKwJL245QNTatGknEVtyY4YgiaQf4EJ9GibDQNYEOsZeUNv4HVrBPSTB4T4XeVGvib6w1pA/640?wx_fmt=png&amp;from=appmsg" /></p>
+<h3 id="65-任务不可知的结果">6.5 任务不可知的结果<a class="anchor-link" href="#65-任务不可知的结果" title="Permanent link">&para;</a></h3>
+<p>表 10 比较了我们的方法在测试设置中与 LZSL [34] 的性能，在这个设置中，模型在测试期间无法访问数据集/任务标签（任务不可知）。为了与 LZSL<br />
+进行公平比较，任务/数据集的序列是 aPY、AWA1、CUB 和 SUN。我们观察到，即使在这种设置中，RKR 在所有数据集上的性能也显著优于<br />
+LZSL。这更加重要，因为我们对 LZSL 应用了相同的数据集预测方法。实际上，任务不可知的 RKR 甚至在测试期间使用任务标签的任务感知 LZSL<br />
+方法上也显著优于它。对于 CUB 和 SUN 数据集，我们方法的任务预测准确率达到了 100%。在这种设置中，我们方法的平均数据集预测准确率超过了 99%。</p>
+<h2 id="7-结论">7 结论<a class="anchor-link" href="#7-结论" title="Permanent link">&para;</a></h2>
+<p>在本文中，我们提出了一种新颖的基于校正的知识保留（Rectification-based Knowledge Retention,<br />
+RKR）方法来解决非零样本和零样本任务增量学习问题。我们展示了 RKR<br />
+如何学习网络权重的校正和网络中间输出的缩放因子，以便使网络适应任何给定的任务。我们提出的方法适用于任务感知和任务不可知的测试设置。我们通过实验表明，我们的方法显著优于现有的最先进方法。我们通过各种消融实验验证了我们方法的组成部分。将来，我们希望将我们的方法应用于其他计算机视觉任务，如增量目标检测和分割学习。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

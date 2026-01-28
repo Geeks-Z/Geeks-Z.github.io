@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#lenet-5">LeNet-5</a></li>
+<li><a href="#alexnet">AlexNet</a></li>
+<li><a href="#残差网络resnetsresidual-networks-resnets">残差网络(ResNets)（Residual Networks (ResNets)）</a><ul>
+<li><a href="#残差网络为什么有用why-resnets-work">残差网络为什么有用？（Why ResNets work?）</a></li>
+</ul>
+</li>
+<li><a href="#网络中的网络以及-11-卷积network-in-network-and-11-convolutions">网络中的网络以及 1×1 卷积（Network in Network and 1×1 convolutions）</a></li>
+<li><a href="#谷歌-inception-网络简介inception-network-motivation">谷歌 Inception 网络简介（Inception network motivation）</a></li>
+<li><a href="#inception-网络inception-network">Inception 网络（Inception network）</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="lenet-5">LeNet-5<a class="anchor-link" href="#lenet-5" title="Permanent link">&para;</a></h2>
+<p><strong>LeNet-5</strong>的网络结构，假设你有一张32×32×1的图片，<strong>LeNet-5</strong>可以识别图中的手写数字，比如像这样手写数字7。<strong>LeNet-5</strong>是针对<strong>灰度图片</strong>训练的，所以图片的大小只有32×32×1。实际上<strong>LeNet-5</strong>的结构和我们上周讲的最后一个范例非常相似，使用6个5×5的过滤器，步幅为1。由于使用了6个过滤器，步幅为1，<strong>padding</strong>为0，输出结果为28×28×6，图像尺寸从32×32缩小到28×28。然后进行池化操作，在这篇论文写成的那个年代，人们更喜欢使用平均池化，而现在我们可能用最大池化更多一些。在这个例子中，我们进行平均池化，过滤器的宽度为2，步幅为2，图像的尺寸，高度和宽度都缩小了2倍，输出结果是一个14×14×6的图像。我觉得这张图片应该不是完全按照比例绘制的，如果严格按照比例绘制，新图像的尺寸应该刚好是原图像的一半。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949596.png" /></p>
+<p>接下来是卷积层，我们用一组16个5×5的过滤器，新的输出结果有16个通道。<strong>LeNet-5</strong>的论文是在1998年撰写的，当时人们并不使用<strong>padding</strong>，或者总是使用<strong>valid</strong>卷积，这就是为什么每进行一次卷积，图像的高度和宽度都会缩小，所以这个图像从14到14缩小到了10×10。然后又是池化层，高度和宽度再缩小一半，输出一个5×5×16的图像。将所有数字相乘，乘积是400。</p>
+<p>下一层是全连接层，在全连接层中，有400个节点，每个节点有120个神经元，这里已经有了一个全连接层。但有时还会从这400个节点中抽取一部分节点构建另一个全连接层，就像这样，有2个全连接层。</p>
+<p>最后一步就是利用这84个特征得到最后的输出，我们还可以在这里再加一个节点用来预测<span class="math-inline">\hat{y}</span> 值，<span class="math-inline">\hat{y}</span> 10个可能的值，对应识别0-9这10个数字。在现在的版本中则使用<strong>softmax</strong>函数输出十种分类结果，而在当时，<strong>LeNet-5</strong>网络在输出层使用了另外一种，现在已经很少用到的分类器。</p>
+<p>相比现代版本，这里得到的神经网络会小一些，只有约6万个参数。而现在，我们经常看到含有一千万到一亿个参数的神经网络，比这大1000倍的神经网络也不在少数。</p>
+<p>不管怎样，如果我们从左往右看，随着网络越来越深，图像的高度和宽度在缩小，从最初的32×32缩小到28×28，再到14×14、10×10，最后只有5×5。与此同时，随着网络层次的加深，通道数量一直在增加，从1增加到6个，再到16个。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949185.png" /></p>
+<p>这个神经网络中还有一种模式至今仍然经常用到，就是一个或多个卷积层后面跟着一个池化层，然后又是若干个卷积层再接一个池化层，然后是全连接层，最后是输出，这种排列方式很常用。</p>
+<p>对于那些想尝试阅读论文的同学，我再补充几点。接下来的部分主要针对那些打算阅读经典论文的同学，所以会更加深入。这些内容你完全可以跳过，算是对神经网络历史的一种回顾吧，听不懂也不要紧。</p>
+<p>读到这篇经典论文时，你会发现，过去，人们使用<strong>sigmod</strong>函数和<strong>tanh</strong>函数，而不是<strong>ReLu</strong>函数，这篇论文中使用的正是<strong>sigmod</strong>函数和<strong>tanh</strong>函数。这种网络结构的特别之处还在于，各网络层之间是有关联的，这在今天看来显得很有趣。</p>
+<p>比如说，你有一个<span class="math-inline">n_{H} \times n_{W} \times n_{C}</span> 网络，有<span class="math-inline">n_{C}</span> 通道，使用尺寸为<span class="math-inline">f×f×n_{C}</span> 过滤器，每个过滤器的通道数和它上一层的通道数相同。这是由于在当时，计算机的运行速度非常慢，为了减少计算量和参数，经典的<strong>LeNet-5</strong>网络使用了非常复杂的计算方式，每个过滤器都采用和输入模块一样的通道数量。论文中提到的这些复杂细节，现在一般都不用了。</p>
+<p>我认为当时所进行的最后一步其实到现在也还没有真正完成，就是经典的<strong>LeNet-5</strong>网络在池化后进行了非线性函数处理，在这个例子中，池化层之后使用了<strong>sigmod</strong>函数。如果你真的去读这篇论文，这会是最难理解的部分之一，我们会在后面的课程中讲到。</p>
+<p>下面要讲的网络结构简单一些，幻灯片的大部分类容来自于原文的第二段和第三段，原文的后几段介绍了另外一种思路。文中提到的这种图形变形网络如今并没有得到广泛应用，所以在读这篇论文的时候，我建议精读第二段，这段重点介绍了这种网络结构。泛读第三段，这里面主要是一些有趣的实验结果。</p>
+<h2 id="alexnet">AlexNet<a class="anchor-link" href="#alexnet" title="Permanent link">&para;</a></h2>
+<p>我要举例说明的第二种神经网络是<strong>AlexNet</strong>，是以论文的第一作者<strong>Alex Krizhevsky</strong>的名字命名的，另外两位合著者是<strong>ilya Sutskever</strong>和<strong>Geoffery Hinton</strong>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949737.png" /></p>
+<p><strong>AlexNet</strong>首先用一张227×227×3的图片作为输入，实际上原文中使用的图像是224×224×3，但是如果你尝试去推导一下，你会发现227×227这个尺寸更好一些。第一层我们使用96个11×11的过滤器，步幅为4，由于步幅是4，因此尺寸缩小到55×55，缩小了4倍左右。然后用一个3×3的过滤器构建最大池化层，<span class="math-inline">f=3</span>，步幅<span class="math-inline">s</span> 2，卷积层尺寸缩小为27×27×96。接着再执行一个5×5的卷积，<strong>padding</strong>之后，输出是27×27×276。然后再次进行最大池化，尺寸缩小到13×13。再执行一次<strong>same</strong>卷积，相同的<strong>padding</strong>，得到的结果是13×13×384，384个过滤器。再做一次<strong>same</strong>卷积，就像这样。再做一次同样的操作，最后再进行一次最大池化，尺寸缩小到6×6×256。6×6×256等于9216，将其展开为9216个单元，然后是一些全连接层。最后使用<strong>softmax</strong>函数输出识别的结果，看它究竟是1000个可能的对象中的哪一个。</p>
+<p>实际上，这种神经网络与<strong>LeNet</strong>有很多相似之处，不过<strong>AlexNet</strong>要大得多。正如前面讲到的<strong>LeNet</strong>或<strong>LeNet-5</strong>大约有6万个参数，而<strong>AlexNet</strong>包含约6000万个参数。当用于训练图像和数据集时，<strong>AlexNet</strong>能够处理非常相似的基本构造模块，这些模块往往包含着大量的隐藏单元或数据，这一点<strong>AlexNet</strong>表现出色。<strong>AlexNet</strong>比<strong>LeNet</strong>表现更为出色的另一个原因是它使用了<strong>ReLu</strong>激活函数。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949353.png" /></p>
+<p>同样的，我还会讲一些比较深奥的内容，如果你并不打算阅读论文，不听也没有关系。第一点，在写这篇论文的时候，<strong>GPU</strong>的处理速度还比较慢，所以<strong>AlexNet</strong>采用了非常复杂的方法在两个<strong>GPU</strong>上进行训练。大致原理是，这些层分别拆分到两个不同的<strong>GPU</strong>上，同时还专门有一个方法用于两个<strong>GPU</strong>进行交流。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949625.png" /></p>
+<p>论文还提到，经典的<strong>AlexNet</strong>结构还有另一种类型的层，叫作“局部响应归一化层”（<strong>Local Response Normalization</strong>），即<strong>LRN</strong>层，这类层应用得并不多，所以我并没有专门讲。局部响应归一层的基本思路是，假如这是网络的一块，比如是13×13×256，<strong>LRN</strong>要做的就是选取一个位置，比如说这样一个位置，从这个位置穿过整个通道，能得到256个数字，并进行归一化。进行局部响应归一化的动机是，对于这张13×13的图像中的每个位置来说，我们可能并不需要太多的高激活神经元。但是后来，很多研究者发现<strong>LRN</strong>起不到太大作用，这应该是被我划掉的内容之一，因为并不重要，而且我们现在并不用<strong>LRN</strong>来训练网络。</p>
+<p>如果你对深度学习的历史感兴趣的话，我认为在<strong>AlexNet</strong>之前，深度学习已经在语音识别和其它几个领域获得了一些关注，但正是通过这篇论文，计算机视觉群体开始重视深度学习，并确信深度学习可以应用于计算机视觉领域。此后，深度学习在计算机视觉及其它领域的影响力与日俱增。如果你并不打算阅读这方面的论文，其实可以不用学习这节课。但如果你想读懂一些相关的论文，这是比较好理解的一篇，学起来会容易一些。</p>
+<p><strong>AlexNet</strong>网络结构看起来相对复杂，包含大量超参数，这些数字（55×55×96、27×27×96、27×27×256……）都是<strong>Alex Krizhevsky</strong>及其合著者不得不给出的。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949107.png" /></p>
+<p>这节课要讲的第三个，也是最后一个范例是<strong>VGG</strong>，也叫作<strong>VGG-16</strong>网络。值得注意的一点是，<strong>VGG-16</strong>网络没有那么多超参数，这是一种只需要专注于构建卷积层的简单网络。首先用3×3，步幅为1的过滤器构建卷积层，<strong>padding</strong>参数为<strong>same</strong>卷积中的参数。然后用一个2×2，步幅为2的过滤器构建最大池化层。因此<strong>VGG</strong>网络的一大优点是它确实简化了神经网络结构，下面我们具体讲讲这种网络结构。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949397.png" /></p>
+<p>假设要识别这个图像，在最开始的两层用64个3×3的过滤器对输入图像进行卷积，输出结果是224×224×64，因为使用了<strong>same</strong>卷积，通道数量也一样。<strong>VGG-16</strong>其实是一个很深的网络，这里我并没有把所有卷积层都画出来。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949758.png" /></p>
+<p>假设这个小图是我们的输入图像，尺寸是224×224×3，进行第一个卷积之后得到224×224×64的特征图，接着还有一层224×224×64，得到这样2个厚度为64的卷积层，意味着我们用64个过滤器进行了两次卷积。正如我在前面提到的，这里采用的都是大小为3×3，步幅为1的过滤器，并且都是采用<strong>same</strong>卷积，所以我就不再把所有的层都画出来了，只用一串数字代表这些网络。</p>
+<p>接下来创建一个池化层，池化层将输入图像进行压缩，从224×224×64缩小到多少呢？没错，减少到112×112×64。然后又是若干个卷积层，使用129个过滤器，以及一些<strong>same</strong>卷积，我们看看输出什么结果，112×112×128.然后进行池化，可以推导出池化后的结果是这样（56×56×128）。接着再用256个相同的过滤器进行三次卷积操作，然后再池化，然后再卷积三次，再池化。如此进行几轮操作后，将最后得到的7×7×512的特征图进行全连接操作，得到4096个单元，然后进行<strong>softmax</strong>激活，输出从1000个对象中识别的结果。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949231.png" /></p>
+<p>顺便说一下，<strong>VGG-16</strong>的这个数字16，就是指在这个网络中包含16个卷积层和全连接层。确实是个很大的网络，总共包含约1.38亿个参数，即便以现在的标准来看都算是非常大的网络。但<strong>VGG-16</strong>的结构并不复杂，这点非常吸引人，而且这种网络结构很规整，都是几个卷积层后面跟着可以压缩图像大小的池化层，池化层缩小图像的高度和宽度。同时，卷积层的过滤器数量变化存在一定的规律，由64翻倍变成128，再到256和512。作者可能认为512已经足够大了，所以后面的层就不再翻倍了。无论如何，每一步都进行翻倍，或者说在每一组卷积层进行过滤器翻倍操作，正是设计此种网络结构的另一个简单原则。这种相对一致的网络结构对研究者很有吸引力，而它的主要缺点是需要训练的特征数量非常巨大。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949816.png" /></p>
+<p>有些文章还介绍了<strong>VGG-19</strong>网络，它甚至比<strong>VGG-16</strong>还要大，如果你想了解更多细节，请参考幻灯片下方的注文，阅读由<strong>Karen Simonyan</strong>和<strong>Andrew Zisserman</strong>撰写的论文。由于<strong>VGG-16</strong>的表现几乎和<strong>VGG-19</strong>不分高下，所以很多人还是会使用<strong>VGG-16</strong>。我最喜欢它的一点是，文中揭示了，随着网络的加深，图像的高度和宽度都在以一定的规律不断缩小，每次池化后刚好缩小一半，而通道数量在不断增加，而且刚好也是在每组卷积操作后增加一倍。也就是说，图像缩小的比例和通道数增加的比例是有规律的。从这个角度来看，这篇论文很吸引人。</p>
+<p>以上就是三种经典的网络结构，如果你对这些论文感兴趣，我建议从介绍<strong>AlexNet</strong>的论文开始，然后就是<strong>VGG</strong>的论文，最后是<strong>LeNet</strong>的论文。虽然有些晦涩难懂，但对于了解这些网络结构很有帮助。</p>
+<h2 id="残差网络resnetsresidual-networks-resnets">残差网络(ResNets)（Residual Networks (ResNets)）<a class="anchor-link" href="#残差网络resnetsresidual-networks-resnets" title="Permanent link">&para;</a></h2>
+<p>非常深的神经网络是很难训练的，因为存在梯度消失和梯度爆炸问题。跳跃连接（<strong>Skip connection</strong>），它可以从某一层网络层获取激活，然后迅速反馈给另外一层，甚至是神经网络的更深层。我们可以利用跳跃连接构建能够训练深度网络的<strong>ResNets</strong>，有时深度能够超过100层。</p>
+<p><strong>ResNets</strong>是由残差块（<strong>Residual block</strong>）构建的，首先我解释一下什么是残差块。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949232.png" /></p>
+<p>这是一个两层神经网络，在<span class="math-inline">L</span> 进行激活，得到<span class="math-inline">a^{\left\lbrack l + 1 \right\rbrack}</span>，再次进行激活，两层之后得到<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack}</span>。计算过程是从<span class="math-inline">a^{[l]}</span> 始，首先进行线性激活，根据这个公式：<span class="math-inline">z^{\left\lbrack l + 1 \right\rbrack} = W^{\left\lbrack l + 1 \right\rbrack}a^{[l]} + b^{\left\lbrack l + 1 \right\rbrack}</span>，通过<span class="math-inline">a^{[l]}</span> 出<span class="math-inline">z^{\left\lbrack l + 1 \right\rbrack}</span>，即<span class="math-inline">a^{[l]}</span> 以权重矩阵，再加上偏差因子。然后通过<strong>ReLU</strong>非线性激活函数得到<span class="math-inline">a^{\left\lbrack l + 1 \right\rbrack}</span>，<span class="math-inline">a^{\left\lbrack l + 1 \right\rbrack} =g(z^{\left\lbrack l + 1 \right\rbrack})</span> 算得出。接着再次进行线性激活，依据等式<span class="math-inline">z^{\left\lbrack l + 2 \right\rbrack} = W^{\left\lbrack 2 + 1 \right\rbrack}a^{\left\lbrack l + 1 \right\rbrack} + b^{\left\lbrack l + 2 \right\rbrack}</span>，最后根据这个等式再次进行<strong>ReLu</strong>非线性激活，即<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack} = g(z^{\left\lbrack l + 2   \right\rbrack})</span>，这里的<span class="math-inline">g</span> 指<strong>ReLU</strong>非线性函数，得到的结果就是<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack}</span>。换句话说，信息流从<span class="math-inline">a^{\left\lbrack l   \right\rbrack}</span> <span class="math-inline">a^{\left\lbrack l + 2  \right\rbrack}</span> 要经过以上所有步骤，即这组网络层的主路径。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949817.png" /></p>
+<p>在残差网络中有一点变化，我们将<span class="math-inline">a^{[l]}</span> 接向后，拷贝到神经网络的深层，在<strong>ReLU</strong>非线性激活函数前加上<span class="math-inline">a^{[l]}</span>，这是一条捷径。<span class="math-inline">a^{[l]}</span> 信息直接到达神经网络的深层，不再沿着主路径传递，这就意味着最后这个等式(<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack} = g(z^{\left\lbrack l + 2 \right\rbrack})</span>)去掉了，取而代之的是另一个<strong>ReLU</strong>非线性函数，仍然对<span class="math-inline">z^{\left\lbrack l + 2 \right\rbrack}</span> 行<span class="math-inline">g</span> 数处理，但这次要加上<span class="math-inline">a^{[l]}</span>，即：<span class="math-inline">\ a^{\left\lbrack l + 2 \right\rbrack} = g\left(z^{\left\lbrack l + 2 \right\rbrack} + a^{[l]}\right)</span>，也就是加上的这个<span class="math-inline">a^{[l]}</span> 生了一个残差块。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949817.png" /></p>
+<p>在上面这个图中，我们也可以画一条捷径，直达第二层。实际上这条捷径是在进行<strong>ReLU</strong>非线性激活函数之前加上的，而这里的每一个节点都执行了线性函数和<strong>ReLU</strong>激活函数。所以<span class="math-inline">a^{[l]}</span> 入的时机是在线性激活之后，<strong>ReLU</strong>激活之前。除了捷径，你还会听到另一个术语“跳跃连接”，就是指<span class="math-inline">a^{[l]}</span> 过一层或者好几层，从而将信息传递到神经网络的更深层。</p>
+<p>构建一个<strong>ResNet</strong>网络就是通过将很多这样的残差块堆积在一起，形成一个很深神经网络:</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949237.png" /></p>
+<p>这并不是一个残差网络，而是一个普通网络（<strong>Plain network</strong>），这个术语来自<strong>ResNet</strong>论文。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949604.png" /></p>
+<p>把它变成<strong>ResNet</strong>的方法是加上所有跳跃连接，正如前一张幻灯片中看到的，每两层增加一个捷径，构成一个残差块。如图所示，5个残差块连接在一起构成一个残差网络。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949039.png" /></p>
+<p>如果我们使用标准优化算法训练一个普通网络，比如说梯度下降法，或者其它热门的优化算法。如果没有残差，没有这些捷径或者跳跃连接，凭经验你会发现随着网络深度的加深，训练错误会先减少，然后增多。而理论上，随着网络深度的加深，应该训练得越来越好才对。也就是说，理论上网络深度越深越好。但实际上，如果没有残差网络，对于一个普通网络来说，深度越深意味着用优化算法越难训练。实际上，随着网络深度的加深，训练错误会越来越多。</p>
+<p>但有了<strong>ResNets</strong>就不一样了，即使网络再深，训练的表现却不错，比如说训练误差减少，就算是训练深达100层的网络也不例外。有人甚至在1000多层的神经网络中做过实验，尽管目前我还没有看到太多实际应用。但是对<span class="math-inline">x</span> 激活，或者这些中间的激活能够到达网络的更深层。这种方式确实有助于解决梯度消失和梯度爆炸问题，让我们在训练更深网络的同时，又能保证良好的性能。也许从另外一个角度来看，随着网络越来越深，网络连接会变得臃肿，但是<strong>ResNet</strong>确实在训练深度网络方面非常有效。</p>
+<h3 id="残差网络为什么有用why-resnets-work">残差网络为什么有用？（Why ResNets work?）<a class="anchor-link" href="#残差网络为什么有用why-resnets-work" title="Permanent link">&para;</a></h3>
+<p>一个网络深度越深，它在训练集上训练的效率就会有所减弱，这也是有时候我们不希望加深网络的原因。而事实并非如此，至少在训练<strong>ResNets</strong>网络时，并非完全如此，举个例子。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949517.png" /></p>
+<p>假设有一个大型神经网络，其输入为<span class="math-inline">X</span>，输出激活值<span class="math-inline">a^{[l]}</span>。假如你想增加这个神经网络的深度，那么用<strong>Big NN</strong>表示，输出为<span class="math-inline"> a^{\left\lbrack l\right\rbrack}</span>。再给这个网络额外添加两层，依次添加两层，最后输出为<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack}</span>，可以把这两层看作一个<strong>ResNets</strong>块，即具有捷径连接的残差块。为了方便说明，假设我们在整个网络中使用<strong>ReLU</strong>激活函数，所以激活值都大于等于0，包括输入<span class="math-inline">X</span> 非零异常值。因为<strong>ReLU</strong>激活函数输出的数字要么是0，要么是正数。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949953.png" /></p>
+<p>我们看一下<span class="math-inline">a^{\left\lbrack l + 2\right\rbrack}</span> 值，也就是上节课讲过的表达式，即<span class="math-inline">a^{\left\lbrack l + 2\right\rbrack} = g(z^{\left\lbrack l + 2 \right\rbrack} + a^{\left\lbrack l\right\rbrack})</span>，添加项<span class="math-inline">a^{\left\lbrack l\right\rbrack}</span> 刚添加的跳跃连接的输入。展开这个表达式<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack} = g(W^{\left\lbrack l + 2 \right\rbrack}a^{\left\lbrack l + 1 \right\rbrack} + b^{\left\lbrack l + 2 \right\rbrack} + a^{\left\lbrack l\right\rbrack})</span>，其中<span class="math-inline">z^{\left\lbrack l + 2 \right\rbrack} = W^{\left\lbrack l + 2 \right\rbrack}a^{\left\lbrack l + 1 \right\rbrack} + b^{\left\lbrack l + 2\right\rbrack}</span>。注意一点，如果使用<strong>L2</strong>正则化或权重衰减，它会压缩<span class="math-inline">W^{\left\lbrack l + 2\right\rbrack}</span> 值。如果对<span class="math-inline">b</span> 用权重衰减也可达到同样的效果，尽管实际应用中，你有时会对<span class="math-inline">b</span> 用权重衰减，有时不会。这里的<span class="math-inline">W</span> 关键项，如果<span class="math-inline">W^{\left\lbrack l + 2 \right\rbrack} = 0</span>，为方便起见，假设<span class="math-inline">b^{\left\lbrack l + 2 \right\rbrack} = 0</span>，这几项就没有了，因为它们（<span class="math-inline">W^{\left\lbrack l + 2 \right\rbrack}a^{\left\lbrack l + 1 \right\rbrack} + b^{\left\lbrack l + 2\right\rbrack}</span>）的值为0。最后<span class="math-inline"> a^{\left\lbrack l + 2 \right\rbrack} = \ g\left( a^{[l]} \right) = a^{\left\lbrack l\right\rbrack}</span>，因为我们假定使用<strong>ReLU</strong>激活函数，并且所有激活值都是非负的，<span class="math-inline">g\left(a^{[l]} \right)</span> 应用于非负数的<strong>ReLU</strong>函数，所以<span class="math-inline">a^{[l+2]} =a^{[l]}</span>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949371.png" /></p>
+<p><img alt="img" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949695.png" /></p>
+<p>结果表明，残差块学习这个恒等式函数并不难，跳跃连接使我们很容易得出<span class="math-inline"> a^{\left\lbrack l + 2 \right\rbrack} = a^{\left\lbrack l\right\rbrack}</span>。这意味着，即使给神经网络增加了这两层，它的效率也并不逊色于更简单的神经网络，因为学习恒等函数对它来说很简单。尽管它多了两层，也只把<span class="math-inline">a^{[l]}</span> 值赋值给<span class="math-inline">a^{\left\lbrack l + 2 \right\rbrack}</span>。所以给大型神经网络增加两层，不论是把残差块添加到神经网络的中间还是末端位置，都不会影响网络的表现。</p>
+<p>当然，我们的目标不仅仅是保持网络的效率，还要提升它的效率。想象一下，如果这些隐藏层单元学到一些有用信息，那么它可能比学习恒等函数表现得更好。而这些不含有残差块或跳跃连接的深度普通网络情况就不一样了，当网络不断加深时，就算是选用学习恒等函数的参数都很困难，所以很多层最后的表现不但没有更好，反而更糟。</p>
+<p>我认为残差网络起作用的主要原因就是这些残差块学习恒等函数非常容易，你能确定网络性能不会受到影响，很多时候甚至可以提高效率，或者说至少不会降低网络的效率，因此创建类似残差网络可以提升网络性能。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949117.png" /></p>
+<p>除此之外，关于残差网络，另一个值得探讨的细节是，假设<span class="math-inline"> z^{\left\lbrack l + 2\right\rbrack}</span> <span class="math-inline">a^{[l]}</span> 有相同维度，所以<strong>ResNets</strong>使用了许多<strong>same</strong>卷积，所以这个<span class="math-inline">a^{\left\lbrack l\right\rbrack}</span> 维度等于这个输出层的维度。之所以能实现跳跃连接是因为<strong>same</strong>卷积保留了维度，所以很容易得出这个捷径连接，并输出这两个相同维度的向量。</p>
+<p>如果输入和输出有不同维度，比如输入的维度是128，<span class="math-inline"> a^{\left\lbrack l + 2\right\rbrack}</span> 维度是256，再增加一个矩阵，这里标记为<span class="math-inline">W_{s}</span>，<span class="math-inline">W_{s}</span> 一个256×128维度的矩阵，所以<span class="math-inline">W_{s}a^{\left\lbrack l\right\rbrack}</span> 维度是256，这个新增项是256维度的向量。你不需要对<span class="math-inline">W_{s}</span> 任何操作，它是网络通过学习得到的矩阵或参数，它是一个固定矩阵，<strong>padding</strong>值为0，用0填充<span class="math-inline">a^{[l]}</span>，其维度为256，所以这几个表达式都可以。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949608.png" /></p>
+<p>最后，我们来看看<strong>ResNets</strong>的图片识别。这些图片是我从何凯明等人论文中截取的，这是一个普通网络，我们给它输入一张图片，它有多个卷积层，最后输出了一个<strong>Softmax</strong>。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949036.png" style="zoom:150%;" /></p>
+<p>如何把它转化为<strong>ResNets</strong>呢？只需要添加跳跃连接。这里我们只讨论几个细节，这个网络有很多层3×3卷积，而且它们大多都是<strong>same</strong>卷积，这就是添加等维特征向量的原因。所以这些都是卷积层，而不是全连接层，因为它们是<strong>same</strong>卷积，维度得以保留，这也解释了添加项<span class="math-inline"> z^{\left\lbrack l + 2 \right\rbrack} + a^{\left\lbrack l\right\rbrack}</span>（维度相同所以能够相加）。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949504.png" /></p>
+<p><strong>ResNets</strong>类似于其它很多网络，也会有很多卷积层，其中偶尔会有池化层或类池化层的层。不论这些层是什么类型，正如我们在上一张幻灯片看到的，你都需要调整矩阵<span class="math-inline">W_{s}</span> 维度。普通网络和<strong>ResNets</strong>网络常用的结构是：卷积层-卷积层-卷积层-池化层-卷积层-卷积层-卷积层-池化层……依此重复。直到最后，有一个通过<strong>softmax</strong>进行预测的全连接层。</p>
+<p>以上就是<strong>ResNets</strong>的内容。使用1×1的过滤器，即1×1卷积，这个想法很有意思，为什么呢？我们下节课再讲。</p>
+<h2 id="网络中的网络以及-11-卷积network-in-network-and-11-convolutions">网络中的网络以及 1×1 卷积（Network in Network and 1×1 convolutions）<a class="anchor-link" href="#网络中的网络以及-11-卷积network-in-network-and-11-convolutions" title="Permanent link">&para;</a></h2>
+<p>在架构内容设计方面，其中一个比较有帮助的想法是使用1×1卷积。也许你会好奇，1×1的卷积能做什么呢？不就是乘以数字么？听上去挺好笑的，结果并非如此，我们来具体看看。</p>
+<p>过滤器为1×1，这里是数字2，输入一张6×6×1的图片，然后对它做卷积，起过滤器大小为1×1×1，结果相当于把这个图片乘以数字2，所以前三个单元格分别是2、4、6等等。用1×1的过滤器进行卷积，似乎用处不大，只是对输入矩阵乘以某个数字。但这仅仅是对于6×6×1的一个通道图片来说，1×1卷积效果不佳。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949099.png" /></p>
+<p>如果是一张6×6×32的图片，那么使用1×1过滤器进行卷积效果更好。具体来说，1×1卷积所实现的功能是遍历这36个单元格，计算左图中32个数字和过滤器中32个数字的元素积之和，然后应用<strong>ReLU</strong>非线性函数。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949535.png" /></p>
+<p>我们以其中一个单元为例，它是这个输入层上的某个切片，用这36个数字乘以这个输入层上1×1切片，得到一个实数，像这样把它画在输出中。</p>
+<p>这个1×1×32过滤器中的32个数字可以这样理解，一个神经元的输入是32个数字（输入图片中左下角位置32个通道中的数字），即相同高度和宽度上某一切片上的32个数字，这32个数字具有不同通道，乘以32个权重（将过滤器中的32个数理解为权重），然后应用<strong>ReLU</strong>非线性函数，在这里输出相应的结果。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949035.png" /></p>
+<p>一般来说，如果过滤器不止一个，而是多个，就好像有多个输入单元，其输入内容为一个切片上所有数字，输出结果是6×6过滤器数量。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949566.png" /></p>
+<p>所以1×1卷积可以从根本上理解为对这32个不同的位置都应用一个全连接层，全连接层的作用是输入32个数字（过滤器数量标记为<span class="math-inline">n_{C}^{\left\lbrack l + 1\right\rbrack}</span>，在这36个单元上重复此过程）,输出结果是6×6×#filters（过滤器数量），以便在输入层上实施一个非平凡（<strong>non-trivial</strong>）计算。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949934.png" /></p>
+<p>这种方法通常称为1×1卷积，有时也被称为<strong>Network in Network</strong>，在林敏、陈强和杨学成的论文中有详细描述。虽然论文中关于架构的详细内容并没有得到广泛应用，但是1×1卷积或<strong>Network in Network</strong>这种理念却很有影响力，很多神经网络架构都受到它的影响，包括下节课要讲的<strong>Inception</strong>网络。</p>
+<p>举个1×1卷积的例子，相信对大家有所帮助，这是它的一个应用。</p>
+<p>假设这是一个28×28×192的输入层，你可以使用池化层压缩它的高度和宽度，这个过程我们很清楚。但如果通道数量很大，该如何把它压缩为28×28×32维度的层呢？你可以用32个大小为1×1的过滤器，严格来讲每个过滤器大小都是1×1×192维，因为过滤器中通道数量必须与输入层中通道的数量保持一致。但是你使用了32个过滤器，输出层为28×28×32，这就是压缩通道数（<span class="math-inline">n_{c}</span>）的方法，对于池化层我只是压缩了这些层的高度和宽度。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949274.png" /></p>
+<p>在之后我们看到在某些网络中1×1卷积是如何压缩通道数量并减少计算的。当然如果你想保持通道数192不变，这也是可行的，1×1卷积只是添加了非线性函数，当然也可以让网络学习更复杂的函数，比如，我们再添加一层，其输入为28×28×192，输出为28×28×192。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949700.png" /></p>
+<p>1×1卷积层就是这样实现了一些重要功能的（<strong>doing something pretty non-trivial</strong>），它给神经网络添加了一个非线性函数，从而减少或保持输入层中的通道数量不变，当然如果你愿意，也可以增加通道数量。后面你会发现这对构建<strong>Inception</strong>网络很有帮助，我们放在下节课讲。</p>
+<p>这节课我们演示了如何根据自己的意愿通过1×1卷积的简单操作来压缩或保持输入层中的通道数量，甚至是增加通道数量。下节课，我们再讲讲1×1卷积是如何帮助我们构建<strong>Inception</strong>网络的，下节课见。</p>
+<h2 id="谷歌-inception-网络简介inception-network-motivation">谷歌 Inception 网络简介（Inception network motivation）<a class="anchor-link" href="#谷歌-inception-网络简介inception-network-motivation" title="Permanent link">&para;</a></h2>
+<p>构建卷积层时，你要决定过滤器的大小究竟是1×1（原来是1×3，猜测为口误），3×3还是5×5，或者要不要添加池化层。而<strong>Inception</strong>网络的作用就是代替你来决定，虽然网络架构因此变得更加复杂，但网络表现却非常好，我们来了解一下其中的原理。</p>
+<p>例如，这是你28×28×192维度的输入层，<strong>Inception</strong>网络或<strong>Inception</strong>层的作用就是代替人工来确定卷积层中的过滤器类型，或者确定是否需要创建卷积层或池化层，我们演示一下。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949986.png" /></p>
+<p>如果使用1×1卷积，输出结果会是28×28×#（某个值），假设输出为28×28×64，并且这里只有一个层。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949354.png" /></p>
+<p>如果使用3×3的过滤器，那么输出是28×28×128。然后我们把第二个值堆积到第一个值上，为了匹配维度，我们应用<strong>same</strong>卷积，输出维度依然是28×28，和输入维度相同，即高度和宽度相同。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949747.png" /></p>
+<p>或许你会说，我希望提升网络的表现，用5×5过滤器或许会更好，我们不妨试一下，输出变成28×28×32，我们再次使用<strong>same</strong>卷积，保持维度不变。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949336.png" /></p>
+<p>或许你不想要卷积层，那就用池化操作，得到一些不同的输出结果，我们把它也堆积起来，这里的池化输出是28×28×32。为了匹配所有维度，我们需要对最大池化使用<strong>padding</strong>，它是一种特殊的池化形式，因为如果输入的高度和宽度为28×28，则输出的相应维度也是28×28。然后再进行池化，<strong>padding</strong>不变，步幅为1。</p>
+<p>这个操作非常有意思，但我们要继续学习后面的内容，一会再实现这个池化过程。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949844.png" /></p>
+<p>有了这样的<strong>Inception</strong>模块，你就可以输入某个量，因为它累加了所有数字，这里的最终输出为32+32+128+64=256。<strong>Inception</strong>模块的输入为28×28×192，输出为28×28×256。这就是<strong>Inception</strong>网络的核心内容，提出者包括<strong>Christian Szegedy、刘伟、贾阳青、Pierre Sermanet、Scott Reed、Dragomir Anguelov、Dumitru Erhan、Vincent Vanhoucke</strong>和<strong>Andrew Rabinovich</strong>。基本思想是<strong>Inception</strong>网络不需要人为决定使用哪个过滤器或者是否需要池化，而是由网络自行确定这些参数，你可以给网络添加这些参数的所有可能值，然后把这些输出连接起来，让网络自己学习它需要什么样的参数，采用哪些过滤器组合。</p>
+<p>不难发现，我所描述的<strong>Inception</strong>层有一个问题，就是计算成本，下一张幻灯片，我们就来计算这个5×5过滤器在该模块中的计算成本。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949300.png" /></p>
+<p>我们把重点集中在前一张幻灯片中的5×5的过滤器，这是一个28×28×192的输入块，执行一个5×5卷积，它有32个过滤器，输出为28×28×32。前一张幻灯片中，我用一个紫色的细长块表示，这里我用一个看起来更普通的蓝色块表示。我们来计算这个28×28×32输出的计算成本，它有32个过滤器，因为输出有32个通道，每个过滤器大小为5×5×192，输出大小为28×28×32，所以你要计算28×28×32个数字。对于输出中的每个数字来说，你都需要执行5×5×192次乘法运算，所以乘法运算的总次数为每个输出值所需要执行的乘法运算次数（5×5×192）乘以输出值个数（28×28×32），把这些数相乘结果等于1.2亿(120422400)。即使在现在，用计算机执行1.2亿次乘法运算，成本也是相当高的。下一张幻灯片会介绍1×1卷积的应用，也就是我们上节课所学的。为了降低计算成本，我们用计算成本除以因子10，结果它从1.2亿减小到原来的十分之一。请记住120这个数字，一会还要和下一页看到的数字做对比。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949686.png" /></p>
+<p>这里还有另外一种架构，其输入为28×28×192，输出为28×28×32。其结果是这样的，对于输入层，使用1×1卷积把输入值从192个通道减少到16个通道。然后对这个较小层运行5×5卷积，得到最终输出。请注意，输入和输出的维度依然相同，输入是28×28×192，输出是28×28×32，和上一页的相同。但我们要做的就是把左边这个大的输入层压缩成这个较小的的中间层，它只有16个通道，而不是192个。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949089.png" /></p>
+<p>有时候这被称为瓶颈层，瓶颈通常是某个对象最小的部分，假如你有这样一个玻璃瓶，这是瓶塞位置，瓶颈就是这个瓶子最小的部分。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949383.png" /></p>
+<p>同理，瓶颈层也是网络中最小的部分，我们先缩小网络表示，然后再扩大它。</p>
+<p>接下来我们看看这个计算成本，应用1×1卷积，过滤器个数为16，每个过滤器大小为1×1×192，这两个维度相匹配（输入通道数与过滤器通道数），28×28×16这个层的计算成本是，输出28×28×192中每个元素都做192次乘法，用1×1×192来表示，相乘结果约等于240万。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949860.png" /></p>
+<p>那第二个卷积层呢？240万只是第一个卷积层的计算成本，第二个卷积层的计算成本又是多少呢？这是它的输出，28×28×32，对每个输出值应用一个5×5×16维度的过滤器，计算结果为1000万。</p>
+<p>所以所需要乘法运算的总次数是这两层的计算成本之和，也就是1204万，与上一张幻灯片中的值做比较，计算成本从1.2亿下降到了原来的十分之一，即1204万。所需要的加法运算与乘法运算的次数近似相等，所以我只统计了乘法运算的次数。</p>
+<p>总结一下，如果你在构建神经网络层的时候，不想决定池化层是使用1×1，3×3还是5×5的过滤器，那么<strong>Inception</strong>模块就是最好的选择。我们可以应用各种类型的过滤器，只需要把输出连接起来。之后我们讲到计算成本问题，我们学习了如何通过使用1×1卷积来构建瓶颈层，从而大大降低计算成本。</p>
+<p>你可能会问，仅仅大幅缩小表示层规模会不会影响神经网络的性能？事实证明，只要合理构建瓶颈层，你既可以显著缩小表示层规模，又不会降低网络性能，从而节省了计算。</p>
+<p>这就是<strong>Inception</strong>模块的主要思想，我们在这总结一下。下节课，我们将演示一个完整的<strong>Inception</strong>网络。</p>
+<h2 id="inception-网络inception-network">Inception 网络（Inception network）<a class="anchor-link" href="#inception-网络inception-network" title="Permanent link">&para;</a></h2>
+<p>在上节视频中，你已经见到了所有的<strong>Inception</strong>网络基础模块。在本视频中，我们将学习如何将这些模块组合起来，构筑你自己的<strong>Inception</strong>网络。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949136.png" /></p>
+<p><strong>Inception</strong>模块会将之前层的激活或者输出作为它的输入，作为前提，这是一个28×28×192的输入，和我们之前视频中的一样。我们详细分析过的例子是，先通过一个1×1的层，再通过一个5×5的层，1×1的层可能有16个通道，而5×5的层输出为28×28×32，共32个通道，这就是上个视频最后讲到的我们处理的例子。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949585.png" /></p>
+<p>为了在这个3×3的卷积层中节省运算量，你也可以做相同的操作，这样的话3×3的层将会输出28×28×128。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949057.png" /></p>
+<p>或许你还想将其直接通过一个1×1的卷积层，这时就不必在后面再跟一个1×1的层了，这样的话过程就只有一步，假设这个层的输出是28×28×64。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949529.png" /></p>
+<p>最后是池化层。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949986.png" /></p>
+<p>这里我们要做些有趣的事情，为了能在最后将这些输出都连接起来，我们会使用<strong>same</strong>类型的<strong>padding</strong>来池化，使得输出的高和宽依然是28×28，这样才能将它与其他输出连接起来。但注意，如果你进行了最大池化，即便用了<strong>same padding</strong>，3×3的过滤器，<strong>stride</strong>为1，其输出将会是28×28×192，其通道数或者说深度与这里的输入（通道数）相同。所以看起来它会有很多通道，我们实际要做的就是再加上一个1×1的卷积层，去进行我们在1×1卷积层的视频里所介绍的操作，将通道的数量缩小，缩小到28×28×32。也就是使用32个维度为1×1×192的过滤器，所以输出的维度其通道数缩小为32。这样就避免了最后输出时，池化层占据所有的通道。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949533.png" /></p>
+<p>最后，将这些方块全都连接起来。在这过程中，把得到的各个层的通道都加起来，最后得到一个28×28×256的输出。通道连接实际就是之前视频中看到过的，把所有方块连接在一起的操作。这就是一个<strong>Inception</strong>模块，而<strong>Inception</strong>网络所做的就是将这些模块都组合到一起。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949061.png" /></p>
+<p>这是一张取自<strong>Szegety et al</strong>的论文中关于<strong>Inception</strong>网络的图片，你会发现图中有许多重复的模块，可能整张图看上去很复杂，但如果你只截取其中一个环节（编号1），就会发现这是在前一页<strong>ppt</strong>中所见的<strong>Inception</strong>模块。</p>
+<p>我们深入看看里边的一些细节，这是另一个<strong>Inception</strong>模块（编号2），这也是一个<strong>Inception</strong>模块（编号3）。这里有一些额外的最大池化层（编号6）来修改高和宽的维度。这是另外一个<strong>Inception</strong>模块（编号4），这是另外一个最大池化层（编号7），它改变了高和宽。而这里又是另一个<strong>Inception</strong>模块（编号5）。</p>
+<p>所以<strong>Inception</strong>网络只是很多这些你学过的模块在不同的位置重复组成的网络，所以如果你理解了之前所学的<strong>Inception</strong>模块，你就也能理解<strong>Inception</strong>网络。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949695.png" /></p>
+<p>事实上，如果你读过论文的原文，你就会发现，这里其实还有一些分支，我现在把它们加上去。所以这些分支有什么用呢？在网络的最后几层，通常称为全连接层，在它之后是一个<strong>softmax</strong>层（编号1）来做出预测，这些分支（编号2）所做的就是通过隐藏层（编号3）来做出预测，所以这其实是一个<strong>softmax</strong>输出（编号2），这（编号1）也是。这是另一条分支（编号4），它也包含了一个隐藏层，通过一些全连接层，然后有一个<strong>softmax</strong>来预测，输出结果的标签。</p>
+<p>你应该把它看做<strong>Inception</strong>网络的一个细节，它确保了即便是隐藏单元和中间层（编号5）也参与了特征计算，它们也能预测图片的分类。它在<strong>Inception</strong>网络中，起到一种调整的效果，并且能防止网络发生过拟合。</p>
+<p>还有这个特别的<strong>Inception</strong>网络是由<strong>Google</strong>公司的作者所研发的，它被叫做<strong>GoogleLeNet</strong>，这个名字是为了向<strong>LeNet</strong>网络致敬。在之前的视频中你应该了解了<strong>LeNet</strong>网络。我觉得这样非常好，因为深度学习研究人员是如此重视协作，深度学习工作者对彼此的工作成果有一种强烈的敬意。</p>
+<p>最后，有个有趣的事实，<strong>Inception</strong>网络这个名字又是缘何而来呢？<strong>Inception</strong>的论文特地提到了这个模因（<strong>meme</strong>，网络用语即“梗”），就是“我们需要走的更深”（<strong>We need to go deeper</strong>），论文还引用了这个网址（<a href="http://knowyourmeme.com/memes/we-need-to-go-deeper">http://knowyourmeme.com/memes/we-need-to-go-deeper</a>），连接到这幅图片上，如果你看过<strong>Inception</strong>（<strong>盗梦空间</strong>）这个电影，你应该能看懂这个由来。作者其实是通过它来表明了建立更深的神经网络的决心，他们正是这样构建了<strong>Inception</strong>。我想一般研究论文，通常不会引用网络流行模因（梗），但这里显然很合适。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160949354.png" /></p>
+<p>最后总结一下，如果你理解了<strong>Inception</strong>模块，你就能理解<strong>Inception</strong>网络，无非是很多个<strong>Inception</strong>模块一环接一环，最后组成了网络。自从<strong>Inception</strong>模块诞生以来，经过研究者们的不断发展，衍生了许多新的版本。所以在你们看一些比较新的<strong>Inception</strong>算法的论文时，会发现人们使用这些新版本的算法效果也一样很好，比如<strong>Inception V2</strong>、<strong>V3</strong>以及<strong>V4</strong>，还有一个版本引入了跳跃连接的方法，有时也会有特别好的效果。但所有的这些变体都建立在同一种基础的思想上，在之前的视频中你就已经学到过，就是把许多<strong>Inception</strong>模块通过某种方式连接到一起。通过这个视频，我想你应该能去阅读和理解这些<strong>Inception</strong>的论文，甚至是一些新版本的论文。</p>
+<p>直到现在，你已经了解了许多专用的神经网络结构。在下节视频中，我将会告诉你们如何真正去使用这些算法来构建自己的计算机视觉系统，我们下节视频再见。</p>
+<p><strong>参考文献</strong>：</p>
+<ul>
+<li>Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun - <a href="https://arxiv.org/abs/1512.03385">Deep Residual Learning for Image Recognition (2015)</a></li>
+<li>Francois Chollet's github repository: <a href="https://github.com/fchollet/deep-learning-models/blob/master/resnet50.py">https://github.com/fchollet/deep-learning-models/blob/master/resnet50.py</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

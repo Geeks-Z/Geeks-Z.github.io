@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低秩近似之路（二）：SVD</title>
+    <meta name="description" content="低秩近似之路（二）：SVD - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#结论初探">结论初探</a></li>
+<li><a href="#一些应用">一些应用</a><ul>
+<li><a href="#伪逆通解">伪逆通解</a></li>
+<li><a href="#矩阵范数">矩阵范数</a></li>
+<li><a href="#低秩近似">低秩近似</a></li>
+</ul>
+</li>
+<li><a href="#理论基础">理论基础</a><ul>
+<li><a href="#谱之定理">谱之定理</a></li>
+<li><a href="#数学归纳">数学归纳</a></li>
+<li><a href="#奇异分解">奇异分解</a></li>
+</ul>
+</li>
+<li><a href="#近似定理">近似定理</a></li>
+<li><a href="#文章小结">文章小结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>低秩近似之路（二）：SVD</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/04.矩阵</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="低秩近似之路二svd">低秩近似之路（二）：SVD<a class="anchor-link" href="#低秩近似之路二svd" title="Permanent link">&para;</a></h1>
+<p><strong>Author:</strong> [苏剑林]</p>
+<p><strong>Link:</strong> [https://zhuanlan.zhihu.com/p/2957340022]</p>
+<p>最佳排版请看原博客：</p>
+<p><a href="https://kexue.fm/archives/10407">低秩近似之路（二）：SVD - 科学空间|Scientific Spaces</a>上一篇文章中我们介绍了“<a href="https://kexue.fm/archives/10366">https://kexue.fm/archives/10366</a>”，它关系到给定矩阵<span class="math-inline">\boldsymbol{M}</span> <span class="math-inline">\boldsymbol{A}</span>（或<span class="math-inline">\boldsymbol{B}</span>）时优化目标<span class="math-inline">\Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{M}\Vert_F^2</span> 最优解。这篇文章我们来关注<span class="math-inline">\boldsymbol{A},\boldsymbol{B}</span> 不给出时的最优解，即</p>
+<p><span class="math-inline">\mathop{\text{argmin}}_{\boldsymbol{A},\boldsymbol{B}}\Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{M}\Vert_F^2\label{eq:loss-ab} \</span></p>
+<p>其中<span class="math-inline">\boldsymbol{A}\in\mathbb{R}^{n\times r}, \boldsymbol{B}\in\mathbb{R}^{r\times m}, \boldsymbol{M}\in\mathbb{R}^{n\times m},r &lt; \min(n,m)</span>。说白了，这就是要寻找矩阵<span class="math-inline">\boldsymbol{M}</span> “最优<span class="math-inline">r</span> 近似（秩不超过<span class="math-inline">r</span> 最优近似）”。而要解决这个问题，就需要请出大名鼎鼎的“SVD（奇异值分解）”了。虽然本系列把伪逆作为开篇，但它的“名声”远不如SVD，听过甚至用过SVD但没听说过伪逆的应该大有人在，包括笔者也是先了解SVD后才看到伪逆。</p>
+<p>接下来，我们将围绕着矩阵的最优低秩近似来展开介绍SVD。</p>
+<h2 id="结论初探">结论初探<a class="anchor-link" href="#结论初探" title="Permanent link">&para;</a></h2>
+<p>对于任意矩阵<span class="math-inline">\boldsymbol{M}\in\mathbb{R}^{n\times m}</span>，都可以找到如下形式的奇异值分解（SVD，Singular Value Decomposition）：</p>
+<p><span class="math-inline">\boldsymbol{M} = \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\</span> 其中<span class="math-inline">\boldsymbol{U}\in\mathbb{R}^{n\times n},\boldsymbol{V}\in\mathbb{R}^{m\times m}</span> 是正交矩阵，<span class="math-inline">\boldsymbol{\Sigma}\in\mathbb{R}^{n\times m}</span> 非负对角矩阵： <span class="math-inline">\boldsymbol{\Sigma}_{i,j} = \left{\begin{aligned}&amp;\sigma_i, &amp;i = j \ &amp;0,&amp;i \neq j\end{aligned}\right.\</span></p>
+<p>对角线元素默认从大到小排序，即<span class="math-inline">\sigma_1\geq \sigma_2\geq\sigma_3\geq\cdots\geq 0</span>，这些对角线元素就称为奇异值（Singular Value）。从数值计算角度看，我们可以只保留<span class="math-inline">\boldsymbol{\Sigma}</span> 非零元素，将<span class="math-inline">\boldsymbol{U},\boldsymbol{\Sigma},\boldsymbol{V}</span> 大小降低到<span class="math-inline">n\times r, r\times r, m\times r</span>（<span class="math-inline">r</span> <span class="math-inline">\boldsymbol{M}</span> 秩），保留完整的正交矩阵则更便于理论分析。</p>
+<p>SVD对于复矩阵同样成立，但需要将正交矩阵改为酉矩阵，转置改为共轭转置，但这里我们主要聚焦于跟机器学习关系更为密切的实矩阵结果。SVD的基础理论包括存在性、计算方法以及它与最优低秩近似的联系等，这些内容笔者后面都会给出自己的理解。</p>
+<p>在二维平面下，SVD有非常直观的几何意义。二维的正交矩阵主要就是旋转（还有反射，但几何直观的话可以不那么严谨），所以<span class="math-inline">\boldsymbol{M}\boldsymbol{x}=\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\boldsymbol{x}</span> 味着任何对（列）向量<span class="math-inline">x</span> 线性变换，都可以分解为<strong>旋转</strong>、<strong>拉伸</strong>、<strong>旋转</strong>三个步骤，如下图所示：   </p>
+<h2 id="一些应用">一些应用<a class="anchor-link" href="#一些应用" title="Permanent link">&para;</a></h2>
+<p>不管是理论分析还是数值计算，SVD都有非常广泛的应用，其背后的原理之一是常用的矩阵/向量范数对正交变换具有不变性，所以SVD左右两个正交矩阵夹着中间一个对角矩阵的特点，往往能用来将很多矩阵相关的优化目标转换为等价的非负对角矩阵特例，起到简化问题的作用。</p>
+<h3 id="伪逆通解">伪逆通解<a class="anchor-link" href="#伪逆通解" title="Permanent link">&para;</a></h3>
+<p>以伪逆为例，当<span class="math-inline">\boldsymbol{A}\in\mathbb{R}^{n\times r}</span> 秩为<span class="math-inline">r</span> ，我们有</p>
+<p><span class="math-inline">\boldsymbol{A}^{\dagger} = \mathop{\text{argmin}}_{\boldsymbol{B}\in\mathbb{R}^{r\times n}}\Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{I}_n\Vert_F^2 \</span></p>
+<p>上一篇文章我们通过求导得出了<span class="math-inline">\boldsymbol{A}^{\dagger}</span> 表达式，然后又花了一些心思推广到<span class="math-inline">\boldsymbol{A}</span> 秩小于<span class="math-inline">r</span> 情形。但如果引入SVD的话，那么问题就简化得多了。我们可以将<span class="math-inline">\boldsymbol{A}</span> 解为<span class="math-inline">\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>，然后将<span class="math-inline">\boldsymbol{B}</span> 示成<span class="math-inline">\boldsymbol{V} \boldsymbol{Z} \boldsymbol{U}^{\top}</span>，注意我们没有规定<span class="math-inline">\boldsymbol{Z}</span> 对角阵，所以<span class="math-inline">\boldsymbol{B}=\boldsymbol{V} \boldsymbol{Z} \boldsymbol{U}^{\top}</span> 是可以做到的，于是</p>
+<p><span class="math-inline">\begin{aligned} \min_\boldsymbol{B}\Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{I}<em>n\Vert_F^2 =&amp;\, \min</em>\boldsymbol{Z}\Vert \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\boldsymbol{V} \boldsymbol{Z} \boldsymbol{U}^{\top} - \boldsymbol{I}<em>n\Vert_F^2 \ =&amp;\, \min</em>\boldsymbol{Z}\Vert \boldsymbol{U}(\boldsymbol{\Sigma} \boldsymbol{Z} - \boldsymbol{I}<em>n) \boldsymbol{U}^{\top}\Vert_F^2 \ =&amp;\, \min</em>\boldsymbol{Z}\Vert \boldsymbol{\Sigma} \boldsymbol{Z} - \boldsymbol{I}_n\Vert_F^2 \end{aligned}\</span></p>
+<p>最后一个等号是基于我们上一篇文章证明过的结论“正交变换不改变<span class="math-inline">F</span> 数”，这样我们就将问题简化成对角阵<span class="math-inline">\boldsymbol{\Sigma}</span> 伪逆了。接着我们可以用分块矩阵的形式将<span class="math-inline">\boldsymbol{\Sigma} \boldsymbol{Z} - \boldsymbol{I}_n</span> 示为</p>
+<p><span class="math-inline">\begin{aligned}\boldsymbol{\Sigma} \boldsymbol{Z} - \boldsymbol{I}<em>n =&amp;\, \begin{pmatrix}\boldsymbol{\Sigma}</em>{[:r,:r]} \ \boldsymbol{0}<em>{(n-r)\times r}\end{pmatrix} \begin{pmatrix}\boldsymbol{Z}</em>{[:r,:r]} &amp; \boldsymbol{Z}<em>{[:r,r:]}\end{pmatrix}  - \begin{pmatrix}\boldsymbol{I}_r &amp; \boldsymbol{0}</em>{r\times(n-r)} \ \boldsymbol{0}<em>{(n-r)\times r} &amp; \boldsymbol{I}</em>{n-r}\end{pmatrix} \ =&amp;\, \begin{pmatrix}\boldsymbol{\Sigma}<em>{[:r,:r]}\boldsymbol{Z}</em>{[:r,:r]} - \boldsymbol{I}<em>r &amp; \boldsymbol{\Sigma}</em>{[:r,:r]}\boldsymbol{Z}<em>{[:r,r:]}\ \boldsymbol{0}</em>{(n-r)\times r} &amp; -\boldsymbol{I}_{n-r}\end{pmatrix} \end{aligned}\</span></p>
+<p>这里的切片就按照Python数组的规则来理解。从最后的形式可以看出，要使得<span class="math-inline">\boldsymbol{\Sigma} \boldsymbol{Z} - \boldsymbol{I}<em>n</span> <span class="math-inline">F</span> 数最小，唯一解是<span class="math-inline">\boldsymbol{Z}</em>{[:r,:r]}=\boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}</span>，<span class="math-inline">\boldsymbol{Z}</em>{[:r,r:]}=\boldsymbol{0}_{r\times(n-r)}</span>，说白了，<span class="math-inline">\boldsymbol{Z}</span> 是将<span class="math-inline">\boldsymbol{\Sigma}^{\top}</span> 非零元素都取倒数然后转置，我们将它记为<span class="math-inline">\boldsymbol{\Sigma}^{\dagger}</span>，于是在SVD下就有</p>
+<p><span class="math-inline">\boldsymbol{A}=\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\quad\Rightarrow\quad \boldsymbol{A}^{\dagger} = \boldsymbol{V}\boldsymbol{\Sigma}^{\dagger}\boldsymbol{U}^{\top} \</span></p>
+<p>可以进一步证明这个结果也适用于秩小于<span class="math-inline">r</span> <span class="math-inline">\boldsymbol{A}</span>，所以它是一个通用的形式，一些教程也直接将它作为伪逆的定义。此外，我们也可以观察到这个形式不区分左伪逆和右伪逆，这表明同一个矩阵的左伪逆和右伪逆是相等的，因此在说伪逆的时候不用特别区分左右。</p>
+<h3 id="矩阵范数">矩阵范数<a class="anchor-link" href="#矩阵范数" title="Permanent link">&para;</a></h3>
+<p>利用正交变换不改变<span class="math-inline">F</span> 数的结论，我们还可以得到</p>
+<p><span class="math-inline">\Vert \boldsymbol{M}\Vert_F^2 = \Vert \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\Vert_F^2 = \Vert \boldsymbol{\Sigma} \Vert_F^2 = \sum_{i=1}^{\min(n,m)}\sigma_i^2 \</span></p>
+<p>也就是说奇异值的平方和等于<span class="math-inline">F</span> 数的平方。除了<span class="math-inline">F</span> 数外，SVD也可以用来计算“谱范数”。上一篇文章我们提到，<span class="math-inline">F</span> 数只是矩阵范数的一种，另一种常用的矩阵范数是基于向量的范数诱导出来的谱范数，它定义为：</p>
+<p><span class="math-inline">\Vert \boldsymbol{M}\Vert_2 = \max_{\Vert \boldsymbol{x}\Vert = 1} \Vert \boldsymbol{M}\boldsymbol{x}\Vert \</span></p>
+<p>注意等号右端出现的范数都是向量的范数（模长，<span class="math-inline">2</span>-范数），因此上述定义是明确的。由于它是向量的<span class="math-inline">2</span>-范数所诱导出来的，所以它也称为矩阵的<span class="math-inline">2</span>-范数。数值上，矩阵的谱范数等于它的最大奇异值，即<span class="math-inline">\Vert \boldsymbol{M}\Vert_2 = \sigma_1</span>。要证明这一点，只需要将<span class="math-inline">\boldsymbol{M}</span> SVD为<span class="math-inline">\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>，然后代入谱范数的定义</p>
+<p><span class="math-inline">\max_{\Vert \boldsymbol{x}\Vert = 1} \Vert \boldsymbol{M}\boldsymbol{x}\Vert = \max_{\Vert \boldsymbol{x}\Vert = 1} \Vert \boldsymbol{U}\boldsymbol{\Sigma} (\boldsymbol{V}^{\top}\boldsymbol{x})\Vert = \max_{\Vert \boldsymbol{y}\Vert = 1} \Vert \boldsymbol{\Sigma} \boldsymbol{y}\Vert \</span></p>
+<p>第二个等号正是利用了正交矩阵不改变向量范数的特点。现在我们相当于将问题简化成为对角阵<span class="math-inline">\boldsymbol{\Sigma}</span> 谱范数，这个比较简单，设<span class="math-inline">\boldsymbol{y} = (y_1,y_2,\cdots,y_m)</span>，那么</p>
+<p><span class="math-inline">\Vert \boldsymbol{\Sigma} \boldsymbol{y}\Vert^2 = \sum_{i=1}^m \sigma_i^2 y_i^2 \leq \sum_{i=1}^m \sigma_1^2 y_i^2 = \sigma_1^2\sum_{i=1}^m y_i^2 = \sigma_1^2 \</span></p>
+<p>所以<span class="math-inline">\Vert \boldsymbol{\Sigma} \boldsymbol{y}\Vert</span> 超过<span class="math-inline">\sigma_1</span>，并且<span class="math-inline">\boldsymbol{y}=(1,0,\cdots,0)</span> 取到等号，因此<span class="math-inline">\Vert \boldsymbol{M}\Vert_2=\sigma_1</span>。对比<span class="math-inline">F</span> 数的结果，我们还可以发现恒成立<span class="math-inline">\Vert \boldsymbol{M}\Vert_2\leq \Vert \boldsymbol{M}\Vert_F</span>。</p>
+<h3 id="低秩近似">低秩近似<a class="anchor-link" href="#低秩近似" title="Permanent link">&para;</a></h3>
+<p>最后我们再回到本文的主题最优低秩近似，也就是目标<span class="math-inline">\eqref{eq:loss-ab}</span>。将<span class="math-inline">\boldsymbol{M}</span> 解为<span class="math-inline">\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>，那么我们就可以写出</p>
+<p><span class="math-inline">\begin{aligned} \Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{M}\Vert_F^2 =&amp;\, \Vert \boldsymbol{U}\boldsymbol{U}^{\top}\boldsymbol{A}\boldsymbol{B}\boldsymbol{V}\boldsymbol{V}^{\top} - \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\Vert_F^2 \ =&amp;\, \Vert \boldsymbol{U}(\boldsymbol{U}^{\top}\boldsymbol{A}\boldsymbol{B}\boldsymbol{V} - \boldsymbol{\Sigma}) \boldsymbol{V}^{\top}\Vert_F^2 \ =&amp;\, \Vert \boldsymbol{U}^{\top}\boldsymbol{A}\boldsymbol{B}\boldsymbol{V} - \boldsymbol{\Sigma}\Vert_F^2 \end{aligned}\</span></p>
+<p>注意<span class="math-inline">\boldsymbol{U}^{\top}\boldsymbol{A}\boldsymbol{B}\boldsymbol{V}</span> 可以代表任意秩不超过<span class="math-inline">r</span> 矩阵，所以通过SVD我们将矩阵<span class="math-inline">\boldsymbol{M}</span> 最优<span class="math-inline">r</span> 近似简化成了非负对角阵<span class="math-inline">\boldsymbol{\Sigma}</span> 最优<span class="math-inline">r</span> 近似。</p>
+<p>在<a href="https://kexue.fm/archives/10226">https://kexue.fm/archives/10226</a>中我们用同样思路求解过一个类似的优化问题：</p>
+<p><span class="math-inline">\mathop{\text{argmin}}_{\boldsymbol{A},\boldsymbol{B}} \Vert \boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{M} + \boldsymbol{M}\boldsymbol{B}^{\top}\boldsymbol{B} - \boldsymbol{M}\Vert_F^2 \</span></p>
+<p>利用SVD和正交变换不改变<span class="math-inline">F</span> 数，可以得到</p>
+<p><span class="math-inline">\begin{aligned} &amp;\,\Vert \boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{M} + \boldsymbol{M}\boldsymbol{B}^{\top}\boldsymbol{B} - \boldsymbol{M}\Vert_F^2 \ =&amp;\, \Vert \boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top} + \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\boldsymbol{B}^{\top}\boldsymbol{B} - \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\Vert_F^2 \ =&amp;\, \Vert \boldsymbol{U}\boldsymbol{U}^{\top}\boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top} + \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\boldsymbol{B}^{\top}\boldsymbol{B}\boldsymbol{V}\boldsymbol{V}^{\top} - \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\Vert_F^2 \ =&amp;\, \Vert \boldsymbol{U}[(\boldsymbol{U}^{\top}\boldsymbol{A})(\boldsymbol{U}^{\top}\boldsymbol{A})^{\top}\boldsymbol{\Sigma}  + \boldsymbol{\Sigma} (\boldsymbol{B}\boldsymbol{V})^{\top} (\boldsymbol{B}\boldsymbol{V}) - \boldsymbol{\Sigma}] \boldsymbol{V}^{\top}\Vert_F^2 \ =&amp;\, \Vert (\boldsymbol{U}^{\top}\boldsymbol{A})(\boldsymbol{U}^{\top}\boldsymbol{A})^{\top}\boldsymbol{\Sigma}  + \boldsymbol{\Sigma} (\boldsymbol{B}\boldsymbol{V})^{\top} (\boldsymbol{B}\boldsymbol{V}) - \boldsymbol{\Sigma}\Vert_F^2 \ \end{aligned}\</span></p>
+<p>这就将原本一般矩阵<span class="math-inline">\boldsymbol{M}</span> 优化问题转化为<span class="math-inline">\boldsymbol{M}</span> 非负对角阵的特例，降低了分析难度。注意如果<span class="math-inline">\boldsymbol{A},\boldsymbol{B}</span> 秩不超过<span class="math-inline">r</span>，那么<span class="math-inline">\boldsymbol{A}\boldsymbol{A}^{\top}\boldsymbol{M} + \boldsymbol{M}\boldsymbol{B}^{\top}\boldsymbol{B}</span> 秩顶多为<span class="math-inline">2r</span>（假设<span class="math-inline">2r &lt; \min(n,m)</span>），所以原始问题也是在求<span class="math-inline">\boldsymbol{M}</span> 最优<span class="math-inline">2r</span> 近似，转化为非负对角阵后就是求非负对角阵的最优<span class="math-inline">2r</span> 近似，跟前一个问题本质上是一样的。</p>
+<h2 id="理论基础">理论基础<a class="anchor-link" href="#理论基础" title="Permanent link">&para;</a></h2>
+<p>肯定了SVD的作用后，我们就需要补充一些理论证明了。首先要确保SVD的存在性，其次要找出至少一种计算方案，这样SVD的各种应用才算是切实可行的，接下来我们将用同一个过程把这两个问题一起解决掉。</p>
+<h3 id="谱之定理">谱之定理<a class="anchor-link" href="#谱之定理" title="Permanent link">&para;</a></h3>
+<p>在此之前，我们需要先引入一个“谱定理”，它既可以说是SVD的特例，也可以说是SVD的基础：</p>
+<blockquote>
+<p><strong>谱定理</strong> 对于任意实对称矩阵<span class="math-inline">\boldsymbol{M}\in\mathbb{R}^{n\times n}</span>，都存在谱分解（也称特征值分解） <span class="math-inline">\boldsymbol{M} = \boldsymbol{U}\boldsymbol{\Lambda} \boldsymbol{U}^{\top}\</span> 其中<span class="math-inline">\boldsymbol{U},\boldsymbol{\Lambda}\in\mathbb{R}^{n\times n}</span>，<span class="math-inline">\boldsymbol{U}</span> 正交矩阵，<span class="math-inline">\boldsymbol{\Lambda}=\text{diag}(\lambda_1,\cdots,\lambda_n)</span> 对角矩阵。</p>
+</blockquote>
+<p>说白了，谱定理就是断言任何实对称矩阵都可以被正交矩阵对角化，这基于如下两点性质：</p>
+<blockquote>
+<p>1、实对称矩阵的特征值和特征向量都是实的； 2、实对称矩阵不同特征值对应的特征向量是正交的。</p>
+</blockquote>
+<p>这两点性质的证明其实很简单，这里就不展开了。基于这两点我们可以立马得出，如果实对称矩阵<span class="math-inline">\boldsymbol{M}</span> <span class="math-inline">n</span> 不同的特征值，那么谱定理成立：</p>
+<p><span class="math-inline">\begin{aligned} \boldsymbol{M}\boldsymbol{u}<em>1 = \lambda_1 \boldsymbol{u}_1 \  \boldsymbol{M}\boldsymbol{u}_2 = \lambda_2 \boldsymbol{u}_2\ \vdots \ \boldsymbol{M}\boldsymbol{u}_n = \lambda_n \boldsymbol{u}_n\end{aligned} \quad\Rightarrow\quad \boldsymbol{M}\underbrace{(\boldsymbol{u}_1, \boldsymbol{u}_2, \cdots, \boldsymbol{u}_n)}</em>\boldsymbol{U} = \underbrace{(\boldsymbol{u}<em>1, \boldsymbol{u}_2, \cdots, \boldsymbol{u}_n)}</em>\boldsymbol{U}\underbrace{\begin{pmatrix}\lambda_1 &amp; 0 &amp; \cdots &amp; 0 \ 0 &amp; \lambda_2 &amp; \cdots &amp; 0 \ \vdots &amp; \vdots &amp; \ddots &amp; \vdots \ 0 &amp; 0 &amp; \cdots &amp; \lambda_n \ \end{pmatrix}}_{\boldsymbol{\Lambda}}\</span></p>
+<p>其中<span class="math-inline">\lambda_1,\lambda_2,\cdots,\lambda_n</span> 特征值，<span class="math-inline">\boldsymbol{u}_1,\boldsymbol{u}_2,\cdots,\boldsymbol{u}_n</span> 对应的单位特征（列）向量，写成矩阵乘法形式就是<span class="math-inline">\boldsymbol{M}\boldsymbol{U}=\boldsymbol{U}\boldsymbol{\Lambda}</span>，所以<span class="math-inline">\boldsymbol{M} = \boldsymbol{U}\boldsymbol{\Lambda} \boldsymbol{U}^{\top}</span>。证明的难点是如何拓展到有相等特征值的情形，但在思考完整的证明之前，我们可以先从一个不严谨的角度感受一下，这个不等特征值的结果是一定可以推广到一般情形的。</p>
+<p>为什么这样说呢？从数值角度看，两个实数绝对相等的概率几乎为零，所以根本不需要考虑特征值相等的情形；用更数学的话说，那就是特征值不等的实矩阵在全体实矩阵中稠密，所以我们总可以找到一簇矩阵<span class="math-inline">\boldsymbol{M}<em>{\epsilon}</span>，当<span class="math-inline">\epsilon &gt; 0</span> 它的特征值两两不等，当<span class="math-inline">\epsilon \to 0</span> 它等于<span class="math-inline">\boldsymbol{M}</span>。这样一来，每个<span class="math-inline">\boldsymbol{M}</em>{\epsilon}</span> 们都可以分解为<span class="math-inline">\boldsymbol{U}<em>{\epsilon}\boldsymbol{\Lambda} </em>{\epsilon}\boldsymbol{U}_{\epsilon}^{\top}</span>，取<span class="math-inline">\epsilon\to 0</span> 得到<span class="math-inline">\boldsymbol{M}</span> 谱分解。</p>
+<h3 id="数学归纳">数学归纳<a class="anchor-link" href="#数学归纳" title="Permanent link">&para;</a></h3>
+<p>不幸的是，上面这段话只能作为一个直观但不严谨的理解方式，因为将这段话转化为严格的证明还是很困难的。事实上，严格证明谱定理的最简单方法可能是数学归纳法，即在任意<span class="math-inline">n-1</span> 实对称方阵都可以谱分解的假设上，我们证明<span class="math-inline">\boldsymbol{M}</span> 可以谱分解。</p>
+<p>证明的关键思路是将<span class="math-inline">\boldsymbol{M}</span> 解为某个特征向量及其<span class="math-inline">n-1</span> 正交子空间，从而可以应用归纳假设。具体来说，设<span class="math-inline">\lambda_1</span> <span class="math-inline">\boldsymbol{M}</span> 一个非零特征值，<span class="math-inline">\boldsymbol{u}_1</span> 对应的单位特征向量，那么有<span class="math-inline">\boldsymbol{M}\boldsymbol{u}_1 = \lambda_1 \boldsymbol{u}_1</span>，我们可以补充<span class="math-inline">n-1</span> 跟<span class="math-inline">\boldsymbol{u}_1</span> 交的单位向量<span class="math-inline">\boldsymbol{Q}=(\boldsymbol{q}_2,\cdots,\boldsymbol{q}_n)</span>，使得<span class="math-inline">(\boldsymbol{u}_1,\boldsymbol{q}_2,\cdots,\boldsymbol{q}_n)=(\boldsymbol{u}_1,\boldsymbol{Q})</span> 为一个正交矩阵。现在我们考虑</p>
+<p><span class="math-inline">(\boldsymbol{u}<em>1,\boldsymbol{Q})^{\top} \boldsymbol{M} (\boldsymbol{u}_1, \boldsymbol{Q}) = \begin{pmatrix}\boldsymbol{u}_1^{\top} \boldsymbol{M} \boldsymbol{u}_1 &amp; \boldsymbol{u}_1^{\top} \boldsymbol{M} \boldsymbol{Q} \ \boldsymbol{Q}^{\top} \boldsymbol{M} \boldsymbol{u}_1 &amp; \boldsymbol{Q}^{\top} \boldsymbol{M} \boldsymbol{Q}\end{pmatrix} = \begin{pmatrix}\lambda_1 &amp; \boldsymbol{0}</em>{1\times (n-1)} \ \boldsymbol{0}_{(n-1)\times 1} &amp; \boldsymbol{Q}^{\top} \boldsymbol{M} \boldsymbol{Q}\end{pmatrix} \</span></p>
+<p>注意到<span class="math-inline">\boldsymbol{Q}^{\top} \boldsymbol{M} \boldsymbol{Q}</span> 一个<span class="math-inline">n-1</span> 方阵，并且很明显是一个实对称矩阵，所以根据假设它可以谱分解为<span class="math-inline">\boldsymbol{V} \boldsymbol{\Lambda}_2 \boldsymbol{V}^{\top}</span>，这里<span class="math-inline">\boldsymbol{V}</span> <span class="math-inline">n-1</span> 正交矩阵，<span class="math-inline">\boldsymbol{\Lambda}_2</span> <span class="math-inline">n-1</span> 对角阵，那么我们有<span class="math-inline">(\boldsymbol{Q}\boldsymbol{V})^{\top} \boldsymbol{M} \boldsymbol{Q}\boldsymbol{V}= \boldsymbol{\Lambda}_2</span>。根据这个结果，我们考虑<span class="math-inline">\boldsymbol{U} = (\boldsymbol{u}_1, \boldsymbol{Q}\boldsymbol{V})</span>，可以验证它也是一个正交矩阵，并且</p>
+<p><span class="math-inline">\boldsymbol{U}^{\top}\boldsymbol{M} \boldsymbol{U} = (\boldsymbol{u}<em>1,\boldsymbol{Q}\boldsymbol{V})^{\top} \boldsymbol{M} (\boldsymbol{u}_1, \boldsymbol{Q}\boldsymbol{V}) = \begin{pmatrix}\lambda_1 &amp; \boldsymbol{0}</em>{1\times (n-1)} \ \boldsymbol{0}_{(n-1)\times 1} &amp; \boldsymbol{\Lambda}_2\end{pmatrix} \</span></p>
+<p>也就是说<span class="math-inline">\boldsymbol{U}</span> 是可以将<span class="math-inline">\boldsymbol{M}</span> 角化的正交矩阵，所以<span class="math-inline">\boldsymbol{M}</span> 以完成谱分解，这就完成了数学归纳法最关键的一步。</p>
+<h3 id="奇异分解">奇异分解<a class="anchor-link" href="#奇异分解" title="Permanent link">&para;</a></h3>
+<p>至此，所有准备工作都已经就绪，我们可以正式证明SVD的存在性，并给出一个实际计算的方案。</p>
+<p>上一节我们引入了谱分解，不难发现它跟SVD的相似性，但也有两点明显区别：1、谱分解只适用于实对称矩阵，SVD适用于任意实矩阵；2、SVD的对角阵<span class="math-inline">\boldsymbol{\Sigma}</span> 非负的，但谱分解的<span class="math-inline">\boldsymbol{\Lambda}</span> 未必。那么，它们具体联系是什么呢？容易验证，如果<span class="math-inline">\boldsymbol{M}</span> SVD为<span class="math-inline">\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>，那么</p>
+<p><span class="math-inline">\begin{aligned} \boldsymbol{M}\boldsymbol{M}^{\top} = \boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\boldsymbol{V}\boldsymbol{\Sigma}^{\top} \boldsymbol{U}^{\top} = \boldsymbol{U}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{\top} \boldsymbol{U}^{\top}\ \boldsymbol{M}^{\top}\boldsymbol{M} = \boldsymbol{V}\boldsymbol{\Sigma}^{\top} \boldsymbol{U}^{\top}\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top} = \boldsymbol{V}\boldsymbol{\Sigma}^{\top}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}\ \end{aligned}\</span></p>
+<p>注意到<span class="math-inline">\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{\top}</span> <span class="math-inline">\boldsymbol{\Sigma}^{\top}\boldsymbol{\Sigma}</span> 是对角阵，所以这意味着<span class="math-inline">\boldsymbol{M}\boldsymbol{M}^{\top}</span> <span class="math-inline">\boldsymbol{M}^{\top}\boldsymbol{M}</span> 谱分解分别是<span class="math-inline">\boldsymbol{U}\boldsymbol{\Sigma}^2 \boldsymbol{U}^{\top}</span> <span class="math-inline">\boldsymbol{V}\boldsymbol{\Sigma}^2 \boldsymbol{V}^{\top}</span>。这看起来将<span class="math-inline">\boldsymbol{M}\boldsymbol{M}^{\top}</span>、<span class="math-inline">\boldsymbol{M}^{\top}\boldsymbol{M}</span> 别做谱分解就可以得到<span class="math-inline">\boldsymbol{M}</span> SVD了？确实没错，这可以作为SVD的一种计算方式，但我们无法直接通过它证明这样得出的<span class="math-inline">\boldsymbol{U},\boldsymbol{\Sigma},\boldsymbol{V}</span> 足<span class="math-inline">\boldsymbol{M}=\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>。</p>
+<p>解决问题的关键是只对<span class="math-inline">\boldsymbol{M}\boldsymbol{M}^{\top}</span> <span class="math-inline">\boldsymbol{M}^{\top}\boldsymbol{M}</span> 一做谱分解，然后通过另外的方法构造另一侧的正交矩阵。不失一般性，我们设<span class="math-inline">\boldsymbol{M}</span> 秩为<span class="math-inline">r \leq m</span>，考虑对<span class="math-inline">\boldsymbol{M}^{\top}\boldsymbol{M}</span> 谱分解为<span class="math-inline">\boldsymbol{V}\boldsymbol{\Lambda} \boldsymbol{V}^{\top}</span>，注意<span class="math-inline">\boldsymbol{M}^{\top}\boldsymbol{M}</span> 一个半正定矩阵，所以<span class="math-inline">\boldsymbol{\Lambda}</span> 非负的，并且假设对角线元素已经从大到小排列，秩<span class="math-inline">r</span> 味着只有前<span class="math-inline">r</span> <span class="math-inline">\lambda_i</span> 大于0的，我们定义</p>
+<p><span class="math-inline">\boldsymbol{\Sigma}<em>{[:r,:r]} = (\boldsymbol{\Lambda}</em>{[:r,:r]})^{1/2},\quad \boldsymbol{U}<em>{[:n,:r]} = \boldsymbol{M}\boldsymbol{V}</em>{[:m,:r]}\boldsymbol{\Sigma}_{[:r,:r]}^{-1} \</span></p>
+<p>可以验证</p>
+<p><span class="math-inline">\begin{aligned} \boldsymbol{U}<em>{[:n,:r]}^{\top}\boldsymbol{U}</em>{[:n,:r]} =&amp;\, \boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}\boldsymbol{V}</em>{[:m,:r]}^{\top} \boldsymbol{M}^{\top}\boldsymbol{M}\boldsymbol{V}<em>{[:m,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]}^{-1} \ =&amp;\, \boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}\boldsymbol{V}</em>{[:m,:r]}^{\top} \boldsymbol{V}\boldsymbol{\Lambda} \boldsymbol{V}^{\top}\boldsymbol{V}<em>{[:m,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]}^{-1} \ =&amp;\, \boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}\boldsymbol{I}</em>{[:r,:m]}\boldsymbol{\Lambda} \boldsymbol{I}<em>{[:m,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]}^{-1} \ =&amp;\, \boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}\boldsymbol{\Lambda}</em>{[:r,:r]}\boldsymbol{\Sigma}_{[:r,:r]}^{-1} \ =&amp;\, \boldsymbol{I}_r \ \end{aligned}\</span></p>
+<p>这里约定切片的优先级高于转置、求逆等矩阵运算，即<span class="math-inline">\boldsymbol{U}<em>{[:n,:r]}^{\top}=(\boldsymbol{U}</em>{[:n,:r]})^{\top}</span>、<span class="math-inline">\boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}=(\boldsymbol{\Sigma}</em>{[:r,:r]})^{-1}</span> 。上述结果表明<span class="math-inline">\boldsymbol{U}_{[:n,:r]}</span> 正交矩阵的一部份。接着我们有</p>
+<p><span class="math-inline">\boldsymbol{U}<em>{[:n,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]}\boldsymbol{V}<em>{[:m,:r]}^{\top} = \boldsymbol{M}\boldsymbol{V}</em>{[:m,:r]}\boldsymbol{\Sigma}<em>{[:r,:r]}^{-1}\boldsymbol{\Sigma}</em>{[:r,:r]}\boldsymbol{V}<em>{[:m,:r]}^{\top} = \boldsymbol{M}\boldsymbol{V}</em>{[:m,:r]}\boldsymbol{V}_{[:m,:r]}^{\top} \</span></p>
+<p>注意<span class="math-inline">\boldsymbol{M}\boldsymbol{V}\boldsymbol{V}^{\top} = \boldsymbol{M}</span> 恒成立的，而<span class="math-inline">\boldsymbol{V}_{[:m,:r]}</span> <span class="math-inline">\boldsymbol{V}</span> 前<span class="math-inline">r</span> ，根据<span class="math-inline">\boldsymbol{M}^{\top}\boldsymbol{M}=\boldsymbol{V}\boldsymbol{\Lambda} \boldsymbol{V}^{\top}</span> 们有可以写出<span class="math-inline">(\boldsymbol{M}\boldsymbol{V})^{\top}\boldsymbol{M}\boldsymbol{V} = \boldsymbol{\Lambda}</span>，我们记<span class="math-inline">\boldsymbol{V}=(\boldsymbol{v}_1,\boldsymbol{v}_2,\cdots,\boldsymbol{v}_m)</span>，那么就有<span class="math-inline">\Vert \boldsymbol{M}\boldsymbol{v}_i\Vert^2=\lambda_i</span>，由于秩<span class="math-inline">r</span> 设定，所以当<span class="math-inline">i &gt; r</span> <span class="math-inline">\lambda_i=0</span>，这意味着此时的<span class="math-inline">\boldsymbol{M}\boldsymbol{v}_i</span> 际上是一个零向量，所以</p>
+<p><span class="math-inline">\begin{aligned}\boldsymbol{M} = \boldsymbol{M}\boldsymbol{V}\boldsymbol{V}^{\top} =&amp;\, (\boldsymbol{M}\boldsymbol{V}<em>{[:m,:r]}, \boldsymbol{M}\boldsymbol{V}</em>{[:m,r:]})\begin{pmatrix}\boldsymbol{V}<em>{[:m,:r]}^{\top} \ \boldsymbol{V}</em>{[:m,r:]}^{\top}\end{pmatrix} \[8pt] =&amp;\, (\boldsymbol{M}\boldsymbol{V}<em>{[:m,:r]}, \boldsymbol{0}</em>{m\times(m-r)} )\begin{pmatrix}\boldsymbol{V}<em>{[:m,:r]}^{\top} \ \boldsymbol{V}</em>{[:m,r:]}^{\top}\end{pmatrix}\[8pt] =&amp;\, \boldsymbol{M}\boldsymbol{V}<em>{[:m,:r]}\boldsymbol{V}</em>{[:m,:r]}^{\top} \end{aligned}\</span></p>
+<p>这表明<span class="math-inline">\boldsymbol{U}<em>{[:n,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]}\boldsymbol{V}<em>{[:m,:r]}^{\top}=\boldsymbol{M}</span>，再结合<span class="math-inline">\boldsymbol{U}</em>{[:n,:r]}</span> 正交矩阵的一部分这一事实，我们已经得到了<span class="math-inline">\boldsymbol{M}</span> SVD的关键部分，我们只需要将<span class="math-inline">\boldsymbol{\Sigma}<em>{[:r,:r]}</span> 零成<span class="math-inline">n\times m</span> 小的<span class="math-inline">\boldsymbol{\Sigma}</span>，将<span class="math-inline">\boldsymbol{U}</em>{[:n,:r]}</span> 全为<span class="math-inline">n\times m</span> 正交矩阵<span class="math-inline">\boldsymbol{U}</span>，那么就得到完整的SVD形式<span class="math-inline">\boldsymbol{M}=\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>。</p>
+<h2 id="近似定理">近似定理<a class="anchor-link" href="#近似定理" title="Permanent link">&para;</a></h2>
+<p>最后，别忘了我们的最终目标是开始的优化问题<span class="math-inline">\eqref{eq:loss-ab}</span>。有了SVD后，我们就可以给出答案了：</p>
+<blockquote>
+<p>如果<span class="math-inline">\boldsymbol{M}\in\mathbb{R}^{n\times m}</span> SVD为<span class="math-inline">\boldsymbol{U}\boldsymbol{\Sigma} \boldsymbol{V}^{\top}</span>，那么<span class="math-inline">\boldsymbol{M}</span> 最优<span class="math-inline">r</span> 近似为<span class="math-inline">\boldsymbol{U}<em>{[:n,:r]}\boldsymbol{\Sigma}</em>{[:r,:r]} \boldsymbol{V}_{[:m,:r]}^{\top}</span>。</p>
+</blockquote>
+<p>这称为“<strong>Eckart-Young-Mirsky定理</strong>”。在介绍SVD应用的“<a href="https://zhuanlan.zhihu.com/p/2957340022/edit#低秩近似">https://zhuanlan.zhihu.com/p/2957340022/edit#低秩近似</a>”一节中，我们表明通过SVD可以将一般矩阵的最优<span class="math-inline">r</span> 近似问题简化为非负对角阵的<span class="math-inline">r</span> 近似，所以“Eckart-Young-Mirsky定理”相当于说非负对角阵的最优<span class="math-inline">r</span> 近似就是只保留对角线最大的<span class="math-inline">r</span> 元素的矩阵。</p>
+<p>可能有读者认为“这难道不是显然成立吗？”，但事实是虽然结论很符合直觉，但它确实不是显然成立的。下面我们就聚焦于求解：</p>
+<p><span class="math-inline">\min_{\boldsymbol{A},\boldsymbol{B}}\Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{\Sigma}\Vert_F^2 \</span></p>
+<p>其中<span class="math-inline">\boldsymbol{A}\in\mathbb{R}^{n\times r}, \boldsymbol{B}\in\mathbb{R}^{r\times m}, \boldsymbol{\Sigma}\in\mathbb{R}^{n\times m},r &lt; \min(n,m)</span>。如果给定<span class="math-inline">\boldsymbol{A}</span> 话，<span class="math-inline">\boldsymbol{B}</span> 最优解我们在上一篇文章中已经求出，结果是<span class="math-inline">\boldsymbol{A}^{\dagger} \boldsymbol{\Sigma}</span>，所以我们有</p>
+<p><span class="math-inline">\min_{\boldsymbol{A},\boldsymbol{B}}\Vert \boldsymbol{A}\boldsymbol{B} - \boldsymbol{\Sigma}\Vert_F^2 = \min_\boldsymbol{A}\Vert (\boldsymbol{A}\boldsymbol{A}^{\dagger} - \boldsymbol{I}_n)\boldsymbol{\Sigma}\Vert_F^2 \</span></p>
+<p>设矩阵<span class="math-inline">\boldsymbol{A}</span> SVD为<span class="math-inline">\boldsymbol{U}<em>\boldsymbol{A}\boldsymbol{\Sigma}</em>\boldsymbol{A} \boldsymbol{V}<em>\boldsymbol{A}^{\top}</span>，那么<span class="math-inline">\boldsymbol{A}^{\dagger}=\boldsymbol{V}</em>\boldsymbol{A} \boldsymbol{\Sigma}<em>\boldsymbol{A}^{\dagger} \boldsymbol{U}</em>\boldsymbol{A}^{\top}</span>，以及</p>
+<p><span class="math-inline">\begin{aligned} \Vert (\boldsymbol{A}\boldsymbol{A}^{\dagger} - \boldsymbol{I}<em>n)\boldsymbol{\Sigma}\Vert_F^2 =&amp;\, \Vert (\boldsymbol{U}</em>\boldsymbol{A}\boldsymbol{\Sigma}<em>\boldsymbol{A} \boldsymbol{V}</em>\boldsymbol{A}^{\top}\boldsymbol{V}<em>\boldsymbol{A} \boldsymbol{\Sigma}</em>\boldsymbol{A}^{\dagger} \boldsymbol{U}<em>\boldsymbol{A}^{\top} - \boldsymbol{I}_n)\boldsymbol{\Sigma}\Vert_F^2 \ =&amp;\, \Vert (\boldsymbol{U}</em>\boldsymbol{A}\boldsymbol{\Sigma}<em>\boldsymbol{A} \boldsymbol{\Sigma}</em>\boldsymbol{A}^{\dagger} \boldsymbol{U}<em>\boldsymbol{A}^{\top} - \boldsymbol{I}_n)\boldsymbol{\Sigma}\Vert_F^2 \ =&amp;\, \Vert \boldsymbol{U}</em>\boldsymbol{A} (\boldsymbol{\Sigma}<em>\boldsymbol{A} \boldsymbol{\Sigma}</em>\boldsymbol{A}^{\dagger} - \boldsymbol{I}<em>n)\boldsymbol{U}</em>\boldsymbol{A}^{\top}\boldsymbol{\Sigma}\Vert_F^2 \ =&amp;\, \Vert (\boldsymbol{\Sigma}<em>\boldsymbol{A} \boldsymbol{\Sigma}</em>\boldsymbol{A}^{\dagger} - \boldsymbol{I}<em>n)\boldsymbol{U}</em>\boldsymbol{A}^{\top}\boldsymbol{\Sigma}\Vert_F^2 \ \end{aligned}\</span></p>
+<p>由伪逆的计算公式知<span class="math-inline">\boldsymbol{\Sigma}<em>\boldsymbol{A} \boldsymbol{\Sigma}</em>\boldsymbol{A}^{\dagger}</span> 一个对角阵，并且对角线上前<span class="math-inline">r_\boldsymbol{A}</span> 元素为1（<span class="math-inline">r_\boldsymbol{A}\leq r</span> <span class="math-inline">\boldsymbol{A}</span> 秩），其余都是0，所以<span class="math-inline">(\boldsymbol{\Sigma}<em>\boldsymbol{A} \boldsymbol{\Sigma}</em>\boldsymbol{A}^{\dagger} - \boldsymbol{I}<em>n)\boldsymbol{U}</em>\boldsymbol{A}^{\top}</span> 当于只保留正交矩阵<span class="math-inline">\boldsymbol{U}<em>\boldsymbol{A}^{\top}</span> 后<span class="math-inline">k=n-r</em>\boldsymbol{A}</span> ，所以最终可以简化成</p>
+<p><span class="math-inline">\min_\boldsymbol{A}\Vert (\boldsymbol{A}\boldsymbol{A}^{\dagger} - \boldsymbol{I}<em>n)\boldsymbol{\Sigma}\Vert_F^2 = \min</em>{k,\boldsymbol{U}}\Vert \boldsymbol{U}\boldsymbol{\Sigma}\Vert_F^2\quad\text{s.t.}\quad k\geq n-r, \boldsymbol{U}\in\mathbb{R}^{k\times n}, \boldsymbol{U}\boldsymbol{U}^{\top} = \boldsymbol{I}_k \</span></p>
+<p>现在根据<span class="math-inline">F</span> 数定义可以写出</p>
+<p><span class="math-inline">\Vert \boldsymbol{U}\boldsymbol{\Sigma}\Vert_F^2=\sum_{i=1}^k \sum_{j=1}^n u_{i,j}^2 \sigma_j^2 =\sum_{j=1}^n \sigma_j^2 \underbrace{\sum_{i=1}^k u_{i,j}^2}<em>{w_j}=\sum</em>{j=1}^n \sigma_j^2 w_j \</span></p>
+<p>注意到<span class="math-inline">0 \leq w_j \leq 1</span>，以及<span class="math-inline">w_1+w_2+\cdots+w_n = k</span>，在此约束下最右端的最小值只能是最小的<span class="math-inline">k</span> <span class="math-inline">\sigma_j^2</span> 和，又因为<span class="math-inline">\sigma_j</span> 经从大到小排好序，所以</p>
+<p><span class="math-inline">\min_{k,\boldsymbol{U}}\Vert \boldsymbol{U}\boldsymbol{\Sigma}\Vert_F^2=\min_k \sum_{j=n-k+1}^n \sigma_j^2 = \sum_{j=r+1}^n \sigma_j^2 \</span></p>
+<p>也就是说，<span class="math-inline">\boldsymbol{\Sigma}</span> 它的最优<span class="math-inline">r</span> 近似的误差（<span class="math-inline">F</span> 数平方）是<span class="math-inline">\sum\limits_{j=r+1}^n \sigma_j^2</span>，这正好是保留对角线最大的<span class="math-inline">r</span> 元素后所产生的误差，所以我们证明了“非负对角阵的最优<span class="math-inline">r</span> 近似就是只保留对角线最大的<span class="math-inline">r</span> 元素的矩阵”。当然，这只能说是一个解，我们没有否定多解的可能性。</p>
+<p>值得指出的是，Eckart-Young-Mirsky定理不仅对<span class="math-inline">F</span> 数成立，还对谱范数成立，谱范数的证明实际上还简单一点，这里就不展开了，有兴趣的读者自行参考维基百科“<a href="https://en.wikipedia.org/wiki/Low-rank_approximation">https://en.wikipedia.org/wiki/Low-rank_approximation</a>”条目。</p>
+<h2 id="文章小结">文章小结<a class="anchor-link" href="#文章小结" title="Permanent link">&para;</a></h2>
+<p>本文的主角是声名显赫的SVD（奇异值分解），想必不少读者已经对它有所了解。在这篇文章中，我们主要围绕着SVD与低秩近似的相关内容进行展开，对SVD的存在性、计算以及与低秩近似的联系等理论内容给出了尽可能简单的证明过程。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

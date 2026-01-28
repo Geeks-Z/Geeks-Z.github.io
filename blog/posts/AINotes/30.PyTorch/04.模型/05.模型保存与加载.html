@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>保存整个模型</title>
+    <meta name="description" content="保存整个模型 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#模型存储内容">模型存储内容</a></li>
+<li><a href="#torchsave">torch.save</a><ul>
+<li><a href="#主要参数">主要参数</a></li>
+<li><a href="#保存整个-module">保存整个 Module</a></li>
+<li><a href="#只保存模型的参数">只保存模型的参数</a></li>
+</ul>
+</li>
+<li><a href="#torchload">torch.load</a><ul>
+<li><a href="#主要参数_1">主要参数</a></li>
+<li><a href="#加载整个-module">加载整个 Module</a></li>
+<li><a href="#只加载模型的参数">只加载模型的参数</a></li>
+<li><a href="#注意事项">注意事项</a></li>
+</ul>
+</li>
+<li><a href="#模型的断点续训练">模型的断点续训练</a></li>
+<li><a href="#单卡和多卡模型存储的区别">单卡和多卡模型存储的区别</a></li>
+<li><a href="#单卡多卡情况分类讨论">单卡/多卡情况分类讨论</a></li>
+<li><a href="#其他参数的保存和读取">其他参数的保存和读取</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>保存整个模型</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/30.PyTorch/04.模型</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="模型存储内容">模型存储内容<a class="anchor-link" href="#模型存储内容" title="Permanent link">&para;</a></h2>
+<p>一个PyTorch模型主要包含两个部分：模型结构和权重。其中模型是继承nn.Module的类，权重的数据结构是一个字典（key是层名，value是权重向量）。存储也由此分为两种形式：存储整个模型（包括结构和权重），和只存储模型权重。</p>
+<pre><code class="language-python">from torchvision import models
+model = models.resnet152(pretrained=True)
+save_dir = './resnet152.pth'
+
+# 保存整个模型
+torch.save(model, save_dir)
+# 保存模型权重
+torch.save(model.state_dict, save_dir)
+</code></pre>
+<p>对于PyTorch而言，pt, pth和pkl<strong>三种数据格式均支持模型权重和整个模型的存储</strong>，因此使用上没有差别。</p>
+<h2 id="torchsave">torch.save<a class="anchor-link" href="#torchsave" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><code>torch.save</code> 是 PyTorch 中用于保存模型、张量、字典或其他 Python 对象到磁盘的函数。</p>
+</blockquote>
+<pre><code class="language-python">torch.save(obj, f, pickle_module, pickle_protocol=2, _use_new_zipfile_serialization=False)
+</code></pre>
+<h3 id="主要参数">主要参数<a class="anchor-link" href="#主要参数" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>obj</strong>：要保存的对象。这可以是一个模型 (<code>nn.Module</code> 的实例)、张量 (<code>torch.Tensor</code>)、字典或任何其他 Python 对象。</p>
+</li>
+<li>
+<p><strong>f</strong>：保存对象的文件路径或文件对象（类似一个打开的文件句柄）。可以是一个字符串，表示文件路径，也可以是一个已打开的文件对象（如通过 <code>open</code> 函数打开的文件）。</p>
+</li>
+<li>
+<p><strong>pickle_module</strong>：用于序列化的模块。默认为 Python 的 <code>pickle</code> 模块。但在某些情况下，如使用 PyTorch 的特定环境（如某些受限的或旧版本的 Python 环境），你可能需要使用 <code>torch.jit.pickle</code> 作为替代。</p>
+</li>
+<li>
+<p><strong>pickle_protocol</strong>：使用的 pickle 协议版本。默认为 2，但在某些情况下，你可能需要设置为 4 以获得更好的兼容性或性能。</p>
+</li>
+<li>
+<p><strong>_use_new_zipfile_serialization</strong>：一个布尔值，决定是否使用新的 zipfile 序列化格式。默认是 <code>False</code>。这个参数主要是为了解决在某些环境中的兼容性问题。</p>
+</li>
+</ol>
+<p>其中模型保存还有两种方式：</p>
+<h3 id="保存整个-module">保存整个 Module<a class="anchor-link" href="#保存整个-module" title="Permanent link">&para;</a></h3>
+<p>这种方法比较耗时，保存的文件大</p>
+<pre><code class="language-python">torch.save(net, path)
+</code></pre>
+<h3 id="只保存模型的参数">只保存模型的参数<a class="anchor-link" href="#只保存模型的参数" title="Permanent link">&para;</a></h3>
+<p>推荐这种方法，运行比较快，保存的文件比较小</p>
+<pre><code class="language-python">state_sict = net.state_dict()
+torch.save(state_sict, path)
+</code></pre>
+<ol>
+<li>可以使用<code>model.eval()</code>将 dropout 和 batch normalization 层设置成 evaluation 模式。</li>
+<li><code>load_state_dict()</code>函数需要一个 dict 类型的输入，而不是保存模型的 PATH。所以这样 <code>model.load_state_dict(PATH)</code>是错误的，而应该<code>model.load_state_dict(torch.load(PATH))</code>。</li>
+<li>如果你想保存验证集上表现最好的模型，那么这样<code>best_model_state=model.state_dict()</code>是错误的。因为这属于浅复制，也就是说此时这个 best_model_state 会随着后续的训练过程而不断被更新，最后保存的其实是个 overfit 的模型。所以正确的做法应该是<code>best_model_state=deepcopy(model.state_dict())</code>。</li>
+</ol>
+<p>下面是保存 LeNet 的例子。在网络初始化中，把权值都设置为 2020，然后保存模型。</p>
+<pre><code class="language-python">import torch
+import numpy as np
+import torch.nn as nn
+from common_tools import set_seed
+
+class LeNet2(nn.Module):
+    def __init__(self, classes):
+        super(LeNet2, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 6, 5),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+            nn.Conv2d(6, 16, 5),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(16*5*5, 120),
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, classes)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size()[0], -1)
+        x = self.classifier(x)
+        return x
+
+    def initialize(self):
+        for p in self.parameters():
+            p.data.fill_(2020)
+
+net = LeNet2(classes=2019)
+
+# &quot;训练&quot;
+print(&quot;训练前: &quot;, net.features[0].weight[0, ...])
+net.initialize()
+print(&quot;训练后: &quot;, net.features[0].weight[0, ...])
+
+path_model = &quot;./model.pkl&quot;
+path_state_dict = &quot;./model_state_dict.pkl&quot;
+
+# 保存整个模型
+torch.save(net, path_model)
+
+# 保存模型参数
+net_state_dict = net.state_dict()
+torch.save(net_state_dict, path_state_dict)
+</code></pre>
+<p>运行完之后，文件夹中生成了<code>`model.pkl</code>和<code>model_state_dict.pkl</code>，分别保存了整个网络和网络的参数</p>
+<h2 id="torchload">torch.load<a class="anchor-link" href="#torchload" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><code>torch.load</code> 是 PyTorch 中用于从磁盘加载之前通过 <code>torch.save</code> 保存的对象（如模型、张量或字典）的函数。</p>
+</blockquote>
+<pre><code class="language-python">torch.load(f, map_location=None, pickle_module, **pickle_load_args)
+</code></pre>
+<h3 id="主要参数_1">主要参数<a class="anchor-link" href="#主要参数_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>f</strong>：要加载的文件的路径或文件对象。这通常是一个字符串，表示文件的路径，或者是一个已经打开的文件对象。</p>
+</li>
+<li>
+<p><strong>map_location</strong>：一个可选参数，用于指定如何重新映射存储位置。这个参数在加载模型到不同的设备（如CPU或GPU）时非常有用。它可以是一个设备对象（如 <code>torch.device('cpu')</code>）或包含设备标签的字符串。如果提供了这个参数，<code>torch.load</code> 会将加载的数据映射到指定的设备上。默认情况下，数据会加载到它原来保存的设备上。</p>
+</li>
+<li>
+<p><strong>pickle_module</strong>：用于反序列化的模块。默认为 Python 的 <code>pickle</code> 模块，但在某些情况下，你可能需要使用 <code>torch.jit.pickle</code>。</p>
+</li>
+<li>
+<p><strong>pickle_load_args</strong>：可选参数，允许传入额外的参数到 <code>pickle_module.load()</code> 方法中。</p>
+</li>
+</ol>
+<h3 id="加载整个-module">加载整个 Module<a class="anchor-link" href="#加载整个-module" title="Permanent link">&para;</a></h3>
+<p>如果保存的时候，保存的是整个模型，那么加载时就加载整个模型。这种方法不需要事先创建一个模型对象，也不用知道模型的结构，代码如下：</p>
+<pre><code class="language-python">path_model = &quot;./model.pkl&quot;
+net_load = torch.load(path_model)
+
+print(net_load)
+</code></pre>
+<p>输出如下：</p>
+<pre><code class="language-python">LeNet2(
+  (features): Sequential(
+    (0): Conv2d(3, 6, kernel_size=(5, 5), stride=(1, 1))
+    (1): ReLU()
+    (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (3): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))
+    (4): ReLU()
+    (5): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+  )
+  (classifier): Sequential(
+    (0): Linear(in_features=400, out_features=120, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=120, out_features=84, bias=True)
+    (3): ReLU()
+    (4): Linear(in_features=84, out_features=2019, bias=True)
+  )
+)
+</code></pre>
+<h3 id="只加载模型的参数">只加载模型的参数<a class="anchor-link" href="#只加载模型的参数" title="Permanent link">&para;</a></h3>
+<p>如果保存的时候，保存的是模型的参数，那么加载时就参数。这种方法需要事先创建一个模型对象，再使用模型的<code>load_state_dict()</code>方法把参数加载到模型中，代码如下：</p>
+<pre><code class="language-python">path_state_dict = &quot;./model_state_dict.pkl&quot;
+state_dict_load = torch.load(path_state_dict)
+net_new = LeNet2(classes=2019)
+
+print(&quot;加载前: &quot;, net_new.features[0].weight[0, ...])
+net_new.load_state_dict(state_dict_load)
+print(&quot;加载后: &quot;, net_new.features[0].weight[0, ...])
+</code></pre>
+<p>输出如下：</p>
+<pre><code class="language-python">加载前:  tensor([[[ 0.0775,  0.0374,  0.0163,  0.0196, -0.0884],
+         [ 0.0293, -0.1051, -0.0362,  0.1122, -0.0616],
+         [ 0.0083,  0.0274,  0.0158,  0.0301,  0.0937],
+         [-0.0459, -0.1062,  0.0510, -0.0058,  0.1046],
+         [-0.0672, -0.0204,  0.0134,  0.0594,  0.0421]],
+
+        [[ 0.0058, -0.0435, -0.0550,  0.0591, -0.1067],
+         [ 0.0929,  0.0202, -0.0027,  0.0264,  0.0409],
+         [ 0.0038, -0.0219, -0.0522, -0.0065,  0.0717],
+         [-0.0300, -0.0819, -0.0238, -0.0132, -0.0364],
+         [ 0.0258, -0.0238, -0.0680, -0.0172,  0.0902]],
+
+        [[-0.1087,  0.0948, -0.0848,  0.1148, -0.0212],
+         [-0.0634,  0.0479,  0.0064, -0.0287,  0.0732],
+         [-0.1080,  0.0522, -0.0891, -0.1137,  0.0838],
+         [ 0.0740,  0.0965,  0.0893, -0.1075,  0.0277],
+         [-0.0060, -0.0713,  0.0996,  0.0865, -0.0181]]],
+       grad_fn=&lt;SelectBackward0&gt;)
+加载后:  tensor([[[2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.]],
+
+        [[2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.]],
+
+        [[2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.],
+         [2020., 2020., 2020., 2020., 2020.]]], grad_fn=&lt;SelectBackward0&gt;)
+</code></pre>
+<h3 id="注意事项">注意事项<a class="anchor-link" href="#注意事项" title="Permanent link">&para;</a></h3>
+<ul>
+<li>如果你的模型是在GPU上训练的，并且你现在在CPU上加载它，或者反之，你可能需要在加载权重之前将模型移动到相应的设备上。例如，如果模型应该在GPU上运行，你可以使用<code>model.to('cuda')</code>来移动模型。</li>
+<li>当加载模型时，你可能还想加载优化器的状态（如果你打算继续训练模型的话）。这可以通过类似的方式完成：<code>optimizer_state_dict = torch.load('optimizer_state.pth')</code> 和 <code>optimizer.load_state_dict(optimizer_state_dict)</code>。</li>
+<li>如果你的模型是从旧版本的PyTorch保存的，而你现在正在使用新版本的PyTorch，通常不会有问题，因为PyTorch努力保持向后兼容性。但是，如果版本差异非常大，或者使用了特定的特性，则可能会出现问题。在这种情况下，尝试在保存模型时使用与加载模型时相同的PyTorch版本。</li>
+<li>模型在内存中是以对象的逻辑结构保存的，但是在硬盘中是以二进制流的方式保存的。</li>
+<li>序列化是指将内存中的数据以二进制序列的方式保存到硬盘中。PyTorch 的模型保存就是序列化。</li>
+<li>反序列化是指将硬盘中的二进制序列加载到内存中，得到模型的对象。PyTorch 的模型加载就是反序列化。</li>
+</ul>
+<h2 id="模型的断点续训练">模型的断点续训练<a class="anchor-link" href="#模型的断点续训练" title="Permanent link">&para;</a></h2>
+<p>在训练过程中，可能由于某种意外原因如断点等导致训练终止，这时需要重新开始训练。断点续练是在训练过程中每隔一定次数的 epoch 就保存<strong>模型的参数和优化器的参数</strong>，这样如果意外终止训练了，下次就可以重新加载最新的<strong>模型参数和优化器的参数</strong>，在这个基础上继续训练。</p>
+<p>下面的代码中，每隔 5 个 epoch 就保存一次，保存的是一个 dict，包括模型参数、优化器的参数、epoch。然后在 epoch 大于 5 时，就<code>break</code>模拟训练意外终止。关键代码如下：</p>
+<pre><code class="language-python">if (epoch+1) % checkpoint_interval == 0:
+
+        checkpoint = {&quot;model_state_dict&quot;: net.state_dict(),
+                      &quot;optimizer_state_dict&quot;: optimizer.state_dict(),
+                      &quot;epoch&quot;: epoch}
+        path_checkpoint = &quot;./checkpoint_{}_epoch.pkl&quot;.format(epoch)
+        torch.save(checkpoint, path_checkpoint)
+</code></pre>
+<p>在 epoch 大于 5 时，就<code>break</code>模拟训练意外终止</p>
+<pre><code class="language-python">if epoch &gt; 5:
+        print(&quot;训练意外中断...&quot;)
+        break
+</code></pre>
+<p>断点续训练的恢复代码如下：</p>
+<pre><code class="language-python">path_checkpoint = &quot;./checkpoint_4_epoch.pkl&quot;
+checkpoint = torch.load(path_checkpoint)
+
+net.load_state_dict(checkpoint['model_state_dict'])
+
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+start_epoch = checkpoint['epoch']
+
+scheduler.last_epoch = start_epoch
+</code></pre>
+<p>需要注意的是，还要设置<code>scheduler.last_epoch</code>参数为保存的 epoch。模型训练的起始 epoch 也要修改为保存的 epoch。</p>
+<h2 id="单卡和多卡模型存储的区别">单卡和多卡模型存储的区别<a class="anchor-link" href="#单卡和多卡模型存储的区别" title="Permanent link">&para;</a></h2>
+<p>PyTorch中将模型和数据放到GPU上有两种方式——<code>.cuda()</code>和<code>.to(device)</code>，后续内容针对前一种方式进行讨论。如果要使用多卡训练的话，需要对模型使用<code>torch.nn.DataParallel</code>。示例如下：</p>
+<pre><code class="language-python">import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0' # 如果是多卡改成类似0,1,2
+model = model.cuda()  # 单卡
+model = torch.nn.DataParallel(model).cuda()  # 多卡
+</code></pre>
+<p>之后我们把<code>model</code>对应的<code>layer</code>名称打印出来看一下，可以观察到差别在于多卡并行的模型每层的名称前多了一个“module”。</p>
+<ul>
+<li>单卡模型的层名：</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403222143682.png"/></div>
+
+<ul>
+<li>多卡模型的层名：</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202403222143337.png"/></div>
+
+<p>这种模型表示的不同可能会导致模型保存和加载过程中需要处理一些矛盾点，下面对各种可能的情况做分类讨论。</p>
+<h2 id="单卡多卡情况分类讨论">单卡/多卡情况分类讨论<a class="anchor-link" href="#单卡多卡情况分类讨论" title="Permanent link">&para;</a></h2>
+<p>由于训练和测试所使用的硬件条件不同，在模型的保存和加载过程中可能因为单GPU和多GPU环境的不同带来模型不匹配等问题。这里对PyTorch框架下单卡/多卡下模型的保存和加载问题进行排列组合，样例模型是torchvision中预训练模型resnet152。</p>
+<ul>
+<li><strong>单卡保存+单卡加载</strong></li>
+</ul>
+<p>在使用os.envision命令指定使用的GPU后，即可进行模型保存和读取操作。注意这里即便保存和读取时使用的GPU不同也无妨。</p>
+<pre><code class="language-python">import os
+import torch
+from torchvision import models
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'   #这里替换成希望使用的GPU编号
+model = models.resnet152(pretrained=True)
+model.cuda()
+
+save_dir = 'resnet152.pt'   #保存路径
+
+# 保存+读取整个模型
+torch.save(model, save_dir)
+loaded_model = torch.load(save_dir)
+loaded_model.cuda()
+
+# 保存+读取模型权重
+torch.save(model.state_dict(), save_dir)
+loaded_model = models.resnet152()   #注意这里需要对模型结构有定义
+loaded_model.load_state_dict(torch.load(save_dir))
+loaded_model.cuda()
+</code></pre>
+<ul>
+<li><strong>单卡保存+多卡加载</strong></li>
+</ul>
+<p>这种情况的处理比较简单，读取单卡保存的模型后，使用<code>nn.DataParallel</code>函数进行分布式训练设置即可：</p>
+<pre><code class="language-python">import os
+import torch
+from torchvision import models
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'   #这里替换成希望使用的GPU编号
+model = models.resnet152(pretrained=True)
+model.cuda()
+
+# 保存+读取整个模型
+torch.save(model, save_dir)
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'   #这里替换成希望使用的GPU编号
+loaded_model = torch.load(save_dir)
+loaded_model = nn.DataParallel(loaded_model).cuda()
+
+# 保存+读取模型权重
+torch.save(model.state_dict(), save_dir)
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'   #这里替换成希望使用的GPU编号
+loaded_model = models.resnet152()   #注意这里需要对模型结构有定义
+loaded_model.load_state_dict(torch.load(save_dir))
+loaded_model = nn.DataParallel(loaded_model).cuda()
+</code></pre>
+<ul>
+<li><strong>多卡保存+单卡加载</strong></li>
+</ul>
+<p>这种情况下的核心问题是：如何去掉权重字典键名中的"module"，以保证模型的统一性。</p>
+<p>对于加载整个模型，直接提取模型的module属性即可：</p>
+<pre><code class="language-python">import os
+import torch
+from torchvision import models
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'   #这里替换成希望使用的GPU编号
+
+model = models.resnet152(pretrained=True)
+model = nn.DataParallel(model).cuda()
+
+# 保存+读取整个模型
+torch.save(model, save_dir)
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'   #这里替换成希望使用的GPU编号
+loaded_model = torch.load(save_dir).module
+</code></pre>
+<p>对于加载模型权重，有以下几种思路：<br />
+<strong>保存模型时保存模型的module属性对应的权重</strong></p>
+<pre><code class="language-python">import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'   #这里替换成希望使用的GPU编号
+import torch
+from torchvision import models
+
+save_dir = 'resnet152.pth'   #保存路径
+model = models.resnet152(pretrained=True)
+model = nn.DataParallel(model).cuda()
+
+# 保存权重
+torch.save(model.module.state_dict(), save_dir)
+</code></pre>
+<p>这样保存下来的模型参数就和单卡保存的模型参数一样了，可以直接加载。也是比较推荐的一种方法。<br />
+<strong>去除字典里的module麻烦，往model里添加module简单</strong></p>
+<pre><code class="language-python">import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'   #这里替换成希望使用的GPU编号
+import torch
+from torchvision import models
+
+model = models.resnet152(pretrained=True)
+model = nn.DataParallel(model).cuda()
+
+# 保存+读取模型权重
+torch.save(model.state_dict(), save_dir)
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'   #这里替换成希望使用的GPU编号
+loaded_model = models.resnet152()   #注意这里需要对模型结构有定义
+loaded_model.load_state_dict(torch.load(save_dir))
+loaded_model = nn.DataParallel(loaded_model).cuda()
+loaded_model.state_dict = loaded_dict
+</code></pre>
+<p>这样即便是单卡，也可以开始训练了（相当于分布到单卡上）</p>
+<p><strong>遍历字典去除module</strong></p>
+<pre><code class="language-python">from collections import OrderedDict
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'   #这里替换成希望使用的GPU编号
+
+loaded_dict = torch.load(save_dir)
+
+new_state_dict = OrderedDict()
+for k, v in loaded_dict.items():
+    name = k[7:] # module字段在最前面，从第7个字符开始就可以去掉module
+    new_state_dict[name] = v #新字典的key值对应的value一一对应
+
+loaded_model = models.resnet152()   #注意这里需要对模型结构有定义
+loaded_model.state_dict = new_state_dict
+loaded_model = loaded_model.cuda()
+</code></pre>
+<p><strong>使用replace操作去除module</strong></p>
+<pre><code class="language-python">loaded_model = models.resnet152()    
+loaded_dict = torch.load(save_dir)
+loaded_model.load_state_dict({k.replace('module.', ''): v for k, v in loaded_dict.items()})
+</code></pre>
+<ul>
+<li><strong>多卡保存+多卡加载</strong></li>
+</ul>
+<p>由于是模型保存和加载都使用的是多卡，因此不存在模型层名前缀不同的问题。但多卡状态下存在一个device（使用的GPU）匹配的问题，即<strong>保存整个模型</strong>时会同时保存所使用的GPU id等信息，读取时若这些信息和当前使用的GPU信息不符则可能会报错或者程序不按预定状态运行。具体表现为以下两点：</p>
+<p><strong>读取整个模型再使用nn.DataParallel进行分布式训练设置</strong></p>
+<p>这种情况很可能会造成保存的整个模型中GPU id和读取环境下设置的GPU id不符，训练时数据所在device和模型所在device不一致而报错。</p>
+<p><strong>读取整个模型而不使用nn.DataParallel进行分布式训练设置</strong></p>
+<p>这种情况可能不会报错，测试中发现程序会自动使用设备的前n个GPU进行训练（n是保存的模型使用的GPU个数）。此时如果指定的GPU个数少于n，则会报错。在这种情况下，只有保存模型时环境的device id和读取模型时环境的device id一致，程序才会按照预期在指定的GPU上进行分布式训练。</p>
+<p>相比之下，读取模型权重，之后再使用nn.DataParallel进行分布式训练设置则没有问题。因此<strong>多卡模式下建议使用权重的方式存储和读取模型</strong>：</p>
+<pre><code class="language-python">import os
+import torch
+from torchvision import models
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2'   #这里替换成希望使用的GPU编号
+
+model = models.resnet152(pretrained=True)
+model = nn.DataParallel(model).cuda()
+
+# 保存+读取模型权重，强烈建议！！
+torch.save(model.state_dict(), save_dir)
+loaded_model = models.resnet152()   #注意这里需要对模型结构有定义
+loaded_model.load_state_dict(torch.load(save_dir)))
+loaded_model = nn.DataParallel(loaded_model).cuda()
+</code></pre>
+<p>如果只有保存的整个模型，也可以采用提取权重的方式构建新的模型：</p>
+<pre><code class="language-python"># 读取整个模型
+loaded_whole_model = torch.load(save_dir)
+loaded_model = models.resnet152()   #注意这里需要对模型结构有定义
+loaded_model.state_dict = loaded_whole_model.state_dict
+loaded_model = nn.DataParallel(loaded_model).cuda()
+</code></pre>
+<p>另外，上面所有对于loaded_model修改权重字典的形式都是通过赋值来实现的，在PyTorch中还可以通过"load_state_dict"函数来实现。因此在上面的所有示例中，我们使用了两种实现方式。</p>
+<pre><code class="language-python">loaded_model.load_state_dict(loaded_dict)
+</code></pre>
+<h2 id="其他参数的保存和读取">其他参数的保存和读取<a class="anchor-link" href="#其他参数的保存和读取" title="Permanent link">&para;</a></h2>
+<p>在深度学习项目里，有时候我们不仅仅需要保存模型的权重，还需要保存一些其他的参数，比如训练的epoch数、训练的loss，优化器的参数，动态调整学习策略的参数等等。这些参数可以通过字典的形式保存在一个文件里，然后在读取模型时一起读取。这里我们以下方代码为例：</p>
+<pre><code class="language-python">torch.save({
+        'model': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        'lr_scheduler': lr_scheduler.state_dict(),
+        'epoch': epoch,
+        'args': args,
+    }, checkpoint_path)
+</code></pre>
+<p>这些参数的读取方式也是类似的：</p>
+<pre><code class="language-python">checkpoint = torch.load(checkpoint_path)
+model.load_state_dict(checkpoint['model'])
+optimizer.load_state_dict(checkpoint['optimizer'])
+lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+epoch = checkpoint['epoch']
+args = checkpoint['args']
+</code></pre>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="https://www.zhihu.com/question/274533811">pytorch 中pkl和pth的区别？</a>  </li>
+<li><a href="https://stackoverflow.com/questions/59095824/what-is-the-difference-between-pt-pth-and-pwf-extentions-in-pytorch">What is the difference between .pt, .pth and .pwf extentions in PyTorch?</a></li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

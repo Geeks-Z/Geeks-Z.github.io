@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#统计量及其分布">统计量及其分布</a><ul>
+<li><a href="#总体与样本">总体与样本</a></li>
+<li><a href="#样本数据的整理与显示">样本数据的整理与显示</a></li>
+<li><a href="#统计量及其分布_1">统计量及其分布</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> 数学笔记/05.分布</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="统计量及其分布">统计量及其分布<a class="anchor-link" href="#统计量及其分布" title="Permanent link">&para;</a></h2>
+<h3 id="总体与样本"><strong>总体与样本</strong><a class="anchor-link" href="#总体与样本" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>总体</strong></li>
+</ol>
+<p>&emsp;&emsp;在一个统计问题里，研究对象的全体叫做总体，构成总体的每个成员称为个体。根据个体的数量指标数量，定义总体的维度，如每个个体只有一个数量指标，总体就是一维的，同理，个体有两个数量指标，总体就是二维的。<strong>总体就是一个分布，数量指标就是服从这个分布的随机变量。</strong><br />
+   &emsp;&emsp;总体根据个体数分为<strong>有限总体</strong>和<strong>无限总体</strong>，当有限总体的个体数充分大时，其可以看为无限总体。</p>
+<ol start="2">
+<li><strong>样本</strong></li>
+</ol>
+<ul>
+<li><strong>定义</strong>：</li>
+</ul>
+<p>&emsp;&emsp;从总体中随机抽取的部分个体组成的集合称为样本，<strong>样本个数称为样本容量</strong>。</p>
+<ul>
+<li>
+<p><strong>性质</strong>：</p>
+<ul>
+<li>
+<p><strong>二重性</strong>：抽取前随机，是随机变量；抽取后确定，是一组数值。</p>
+</li>
+<li>
+<p><strong>随机性</strong>：每个个体都有同等的机会被选入样本。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>独立性</strong>：每个样本的取值不影响其他样本取值，即分部独立。</p>
+<p>满足后面两个性质称为<strong>简单随机样本</strong>，则</p>
+<p><div class="math-display"><br />
+ F(x_1,x_2,...,x_n)=\prod^n_{i=1}F(x_i),\<br />
+ f(x_1,x_2,...,x_n)=\prod^n_{i=1}f(x_i),\<br />
+ p(x_1,x_2,...,x_n)=\prod^n_{i=1}p(x_i)<br />
+ </div></p>
+</li>
+</ul>
+<ol start="3">
+<li><strong>分组样本</strong></li>
+</ol>
+<p>&emsp;&emsp;只知样本观测值所在区间，而不知具体值的样本称为分组样本。<strong>缺点</strong>：与完全样本相比损失部分信息。<strong>优点</strong>：在样本量较大时，用分组样本既简明扼要，又能帮助人们更好地认识总体。</p>
+<h3 id="样本数据的整理与显示">样本数据的整理与显示<a class="anchor-link" href="#样本数据的整理与显示" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>经验分布函数</strong></li>
+</ol>
+<p>&emsp;&emsp;若将样本观测值<span class="math-inline">x_1,x_2,...,x_n</span> 小到大进行排列，得到有序样本<span class="math-inline">x_{(1)}\leq x_{(2)}\leq...\leq x_{(n)}</span>，用有序样本定义如下函数</p>
+<p><div class="math-display"><br />
+   F_n(x)=\left{\begin{matrix}<br />
+   0 &amp; 当x&lt;x_{(1)}\<br />
+   k/n &amp; 当x_{(k)}\leq x&lt;x_{(k+1)},k=1,2,...,n-1\<br />
+   1 &amp; 当x\geq x_{(n)}<br />
+   \end{matrix}\right.<br />
+   </div></p>
+<p>则称为<span class="math-inline">F_n(x)</span> 该样本的经验分布函数。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015280.png" style="zoom:100%;" /></p>
+<ol start="2">
+<li><strong>格里纹科定理</strong></li>
+</ol>
+<p>&emsp;&emsp;设<span class="math-inline">x_1,x_2,...,x_n</span> 取自总体分布函数为<span class="math-inline">F(x)</span> 样本，<span class="math-inline">F_n(x)</span> 该样本的经验分布函数，则当<span class="math-inline">n\rightarrow+\infty</span> ，有</p>
+<p><div class="math-display"><br />
+   P(sup_{-\infty&lt;x&lt;+\infty}|F_n(x)-F(x)|\rightarrow0)=1<br />
+   </div></p>
+<p>表明当 n 相当大时，经验分布函数<span class="math-inline">F_n(x)</span> 总体分布函数<span class="math-inline">F(x)</span> 一个良好的近似。它是经典统计学的一块基石。</p>
+<ol start="3">
+<li><strong>频数频率分布表</strong></li>
+</ol>
+<p>&emsp;&emsp;有样本<span class="math-inline">x_1,x_2,...,x_n</span> 作频数频率分布表的操作步骤如下：</p>
+<ul>
+<li>确定组数 k；</li>
+<li>确定每组组距，通常取每组组距相等为 d（方便起见，可选为整数）；</li>
+<li>确定组限（下限<span class="math-inline">a_0</span> 小于最小观测值，上限<span class="math-inline">a_k</span> 大于最大观测值）；</li>
+<li>统计样本数据落入每个区间的频数，并计算频率。</li>
+</ul>
+<p>该表能够简明扼要地把样本特点表示出来。不足之处是该表依赖于分组，不同的分组方式有不同的频数频率分布表。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015563.png" style="zoom:50%;" /></p>
+<ol start="4">
+<li><strong>直方图</strong></li>
+</ol>
+<ul>
+<li>利用频数频率分布表上的区间（横坐标）和频数（纵坐标）可作为频数直方图；</li>
+<li>若把纵坐标改为频率就得频率直方图；</li>
+<li>若把纵坐标改为频率/组距，就得到单位频率直方图。这时长条矩形的面积之和为 1.</li>
+</ul>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015731.png" style="zoom:100%;" /></p>
+<ol start="5">
+<li><strong>茎叶图</strong></li>
+</ol>
+<p>&emsp;&emsp;把样本中的每个数据分为茎与叶，把茎放于一侧，叶放于另一侧，就得到一张该样本的茎叶图。比较两个样本时，可画出背靠背的茎叶图。茎叶图保留数据中全部信息，当样本量较大，数据很分散，<strong>横跨二、三个数量级时，茎叶图并不适用</strong>。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015177.jpg" style="zoom:100%;" /></p>
+<h3 id="统计量及其分布_1">统计量及其分布<a class="anchor-link" href="#统计量及其分布_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>统计量</strong></li>
+</ol>
+<p>&emsp;&emsp;不含未知参数的样本函数称为统计量。统计量的分布称为抽样分布。</p>
+<ol start="2">
+<li><strong>样本均值</strong></li>
+</ol>
+<ul>
+<li>
+<p><strong>定义</strong>：</p>
+<p>&emsp;&emsp;样本<span class="math-inline">x_1,x_2,...,x_n</span> 算数平均值称为样本均值，记为<span class="math-inline">\bar{x}</span>.分组样本均值<span class="math-inline">\bar{x}=\frac{1}{n}\sum_{i=1}^{k}x_if_i</span>，其中 n 为样本量，k 为组数，<strong><span class="math-inline">x_i</span> <span class="math-inline">f_i</span> 第 i 组的组中值和频率</strong>，<strong>分组样本均值是完全样本均值的一种较好的近似</strong>。</p>
+<p>&emsp;&emsp;样本均值是样本的位置特征，样本中大多数值位于<span class="math-inline">\bar{x}</span> 右。平均可消除一些随机干扰，等价交换也是在平均数中实现的。</p>
+</li>
+<li>
+<p><strong>性质</strong>：</p>
+<ul>
+<li><span class="math-inline">\sum_{i=1}^n (x_i-\bar{x})=0</span>，<strong>样本数据<span class="math-inline">x_i</span> 样本均值<span class="math-inline">\bar{x}</span> 偏差之和为零</strong>；</li>
+<li><strong>样本数据<span class="math-inline">x_i</span> 样本均值<span class="math-inline">\bar{x}</span> 偏差平方和最小</strong>，即对任意的实数 c 有<span class="math-inline">\sum_{i=1}^n(x_i-\bar{x})^2\leq \sum_{i=1}^n(x_i-c)^2</span>;</li>
+<li>若总体分布为<span class="math-inline">N(\mu,\sigma^2)</span>，则<span class="math-inline">\bar{x}</span> 精确分布为<span class="math-inline">N(\mu,\sigma^2/n)</span>；</li>
+<li>若总体分布未知，但其期望<span class="math-inline">\mu</span> 方差<span class="math-inline">\sigma^2</span> 在，则当 n 较大时，<span class="math-inline">\bar{x}</span> 渐进分布为<span class="math-inline">N(\mu,\sigma^2/n)</span>，这里渐进分布是指 n 较大时的近似分布。</li>
+</ul>
+</li>
+</ul>
+<ol start="3">
+<li><strong>样本方差与样本标准差</strong></li>
+</ol>
+<p>&emsp;&emsp;样本方差有两种，<span class="math-inline">s_<em>^2=\frac{1}{n}\sum_{i=1}^n(x_i-\bar{x})^2</span> <span class="math-inline">s^2=\frac{1}{n-1}\sum_{i=1}^n(x_i-\bar{x})^2</span>，后者为无偏方差，也是最常用的。（这是因为当<span class="math-inline">\sigma^2</span> 总体方差时，总有<span class="math-inline">E(s_</em>^2)=\frac{n-1}{n}\sigma^2</span>,<span class="math-inline">E(s^2)=\sigma^2</span>，表明<span class="math-inline">s_*^2</span> 系统偏小的误差，<span class="math-inline">s^2</span> 此系统偏差。）称<span class="math-inline">\sqrt{s^2}</span> 样本标准差。</p>
+<p>&emsp;&emsp;样本方差是样本的散布特征，<span class="math-inline">s^2</span><strong>越大样本越分散，<span class="math-inline">s^2</span> 小分布越集中</strong>，样本标准差比样本方差使用更频繁，因为前者和样本均值有着相同的单位。</p>
+<p>&emsp;&emsp;<span class="math-inline">s^2</span> 计算有如下<strong>三个公式</strong>可供选用：</p>
+<p><div class="math-display"><br />
+   s^2=\frac{1}{n-1}\sum(x_i-\bar{x})^2=\frac{1}{n-1}[\sum x_i^2-\frac{(\sum x_i)^2}{n}]=\frac{1}{n-1}(\sum x_i^2-n\bar{x}^2)<br />
+   </div></p>
+<p>在分组样本场合，样本方差的近似计算公式为</p>
+<p><div class="math-display"><br />
+   s^2=\frac{1}{n-1}\sum_{i=1}^kf_i(x_i-\bar{x})^2=\frac{1}{n-1}(\sum_{i=1}^k f_ix_i^2-n\bar{x}^2)<br />
+   </div></p>
+<p>其中 k 为组数，<span class="math-inline">x_i,f_i</span> 别为第 i 个区间的组中值与频数，<span class="math-inline">\bar{x}</span> 分组样本的均值。</p>
+<ol start="4">
+<li><strong>样本矩及其函数</strong></li>
+</ol>
+<ul>
+<li>样本的 k 阶原点矩<span class="math-inline">a_k=\frac{1}{n}\sum_{i=1}^{n}x_i^k</span>，样本均值<span class="math-inline">\bar{x}</span> 样本的一阶原点矩；</li>
+<li>样本的 k 阶中心距<span class="math-inline">b_k=\frac{1}{n}\sum_{i=1}^n(x_i-\bar{x})^k</span>，样本方差<span class="math-inline">s^2</span> <span class="math-inline">s_*^2</span> 为样本的二阶中心矩；</li>
+<li>样本变异系数<span class="math-inline">C_r=s/\bar{x}</span>；</li>
+<li>样本的偏度<span class="math-inline">\hat{\beta_s}=b_3/b_2^{3/2}</span>，反映样本数据与对称性偏离程度和偏离方向；</li>
+<li>样本的峰度<span class="math-inline">\hat{\beta_k}=\frac{b_4}{b_2^2}-3</span>，反映总体分布密度曲线在其峰值附近的陡峭程度和尾部粗细.</li>
+</ul>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015277.png" style="zoom:100%;" /></p>
+<ol start="5">
+<li><strong>次序统计量及其分布</strong></li>
+</ol>
+<p>&emsp;&emsp;设<span class="math-inline">x_1,...,x_n</span> 取自某总体的一个样本，<span class="math-inline">x_{(i)}</span> 为该样本的第 i 个次序统计量（升序排序后，第 i 个样本）。</p>
+<ul>
+<li><span class="math-inline">x_{(1)}=min{x_1,...,x_n}</span> 为该样本的<strong>最小次序统计量</strong>；</li>
+<li><span class="math-inline">x_{(n)}=max{x_1,...,x_n}</span> 为该样本的<strong>最大次序统计量</strong>；</li>
+<li><span class="math-inline">(x_{(1)},x_{(2)},...,x_{(n)}}</span> 为该样本的次序统计量，即<strong>不独立也不同分布</strong>；</li>
+<li><span class="math-inline">R=x_{(n)}-x_{(1)}</span> 为样本极差。<br />
+     设总体<span class="math-inline">X</span> 密度函数为<span class="math-inline">f(x)</span>，分布函数为<span class="math-inline">F(x)</span>，<span class="math-inline">x_1,...,x_n</span> 样本，则有</li>
+<li>样本第 k 个次序统计量<span class="math-inline">x_{(k)}</span> 密度函数为</li>
+</ul>
+<p><div class="math-display"><br />
+   f_k(x)=\frac{n!}{(k-1)!(n-k)!}(F(x))^{k-1}(1-F(x))^{n-k}f(x);<br />
+   </div></p>
+<ul>
+<li>样本第 i 个与第 j 个次序统计量的联合密度函数为</li>
+</ul>
+<p><div class="math-display"><br />
+   f_{ij}(y,z)=\frac{n!}{(i-1)!(j-i-1)!(n-j)!}(F(y))^{i-1}(F(z)-F(y))^{j-i-1}(1-F(z))^{n-j}f(xy)f(z),\quad y\leq z, 1\leq i&lt;j\leq n<br />
+   </div></p>
+<ol start="6">
+<li><strong>样本中位数与样本分位数</strong></li>
+</ol>
+<p>设<span class="math-inline">x_1,...,x_n</span> 取自某总体的样本，<span class="math-inline">x_{(1)}\leq x_{(2)}\leq ...\leq x_{(n)}</span> 该样本的次序统计量，则样本中位数<span class="math-inline">m_{0.5}</span> 义为</p>
+<p><div class="math-display"><br />
+   m_{0.5}=\left{\begin{matrix}<br />
+   x_{(\frac{n+1}{2})} &amp; n为奇数\<br />
+   \frac{1}{2}(x_{(\frac{n}{2})} + x_{(\frac{n}{2}+1)}) &amp; n为偶数<br />
+   \end{matrix}\right.<br />
+   </div></p>
+<p>样本的 p 分位数<span class="math-inline">m_p</span> 义为</p>
+<p><div class="math-display"><br />
+   m_{p}=\left{\begin{matrix}<br />
+   x_{[np+1]} &amp; np不是整数\<br />
+   \frac{1}{2}(x_{(np)} + x_{(np+1)}) &amp; np是整数<br />
+   \end{matrix}\right.<br />
+   </div></p>
+<p>其中[x]表示向下取整。<strong>中位数对样本的极端值有抗干扰性，或称有稳健性</strong>。<br />
+<strong>样本分位数的渐近分布</strong>：设总体的密度函数为<span class="math-inline">f(x)</span>，<span class="math-inline">x_p</span> 总体的 p 分位数。若<span class="math-inline">p(x)</span> <span class="math-inline">x_p</span> 连续且<span class="math-inline">p(x_p)&gt;0</span>，则当 n 充分大时，有</p>
+<p><div class="math-display"><br />
+   m_p\sim N(x_p,\frac{p(1-p)}{n\cdot p^2(x_p)}),\<br />
+   m_{0.5}\sim N(x_{0.5},\frac{1}{4n\cdot p^2(x_{0.5})})<br />
+   </div></p>
+<ol start="7">
+<li><strong>五数概括与箱线图</strong></li>
+</ol>
+<p>&emsp;&emsp;五数指用样本的五个次序统计量，即最小观测值，最大观测值，中位数，第一 4 分位数和第三 4 分位数。其图形为箱线图，可描述样本分布形状。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015294.png" style="zoom:70%;" /></p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222015902.png" style="zoom:70%;" /></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

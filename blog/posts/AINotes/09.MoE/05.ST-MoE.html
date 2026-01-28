@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#st-moe-designing-stableand-transferable-sparse-expert-models">ST-MoE: Designing Stableand Transferable Sparse Expert Models</a></li>
+<li><a href="#摘要">摘要</a></li>
+<li><a href="#1-背景提高稀疏模型的实用性和可靠性">1 背景：提高稀疏模型的实用性和可靠性</a></li>
+<li><a href="#2-moe-基本概念汇总">2 MoE 基本概念汇总</a></li>
+<li><a href="#3-稀疏模型的稳定训练探索1结构上的微调">3 稀疏模型的稳定训练探索1：结构上的微调</a></li>
+<li><a href="#4-稀疏模型的稳定训练探索2训练时加噪声">4 稀疏模型的稳定训练探索2：训练时加噪声</a></li>
+<li><a href="#5-稀疏模型的稳定训练探索3router-z-loss">5 稀疏模型的稳定训练探索3：Router Z-Loss</a></li>
+<li><a href="#6-稀疏模型的微调性能假设一个泛化性问题">6 稀疏模型的微调性能假设：一个泛化性问题</a></li>
+<li><a href="#7-稀疏模型的微调性能实践1微调参数的子集提升泛化性">7 稀疏模型的微调性能实践1：微调参数的子集提升泛化性</a></li>
+<li><a href="#8-稀疏模型的微调性能实践2微调策略的影响">8 稀疏模型的微调性能实践2：微调策略的影响</a></li>
+<li><a href="#9-设计一个稀疏模型">9 设计一个稀疏模型</a></li>
+<li><a href="#10-实验结果">10 实验结果</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/09.MoE</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="st-moe-designing-stableand-transferable-sparse-expert-models">ST-MoE: Designing Stableand Transferable Sparse Expert Models<a class="anchor-link" href="#st-moe-designing-stableand-transferable-sparse-expert-models" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><a href="https://arxiv.org/pdf/2202.08906.pdf">ST-MoE: Designing Stableand Transferable Sparse Expert Models</a></p>
+</blockquote>
+<h2 id="摘要">摘要<a class="anchor-link" href="#摘要" title="Permanent link">&para;</a></h2>
+<p>ST-MoE 的目的是设计稳定可迁移的稀疏专家模型，做了这么几个工作：</p>
+<ol>
+<li>
+<p>对影响 MoE 模型训练质量-稳定性 trade-off 的一些稳定性技术做了大规模的研究。</p>
+</li>
+<li>
+<p>引入一种 router z-loss，解决训练不稳定的问题，同时轻微提升模型质量。</p>
+</li>
+<li>
+<p>Sparse 和 Dense 模型的微调分析，重点是超参数的分析。本文表明：不好的超参数使得 Dense 模型相比于 Sparse 模型几乎没有微调增益。</p>
+</li>
+<li>
+<p>设计 Pareto Efficient 的稀疏模型的架构、路由和模型设计的原则。</p>
+</li>
+<li>
+<p>token 路由决策的定性分析。</p>
+</li>
+<li>
+<p>一个 269B 参数的稀疏模型 (计算代价与 32B dense encoder-decoder Transformer 接近，因此取名为 Stable Transferable Mixture-of-Experts, ST-MoE-32B)，在多个自然语言处理任务中实现 SOTA 性能。</p>
+</li>
+</ol>
+<h2 id="1-背景提高稀疏模型的实用性和可靠性">1 背景：提高稀疏模型的实用性和可靠性<a class="anchor-link" href="#1-背景提高稀疏模型的实用性和可靠性" title="Permanent link">&para;</a></h2>
+<p>稀疏专家神经网络 (Sparse expert neural networks) 是一种在保证模型训练和推理的成本不显著增加的情况下，大幅度提升模型容量的方法，这种方法可以说很好地体现了大模型的优势，并为当今常用的静态神经网络架构提供了有效的替代方案。</p>
+<p>这种方法的特点是<strong>：不是对所有输入应用相同的参数，而是动态选择每个输入使用哪些参数</strong>。这就可以使得我们极大地扩展模型的 Param.，同时保持每个 token 的 FLOPs 大致恒定。但是，稀疏专家神经网络的缺点之一是其上游预训练和下游微调任务性能之间存在差异，比如在 Switch Transformer里面，作者训练了一个 1.6T 参数量的稀疏模型，但是在 SuperGLUE 等常见基准上进行微调时，其性能却落后于较小的模型。</p>
+<p>因此，本文的目的是提高稀疏模型的实用性和可靠性，并为稀疏专家模型提出了额外的分析和设计指南。</p>
+<h2 id="2-moe-基本概念汇总">2 MoE 基本概念汇总<a class="anchor-link" href="#2-moe-基本概念汇总" title="Permanent link">&para;</a></h2>
+<p>稀疏专家模型 (MoE) 通常是使用一组 Expert 来替换一个神经网络层，每个 Expert 都有各自的权重，输入不是被所有的 Expert 处理，而是只会被一部分 Expert 来处理。因此，必须添加一些机制来决定该把每个输入送给哪个 Expert。一般来讲，会有一个 <strong>路由器 (router)</strong> 或者<strong>门控网络 (gating 网络)</strong> 来解决这个问题。</p>
+<p>在自然语言处理里面，混合专家层 (Mixture-of-Experts, MoE) 的输入是 token <span class="math-inline">x</span> ，然后使用 router 把它分配 (route) 给最合适的 <span class="math-inline">k</span> 个 Expert。</p>
+<p><strong>router 的做法是这样</strong>：</p>
+<p>1) 首先对输入 <span class="math-inline">x</span> 乘以一个可学习矩阵 <span class="math-inline">W_r</span> ： <span class="math-inline">h(x) = W_r \cdot x</span> 。</p>
+<p>2) 通过 Softmax 操作把输出规范到 (0,1)，得到每个 Expert 的 gate-value：</p>
+<p><div class="math-display">\begin{equation}     p_i(x) = \frac{e^{h(x)_i}}{\sum_j^N e^{h(x)_j}} \end{equation} \tag{1}</div><br />
+3) 选出 top- <span class="math-inline">k</span> 个专家 (其索引用 <span class="math-inline">\mathcal{T}</span> 表示)，它们的 <span class="math-inline">p_i(x)</span> 与 Expert 的输出做加权求和即可：</p>
+<p><div class="math-display">\begin{equation}     y = \sum_{i \in \mathcal{T}} p_i(x) E_i(x)  \end{equation} \tag{2}</div>  </p>
+<p>下面是关于 MoE 的一些术语的解释：</p>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Expert</td>
+<td>通常是一个 MLP 网络，每个 Expert 的权重独立</td>
+</tr>
+<tr>
+<td>Router</td>
+<td>计算每个 token 发送到每个 Expert 的概率的网络</td>
+</tr>
+<tr>
+<td>Top-n Routing</td>
+<td>是一个路由算法，每个 token 被发送到 n 个 Expert</td>
+</tr>
+<tr>
+<td>Load Balancing Loss</td>
+<td>鼓励每一组 token 被均匀分发给各个 Expert 的辅助损失函数，有利于加速器并行处理数据块来提高硬件效率</td>
+</tr>
+<tr>
+<td>Group Size</td>
+<td>全局批量大小被分成更小的 Group。每个 Group 被考虑用于 Expert 之间的负载平衡。增加它会增加内存、计算和通信比如 Batch Size 为 B，Group 数量为 G，则每个组有 B/G token</td>
+</tr>
+<tr>
+<td>Capacity Factor (CF)</td>
+<td>每个 Expert 只能处理固定数量的 token，Capacity 常是通过均匀地划分 Expert、token 的数量来设置的：Capacity=token/Expert。但是有些时候可以通过设置 CF 来改变 Capacity，使之变为：CF×token/Expert如果 CF 增加，会创建一些额外的 Buffer，当负载不平衡时丢弃更少的 token。但是，增加 CF 也会带来额外的内存和计算的开销</td>
+</tr>
+<tr>
+<td>FFN</td>
+<td>线性层，激活函数，线性层</td>
+</tr>
+<tr>
+<td>Encoder-Decoder</td>
+<td>Transformer 架构的变体，由 Encoder 和 Decoder 组成，Encoder 的注意力机制会 Attention 所有的 token，Decoder 的注意力机制是自回归的方式</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-稀疏模型的稳定训练探索1结构上的微调">3 稀疏模型的稳定训练探索1：结构上的微调<a class="anchor-link" href="#3-稀疏模型的稳定训练探索1结构上的微调" title="Permanent link">&para;</a></h2>
+<p>如下图1所示，稀疏模型通常会受到训练不稳定性的影响，比标准 Dense 的 Transformer 中稳定性更差。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105094313.png" style="zoom: 60%;" /></div>
+
+<p>下面作者介绍了一些 Transformer 模型的改进，这些改进会<strong>提高 MoE 模型的质量</strong>，但是会<strong>影响训练的稳定性</strong>。</p>
+<p><strong>1) GELU Gated Linear Units (GEGLU)</strong></p>
+<p>就是使用 GELU 激活函数：</p>
+<p><div class="math-display">\begin{equation}     FFN_{GEGLU}(x, W, V, b, c) = GELU(xW + b) \odot (xV + c) \end{equation} \tag{2}</div>  </p>
+<p><strong>2) Root Mean Square 缩放参数</strong></p>
+<p>就是把 Transformer 模型中常见的 LayerNorm 换成 RMSNorm。</p>
+<p><div class="math-display">\begin{equation} y_i =  \frac{x_i}{\sqrt{ \frac{1}{d} \sum_{i=1}^d x_i^2}} \cdot g_i   \end{equation} \tag{3}</div></p>
+<p>作者在图2中通过实验表明，去掉 GEGLU 层，或者是 RMS scale 参数都会提升训练的稳定性，但是会很大程度地影响模型的质量。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105094406.png" style="zoom: 60%;" /></div>
+
+<h2 id="4-稀疏模型的稳定训练探索2训练时加噪声">4 稀疏模型的稳定训练探索2：训练时加噪声<a class="anchor-link" href="#4-稀疏模型的稳定训练探索2训练时加噪声" title="Permanent link">&para;</a></h2>
+<p>结果如图3所示，作者还尝试了一些训练时加噪声的方法，比如输入抖动 (Input jitter) 和 Dropout。输入抖动是指给输入随机乘以 <span class="math-inline">[1-10^{-2},1+10^{-2}]</span> 的随即变量。</p>
+<p>可以发现：输入抖动和 Dropout 都提高了稳定性，但会导致模型质量显着下降。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105094743.png" style="zoom: 60%;" /></div>
+
+<h2 id="5-稀疏模型的稳定训练探索3router-z-loss">5 稀疏模型的稳定训练探索3：Router Z-Loss<a class="anchor-link" href="#5-稀疏模型的稳定训练探索3router-z-loss" title="Permanent link">&para;</a></h2>
+<p>作者在训练 ST-MoE 的时候使用了3个目标函数的加权混合：</p>
+<p><div class="math-display">\begin{equation} L_{tot} = L_{CE} + c_B L_{B} + c_z L_{Z}    \end{equation} \tag{4}</div>  </p>
+<p>式中， <span class="math-inline">L_{CE}</span> 是有监督训练的交叉熵损失函数 (Cross-Entropy Loss)， <span class="math-inline">L_B</span> 是辅助的负载均衡损失函数 (Auxiliary Load Balance Loss)， <span class="math-inline">L_Z</span> 是 Router Z-Loss。</p>
+<p><strong>辅助的负载均衡损失函数</strong>：</p>
+<p><div class="math-display">\begin{equation}   \text{loss} = \alpha \cdot N \cdot \sum_{i=1}^{N} f_i \cdot P_i \end{equation} \tag{5}</div><br />
+式中， <span class="math-inline">N</span> 是 Expert 的数量。</p>
+<p>假设一个 Batch <span class="math-inline">\mathcal{B}</span> 里面有 <span class="math-inline">T</span> 个 token，辅助损失计算为向量 <span class="math-inline">f</span> 和 <span class="math-inline">P</span> 之间的点积：</p>
+<p>其中， <span class="math-inline">f_i</span> 是分配给 Expert <span class="math-inline">i</span> 的 token 的比例：</p>
+<p><div class="math-display">\begin{equation} f_i = \frac{1}{T}\sum_{x \in \mathcal{B}} \mathbf{1} {\text{argmax}\: p(x), i}  \end{equation} \tag{6}</div>  </p>
+<p><span class="math-inline">P_i</span> 是分配给 Expert <span class="math-inline">i</span> 的 router 概率的比例：</p>
+<p><div class="math-display">\begin{equation}  P_i = \frac{1}{T}\sum_{x \in \mathcal{B}} p_i(x) \end{equation} \tag{7}</div>  </p>
+<p>辅助损失鼓励均匀路由，因为它在均匀分布下最小化：</p>
+<p><div class="math-display">\sum_{1}^N (f_i\cdot P_i) = \sum_{1}^N (\frac{1}{N}\cdot \frac{1}{N}) = \frac{1}{N} \tag{8}</div><br />
+辅助损失里面的 <span class="math-inline">N</span> 这一项，是使得当 Expert 数量不同时，保持在均匀路由下的损失是个常数。</p>
+<p><strong>Router Z-Loss</strong>：</p>
+<p><div class="math-display">\begin{equation}     L_{z}(x) = \frac{1}{B} \sum_{i=1}^B \left(\log \sum_{j=1}^N e^{x_j^{(i)}} \right)^2 \end{equation} \tag{8}</div>  </p>
+<p>式中， <span class="math-inline">B</span> 是 token 的数量， <span class="math-inline">N</span> 是 Expert 的数量， <span class="math-inline">x \in \mathcal{R}^{B \times N}</span> 是 Router 的输入。这个损失函数会惩罚 Router 的输入中很大的值。</p>
+<h2 id="6-稀疏模型的微调性能假设一个泛化性问题">6 稀疏模型的微调性能假设：一个泛化性问题<a class="anchor-link" href="#6-稀疏模型的微调性能假设一个泛化性问题" title="Permanent link">&para;</a></h2>
+<p>性能最好的语言模型通常是通过 (1) 对大量数据 (如互联网数据) 进行预训练然后 (2) 对感兴趣的任务 (如 SuperGLUE) 进行微调来获得的。</p>
+<p>作者对稀疏模型的泛化性能做了一个假设，即：稀疏模型容易过拟合，通过 SuperGLUE 中的 Commitment Bank 和 ReCORD 两个任务来说明这个问题。Commitment Bank 有 250 个训练样本，而 ReCORD 有超过 100,000 个，很适合研究这个问题。</p>
+<p>如下图4所示，作者比较了 Dense L 和 ST-MoE-L 模型的微调性能。每个模型都对来自 C4 语料库的 500B 个标记进行预训练，这两个模型的 FLOPs 与 770M 参数的 T5-Large encoder-decoder 大致接近。ST-MoE 模型有 32 个 Expert，Expert 频率为 1/4 (每4个 FFN 层被 MoE 层替换)。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102831.png" style="zoom: 60%;" /></div>
+
+<p>实验结果如上图4所示。可以看到不论是使用更大的数据集 ReCORD，还是更小的数据集 Commitment Bank，稀疏模型都比对标的密集模型更快地实现训练精度 100%。但是对于小数据集 Commitment Bank，密集模型的验证集微调性能更好，对于大数据集 ReCORD，稀疏模型的验证集微调性能更好。</p>
+<p>这说明，稀疏模型在小数据集上面的泛化性能有待加强。</p>
+<h2 id="7-稀疏模型的微调性能实践1微调参数的子集提升泛化性">7 稀疏模型的微调性能实践1：微调参数的子集提升泛化性<a class="anchor-link" href="#7-稀疏模型的微调性能实践1微调参数的子集提升泛化性" title="Permanent link">&para;</a></h2>
+<p>为了对抗过度拟合，作者尝试在微调期间仅更新模型参数的子集，分别尝试了这么几种：更新所有参数，只更新非 MoE 参数，只更新 MoE 参数，只更新 Self-Attention 参数和 Encoder-Decoder 的 Attention 参数，只更新非 MoE 的 FFN 参数。实验结果如下图5所示，只更新 MoE 参数的效果是最差的，其他的效果都差不多。而只更新非 MoE 参数可能是加速和减少内存进行微调的有效方法。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102849.png" style="zoom: 60%;" /></div>
+
+<h2 id="8-稀疏模型的微调性能实践2微调策略的影响">8 稀疏模型的微调性能实践2：微调策略的影响<a class="anchor-link" href="#8-稀疏模型的微调性能实践2微调策略的影响" title="Permanent link">&para;</a></h2>
+<p>作者希望探究稀疏和密集模型对微调协议的敏感性，因此研究了2个超参数：Batch Size 和学习率。作者在 C4 的500B 令牌上预训练 Dense-L 和 ST-MoE-L，然后在 SuperGLUE 上进行微调，实验结果如下图6所示。稀疏和密集模型在不同的 Batch Size 和学习率之间具有截然不同的性能。</p>
+<p>稀疏模型受益于较小的 Batch Size 和更高的学习率。与过拟合假设一致，这两种变化都可能在微调期间通过更高的噪声来提高泛化能力。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102903.png" style="zoom: 60%;" /></div>
+
+<h2 id="9-设计一个稀疏模型">9 设计一个稀疏模型<a class="anchor-link" href="#9-设计一个稀疏模型" title="Permanent link">&para;</a></h2>
+<p>作者给出了一些设计稀疏模型的结论，为了叙述方便这里直接说结论了：</p>
+<ol>
+<li>推荐使用 top-2 routing，即每个 token 给2个 Expert 处理，Capacity Factor 设置为 1.25。</li>
+<li>在评测过程中可以改变 Capacity Factor，以适应新的内存/计算要求。</li>
+<li>在每个稀疏层之前或之后使用 Dense FFN 可以提高模型质量。</li>
+</ol>
+<h2 id="10-实验结果">10 实验结果<a class="anchor-link" href="#10-实验结果" title="Permanent link">&para;</a></h2>
+<p>作者设计和训练 269B 稀疏参数模型 (FLOPs 与 32B 密集模型匹配)。评测的基准是 SuperGLUE benchmark，它包含下面这些子任务：</p>
+<ul>
+<li>sentiment analysis (SST-2)</li>
+<li>word sense disambiguation (WIC)</li>
+<li>sentence similarity (MRPC, STS-B, QQP)</li>
+<li>natural language inference (MNLI, QNLI, RTE, CB)</li>
+<li>question answering (MultiRC, RECORD, BoolQ)</li>
+<li>coreference resolution (WNLI, WSC)</li>
+<li>sentence completion (COPA)</li>
+<li>sentence acceptability (CoLA)</li>
+</ul>
+<p><strong>模型架构的配置</strong>：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102920.png" style="zoom: 60%;" /></div>
+
+<p>如下图8所示是 ST-MoE-L 模型实验结果。模型是稀疏和密集的 T5-Large (L)，在 C4 数据集上预训练 500k steps。可以观察到，在大多数任务上面 ST-MoE-L 模型都取得了提升。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202411050926165.jpg" />  </p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102931.png" style="zoom: 60%;" /></div>
+
+<p>ST-MoE-32B 模型的训练数据集是图9，一共 1.5T tokens，每个 Batch 是 1M tokens，优化器默认使用的是 Adafactor，10k steps 的学习率 warm-up，学习率 scheduler 是 inverse square root decay。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102943.png" style="zoom: 60%;" /></div>
+
+<p>实验结果如下图10所示。在 SuperGLUE 上，ST-MoE-32B 模型超过了之前最先进的模型，在测试集上实现了 91.2 的平均分数。对于摘要数据集 XSum 和 CNN-DM，ST-MoE-32B 模型实现了 SOTA 的性能，而无需对训练或微调进行额外的更改。在3个 closed book QA 任务中的2个上，ST-MoE-32B 模型改进了之前的最新技术，分别是 Closed book WebQA 和 Closed book NatQA。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20241105102959.png" style="zoom: 60%;" /></div>
+
+<p>但是，ST-MoE-32B 的模型还是有一些缺点的，比如在小一点的数据集 SQuAD 上面的性能是 90.8，并未超过之前的 91.3。同样的小数据集 CB, WSC, ReCoRD 的性能也是同样如此。Closed Book Trivia QA 的性能也没能达到最好。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="https://zhuanlan.zhihu.com/p/653796685">MoE 系列超详细解读 (三)：ST-MoE：设计稳定可迁移的稀疏专家模型</a></li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

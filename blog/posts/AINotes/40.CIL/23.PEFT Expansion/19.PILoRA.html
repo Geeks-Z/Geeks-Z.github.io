@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#联邦类别增量学习">联邦类别增量学习</a></li>
+<li><a href="#预训练模型的参数高效微调peft">预训练模型的参数高效微调（PEFT）</a></li>
+</ul>
+</li>
+<li><a href="#3-预备知识">3. 预备知识</a></li>
+<li><a href="#4-我们的方法">4. 我们的方法</a><ul>
+<li><a href="#41-针对预训练模型的增量-lora">4.1 针对预训练模型的增量 LoRA</a></li>
+<li><a href="#42-原型学习与原型重加权">4.2 原型学习与原型重加权</a></li>
+<li><a href="#43-pilora-的集成目标">4.3 PILoRA 的集成目标</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实验设置">5.1 实验设置</a></li>
+<li><a href="#52-对比结果">5.2 对比结果</a></li>
+<li><a href="#53-消融实验">5.3 消融实验</a></li>
+<li><a href="#54-进一步分析">5.4 进一步分析</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>现有的联邦学习方法在涉及数据隐私和非独立同分布（Non-IID）数据的场景中，已经有效地处理了去中心化学习问题。然而，在实际情况下，每个客户端动态学习新类，要求全局模型能够对所有已见类别进行分类。为了在低通信成本下有效缓解灾难性遗忘和数据异质性问题，我们提出了一种简单而有效的方法，称为 PILoRA。一方面，我们采用原型学习来学习更好的特征表示，并利用原型与类别特征之间的启发式信息设计了一个原型重加权模块，以解决由数据异质性引起的分类器偏差，而无需重新训练分类器。另一方面，我们将增量学习视为学习不同任务向量的过程，并将其编码在不同的 LoRA 参数中。因此，我们提出了增量 LoRA 来缓解灾难性遗忘。标准数据集的实验结果表明，我们的方法显著优于现有技术。更重要的是，我们的方法在不同的设置和数据异质性程度下表现出强大的鲁棒性和优越性。代码可在 https://github.com/Ghy0501/PILoRA 获取。</p>
+<p>关键词：联邦学习·类别增量学习</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>联邦学习（FL）[1] 是一种新颖的分布式机器学习范式，允许多个数据所有者在不泄露本地数据隐私的情况下协作训练一个共享模型。近年来，随着社会对数据隐私的日益重视以及相关法规的完善 [2]，联邦学习得到了快速发展，并广泛应用于各种实际场景 [3–5,80,81]。</p>
+<p>现有的联邦学习方法 [1,7,8] 通常依赖于封闭世界假设 [6,77,82]，即模型在训练和测试阶段所见类别的数量保持不变。然而，现实世界是动态且不断变化的，本地客户端通常需要接收新数据来不断更新全局模型。因此，联邦类别增量学习（FCIL）[12,13] 被提出以处理动态场景中的联邦学习任务。具体来说，每个本地客户端在每个阶段只能使用新类别数据更新模型，并将模型参数上传到全局服务器进行聚合，而全局模型需要保持对所有已见类别的判别能力。此外，本地数据的数据分布遵循非独立同分布（Non-IID）假设 [16]。</p>
+<p>FCIL 为实际应用提供了更现实的设置，但也带来了更大的挑战，因为 FCIL 需要同时解决灾难性遗忘 [10,11] 和由 Non-IID 引起的数据异质性问题。在现有研究中，一种方法是存储旧类别数据的子集，并在学习新任务时一起训练 [13,15]，但由于隐私保护要求，存储的旧数据量严格受限。另一种方法是利用生成模型生成旧数据的伪样本 [14,31]，从而保留对旧类别的分类能力。然而，训练一个好的生成器会导致更大的计算开销，并且生成器本身也会面临灾难性遗忘问题。另一个方向是使用预训练模型进行微调 [34,35]，这些方法通过维护一个模块池来存储不同阶段的知识，并在推理时根据输入数据与模块的相似性插入相应的模块。然而，存储这些模块会占用额外的内存空间。尽管这些方法为解决 FCIL 提供了不同的视角，但仍存在大量未探索的空间，特别是在不同 Non-IID 设置和不同数据异质性程度下的模型性能。为了更好地解决这一问题，我们首先回答一个基本问题：处理 CIL 和 FL 的万能药是什么？</p>
+<p>换句话说，如果我们在处理 CIL 和 FL 时能找到共同点，将对解决 FCIL 问题大有帮助。具体来说，我们观察到：1）在特征表示层面，FL 和 CIL 任务都要求模型学习类内紧凑且类间可分离的特征表示。一方面，对于 CIL 任务，这种特征表示有助于减少新旧类别特征在深度特征空间中的重叠，从而缓解旧知识的遗忘。为此，PASS[24] 引入了自监督学习来辅助特征表示的学习。另一方面，在 FL 任务中，FedProto[68] 对属于同一类别的样本的深度特征施加了约束，确保这些特征接近其各自类别的全局原型。2）在分类器层面，分类器漂移是两者的共同敌人。在 CIL 中，当学习新类别时，从旧类别学习到的决策边界可能会被严重破坏，导致分类层出现显著偏差 [24,25]。为了解决这一问题，一些方法 [37,54,55] 通过直接保留部分旧类别数据与新数据一起训练模型来缓解偏差。其他方法 [24,25] 通过保留旧类别的伪特征来辅助训练分类层；在 FL 中，CCVR[26] 评估了在数据异质性下本地模型中不同层之间的相似性，并发现分类器的相似性最低。这表明每个客户端模型的分类器严重偏向本地数据。与 CIL 类似，[26,57] 利用本地特征的统计信息在全局服务器上重新训练分类器以缓解分类器偏差。</p>
+<p>图 1 展示了客户端 1 和客户端 2 的本地数据是非独立同分布的。Resnet50（第一行）更关注本地模式，在数据异质性情况下学习到的模式显著不同，导致平均模型丢失了一些重要信息（如鱼鳍）。然而，ViT（第二行）受数据异质性的影响较小，平均模型基本上保留了本地模型学习到的所有信息。受上述发现的启发，本文提出了一种<strong>原型指导的增量 LoRA（PILoRA）</strong>模型来解决 FCIL 问题。具体来说，我们在模型中采用原型分类器来学习类内紧凑且类间可分离的特征表示，这对 CIL 和 FL 都有益 [7,27–29]。我们使用预训练的 Transformer 模型（ViT）作为骨干网络，因为 Transformer 学习到的全局交互比 CNN 学习到的局部模式在 FL 任务中更为鲁棒 [9]（图 1），并且提供了良好的特征表示。考虑到通信成本，我们在训练期间冻结整个骨干网络，并使用 LoRA（一种参数高效微调方法）来训练模型。为了解决 FCIL 中的灾难性遗忘问题，我们提出了增量 LoRA，通过正交正则化约束不同阶段的 LoRA 在相互正交的子空间中进行训练，并在推理时通过简单高效的求和获取过去学到的知识。为了解决数据异质性引起的分类器偏差，我们为全局服务器设计了一个原型重加权模块，基于原型与相应类别特征之间的启发式信息聚合本地原型。与现有的 FCIL 方法相比，我们的模型在标准数据集上取得了优异的结果。此外，我们探索了模型在不同 Non-IID 设置和数据异质性程度下的表现。实验表明，我们的方法具有鲁棒性，而其他方法在极端异质性情况下表现显著下降。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151340.png" style="zoom: 80%;" /></div>
+
+<p>本文的主要贡献可以总结为：</p>
+<ul>
+<li>我们提出了增量 LoRA，它在<strong>正交子空间</strong>上进行增量学习以缓解灾难性遗忘，并通过简单高效的参数求和聚合先前的知识。</li>
+<li>我们提出了原型重加权模块，利用每类本地原型与相应类别特征之间的启发式信息形成全局原型。我们的方法在不重新训练的情况下有效解决了数据异质性引起的分类器偏差。</li>
+<li>我们在标准数据集上进行了广泛的实验，并取得了最先进的性能。此外，在极端异质性情况下，我们的方法仍然保持鲁棒性，而所有其他方法都表现大幅下降。</li>
+</ul>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="联邦类别增量学习">联邦类别增量学习<a class="anchor-link" href="#联邦类别增量学习" title="Permanent link">&para;</a></h3>
+<p>近年来，联邦类别增量学习（FCIL）的研究引起了广泛关注。Dong 等人 [13] 首次提出了 FCIL 的概念，并在本地和全局服务器端提出了几种损失函数，以缓解本地和全局的灾难性遗忘。然而，他们的方法使用了回放缓冲区来存储和保留旧类别数据，并额外设计了一个代理服务器来选择最佳模型，导致较大的内存开销和通信成本。LGA[15] 扩展了 [13] 的工作，但它仍然属于基于回放的 FCIL。在更具挑战性的无回放 FCIL 问题中，生成模型被广泛采用以生成合成数据，旨在缓解本地和全局的灾难性遗忘 [31,32]，但其性能高度依赖于合成数据的质量，并且会带来额外的计算成本。与我们的工作类似，FedSpace[33] 设计了基于原型的损失，鼓励同一类别的特征向量接近，而我们通过使用原型分类器实现了这一目标。与上述方法不同，一些最近的研究 [34,35] 将预训练模型与 FCIL 结合，并以较小的通信成本实现了更高的性能。然而，它们都采用了基于相似性的选择策略，这在推理时会导致额外的内存开销。此外，它们都使用监督预训练权重，而我们认为这可能带来隐私问题，因为下游任务的数据可能与预训练数据集重叠。</p>
+<h3 id="预训练模型的参数高效微调peft">预训练模型的参数高效微调（PEFT）<a class="anchor-link" href="#预训练模型的参数高效微调peft" title="Permanent link">&para;</a></h3>
+<p>随着大规模预训练模型的出现 [43-45]，如何有效地微调这些模型以适应下游任务成为了关注的焦点。最近，LoRA[30]、Prompt[47] 和 Adapter[46] 成为了突出技术，并广泛应用于 CIL[20-22,53] 和 FL[48,49,69] 任务。在 FCIL 中，现有方法 [34,35] 尝试将 Prompt 和 Adapter 与预训练模型结合。具体来说，它们将每个阶段学到的知识存储在 Prompt 或 Adapter 模块的参数中，并在推理时通过特定的相似性计算选择适合当前输入的模块嵌入到模型中，从而以微小的通信成本有效缓解灾难性遗忘。然而，这种基于相似性匹配的方法无疑会引入推理延迟，因为它们需要额外的相似性计算模块（在 [34] 中，他们甚至训练了一个单独的 CNN 来计算相似性）。此外，它们需要在全局服务器上设置额外的内存空间来存储模块参数。</p>
+<h2 id="3-预备知识">3. 预备知识<a class="anchor-link" href="#3-预备知识" title="Permanent link">&para;</a></h2>
+<p>在 FCIL 设置中，每个客户端都有一个本地流数据集 <span class="math-inline">D^k = {D^k_t}^T_{t=1}</span>，其中 <span class="math-inline">D^k_t = {X^k_t, Y^k_t} = {x^k_{t,i}, y^k_{t,i}}^{N_t}<em>{i=1}</span> 是第 <span class="math-inline">k</span> 个客户端在任务 <span class="math-inline">t</span> 上的数据集。数据集 <span class="math-inline">D^k_t</span> 包含 <span class="math-inline">N^k_t</span> 个训练样本及其标签 <span class="math-inline">Y^k_t \in C^k_t</span>，其中 <span class="math-inline">C^k_t</span> 是任务 <span class="math-inline">t</span> 中第 <span class="math-inline">k</span> 个客户端的类别集。特别地，同一任务下不同客户端 <span class="math-inline">k</span> 的分布是非独立同分布的，且不同任务 <span class="math-inline">t</span> 的类别集是互不相交的。对于本地客户端，目标是最小化在当前数据集 <span class="math-inline">D^k_t</span> 上预定义的损失函数 <span class="math-inline">L</span>，同时避免干扰并可能增强从先前学习阶段获得的知识：<br />
+<div class="math-display"><br />
+    \arg\min</em>{\omega^k_t} L(\omega^k_t; \omega^{t-1}, X^k_t, Y^k_t), \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">\omega^k_t</span> 是第 <span class="math-inline">k</span> 个本地模型的参数，<span class="math-inline">\omega^{t-1}</span> 是前一任务的全局模型。然后，服务器通过聚合所有上传的参数来更新全局模型 <span class="math-inline">\omega^t</span>：<br />
+<div class="math-display"><br />
+    \omega^t = \sum^K_{k=1} \gamma_k \omega^k_t, \quad \text{其中} \quad \gamma_k = \frac{N^k_t}{\sum_{k'} N^k_{k'}}. \tag{2}<br />
+</div><br />
+全局模型的目标是在低通信成本下正确分类所有已见类别的测试样本，并解决数据异质性问题。</p>
+<h2 id="4-我们的方法">4. 我们的方法<a class="anchor-link" href="#4-我们的方法" title="Permanent link">&para;</a></h2>
+<h3 id="41-针对预训练模型的增量-lora">4.1 针对预训练模型的增量 LoRA<a class="anchor-link" href="#41-针对预训练模型的增量-lora" title="Permanent link">&para;</a></h3>
+<p>在 FCIL 中，通过 PEFT 将不同阶段的知识存储在不同模块中可以有效缓解灾难性遗忘 [34,35]，但在推理时需要额外的相似性计算单元，以便根据输入选择适当的模块嵌入到模型中，这会导致推理延迟和额外的内存开销。为了在不占用额外存储空间的情况下学习一个端到端的全局模型，我们直观地认为，存储不同阶段知识的模块可以有机地组合成一个嵌入所有阶段知识的模块。因此，我们提出了<strong>增量 LoRA</strong>，以有效解决 FCIL 中的灾难性遗忘问题。一方面，LoRA 具有低推理延迟和更稳定训练的自然优势 [30]；另一方面，受 [20,70] 的启发，我们引入了正交性损失，通过正交正则化约束 LoRA 在正交子空间中学习新知识，从而更好地保留旧类别的知识。</p>
+<p>具体来说，我们定义预训练模型的初始化参数为 <span class="math-inline">W \in \mathbb{R}^{d \times k}</span>，<span class="math-inline">\Delta W^t</span> 表示任务 <span class="math-inline">t</span> 的待更新参数。那么，模型在不同增量学习阶段的更新可以表示为：<br />
+<div class="math-display"><br />
+    W + \Delta W^t. \tag{3}<br />
+</div><br />
+LoRA 假设大规模预训练模型在适应下游任务时的权重变化发生在低秩空间中：<br />
+<div class="math-display"><br />
+    W + \Delta W^t = W + A^t B^t, \tag{4}<br />
+</div><br />
+其中 <span class="math-inline">A^t \in \mathbb{R}^{d \times r}</span>，<span class="math-inline">B^t \in \mathbb{R}^{r \times k}</span>，且 <span class="math-inline">r \ll \min{d, k}</span>。首先，<span class="math-inline">A^t</span> 通过随机高斯分布初始化，而 <span class="math-inline">B^t</span> 初始化为零。因此，<span class="math-inline">B^t</span> 可以看作是 <span class="math-inline">A^t</span> 的系数矩阵 [70]。LoRA 将其作为旁路应用于多头注意力模块中的查询和值投影矩阵，并在适应下游任务时，仅训练 <span class="math-inline">A^t</span> 和 <span class="math-inline">B^t</span> 的参数。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303160345.png" style="zoom: 80%;" /></div>
+
+<p>受 [70] 的启发，我们认为 LoRA 的参数可以视为存储任务梯度不同子空间的容器。因此，学习一系列增量学习任务可以视为学习一系列 LoRA 参数。那么，如何使用这些 LoRA 模块构建一个能够分类所有已见类别的模型？一个想法是根据不同模块与相应输入之间的相似性选择适当的模块嵌入模型 [34,35]。然而，计算相似性需要额外的计算资源，这会导致推理延迟。另一个想法是，由于 LoRA 本质上是两个权重矩阵，可以将阶段 <span class="math-inline">t</span> 之前的所有 LoRA 参数连接成一个新矩阵，以获取所有先前阶段的知识 [70]。特别地，在阶段 <span class="math-inline">t</span>，前 <span class="math-inline">t-1</span> 个阶段学到的知识存储在 <span class="math-inline">A^{1:t-1} = [A^1, ..., A^{t-1}]</span> 和 <span class="math-inline">B^{1:t-1} = [B^1, ..., B^{t-1}]</span> 中。为了获得权重矩阵，我们可以将这些 LoRA 参数顺序连接成一个更大的模块：<br />
+<div class="math-display"><br />
+    W + \Delta W^t = W + \tilde{A}^t \tilde{B}^t, \tag{5}<br />
+</div><br />
+其中 <span class="math-inline">\tilde{A}^t = \text{concat}([A^1, ..., A^t])</span>，<span class="math-inline">\tilde{B}^t = \text{concat}([B^1, ..., B^t])</span>。然而，这将导致全局模型中 LoRA 的参数随着增量学习任务的数量增加而增加。因此，为了确保本地模型与全局模型的一致性，我们受模型编辑中的任务算术 [71,74,76] 启发，提出通过<strong>求和</strong>来整合不同阶段的 LoRA 参数：<br />
+<div class="math-display"><br />
+    W + \Delta W^t = W + A^t B^t, \quad \text{其中} \quad A^t = \sum^t_{i=1} A^i, \quad B^t = \sum^t_{i=1} B^i. \tag{6}<br />
+</div><br />
+具体来说，权重空间中的不同方向对应于输入空间中的不同局部区域 [71]。因此，预训练权重中编码的这些不同方向的线性组合使模型能够有效区分不同的输入。在我们的方法中，不同增量任务的训练数据是互不相交的，因此直接对不同任务对应的 LoRA 参数进行求和是合理的。此外，任务算术还指出，不同任务参数向量之间的正交性有助于更好地整合不同任务。因此，我们提出正交正则化，通过约束 LoRA 参数与先前任务正交来实现这一点：<br />
+<div class="math-display"><br />
+    l_{\text{ort}}(A^i, A^t) = \sum^{t-1}_{i=1} |A^T_i \cdot A^t|. \tag{7}<br />
+</div><br />
+同时，正交正则化鼓励不同任务沿着正交方向学习，从而有效减少它们之间的空间重叠。这种方法将被证明在缓解灾难性遗忘方面具有优势，因为它有助于在适应新任务的同时保留从先前任务中学到的知识。</p>
+<h3 id="42-原型学习与原型重加权">4.2 原型学习与原型重加权<a class="anchor-link" href="#42-原型学习与原型重加权" title="Permanent link">&para;</a></h3>
+<p><strong>原型学习</strong>：如前所述，类内可分离且类间紧凑的特征表示对 FCIL 任务有帮助。因此，模型不仅需要正确分类已知类别，还需要在特征空间中对已知类别的分布进行建模。在开放集识别中，CPN[28] 设计了判别损失和生成损失，用于原型学习，以约束特征空间中已知类别的范围，从而为来自未知类别的样本保留空间。受此启发，我们在 FCIL 中引入了原型学习。特别地，我们为每个类别设置一个原型 <span class="math-inline">m = {m_i | i = 1, 2, ..., C}</span>，其中 <span class="math-inline">m_i \in \mathbb{R}^d</span>，每个原型的维度 <span class="math-inline">d</span> 与最终深度特征空间的维度相同。</p>
+<p>为了缩短类别特征与相应原型之间的距离，我们应用了基于距离的交叉熵（DCE）判别损失。给定样本 <span class="math-inline">(x, y)</span>，DCE 使用样本特征 <span class="math-inline">f_\theta(x)</span> 与原型 <span class="math-inline">m_i</span> 之间的距离来表示属于类别 <span class="math-inline">i</span> 的概率。考虑到概率的归一化，DCE 采用 softmax 操作：<br />
+<div class="math-display"><br />
+    p(x \in m_i | x) = \frac{\exp(-\delta \cdot |f_\theta(x) - m_i|^2_2)}{\sum^C_{j=1} \exp(-\delta \cdot |f_\theta(x) - m_j|^2_2)}, \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">|f_\theta(x) - m_i|^2_2</span> 是输入样本特征 <span class="math-inline">f_\theta(x)</span> 与原型 <span class="math-inline">m_i</span> 之间的欧几里得距离，<span class="math-inline">\delta</span> 是控制类别分布硬度的温度标量。因此，基于距离的交叉熵损失可以定义为：<br />
+<div class="math-display"><br />
+    l_{\text{dce}}((x, y); \theta, m) = -\log(x \in m_y | x). \tag{9}<br />
+</div><br />
+通过最小化 DCE 损失，样本特征与正确原型之间的距离将小于其他错误原型。然而，仅在判别损失下学习的特征可能不够紧凑，这可能导致新旧类别之间的特征表示重叠。为了解决这个问题，我们引入了原型学习（PL）损失 [28]：<br />
+<div class="math-display"><br />
+    l_{\text{pl}}((x, y); \theta, m) = |f_\theta(x) - m_y|^2_2, \tag{10}<br />
+</div><br />
+PL 损失减少了样本特征与相应正确原型之间的距离，使模型学习到更紧凑的类内分布。本质上，PL 损失是在高斯混合密度假设下对特征 <span class="math-inline">f_\theta(x)</span> 的最大似然正则化 [58,59]。</p>
+<p><strong>原型重加权</strong>：考虑到特定类别 <span class="math-inline">c</span>，在 Non-IID 设置下，每个客户端 <span class="math-inline">k</span> 持有部分训练数据 <span class="math-inline">N_{c,k}</span>，且 <span class="math-inline">\sum^K_{k=1} N_{c,k} = N_c</span>，其中 <span class="math-inline">N_c</span> 是类别 <span class="math-inline">c</span> 的训练样本总数。在原型学习中，每个客户端学习的原型 <span class="math-inline">m_{k,c}</span> 能够有效反映其本地数据中类别 <span class="math-inline">c</span> 的分布。也就是说，对于没有类别 <span class="math-inline">c</span> 训练样本的客户端，其对应原型与类别 <span class="math-inline">c</span> 特征之间的距离会比有训练样本的客户端更大。如果我们在参数聚合过程中对这些上传的原型赋予相同的权重，可能会导致分类器漂移，特别是在数据异质性较高的情况下，可能导致全局模型失去对该类别的判别能力。</p>
+<p>因此，我们利用原型与相应类别平均特征之间距离的启发式信息，设计了<strong>原型重加权模块</strong>。具体来说，在阶段 <span class="math-inline">t</span>，每个客户端 <span class="math-inline">k</span> 上传原型 <span class="math-inline">m_{t,k}</span> 以及其学习到的类别平均特征集合 <span class="math-inline">\mu_{t,k}</span>（对于没有样本的类别，平均特征为零）。在全局服务器上，我们首先计算原型 <span class="math-inline">m_{t,k,c}</span> 与所有客户端上传的平均特征 <span class="math-inline">\mu_{t,i,c}</span> 之间的距离之和：<br />
+<div class="math-display"><br />
+    d_{t,k,c} = \sum^K_{i=1} |m_{t,k,c} - \mu_{t,i,c}|^2_2, \tag{11}<br />
+</div><br />
+<span class="math-inline">d_{t,k,c}</span> 的值近似于原型 <span class="math-inline">m_{t,k,c}</span> 到类别 <span class="math-inline">c</span> 整体特征的距离。较小的值表明该原型更接近所有客户端上传的该类特征，因此在聚合时，我们为其分配更高的权重。因此，我们对集合 <span class="math-inline">D_{t,c} = {p_{t,k,c} | k = 1, 2, ..., K}</span> 进行最大 - 最小归一化，其中 <span class="math-inline">p_{t,k,c} = \frac{1}{d_{t,k,c}}</span>：<br />
+<div class="math-display"><br />
+    \alpha_{t,k,c} = \frac{p_{t,k,c} - \min D_{t,c}}{\max D_{t,c} - \min D_{t,c}}. \tag{12}<br />
+</div><br />
+为了满足权重的归一化要求，我们对它们进行 softmax 处理，得到权重系数：<br />
+<div class="math-display"><br />
+    \omega_{t,k,c} = \frac{\exp(\eta \cdot \alpha_{t,k,c})}{\sum^K_{i=1} \exp(\eta \cdot \alpha_{t,i,c})}, \tag{13}<br />
+</div><br />
+其中 <span class="math-inline">\eta</span> 是控制权重软硬程度的温度系数。最后，我们根据获得的权重对所有与类别 <span class="math-inline">c</span> 对应的本地原型进行重加权，得到类别 <span class="math-inline">c</span> 的全局原型：<br />
+<div class="math-display"><br />
+    m_{t,c} = \sum^K_{i=1} \omega_{t,i,c} \cdot m_{t,i,c}. \tag{14}<br />
+</div><br />
+我们认为，原型重加权模块使全局原型 <span class="math-inline">m_{t,c}</span> 能够差异化地考虑每个本地原型中固有的数据分布信息，从而有效缓解分类器偏差问题。与 FedProto[68] 相比，我们的方法进一步压缩了特征空间中同一类别的表示区域，这有助于缓解灾难性遗忘。更重要的是，我们的方法不需要对分类层进行额外的重新训练，从而在计算成本上具有显著优势。算法 1 展示了原型重加权模块的伪代码。</p>
+<h3 id="43-pilora-的集成目标">4.3 PILoRA 的集成目标<a class="anchor-link" href="#43-pilora-的集成目标" title="Permanent link">&para;</a></h3>
+<p>PILoRA 的损失函数可以定义为：<br />
+<div class="math-display"><br />
+    l_{\text{total}} = l_{\text{dce}} + \lambda \cdot l_{\text{pl}} + \gamma \cdot l_{\text{ort}}, \tag{15}<br />
+</div><br />
+其中 <span class="math-inline">\lambda</span> 和 <span class="math-inline">\gamma</span> 是两个超参数，PILoRA 的整体框架如图 2 所示。总的来说，我们的方法简单而有效，在不同的 Non-IID 设置和数据异质性程度下表现出强大的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151417.png" style="zoom: 50%;" /></div>
+
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<h3 id="51-实验设置">5.1 实验设置<a class="anchor-link" href="#51-实验设置" title="Permanent link">&para;</a></h3>
+<p><strong>基准数据集</strong>：为了评估提出的 PILoRA，我们在两个知名数据集上进行了实验：CIFAR-100[63] 和 TinyImageNet[64]。我们还在大规模数据集上测试了模型的性能，具体来说，我们从 ImageNet-1k[72] 中随机选择了 200 个类别作为新数据集。根据 [34] 提出的协议，我们将其分为 10 个增量阶段，并且只有当前阶段的数据可用。此外，为了挑战我们的方法，每个客户端的本地数据集遵循两种 Non-IID 设置：基于数量的标签不平衡和基于分布的标签不平衡 [16]，我们分别用 <span class="math-inline">\alpha</span> 和 <span class="math-inline">\beta</span> 表示这两种设置的异质性程度。两种设置的详细信息见附录 A。</p>
+<p><strong>对比方法</strong>：我们将我们的方法与现有的 FCIL 方法进行了对比：TARGET[14]、GLFC[13]、LGA[15]。我们还采用了多种 CIL 方法：EWC[10]、LwF[67]、iCaRL[37]、L2P[20] 和 FL 方法 FedNCM[75] 在 FCIL 设置下的表现。此外，我们比较了在训练期间使用交叉熵损失进行优化并在推理期间使用类别均值作为分类器的方法，我们将其命名为 FedCLM。我们探索了它们在不同 Non-IID 设置和数据异质性程度下的性能。为了公平比较，我们调整所有方法使用与我们相同的预训练模型，并使用 LoRA 进行微调。</p>
+<p><strong>实现细节</strong>：考虑到隐私问题，我们使用自监督预训练权重（Dino[65]）对 ViT-B/16[18] 进行评估，这种设置也广泛用于 CIL 任务 [62,78,79]。考虑到性能和参数数量的权衡，我们仅在模型的第一个块中插入 LoRA 模块（见附录 B.1），并设置 <span class="math-inline">r = 4</span>。我们使用 Adam[66] 优化器训练模型，批大小为 64，并根据 [62]，在 CIFAR-100 上设置原型层学习率为 <span class="math-inline">2e^{-3}</span>，LoRA 参数学习率为 <span class="math-inline">1e^{-5}</span>，在 TinyImageNet 上分别为 <span class="math-inline">5e^{-3}</span> 和 <span class="math-inline">5e^{-6}</span>。此外，训练过程中还使用了余弦退火。我们设置 <span class="math-inline">\delta = 1</span>、<span class="math-inline">\lambda = 0.001</span>、<span class="math-inline">\gamma = 0.5</span> 和 <span class="math-inline">\eta = 0.2</span>。我们初始化 10 个本地客户端进行训练，并在每个通信轮次上传参数。本地训练周期为 5，通信轮次为 30。</p>
+<h3 id="52-对比结果">5.2 对比结果<a class="anchor-link" href="#52-对比结果" title="Permanent link">&para;</a></h3>
+<p>我们报告 <span class="math-inline">A_N</span>（↑）和 Avg（↑）来评估方法的性能，其中 <span class="math-inline">A_N</span> 是最终任务中所有已见类别的准确率，Avg. 是所有任务的平均准确率。结果如表 1 和表 2 所示，我们可以观察到，我们的方法优于其他对比方法，并在不同 Non-IID 设置下表现出强大的鲁棒性。在 FCIL 方法中，TARGET 在不同数据异质性下表现相对较好，而 LGA 和 GLFC 在极端数据异质性下表现急剧下降，缺乏鲁棒性。值得注意的是，FedNCM 在 FCIL 设置下的表现甚至在某些情况下优于 TARGET，这表明现有的 FCIL 方法在处理数据异质性方面存在不足，而我们的方法通过轻量级的原型重加权模块显著提高了模型在不同数据异质性下的性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151618.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151638.png" style="zoom: 80%;" /></div>
+
+<p>CIL 方法在 FCIL 设置下也受到数据异质性的影响，其中 L2P+FL 表现最为明显。我们认为这主要有两个原因：首先，L2P 的性能依赖于监督预训练权重（如 ImageNet-1k[72]），当使用自监督预训练权重时，其性能显著下降 [62]。其次，L2P 需要根据输入与不同模块的相似性计算选择合适的 Prompt 嵌入模型。然而，在极端异质性情况下，即使在同一阶段，每个客户端学习到的内容也存在显著差异，这阻碍了统一 Prompt 的选择。相比之下，我们的方法通过直接对 LoRA 参数求和，绕过了冗余的相似性计算或知识蒸馏 [67]，从而有效缓解了灾难性遗忘。此外，我们将 FedNCM 中的 HeadTune 与我们的原型分类器结合，通过 HeadTune 提供的更好初始化，进一步提高了模型的性能。这表明，现有方法在解决 FCIL 中的数据异质性问题上仍有很大的改进空间。</p>
+<p><strong>原型重加权分析</strong>：我们提出的原型重加权模块的核心思想是在不泄露本地数据信息的情况下，以最接近客户端真实数据分布的方式聚合原型。在图 3a 中，我们展示了同一类别数据在不同客户端中的真实比例，并观察到通过重加权模块计算出的权重与不同客户端之间的数据分布一致。因此，全局原型有效保留了所有客户端学习到的原型信息。相比之下，其他方法通常直接对分类层进行平均，这会导致在数据异质性较高时，分类器中融合了大量无关信息，从而导致分类器偏差。在图 3b 中，我们比较了通过原型重加权和平均计算得到的全局模型原型与测试数据深度特征之间的距离。可以看出，我们提出的原型重加权方法有效“择优”所有客户端上传的原型，使全局原型更好地适应相应类别的特征，而平均后的正确原型与相应类别的特征相距较远，特别是在数据非常异质的情况下。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151449.png" style="zoom: 80%;" /></div>
+
+<h3 id="53-消融实验">5.3 消融实验<a class="anchor-link" href="#53-消融实验" title="Permanent link">&para;</a></h3>
+<p>为了评估 PILoRA 中每个组件的作用，我们在 CIFAR-100 上进行了消融实验，结果如表 3 所示。我们可以观察到，在没有原型重加权（PR）的情况下，模型的分类准确率 <span class="math-inline">A_N</span> 和 Avg. 显著下降，这是因为此时通过简单平均得到的全局原型不能很好地表示每个类别的信息，从而导致分类器偏差。相比之下，我们提出的方法通过启发式重加权本地原型显著提高了模型的性能。当没有正交正则化（<span class="math-inline">l_{\text{ort}}</span>）时，模型的所有指标均出现一定程度的下降，这表明不同增量任务的参数空间存在部分重叠。通过施加正交正则化，使不同输入空间对应的参数空间在相互正交的方向上训练模型，从而进一步提高了模型性能。我们在附录 B.2 中可视化了 LoRA 之间的余弦相似性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151658.png" style="zoom: 80%;" /></div>
+
+<p>为了更好地展示 LoRA 的贡献，我们在 <span class="math-inline">\alpha = 6</span> 和 <span class="math-inline">\beta = 0.5</span> 的情况下，比较了自监督预训练权重下微调整个骨干网络和冻结整个骨干网络的效果。从表 3 中可以看出，当微调整个骨干网络时，模型的性能严重下降，我们认为这是由于 ViT 的模型参数过大，在知识蒸馏的约束下无法在记住旧类别和判别新类别之间达到平衡。冻结整个骨干网络可以保留对旧类别的判别能力，但此时模型的可训练参数过少，仅使用原型进行分类，从而限制了模型的表达能力。因此，为了在通信成本和模型性能之间取得平衡，我们通过增量 LoRA 对少量参数进行微调，并取得了最佳性能。</p>
+<h3 id="54-进一步分析">5.4 进一步分析<a class="anchor-link" href="#54-进一步分析" title="Permanent link">&para;</a></h3>
+<p><strong>内存使用分析</strong>：对于我们的 PILoRA，除了每个客户端的模型外，我们还存储了当前阶段 <span class="math-inline">t</span> 之前的 LoRA 参数 <span class="math-inline">A^{1:t-1}_q</span> 和 <span class="math-inline">A^{1:t-1}_v</span> 以计算正交正则化。而 TARGET 需要一个额外的生成器来生成旧样本，以及额外的内存空间来存储生成的图像，LGA 和 GLFC 同样需要额外的空间来存储旧类别样本。相比之下，我们的方法占用的内存空间非常少，平均仅存储相当于 ViT-base 0.04% 的参数。</p>
+<p><strong>增加本地客户端数量（K）</strong>：如图 4 所示，我们通过分别设置 <span class="math-inline">K = {10, 15, 20}</span> 研究了随着本地客户端数量增加模型的性能。从图 4 的结果可以看出，随着客户端数量的增加，模型的性能略有下降。我们认为，在相同的 Non-IID 设置下，增加客户端数量会进一步加剧客户端之间的异质性，从而影响模型的性能。更多结果见附录 B.3。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303151554.png" style="zoom: 80%;" /></div>
+
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>在本文中，我们提出了一种简单而有效的 PILoRA 方法来解决 FCIL 问题。PILoRA 基于预训练的 ViT 模型，并使用 LoRA 对少量参数进行微调。为了解决 FCIL 中的灾难性遗忘问题，我们提出了增量 LoRA，它可以通过对正交 LoRA 参数空间求和高效地结合不同的增量任务；为了应对数据异质性引起的分类器偏差，我们采用了原型学习并提出了原型重加权，利用原型与特征之间的启发式信息对全局原型进行加权聚合。实验结果表明，我们的方法在标准数据集上取得了最先进的结果，并在极端数据异质性下保持了鲁棒性。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#持续学习cl">持续学习（CL）</a></li>
+<li><a href="#视觉---语言模型vlm微调">视觉 - 语言模型（VLM）微调</a></li>
+</ul>
+</li>
+<li><a href="#3-方法">3. 方法</a><ul>
+<li><a href="#31-预备知识">3.1 预备知识</a><ul>
+<li><a href="#持续学习cl_1">持续学习（CL）</a></li>
+<li><a href="#带提示的-clip">带提示的 CLIP</a></li>
+<li><a href="#使用可学习的软提示进行-clip-微调">使用可学习的软提示进行 CLIP 微调</a></li>
+<li><a href="#使用适配器进行-clip-微调">使用适配器进行 CLIP 微调</a></li>
+</ul>
+</li>
+<li><a href="#32-使用概率微调进行-clip-的持续学习">3.2 使用概率微调进行 CLIP 的持续学习</a><ul>
+<li><a href="#概述">概述</a></li>
+<li><a href="#321-基于文本特征的函数空间先验的变分推断">3.2.1 基于文本特征的函数空间先验的变分推断</a></li>
+<li><a href="#322-clip-持续微调中的跨模态特征偏差">3.2.2 CLIP 持续微调中的跨模态特征偏差</a></li>
+<li><a href="#323-任务特定概率适配器作为后验近似的集成">3.2.3 任务特定概率适配器作为后验近似的集成</a></li>
+</ul>
+</li>
+<li><a href="#33-利用预训练语言感知的-clip-知识缓解遗忘">3.3 利用预训练语言感知的 CLIP 知识缓解遗忘</a><ul>
+<li><a href="#331-过去任务分布正则化以缓解遗忘">3.3.1 过去任务分布正则化以缓解遗忘</a></li>
+<li><a href="#332-考虑稳定性的任务特定适配器初始化">3.3.2 考虑稳定性的任务特定适配器初始化</a></li>
+</ul>
+</li>
+<li><a href="#34-训练目标">3.4 训练目标</a><ul>
+<li><a href="#近似-elbo">近似 ELBO</a></li>
+<li><a href="#总体目标">总体目标</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#数据集">数据集</a></li>
+<li><a href="#基线">基线</a></li>
+<li><a href="#变体">变体</a></li>
+<li><a href="#性能指标">性能指标</a></li>
+<li><a href="#41-结果">4.1 结果</a><ul>
+<li><a href="#准确率">准确率</a></li>
+<li><a href="#遗忘">遗忘</a></li>
+<li><a href="#校准">校准</a></li>
+<li><a href="#泛化">泛化</a></li>
+<li><a href="#资源受限的-cl">资源受限的 CL</a></li>
+</ul>
+</li>
+<li><a href="#411-跨数据集持续学习cdcl">4.1.1 跨数据集持续学习（CDCL）</a></li>
+<li><a href="#42-消融研究">4.2 消融研究</a><ul>
+<li><a href="#组件的影响">组件的影响</a></li>
+<li><a href="#概率与确定性推断">概率与确定性推断</a></li>
+</ul>
+</li>
+<li><a href="#5-概率微调的开箱即用应用">5. 概率微调的开箱即用应用</a><ul>
+<li><a href="#事后新数据检测phndd">事后新数据检测（PhNDD）</a></li>
+<li><a href="#示例选择">示例选择</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/43.多模态增量学习MMCL</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>持续学习（Continual Learning, CL）旨在帮助深度神经网络在学习新知识的同时保留已学知识。由于其强大的泛化能力，预训练的视觉 - 语言模型（如对比语言 - 图像预训练模型，CLIP）最近作为实用的 CL 候选者受到了广泛关注。然而，预训练与下游 CL 任务之间的领域不匹配通常需要对 CLIP 进行微调。现有的微调方法大多具有确定性，这使得它们忽略了输入模态之间的多种可能交互，并且在需要可靠不确定性估计的高风险任务中显得不安全。为了解决这些问题，我们提出了<strong>持续学习与概率微调（CLAP）</strong>——一个在每项任务的视觉引导文本特征上进行概率建模的框架，从而提供更校准的 CL 微调。与最近的数据密集型抗遗忘 CL 技术不同，CLAP 通过利用 CLIP 丰富的预训练知识进行权重初始化和任务特定参数的分布正则化来缓解遗忘。通过与现有提示方法的多样化结合，CLAP 能够在 CLIP 的持续学习中超越主流的确定性微调方法。我们总结了 CLAP 在现有 CL 设置中的优越不确定性估计能力的开箱即用应用，包括新数据检测和示例选择。我们的代码可在 <a href="https://github.com/srvCodes/clap4clip">这里</a> 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>现实世界中的学习涉及处理任务流及其数据的不断变化的分布 [2,3,4]。考虑到资源和隐私的限制，无法保证在所有先前见过的数据上重新训练网络 [5]。持续学习（CL）旨在从这样的数据/任务流中学习，而不会<strong>灾难性遗忘</strong>[6,2] 过去的数据/任务。一个具有挑战性的 CL 设置是类增量学习设置，其中新任务伴随着新类别的出现，在测试时，模型必须从所有见过的类别中进行推断，而无需知道任务 ID[7, 8]。</p>
+<p>近年来，预训练的多模态基础模型在多个领域表现出色 [1,9,10]。在视觉 - 语言（VL）领域的一个例子是 CLIP 模型 [1]，它通过对比方式学习大规模图像 - 文本对的匹配，获得了强大的零样本泛化能力 [11]。然而，为了适应下游任务，CLIP 必须在任务特定数据上进行微调 [12,13]。考虑到对预训练模型在流任务上进行持续微调的需求及其相比从头训练的优势 [14]，我们的工作研究了 CLIP 在 CL 中的应用。</p>
+<p>现有确定性微调方法 [13,12] 的一个问题是，它们忽略了由于下游任务的视觉和文本线索之间的多种可能交互而产生的不确定性。例如，在文本方面，虽然“A photo of a {class}”是一个通用的手工提示，但在某些情况下，进一步<strong>定制的提示</strong>可能有助于提高图像 - 文本的一致性。同样，在视觉方面，来自同一类别的图像可能具有多种背景、姿势、方向等。忽视图像 - 文本匹配中的不确定性可能导致在下游任务上的过拟合和泛化知识的遗忘 [15]。对于 CL，我们在任务流上适应 CLIP 时，这可能导致跨模态特征逐渐偏离彼此，最终导致灾难性遗忘（见图 3b）。虽然现有方法 [16,17] 通过概率微调来建模这种不确定性，但这些方法在 CL 中仍然表现不佳，原因包括：(a) 它们无法有效利用现有的基于提示的方法 [16]，(b) 它们过度牺牲领域内性能以换取泛化能力 [17]。</p>
+<p>最后，与其他自主现实世界代理一样，部署在关键任务环境（如医疗保健、交通等）中的 CL 模型可以通过校准其预测来可靠地评估其置信度，从而受益于不确定性意识 [18,8]。因此，为了增强预训练 CLIP 在现实世界 CL 任务中的使用，我们设计了一种具有以下三个属性的微调方法（见图 1）：A)<strong>跨模态任务线索的概率建模</strong>以提高泛化能力；B)<strong>与基于提示的微调方法 [14,12,19,20] 兼容</strong>，以利用其细粒度的领域内任务知识；C)<strong>利用 CLIP 丰富的预训练知识</strong>以进一步对抗遗忘。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303144752.png" style="zoom: 50%;" /></div>
+
+<p>为此，我们设计了一个基于变分推断（VI）的原则性框架，该框架学习基于与视觉对齐的文本特征的任务特定后验分布的函数空间（属性#A）。为了细化这些变分任务后验，我们从贝叶斯专家混合集成 [21,22] 中获得灵感，并采用轻量级的任务特定适配器模块来建模任务特定分布。因此，我们的最终预测是从各个任务适配器模块导出的 logits 的混合。为了进一步对抗这些模块中的遗忘，我们与最近的数据密集型 CL 技术 [23,24] 趋势不同。相反，我们利用 CLIP 现成的预训练语言知识进行权重初始化和任务分布正则化（属性#C）。最后，通过建模文本特征空间的分布，我们的概率微调方法具有丰富的模块化特性，因为这些特征可以从任意提示类型中导出（属性#B）。特别是，我们展示了我们的框架可以继承手工设计 [1]、单模态 [12]、多模态 [20] 或实例条件 [19] 提示的领域内知识。我们将我们的微调方法缩写为<strong>CLAP</strong>——<strong>持续学习与概率微调</strong>——用于预训练的 CLIP 模型。我们在多个设置中的实验表明，CLAP4CLIP 增强了 CLIP 的<strong>基于提示的</strong>微调，并在领域内性能、输出校准和对未见 CL 任务的泛化方面超越了主流的确定性微调方法，同时共享了类似的资源开销。我们通过利用 CLAP 的不确定性估计能力，在提出的<strong>事后</strong>新数据检测设置和 CL 的示例选择中，研究了一些开箱即用的优势。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="持续学习cl">持续学习（CL）<a class="anchor-link" href="#持续学习cl" title="Permanent link">&para;</a></h3>
+<p>现有的 CL 文献主要分为三类方法：(a) 基于正则化的方法 [6,25,26] 通过惩罚对先前任务重要的参数的更改来缓解遗忘；(b) 基于架构的方法通过学习专门用于单个任务的参数，要么通过网络扩展 [27]，要么通过子网络组合 [28,29]；(c) 基于回放的方法 [30,5] 依赖于存储过去任务经验的一部分以与当前任务一起训练。每类方法都有其缺陷——(a) 类方法难以区分任务间类别 [31]；(b) 类方法在推理时通常需要任务预言；(c) 类方法对内存大小敏感，并且容易在内存样本上过拟合 [32]。因此，实用的 CL 需要结合这些方法。我们的工作通过函数空间正则化（第 3.4 节）利用 (a)，通过任务特定模块（第 3.2.3 节）利用 (b)，并通过基于回放的记忆利用 (c)（见附录 A.1.1）。</p>
+<h3 id="视觉---语言模型vlm微调">视觉 - 语言模型（VLM）微调<a class="anchor-link" href="#视觉---语言模型vlm微调" title="Permanent link">&para;</a></h3>
+<p>预训练 VLM（如 CLIP[1]）的强大泛化能力使其在多个下游任务中实现了零样本应用，包括 CL[14]。在实践中，它们在下游领域外数据上的表现仍然较弱 [34,35]。对于这些情况，在任务特定数据上进行微调是一个自然的选择。与其对所有参数进行广泛的<strong>完全微调</strong>，一些<strong>参数高效的微调（PEFT）</strong>方法学习一个轻量级的特征适配器模块，用于文本和/或视觉路径 [13,36]。另一类 PEFT 方法学习<strong>软提示</strong>，这些提示是作为输入到冻结的视觉和/或文本编码器的几个连续标记，以捕捉任务特定信息 [12,37,20]。现有关于预训练 CLIP 的 CL 工作已经利用了这些方法之一 [19,38] 或两者 [39]。然而，这些微调方法仍然是确定性的。这在对视觉和文本语义交互的可能方式进行建模时施加了显式约束。</p>
+<p>为了解决上述缺陷，可以尝试将现有的概率微调方法应用于捕捉 CL 任务中的跨模态交互。例如，[16] 学习手工提示的分布，而 [17] 提出了基于输入图像的变分提示调优（VPT）。然而，这些方法的效果有限。[16] 与广泛研究的 PEFT 领域的条件提示学习 [37] 不兼容。VPT[17] 过度牺牲领域内性能以换取泛化能力——这种特性在 CL 模型的部署中是有害的。我们的工作旨在为概率微调填补这些空白，同时使其适应 CL。</p>
+<h2 id="3-方法">3. 方法<a class="anchor-link" href="#3-方法" title="Permanent link">&para;</a></h2>
+<h3 id="31-预备知识">3.1 预备知识<a class="anchor-link" href="#31-预备知识" title="Permanent link">&para;</a></h3>
+<h4 id="持续学习cl_1">持续学习（CL）<a class="anchor-link" href="#持续学习cl_1" title="Permanent link">&para;</a></h4>
+<p>类增量 CL[7] 旨在从一系列任务 <span class="math-inline">[(C_1,D_1),(C_2,D_2),...,(C_T,D_T)]</span> 中学习。每个任务 <span class="math-inline">t \in [1,T]</span> 有其训练数据 <span class="math-inline">D_t = {(x_1,y_1),(x_2,y_2),...,(x_{k_t},y_{k_t})}</span>，其中 <span class="math-inline">x</span> 和 <span class="math-inline">y</span> 分别是输入图像和标签，来自类别集合 <span class="math-inline">C_t = {c_{t1}, c_{t2}, ..., c_{tn_t}}</span>。根据 [40,41]，我们假设任何两个任务特定的类别集合是不相交的：<span class="math-inline">C_i \cap C_j = \emptyset</span>。然后，使用 <span class="math-inline">D_t</span> 在任务 <span class="math-inline">t</span> 上训练具有参数 <span class="math-inline">\phi</span> 的神经网络，以最小化在 <span class="math-inline">C_t</span> 上的交叉熵损失。在测试时，模型在所有见过的类别 <span class="math-inline">C = \bigcup_{t=1}^T C_t</span> 上进行评估，其中过去的任务预测容易遗忘。作为一种解决方案，基于回放的方法 [42,43] 在训练期间从内存 <span class="math-inline">M</span> 中回放过去任务的样本。根据 [30]，我们使用 herding[44] 来维护 <span class="math-inline">M</span>（详见附录 A.1.1）。</p>
+<h4 id="带提示的-clip">带提示的 CLIP<a class="anchor-link" href="#带提示的-clip" title="Permanent link">&para;</a></h4>
+<p>CLIP 包括一个作用于图像 <span class="math-inline">x \in \mathbb{R}^{3 \times H \times W}</span> 的图像编码器 <span class="math-inline">f(x)</span>，以及一个作用于从文本提示 <span class="math-inline">p \in \mathbb{R}^{((L-1) \times e)}</span> 导出的词嵌入向量 <span class="math-inline">t \in \mathbb{R}^{(L \times e)}</span> 的文本编码器 <span class="math-inline">g(t(p))</span>。这里，<span class="math-inline">L</span> 是文本长度，<span class="math-inline">e</span> 是文本嵌入维度。编码器的输出用于预测类别 <span class="math-inline">y_i</span>：<br />
+<div class="math-display"><br />
+    p(y_i|x) = \frac{\exp\left(\langle f(x)^T, g(t_i) \rangle / \tau\right)}{\sum_{c=1}^{|C_t|} \exp\left(\langle f(x)^T, g(t_c) \rangle / \tau\right)} \tag{1}<br />
+</div><br />
+其中 <span class="math-inline">\tau</span> 是可学习的温度参数，<span class="math-inline">\langle \cdot, \cdot \rangle</span> 是余弦相似度，第 <span class="math-inline">c</span> 类文本特征 <span class="math-inline">t_c = [p, e_c]</span> 是向提示 <span class="math-inline">p</span> 添加类别特定词嵌入 <span class="math-inline">e_c</span> 的结果。所有类别的特征 <span class="math-inline">g(t_c)</span> 用作线性分类器的权重。在 CL 中，<span class="math-inline">g(t_c)</span> 将编码直到任务 <span class="math-inline">t</span> 为止见过的类别 <span class="math-inline">c \in C</span> 的特征。</p>
+<p><strong>公式 (1)</strong> 形成了文本和视觉模态的对比训练准则，其丰富的表示使得预训练的 CLIP 可以通过<strong>硬提示模板</strong>（如 <span class="math-inline">p_c = \text{"A photo of a {c_{th} class}"}</span>）用于零样本分类。</p>
+<h4 id="使用可学习的软提示进行-clip-微调">使用可学习的软提示进行 CLIP 微调<a class="anchor-link" href="#使用可学习的软提示进行-clip-微调" title="Permanent link">&para;</a></h4>
+<p>为了提高 CLIP 在下游任务 <span class="math-inline">t</span> 上的性能，<strong>软提示</strong>使用一组可学习的向量标记 <span class="math-inline">p = {p_1, p_2, ..., p_L}</span>。CoOp [12] 在任务的所有类别之间共享 <span class="math-inline">p</span>。MaPLe [20] 通过使用两个这样的标记集 <span class="math-inline">p_f</span> 和 <span class="math-inline">p_g</span> 分别在 CLIP 的视觉和文本编码器的第 <span class="math-inline">J</span> 层之前学习多模态提示。AttriCLIP [19] 根据输入选择提示的子集：<span class="math-inline">{{p_j}_{1 \leq j \leq L} | x_k}</span>。学习 <span class="math-inline">p</span>（冻结 CLIP 权重）有助于为给定任务编码任务/模态/实例条件的上下文。</p>
+<h4 id="使用适配器进行-clip-微调">使用适配器进行 CLIP 微调<a class="anchor-link" href="#使用适配器进行-clip-微调" title="Permanent link">&para;</a></h4>
+<p>基于适配器的方法，如 CLIP-Adapter [13]，在冻结的 CLIP 模型的文本和/或视觉特征上学习轻量级模块。通过文本适配器 <span class="math-inline">A_t</span>，<strong>公式 (1)</strong> 中的更新文本特征可以改写为（略有符号滥用）：<br />
+<div class="math-display"><br />
+    g(t_i) = \alpha A_t(g(t_i)) + \beta g(t_i) \tag{2}<br />
+</div><br />
+其中 <span class="math-inline">\alpha</span> 和 <span class="math-inline">\beta</span> 控制适配模型与预训练模型特征之间的残差连接强度，例如在 [13] 中 <span class="math-inline">\beta = 1 - \alpha</span>。</p>
+<h3 id="32-使用概率微调进行-clip-的持续学习">3.2 使用概率微调进行 CLIP 的持续学习<a class="anchor-link" href="#32-使用概率微调进行-clip-的持续学习" title="Permanent link">&para;</a></h3>
+<h4 id="概述">概述<a class="anchor-link" href="#概述" title="Permanent link">&para;</a></h4>
+<p>我们使用贝叶斯 VI 框架开发了基于 CLIP 的概率微调模型（见图 2）。第 3.2.1 节首先提出了与之前的基于 VI 的微调方法不同，文本编码器输出的特征嵌入空间是定义函数空间先验的更好选择。虽然线性适配器层通常用于从预定义的特征空间先验到函数输出的映射 [45,17]，但我们将在第 3.2.2 节中展示，使用通用适配器进行 CL 微调会导致跨模态偏差问题。在第 3.2.3 节中，我们提出通过在跨模态对齐的文本特征上构建任务特定适配器的集成来细化函数空间上的变分分布。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303144813.png" style="zoom: 80%;" /></div>
+
+<h4 id="321-基于文本特征的函数空间先验的变分推断">3.2.1 基于文本特征的函数空间先验的变分推断<a class="anchor-link" href="#321-基于文本特征的函数空间先验的变分推断" title="Permanent link">&para;</a></h4>
+<p>我们感兴趣的是建模生成 CL 任务 <span class="math-inline">t</span> 的输入 <span class="math-inline">x</span> 的标签 <span class="math-inline">y</span> 的随机过程。为此，我们假设第 <span class="math-inline">c</span> 类文本特征的先验分布为 <span class="math-inline">p_\chi(t_c(p))</span>。然后，我们可以抽取 <span class="math-inline">M</span> 个潜在变量 <span class="math-inline">z = {z_m \sim p_\chi}<em>{m=1}^M</span>，将第 <span class="math-inline">c</span> 类文本特征 <span class="math-inline">t_c(p)</span> 表示为文本编码器特征 <span class="math-inline">g(t_c(p))</span> 和 <span class="math-inline">z</span> 的线性组合：<br />
+<div class="math-display"><br />
+    t_c(p) = {g(t_c(p)) + z_m}</em>{m=1}^M, \quad \text{s.t.} \quad z_m \sim p_\chi \tag{3a}<br />
+</div></p>
+<p><div class="math-display"><br />
+    p(y_i|x) = \int_\chi \frac{\exp\left(\langle f(x)^T, t_c(p) \rangle\right)}{\sum_{c=1}^{|C_t|} \exp\left(\langle f(x)^T, t_c(p) \rangle\right)} p(t_c(p)) d\chi \tag{3b}<br />
+</div><br />
+其中<strong>公式 (3b)</strong> 将<strong>公式 (1)</strong> 中的 <span class="math-inline">g(t_i)</span> 替换为 <span class="math-inline">t_c(p)</span>。<strong>公式 (3b)</strong> 生成了 <span class="math-inline">M</span> 个预测，其分布给出了模型对正确预测的认知不确定性。为了处理边际似然的不可计算性，我们使用变分后验 <span class="math-inline">q_\phi</span> 优化证据下界（ELBO），基于 KL 散度损失 <span class="math-inline">D_{KL}</span>：<br />
+<div class="math-display"><br />
+    \log p(y|x) \geq \mathbb{E}<em>{q</em>\phi(z|t_c)} [\log p(y|x,z)] - D_{KL}(q_\phi(z|t_c) | p_\chi) \tag{4}<br />
+</div><br />
+通过假设 <span class="math-inline">p_\chi</span> 为（静态的）标准高斯分布 <span class="math-inline">\mathcal{N}(0, I)</span>，<span class="math-inline">q_\phi</span> 为（可学习的）高斯分布 <span class="math-inline">\mathcal{N}(\mu(t_c), \sigma(t_c))</span>，其均值 <span class="math-inline">\mu</span> 和标准差 <span class="math-inline">\sigma</span> 由线性适配器层参数化，我们可以通过重参数化技巧 [45] 确保随机变量 <span class="math-inline">z</span> 保持可微性。因此，我们将参数 <span class="math-inline">[\mu; \sigma]</span> 统称为<strong>概率适配器</strong>。</p>
+<p>在文本特征上施加先验相比在提示嵌入空间上施加先验（如 VPT [17] 所做）具有进一步的优势（详见附录图 1 的说明）。首先，<strong>公式 (3b)</strong> 是提示类型无关的，因为文本特征 <span class="math-inline">g(t)</span> 可以从任何现有的软 [37,19,20] 或硬 [14,13] 提示中导出。其次，通过保持提示嵌入空间不变并将随机性注入特征空间，我们可以更好地学习已知由提示嵌入编码的任务特定知识 [46]。这有助于绕过领域内性能的损失。在 CL 中，后一种属性对于我们的模型在所有先前见过的任务上表现良好至关重要。第三，由于潜在变量 <span class="math-inline">z</span> 现在直接用于推断 logits，它自然倾向于通过影响预测来促进泛化。相反，提示空间先验对预测的影响是间接的，因为它由整个文本编码器层的表示中介。这可能会使先验的影响更难控制，并可能阻碍模型预测的上述可解释性。</p>
+<h4 id="322-clip-持续微调中的跨模态特征偏差">3.2.2 CLIP 持续微调中的跨模态特征偏差<a class="anchor-link" href="#322-clip-持续微调中的跨模态特征偏差" title="Permanent link">&para;</a></h4>
+<p>为了在文本特征空间中进行变分建模的 CL，我们首先退一步研究 CL 如何影响微调方法的学习文本特征与冻结视觉特征之间的<strong>跨模态偏差</strong>[47]。为此，我们考虑两个基本的 CL 模型：CoOp [12] 和带有 CLIP-Adapter 的 CoOp [13]。然后，对于 CIFAR100 的基础任务（<span class="math-inline">t=1</span>）测试样本，我们计算了每个增量测试步骤中 CL 模型的冻结视觉特征 <span class="math-inline">f(x)</span> 和可学习文本特征 <span class="math-inline">g(t_c(p))</span> 的旋转角矩阵（RAM）[47] 的平均值。图 3b 展示了 CoOp 的学习文本特征与其（冻结的）视觉对应特征的偏差。这意味着使用可学习提示微调的 CLIP 的跨模态检索性能随着增量训练而恶化。此外，由于通用适配器（CoOp + Adapter）无法缓解跨模态偏差，这直接阻碍了使用我们的概率适配器来学习变分分布 <span class="math-inline">q_\phi</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303144841.png" style="zoom: 80%;" /></div>
+
+<h4 id="323-任务特定概率适配器作为后验近似的集成">3.2.3 任务特定概率适配器作为后验近似的集成<a class="anchor-link" href="#323-任务特定概率适配器作为后验近似的集成" title="Permanent link">&para;</a></h4>
+<p>通过探索函数空间中的多样化模式，神经网络集成可以更好地近似变分后验 [51,22]。受此启发，我们用任务特定适配器 <span class="math-inline">{q^i_\phi}<em>{i=1}^t</span> 替换任务共享适配器 <span class="math-inline">q</em>\phi</span>，这些适配器参数化了第 <span class="math-inline">t</span> 个任务特定后验 <span class="math-inline">\mathcal{N}(\mu_t, \sigma_t)</span>：<br />
+<div class="math-display"><br />
+    {z^t_m}<em>{m=1}^M \sim q^t</em>\phi(z|\tilde{t}^t_c) = \mathcal{N}(\mu_t(\tilde{t}^t_c), \sigma_t(\tilde{t}^t_c)) \tag{6}<br />
+</div><br />
+其中 <span class="math-inline">z^t_m</span> 是任务特定的 MC 样本。任务特定适配器因此充当专家混合集成，其中每个专家在任务特定嵌入 <span class="math-inline">\tilde{t}^t_c</span> 上训练，并使用每个专家计算的 logits 组合来推导最终预测 <span class="math-inline">\hat{y}_{1:t}</span>（见算法 1）。专家学习到的后验在任务之间更具区分性。这在图 4 中通过从后验中抽取的类别特定样本的嵌入之间的余弦距离进行了展示。使用任务特定适配器（右图），跨任务类别的质心更具可分离性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303144901.png" style="zoom: 80%;" /></div>
+
+<p>为了防止当前任务训练数据的干扰，我们在每个增量训练步骤（<span class="math-inline">t &gt; 1</span>）中冻结过去任务的编码器。此外，为了减少过去任务适配器中的遗忘，我们遵循其他参数隔离技术 [27,42,52]，在每个增量训练步骤（<span class="math-inline">t &gt; 1</span>）结束时对新的数据和回放数据 <span class="math-inline">M</span> 的类别平衡数据集进行微调。我们称之为<strong>记忆巩固训练</strong>（见附录 A.2）。我们还在附录 A.5 中提供了我们框架在测试时前向传递的概述。</p>
+<h3 id="33-利用预训练语言感知的-clip-知识缓解遗忘">3.3 利用预训练语言感知的 CLIP 知识缓解遗忘<a class="anchor-link" href="#33-利用预训练语言感知的-clip-知识缓解遗忘" title="Permanent link">&para;</a></h3>
+<p>与其他微调方法类似，我们的概率适配器可能会为了下游任务性能而牺牲文本特征的泛化能力 [12,37]。相反，使用手工提示的预训练 CLIP 文本编码器 [53] 由于其丰富的预训练语言信息而具有强大的泛化能力。我们建议利用这种预训练语言知识来指导 CLAP 中的增量微调。在下文中，我们假设 <span class="math-inline">{t^{h,l}<em>y \in \mathbb{R}^d}</em>{l=1}^L</span> 是类别 <span class="math-inline">y \in C_t</span> 的手工提示对应的特征。</p>
+<h4 id="331-过去任务分布正则化以缓解遗忘">3.3.1 过去任务分布正则化以缓解遗忘<a class="anchor-link" href="#331-过去任务分布正则化以缓解遗忘" title="Permanent link">&para;</a></h4>
+<p>过去任务分布的函数空间在 CL 中容易遗忘。虽然回放有助于在一定程度上缓解遗忘，但重复训练记忆样本可能导致对这些样本的过拟合 [32,54]。为了解决这个问题，之前的工作 [8,55] 利用函数先验来正则化视觉空间并结合记忆回放。在这里，我们建议通过使用手工提示的特征 <span class="math-inline">{t^{h,l}<em>y}</em>{l=1}^L</span> 来蒸馏过去任务的潜在样本 <span class="math-inline">\tilde{z}<em>i = {z^i_m}</em>{m=1}^M</span>，从而正则化过去任务分布的文本空间。具体来说，样本集 <span class="math-inline">z^t</span> 属于类别 <span class="math-inline">y \in C_t</span> 的概率为：<br />
+<div class="math-display"><br />
+    P_{KD}(y|z^t) = \frac{1}{M} \sum_{m=1}^M \frac{1}{L} \sum_{l=1}^L \frac{\exp\left(\langle t^{h,l}<em>y, z^t_m \rangle\right)}{\sum</em>{c=1}^{|C_t|} \exp\left(\langle t^{h,l}<em>c, z^t_m \rangle\right)} \tag{7}<br />
+</div><br />
+由此产生的语言感知蒸馏损失是所有过去任务类别的真实标签分布 <span class="math-inline">y_c</span> 与预测概率分布 <span class="math-inline">P</em>{KD}</span> 之间的交叉熵之和：<br />
+<div class="math-display"><br />
+    L_{KD} = -\sum_{t=1}^{T-1} \sum_{c=1}^{|C_t|} \log P_{KD}(c|z^t) y_c \tag{8}<br />
+</div><br />
+其中 <span class="math-inline">L_{KD}</span> 作为<strong>无数据</strong>（即无需训练样本）的文本到文本分布正则化器，鼓励过去任务适配器的潜在变量输出接近手工提示的文本特征。<span class="math-inline">L_{KD}</span> 仅在记忆巩固训练期间应用，即当过去任务适配器可训练时。最后，由于 <span class="math-inline">L_{KD}</span> 作用于过去任务的函数空间，这使我们的设置与 [56] 的非 CL 设置区分开来，后者使用语言感知蒸馏损失来正则化向量嵌入空间。</p>
+<h4 id="332-考虑稳定性的任务特定适配器初始化">3.3.2 考虑稳定性的任务特定适配器初始化<a class="anchor-link" href="#332-考虑稳定性的任务特定适配器初始化" title="Permanent link">&para;</a></h4>
+<p>CL 中的<strong>稳定性差距</strong>[57] 指的是在更新网络权重以学习增量任务的初始阶段，过去任务知识的暂时但显著的遗忘。一个知情的权重初始化可以通过稳定新任务组件的学习来帮助缩小这一差距 [58]。因此，我们利用第 <span class="math-inline">t</span> 个任务的文本特征 <span class="math-inline">{t^{h,l}<em>y}</em>{l=1}^L</span> 来初始化我们的第 <span class="math-inline">t</span> 个任务的线性适配器层的权重 <span class="math-inline">w_{\mu_t}, w_{\sigma_t} \in \mathbb{R}^{d \times d}</span>。设 <span class="math-inline">s_\mu, s_\sigma \in \mathbb{R}^{|C_t| \times d}</span> 为 <span class="math-inline">L</span> 个文本特征的均值和标准差。我们初始化 <span class="math-inline">w_{\mu_t}</span> 和 <span class="math-inline">w_{\sigma_t}</span> 为：<br />
+<div class="math-display"><br />
+    w_{\mu_t} = \frac{1}{d} \langle s_\mu^T, s_\mu \rangle, \quad w_{\sigma_t} = \frac{1}{d} \langle s_\sigma^T, s_\sigma \rangle \tag{9}<br />
+</div></p>
+<h3 id="34-训练目标">3.4 训练目标<a class="anchor-link" href="#34-训练目标" title="Permanent link">&para;</a></h3>
+<h4 id="近似-elbo">近似 ELBO<a class="anchor-link" href="#近似-elbo" title="Permanent link">&para;</a></h4>
+<p>基于<strong>公式 (4)</strong>，我们现在学习任务特定适配器 <span class="math-inline">q^t_\phi</span> 以近似不可计算的第 <span class="math-inline">t \in [1,T]</span> 个任务特定后验。ELBO（详见附录 F 的推导）为：<br />
+<div class="math-display"><br />
+    \log p(y_{1:T}|x; \tilde{t}^t_c) \geq \sum_{t=1}^T \left( \mathbb{E}<em>{q^t</em>\phi(z^t|x; \tilde{t}^t_c)} \left[ \log p_\theta(y^t|z^t,x; \tilde{t}^t_c) \right] - D_{KL}(q^t_\phi(z^t|x; \tilde{t}^t_c) | p_\chi(z^t)) \right) \tag{10}<br />
+</div></p>
+<h4 id="总体目标">总体目标<a class="anchor-link" href="#总体目标" title="Permanent link">&para;</a></h4>
+<p>用 <span class="math-inline">\lambda</span> 和 <span class="math-inline">\gamma</span> 表示损失权重，我们的总损失项可以表示为：<br />
+<div class="math-display"><br />
+    L = L_{CE} - \lambda D_{KL} + \gamma L_{KD}<br />
+</div><br />
+其中交叉熵损失 <span class="math-inline">L_{CE}</span> 和先验匹配项 <span class="math-inline">D_{KL}</span> 作用于所有任务编码器的输出，而分布正则化项 <span class="math-inline">L_{KD}</span> 仅作用于过去任务编码器。<span class="math-inline">\lambda</span> 设置为 0.001。由于过去任务编码器仅在记忆巩固训练阶段可训练，因此在这些阶段 <span class="math-inline">\lambda</span> 设置为 0。<span class="math-inline">\gamma</span> 设置为 15。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<h3 id="数据集">数据集<a class="anchor-link" href="#数据集" title="Permanent link">&para;</a></h3>
+<p>我们在 CIFAR100 [3,30]、ImageNet100 [41,43]、ImageNet-R [59]、CUB200 [60] 和 VTAB [60] 上评估我们的方法。CIFAR100 [61] 和 ImageNet100 [62] 设置将其原始数据集分别划分为 10 个任务，每个任务包含 10 个类别。ImageNet-R [63] 和 CUB200 将 200 个类别划分为 10 个任务，每个任务包含 20 个类别。VTAB 包含 5 个任务，每个任务包含 10 个类别 [64]。虽然 CIFAR100、ImageNet100 和 CUB200 是评估 CL 方法在面对大遗忘时的稳健设置，但 ImageNet-R 和 VTAB 为使用预训练模型的 CL 方法提供了具有挑战性的设置，因为这些设置可能在其预训练集中包含测试图像（详见附录 A.1）。</p>
+<h3 id="基线">基线<a class="anchor-link" href="#基线" title="Permanent link">&para;</a></h3>
+<p>我们将 CLAP4CLIP 与多个基线和最先进的微调方法进行了比较。这些包括：(a) 基于 CLIP 的方法——Continual-CLIP [14]、CoOp [12]、CLIP-Adapter [13]、AttriCLIP [19]、MaPLe [20] 和 PROOF [39]；(b) 仅视觉方法——DualPrompt [59]、L2P [65]、CODA-P [38]；(c) 基线 CIL 方法——iCaRL [30]。为了公平比较，我们遵循 PROOF [39] 的实验协议。我们采用 ViT-B/16 作为骨干模型，除非另有说明，否则使用 OpenAI [1] 的预训练权重。作为性能的上限，我们使用单任务和任务特定编码器的 CLAP4CLIP，在所有任务上联合训练（JOINT）。</p>
+<h3 id="变体">变体<a class="anchor-link" href="#变体" title="Permanent link">&para;</a></h3>
+<p>我们将我们的方法与四种基于提示的方法集成：<strong>Ours</strong>使用手工提示模板的 CLAP，<strong>CoOp + Ours</strong>使用软提示 [12]，<strong>MaPLe + Ours</strong>使用多模态软提示 [20]，<strong>AttriCLIP + Ours</strong>使用实例条件软提示 [19] 的 CLAP4CLIP。<strong>Ours w/o Variational Inference (VI)</strong>是我们的确定性变体，详见附录图 7。我们将模型的训练细节和超参数留在附录 A.2 中。</p>
+<h3 id="性能指标">性能指标<a class="anchor-link" href="#性能指标" title="Permanent link">&para;</a></h3>
+<p>为了量化 CL 性能，我们报告：(a) 最后增量步骤后的最终准确率（Last）和每个步骤后的准确率平均值（Avg）[30]；(b) 用于量化遗忘的<strong>反向转移分数（BwT）</strong>[66]。为了评估概率建模的优势，我们报告：(a) <strong>预期校准误差（ECE）</strong>[67]，用于衡量模型预测的校准度 [68]；(b) <strong>（前向）转移分数</strong>[69]，用于量化 CL 模型的泛化能力，通过测量微调后的零样本转移能力。</p>
+<h3 id="41-结果">4.1 结果<a class="anchor-link" href="#41-结果" title="Permanent link">&para;</a></h3>
+<h4 id="准确率">准确率<a class="anchor-link" href="#准确率" title="Permanent link">&para;</a></h4>
+<p>我们在表 1 中报告了所有五个数据集的性能。我们的方法在所有比较方法中始终取得最佳结果。值得注意的是，在 CIFAR100 和 ImageNet100 上，使用手工和多模态提示的变体优于其他方法。在具有显著类别内多样性的挑战性 ImageNet-R 设置中，我们的方法能够更好地利用 AttriCLIP [19] 的实例条件提示知识，使其在平均准确率上超越 PROOF [39] 1.46%。在 CUB200 和 VTAB 上，共享提示池的优势使 CoOp [12] 优于其他基线。利用 CoOp 在这些数据集上为我们提供了最佳结果，同时超越了 PROOF，后者也在 CoOp 的基础上构建了任务特定的软提示。我们还观察到 VPT [17] 在所有 CL 设置上表现不佳。通过比较我们的变体与其他基线的性能演变，我们的变体在增量步骤中始终表现更好（详见附录图 8）。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303145124.png" style="zoom: 80%;" /></div>
+
+<h4 id="遗忘">遗忘<a class="anchor-link" href="#遗忘" title="Permanent link">&para;</a></h4>
+<p>表 13 显示，通常将 CLAP4CLIP 与基于提示的微调方法结合有助于提高后者的 BwT 分数。值得注意的是，在 VTAB [64] 的跨数据集设置中，我们的变体是唯一能够有效转移增量任务学习到的知识以提高过去任务性能的方法（即 BwT &gt; 0）。这表明我们的概率建模策略不仅对抗遗忘，还可以为现有微调方法带来抗遗忘特性。</p>
+<h4 id="校准">校准<a class="anchor-link" href="#校准" title="Permanent link">&para;</a></h4>
+<p>附录表 15 比较了我们的变体及其各自的基础确定性基线在最后测试步骤中的 ECE 分数。总体而言，我们的变体有助于增强（降低）基础提示方法的 ECE 分数。这意味着即使在 CL 设置中面临遗忘，CLAP 在评估其预测置信度时仍保持更高的可靠性。</p>
+<h4 id="泛化">泛化<a class="anchor-link" href="#泛化" title="Permanent link">&para;</a></h4>
+<p>附录表 14 显示，我们的方法始终增强了基础确定性提示方法的（前向）转移分数。这意味着 CLAP 能够更好地将学习到的知识从见过的任务转移到未来的任务中。</p>
+<h4 id="资源受限的-cl">资源受限的 CL<a class="anchor-link" href="#资源受限的-cl" title="Permanent link">&para;</a></h4>
+<p>为了研究 CLAP 在内存和计算受限环境中的鲁棒性，我们分别在<strong>无回放</strong>[70] 和<strong>计算预算受限</strong>[23] 的 CL 设置中对其性能进行了消融实验。表 16 和表 17 显示，在这两种设置中，利用 AttriCLIP 的实例条件和语义多样化提示提供了优势。在这里，我们的 AttriCLIP 变体超越了无回放的 SOTA，即 CODA-P [38]，以及预算受限的 SOTA，即 AttriCLIP [19]。进一步消融我们提出的语言感知分布正则化和权重初始化组件对 AttriCLIP 变体的作用表明，前者在资源受限设置中避免遗忘至关重要。</p>
+<h3 id="411-跨数据集持续学习cdcl">4.1.1 跨数据集持续学习（CDCL）<a class="anchor-link" href="#411-跨数据集持续学习cdcl" title="Permanent link">&para;</a></h3>
+<p>为了模拟具有长任务序列和大分布偏移的现实世界设置，CDCL 设置 [19] 在 ImageNet100 和 CIFAR100 上顺序训练模型（即在 20 个任务上训练），并在这两个数据集上联合评估模型。为了与 [19] 进行公平比较，我们采用 ViT-L/14 作为 CLIP 骨干，并将训练/测试批量大小设置为 32。所有其他设置与第 4.1 节相同。表 2 报告了不同方法的最后任务准确率。虽然所有我们的变体都提高了各自基线的 CDCL 性能，但将我们的方法与 AttriCLIP [19] 结合带来了最大的增益。这进一步表明，我们的框架可以可靠地利用学习提示的多样性，继承其特定设置的优势。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303145156.png" style="zoom: 80%;" /></div>
+
+<h3 id="42-消融研究">4.2 消融研究<a class="anchor-link" href="#42-消融研究" title="Permanent link">&para;</a></h3>
+<p>我们在下面提供了 CLAP4CLIP 训练管道的几个消融实验，更多消融实验见附录 C。</p>
+<h4 id="组件的影响">组件的影响<a class="anchor-link" href="#组件的影响" title="Permanent link">&para;</a></h4>
+<p>我们在表 3 中消融了 CLAP4CLIP 不同组件的重要性。在基础 CLIP 模型之上，我们首先训练了一个概率编码器。添加 VGA 模块和记忆巩固训练阶段有助于我们实现更稳定的性能，同时对抗遗忘。然后，我们应用任务特定编码器，这使得类别特定潜在变量的质心更具可分离性（见图 4），从而将最后任务准确率提高了 2.21%。语言感知权重初始化和正则化分别将最后任务准确率提高了 0.78% 和 0.23%。权重初始化进一步帮助我们解决了<strong>稳定性差距</strong>[57, 58]（详见附录 C.6 中关于语言感知组件的更多消融实验）。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303145206.png" style="zoom: 80%;" /></div>
+
+<h4 id="概率与确定性推断">概率与确定性推断<a class="anchor-link" href="#概率与确定性推断" title="Permanent link">&para;</a></h4>
+<p>为了进一步理解我们的概率推断模块，我们将其与我们的确定性变体（Ours w/o VI）的性能进行了比较。表 1 显示，我们的概率变体始终优于其确定性对应物。这强调了在微调中考虑不确定性的优势。我们进一步探讨了 VGA 和任务编码器模块的层数对我们框架的影响，详见附录 C.3。</p>
+<h3 id="5-概率微调的开箱即用应用">5. 概率微调的开箱即用应用<a class="anchor-link" href="#5-概率微调的开箱即用应用" title="Permanent link">&para;</a></h3>
+<p>我们研究了 CLAP4CLIP 不确定性量化（UQ）能力的开箱即用应用。我们的动机不是为了达到最先进的性能，而是为了突出在确定性 CL 微调方法难以应对的场景中概率建模的优势。</p>
+<h4 id="事后新数据检测phndd">事后新数据检测（PhNDD）<a class="anchor-link" href="#事后新数据检测phndd" title="Permanent link">&para;</a></h4>
+<p>PhNDD 使用预训练的分类模型基于输出置信度识别新数据 [71,72]。对于 CL，这可以帮助识别新任务的到达、扩展网络等。为了评估 CL 设置中模型的 PhNDD 能力，我们设计了一个简单的设置。具体来说，在所有但不是最后的测试步骤中，我们将过去和当前任务的测试数据视为<strong>已见</strong>，而将所有未来任务的测试数据视为<strong>新</strong>。然后，我们使用 FPR95、AUROC [73] 和 AUPR [74] 分数作为我们的性能指标（详见附录 D.1），在所有但不是最后的增量测试步骤上进行平均。为了量化输出置信度，我们依赖<strong>能量分数</strong>[75]，因为其适用于预训练模型。表 4 比较了平均 PhNDD 性能。我们的概率模型增强了其底层提示框架的 PhNDD 能力。此外，确定性版本（即 w/o VI）的较差结果表明，概率建模有助于模型输出更准确地表达其未知的预测。</p>
+<h4 id="示例选择">示例选择<a class="anchor-link" href="#示例选择" title="Permanent link">&para;</a></h4>
+<p>我们采用 CLAP 的 softmax 输出的熵（在 <span class="math-inline">M</span> 个预测上平均）作为我们的示例选择标准 [2]。表 20 显示了基于熵的回放对于我们的方法的有效性，而其他确定性方法由于其不一致的 UQ 能力而表现不佳。接下来，我们使用 softmax 输出的能量 [75] 和方差作为选择标准，并与 [2] 中提出的其他标准进行对比。图 6 显示，基于方差的示例选择优于随机选择，并且在最后任务准确率上仅次于 iCaRL [30]。我们注意到，具有点预测的确定性方法无法使用方差进行示例选择。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250303145249.png" style="zoom: 80%;" /></div>
+
+<h3 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h3>
+<p>在本文中，我们提出了 CLAP4CLIP，一种用于学习视觉引导文本特征分布的概率微调方法。我们的模型在所有任务之间共享视觉引导文本对齐模块，同时添加轻量级的任务特定编码器以学习细粒度的任务分布。除了带来极少的内存开销外，这种架构与多种基于提示调优的方法兼容，从而帮助我们继承它们在不同 CL 设置中的各自优势。我们的实验表明，CLAP4CLIP 在多个数据集和设置中取得了优异的结果。我们总结了我们方法的两个开箱即用的应用，其中现有的持续学习方法表现不佳：事后新数据检测和基于不确定性的示例选择。我们在附录 E 节中讨论了我们的局限性、潜在未来研究方向以及更广泛的影响。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

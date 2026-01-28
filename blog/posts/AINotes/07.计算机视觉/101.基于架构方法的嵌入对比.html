@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>load pre-trained image processor for efficientnet-b7 and model weight</title>
+    <meta name="description" content="load pre-trained image processor for efficientnet-b7 and model weight - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#efficientnetvitdino-v2clip和blip-2的简要介绍">EfficientNet、ViT、DINO-v2、CLIP和BLIP-2的简要介绍</a><ul>
+<li><a href="#efficientnet">EfficientNet</a></li>
+<li><a href="#vit">ViT</a></li>
+<li><a href="#dino-v2">DINO-v2</a></li>
+<li><a href="#clip">CLIP</a></li>
+<li><a href="#blip-2">BLIP-2</a></li>
+</ul>
+</li>
+<li><a href="#efficientnetvitdino-v2clip和blip-2在图像相似性搜索中的嵌入比较">EfficientNet、ViT、DINO-v2、CLIP和BLIP-2在图像相似性搜索中的嵌入比较</a><ul>
+<li><a href="#efficientnet_1">EfficientNet</a></li>
+<li><a href="#vit_1">ViT</a></li>
+<li><a href="#dino-v2_1">DINO-v2</a></li>
+<li><a href="#clip_1">CLIP</a></li>
+<li><a href="#blip-2_1">BLIP-2</a></li>
+</ul>
+</li>
+<li><a href="#图像相似性搜索">图像相似性搜索</a></li>
+<li><a href="#总结">总结</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>load pre-trained image processor for efficientnet-b7 and model weight</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/07.计算机视觉</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://mp.weixin.qq.com/s/mvozZ_iIRtFgmHUoAne80Q">图像相似性搜索比较：EfficientNet vs. ViT vs. DINO-v2 vs. CLIP vs. BLIP-2</a></p>
+</blockquote>
+<p>在本文中，我将使用Flickr数据集[6]比较EfficientNet[1]、ViT[2]、DINO-v2[3]、CLIP[4]和BLIP-2[5]的视觉嵌入在图像相似性搜索中的表现。我将主要使用Huggingface和Faiss库进行实现。首先，我将简要介绍每个深度学习模型。接下来，我将展示代码实现和比较结果。</p>
+<h2 id="efficientnetvitdino-v2clip和blip-2的简要介绍">EfficientNet、ViT、DINO-v2、CLIP和BLIP-2的简要介绍<a class="anchor-link" href="#efficientnetvitdino-v2clip和blip-2的简要介绍" title="Permanent link">&para;</a></h2>
+<p>在本节中，我将介绍用于实验的几个深度学习模型。请注意，我将使用“嵌入”和“特征”等词，它们的含义相同。我只是根据论文的描述来使用它们。让我们深入了解它们！</p>
+<h3 id="efficientnet">EfficientNet<a class="anchor-link" href="#efficientnet" title="Permanent link">&para;</a></h3>
+<p><strong>EfficientNet[1]是一种卷积神经网络，专注于在保持计算效率的同时实现高精度。它属于监督学习。作者深入研究了通道数（宽度）、总层数（深度）和输入分辨率，以解决模型大小、精度和计算效率之间的权衡问题。与已经引入的计算机视觉模型（如ResNet）相比，它在2019年取得了最先进的结果。</strong></p>
+<p><strong><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725414.png" /></strong></p>
+<p>EfficientNet根据模型大小分为B0到B7几个变体，如下所示。模型越大，精度越高。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725415.png" />  </p>
+<p>在本文中，我将使用EfficientNet-B7进行实验。提取的嵌入是最后一个隐藏层的输出，因为深层比浅层具有更多的语义信息。</p>
+<h3 id="vit">ViT<a class="anchor-link" href="#vit" title="Permanent link">&para;</a></h3>
+<p><strong>Vision Transformer[2]是由Google开发的第一篇成功将Transformer架构应用于计算机视觉领域的论文。它同样属于监督学习。它将输入图像划分为多个补丁，并将它们输入到Transformer编码器中。这些补丁相当于自然语言处理中的标记。对于分类任务，ViT引入了一个称为类标记的标记，它在最后一个注意力层的输出中包含整个图像的表示。</strong></p>
+<p><strong><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725416.png" /></strong></p>
+<p>与NLP Transformer类似，它需要在大数据集上进行预训练，并对下游任务进行微调。与CNN相比，它的一个优势是可以通过自注意力机制利用图像的全局信息。与EfficientNet一样，模型越大，能力越强。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725417.png" />  </p>
+<p>在本文中，我将使用ViT-Large。提取的嵌入是类标记的输出，因为它包含整个图像的语义信息。</p>
+<h3 id="dino-v2">DINO-v2<a class="anchor-link" href="#dino-v2" title="Permanent link">&para;</a></h3>
+<p><strong>DINO-v2[3]是由Meta开发的基础模型，用于生成计算机视觉中的通用视觉特征。作者将自监督方法应用于ViT架构，以理解图像和像素级别的特征；因此，DINO-v2可以执行任何计算机视觉任务，如分类或分割。在架构方面，DINO-v2基于前身DINO，即“无标签知识蒸馏”的缩写。</strong></p>
+<p><strong><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725418.png" /></strong></p>
+<p>DINO有两个网络：学生和教师。它利用协同蒸馏，其中学生和教师网络具有相同的架构，并且在训练期间在两个方向上进行蒸馏，从教师到学生以及从学生到教师。注意，学生到教师的蒸馏使用学生网络输出的平均值。</p>
+<p>对于DINO-v2，作者更新了训练方法，添加了一些损失和正则化。此外，他们还策划了一个高质量的数据集，以获得更好的图像特征。</p>
+<p>在实验中，我们将使用类标记的输出，因为它们像ViT一样包含整个图像的语义信息。</p>
+<h3 id="clip">CLIP<a class="anchor-link" href="#clip" title="Permanent link">&para;</a></h3>
+<p><strong>CLIP是由OpenAI开发的改变游戏规则的多模态模型之一[4]。它属于弱监督学习，基于Transformer架构。由于其独特的架构，它能够进行零样本图像分类。</strong></p>
+<p><strong><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725419.png" /></strong></p>
+<p>CLIP架构包含文本和图像编码器。它通过对比损失对齐文本和图像特征，从而获得多模态能力。因此，它在文本和图像特征之间共享相同的特征空间，并且可以通过找到最相似的文本特征来实现零样本图像分类。</p>
+<p>CLIP编码器基于Transformer。因此，我们将使用图像编码器中类标记的输出，类似于ViT。</p>
+<h3 id="blip-2">BLIP-2<a class="anchor-link" href="#blip-2" title="Permanent link">&para;</a></h3>
+<p><strong>BLIP-2[5]是由SalesForce在2023年开发的开源多模态模型。它属于监督学习，基于Transformer架构。它专注于利用预训练的大型模型（如FlanT5和CLIP）来实现高效的训练（因为在典型预算下从头开始训练大型模型很困难）。由于预训练的大型语言和视觉模型的训练方式不同，作者引入了Q-Former来对齐预训练模型之间的特征空间。</strong></p>
+<p><strong><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725420.png" /></strong></p>
+<p>BLIP-2包括两个阶段。第一阶段训练Q-Former，以使用图像-文本匹配、图像-文本对比损失和基于图像的文本生成等损失来对齐来自预训练图像编码器的文本特征和图像特征。第二阶段再次训练Q-Former，以将其特征空间与大型语言模型（如FlanT5）对齐。因此，Q-Former可以理解来自文本和图像源的特征。</p>
+<p>顾名思义，Q-Former架构基于Transformer。我们将使用Q-Former的输出作为特征提取层。</p>
+<h2 id="efficientnetvitdino-v2clip和blip-2在图像相似性搜索中的嵌入比较">EfficientNet、ViT、DINO-v2、CLIP和BLIP-2在图像相似性搜索中的嵌入比较<a class="anchor-link" href="#efficientnetvitdino-v2clip和blip-2在图像相似性搜索中的嵌入比较" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们将比较EfficientNet、ViT、DINO-v2、CLIP和BLIP-2在图像相似性搜索中的结果。这些模型具有不同的架构和训练损失。它们之间会有什么不同？让我们从环境设置开始。</p>
+<p><strong>环境设置</strong></p>
+<p><strong>我使用了Python 3.10的conda环境。我在Ubuntu 20.04上进行了实验，使用cuda 11.0、16 GB GPU和16 GB RAM。</strong></p>
+<pre><code class="language-bash">conda create -n transformers-env python=3.10 -yconda activate transformers-env
+</code></pre>
+<p><strong>接下来，我们需要通过conda和pip安装以下库。</strong></p>
+<pre><code class="language-bash">conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidiaconda install -c pytorch faiss-cpu=1.8.0conda install -c conda-forge pandaspip install transformers
+</code></pre>
+<p>准备工作已经完成！现在，让我们实现代码。我们将使用Faiss库[7]来测量图像相似性搜索中的图像相似性。Faiss是一个基于近似最近邻搜索算法的高效相似性搜索库。此外，我们将使用Flickr30k数据集[6]进行实验。在直接进入图像相似性搜索之前，我们将探索如何从每个模型中提取嵌入（特征）。</p>
+<p>从每个模型中提取特征</p>
+<p>在本实验中，我将使用Huggingface的transformer库来提取嵌入。与原始的Pytorch实现相比，我们可以轻松提取隐藏状态。本节代码检查输入和输出维度，因此我们将在CPU上运行它们。</p>
+<h3 id="efficientnet_1">EfficientNet<a class="anchor-link" href="#efficientnet_1" title="Permanent link">&para;</a></h3>
+<p><strong>EfficientNet的特征提取代码如下所示。</strong></p>
+<pre><code class="language-python">import torch
+from transformers import AutoImageProcessor, EfficientNetModel
+
+# load pre-trained image processor for efficientnet-b7 and model weight
+image_processor = AutoImageProcessor.from_pretrained(&quot;google/efficientnet-b7&quot;)
+model = EfficientNetModel.from_pretrained(&quot;google/efficientnet-b7&quot;)
+
+# prepare input image
+inputs = image_processor(test_image, return_tensors='pt')
+print('input shape: ', inputs['pixel_values'].shape)
+
+with torch.no_grad():
+    outputs = model(**inputs, output_hidden_states=True)
+
+embedding = outputs.hidden_states[-1]
+
+print('embedding shape: ', embedding.shape)
+
+embedding = torch.mean(embedding, dim=[2,3])
+print('after reducing: ', embedding.shape)
+
+### input shape:  torch.Size([1, 3, 600, 600])
+### embedding shape:  torch.Size([1, 640, 19, 19])
+### after reducing by taking mean:  torch.Size([1, 640])
+</code></pre>
+<p>首先，我们需要准备输入。预定义的EfficientNet图像处理器会自动将输入形状处理为(batch_size, 3, 600, 600)。经过模型后，我们可以获得带有隐藏状态的输出。最后一个隐藏状态的维度为(batch_size, 640, 19, 19)，因此我们对获得的嵌入应用降维平均处理。</p>
+<h3 id="vit_1">ViT<a class="anchor-link" href="#vit_1" title="Permanent link">&para;</a></h3>
+<p>对于ViT的特征提取，提取代码如下所示。</p>
+<pre><code class="language-python">
+# load pre-trained image processor for ViT-large and model weight
+image_processor = AutoImageProcessor.from_pretrained(&quot;google/vit-large-patch16-224-in21k&quot;)
+model = ViTModel.from_pretrained(&quot;google/vit-large-patch16-224-in21k&quot;)
+
+# prepare input image
+inputs = image_processor(test_image, return_tensors='pt')
+print('input shape: ', inputs['pixel_values'].shape)
+
+with torch.no_grad():
+    outputs = model(**inputs)
+
+embedding = outputs.last_hidden_state
+embedding = embedding[:, 0, :].squeeze(1)
+print('embedding shape: ', embedding.shape)
+
+### input shape:  torch.Size([1, 3, 224, 224])
+### embedding shape:  torch.Size([1, 1024])
+</code></pre>
+<p>同样，预定义的ViT图像处理器会自动将输入形状处理为(batch_size, 3, 224, 224)。最后一个隐藏状态的维度为(batch_size, 197, 1024)，我们只需要类标记，因此提取第二个维度（197）的第一个索引。</p>
+<h3 id="dino-v2_1">DINO-v2<a class="anchor-link" href="#dino-v2_1" title="Permanent link">&para;</a></h3>
+<p>DINO-v2基于ViT，因此基础代码几乎相同。区别在于我们加载DINO-v2的图像处理器和模型。提取代码如下所示。</p>
+<pre><code class="language-python"># load pre-trained image processor for DINO-v2 and model weight
+image_processor = AutoImageProcessor.from_pretrained('facebook/dinov2-base')
+model = AutoModel.from_pretrained('facebook/dinov2-base')
+
+# prepare input image
+inputs = image_processor(images=test_image, return_tensors='pt')
+print('input shape: ', inputs['pixel_values'].shape)
+
+with torch.no_grad():
+    outputs = model(**inputs)
+
+embedding = outputs.last_hidden_state
+embedding = embedding[:, 0, :].squeeze(1)
+print('embedding shape: ', embedding.shape)
+
+### input shape:  torch.Size([1, 3, 224, 224])
+### embedding shape:  torch.Size([1, 1024])
+</code></pre>
+<p>基本上，我们使用相同的图像处理器。预定义的ViT图像处理器会自动将输入形状处理为(batch_size, 3, 224, 224)。最后一个隐藏状态的维度为(batch_size, 197, 1024)，我们只需要类标记，因此提取第二个维度（197）的第一个索引。</p>
+<h3 id="clip_1">CLIP<a class="anchor-link" href="#clip_1" title="Permanent link">&para;</a></h3>
+<p>CLIP也基于ViT，因此过程相同。Huggingface的transformers库已经为CLIP提供了特征提取方法，因此实现更加简单。</p>
+<pre><code class="language-python">
+# load pre-trained image processor for CLIP and model weight
+image_processor = CLIPProcessor.from_pretrained(&quot;openai/clip-vit-base-patch32&quot;)
+model = CLIPModel.from_pretrained(&quot;openai/clip-vit-base-patch32&quot;)
+
+# prepare input image
+inputs = image_processor(images=test_image, return_tensors='pt', padding=True)
+print('input shape: ', inputs['pixel_values'].shape)
+
+with torch.no_grad():
+    outputs = model.get_image_features(**inputs)
+
+print('embedding shape: ', outputs.shape)
+
+### input shape:  torch.Size([1, 3, 224, 224])
+### embedding shape:  torch.Size([1, 512])
+</code></pre>
+<p>我们使用相同的图像处理器。预定义的ViT图像处理器会自动将输入形状处理为(batch_size, 3, 224, 224)。get_image_features方法可以提取给定图像的嵌入，输出维度为(batch_size, 512)。它与ViT和DINO-v2不同。</p>
+<h3 id="blip-2_1">BLIP-2<a class="anchor-link" href="#blip-2_1" title="Permanent link">&para;</a></h3>
+<p>我们可以从ViT和Q-Former的输出中提取图像嵌入。在这种情况下，Q-Former的输出可以包含来自图像和文本视角的语义，因此我们将使用它。</p>
+<pre><code class="language-python">processor = Blip2Processor.from_pretrained(&quot;Salesforce/blip2-opt-2.7b&quot;)
+model = Blip2Model.from_pretrained(&quot;Salesforce/blip2-opt-2.7b&quot;, torch_dtype=torch.float16)
+
+# prepare input image
+inputs = processor(images=test_image, return_tensors='pt', padding=True)
+print('input shape: ', inputs['pixel_values'].shape)
+
+with torch.no_grad():
+    outputs = model.get_qformer_features(**inputs)
+
+print('embedding shape: ', outputs.shape)
+</code></pre>
+<p>我们使用BLIP-2处理器，它可以处理图像和文本输入。它会自动将图像输入形状处理为(batch_size, 3, 224, 224)。我们可以使用get_qformer_features提取Q-Former的输出，输出维度为(batch_size, 32, 768)。我们通过对输出取平均值来降维，嵌入维度将为(batch_size, 768)。</p>
+<p>现在我们已经了解了如何从每个模型中提取嵌入。接下来，让我们检查使用Faiss进行图像相似性搜索的实现。</p>
+<h2 id="图像相似性搜索">图像相似性搜索<a class="anchor-link" href="#图像相似性搜索" title="Permanent link">&para;</a></h2>
+<p><strong>我们可以使用Faiss接口轻松实现图像相似性搜索，只需几行代码。我们假设我们有一个名为features的变量。过程如下：</strong></p>
+<ol>
+<li>将输入特征类型转换为numpy.float32。</li>
+<li>实例化Faiss向量存储并为其注册输入特征。</li>
+<li>通过调用search方法搜索向量。</li>
+</ol>
+<p>我们可以选择如何测量向量之间的距离，例如欧几里得距离或余弦相似度。在本文中，我们使用余弦相似度。伪代码如下所示。</p>
+<pre><code class="language-python"># convert features type to np.float32
+features = features.astype(np.float32)
+
+# get embedding dimension
+vector_dim = features.shape[1]     
+
+# register embedding to faiss vector store
+index = faiss.IndexFlatIP(vector_dim)
+faiss.normalize_L2(features)
+index.add(features)
+
+# For vector search, we just call search method. 
+top_k = 5  
+faiss.normalize_L2(embed)
+distances, ann = index.search(embed, k=top_k)
+</code></pre>
+<p>现在，比较图像相似性搜索结果的所有先决条件已经完成。让我们从下一节开始检查具体结果。</p>
+<p><strong>图像相似性搜索结果的比较</strong></p>
+<p>在本节中，我将比较使用五个模型进行图像相似性搜索的结果。对于数据集，我使用了从Flickr30k中随机挑选的10k张图像。我为每个模型实现了一个自定义管道，以实现批量特征提取。在本节末尾，我将附上我用于此实验的笔记本。我选择了以下图像来比较结果。</p>
+<p><strong><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725421.png" /><br />
+<img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725422.png" /></strong></p>
+<p>从Flickr30k数据集中挑选的图像</p>
+<p>“3637013.jpg”的结果如下所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725423.png" />  </p>
+<p>对“3637013.jpg”进行的图像相似性搜索</p>
+<p>这个案例相对容易，因此所有模型都能挑选出语义相似的图像。“3662865.jpg”的结果如下所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725424.png" />  </p>
+<p>对“3662865.jpg”进行的图像相似性搜索</p>
+<p>在这种情况下，DINO-v2和CLIP能够捕捉到“铲雪”的语义，但其他模型有时只能捕捉到“雪”。</p>
+<p>“440375442.jpg”的结果如下所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725425.png" />  </p>
+<p>对“440375442.jpg”进行的图像相似性搜索</p>
+<p>EfficientNet和ViT可能将工作服误解为手术服，因此它们无法捕捉目标图像的语义。DINO-v2能够理解“垃圾和穿工作服的人”的语义，CLIP专注于穿工作服的人，而BLIP2专注于垃圾。我认为DINO-v2、CLIP和BLIP2能够捕捉语义。</p>
+<p>“1377428277.jpg”的结果如下所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725426.png" />  </p>
+<p>对“1377428277.jpg”进行的图像相似性搜索</p>
+<p>这张图像的语义是：“街上有很多人正在享受某个节日或街头表演。”EfficientNet和ViT专注于雨伞，因此它们无法捕捉语义。另一方面，DINO专注于婴儿车，表现稍逊一筹。CLIP试图捕捉节日和街头的部分，但也稍逊一筹。BLIP2能够捕捉街头表演和婴儿车。</p>
+<p>“57193495.jpg”的结果如下所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725427.png" />  </p>
+<p>对“57193495.jpg”进行的图像相似性搜索</p>
+<p>在这种情况下，EfficientNet、ViT和CLIP有时能够捕捉到“穿着戏服并涂白脸的女人”的语义。然而，它们相对不足。相比之下，DINO-v2和BLIP2能够捕捉到服装或角色扮演的语义。</p>
+<p>最后一张图像“1393947190.jpg”的搜索结果如下所示：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202503030725428.png" />  </p>
+<p>对“1393947190.jpg”进行的图像相似性搜索</p>
+<p>结果因架构（CNN和Transformer）而异。虽然EfficientNet可能专注于图像的白色和棕色，但其他模型能够捕捉到“正在卷丝的人”的语义。CLIP可能专注于传统手工艺品，但其他模型能够捕捉语义。</p>
+<p>总结一下，我们有以下观察结果：</p>
+<ul>
+<li>EfficientNet（CNN架构）不擅长捕捉超出像素信息的语义。</li>
+<li>Vision Transformer比CNN更好，但仍然更关注像素信息而不是图像的含义。</li>
+<li>DINO-v2能够捕捉图像的语义，并且倾向于关注前景物体。</li>
+<li>CLIP能够捕捉语义，但有时可能会受到图像中可读的语言信息的强烈影响。</li>
+<li>BLIP2能够捕捉语义，是其他模型中表现最好的。</li>
+</ul>
+<h2 id="总结">总结<a class="anchor-link" href="#总结" title="Permanent link">&para;</a></h2>
+<p>我认为，为了获得更好的图像相似性搜索结果，我们基本上应该使用DINO-v2或BLIP2。至于使用上的区别，当我们专注于图像中的物体时，应该使用DINO-v2。而当我们专注于超出像素信息的语义（如情境）时，应该使用BLIP2。</p>
+<p>【完整代码】</p>
+<p>https://gist.github.com/tanukon/00d689478ee3f7d2abd0366f1352cf9d#file-embedding_comparison-ipynb</p>
+<p>【参考文献】</p>
+<p>[1] Mingxing Tan, Quoc V. Le, EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks (2019), <em>Arxiv</em></p>
+<p>[2] Alexey Dosovitskiy, et al., AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE (2020), <em>Arxiv</em></p>
+<p>[3] Maxime Oquab, Timothée Darcet, Théo Moutakanni, et.al., DINOv2: Learning Robust Visual Features without Supervision (2023), <em>Arxiv</em></p>
+<p>[4] Radford, A., Kim, J., et.al., Learning Transferable Visual Models From Natural Language Supervision (2023), <em>arxiv</em></p>
+<p>[5] Junnan Li, Dongxu Li, Silvio Savarese, Steven Hoi, BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models (2023), <em>Arxiv</em></p>
+<p>[6] Peter Young, Alice Lai, Micah Hodosh, Julia Hockenmaier, From image descriptions to visual denotations: New similarity metrics for semantic inference over event descriptions (2014), <em>MIT Press</em></p>
+<p>[7] Faiss, <em>Meta</em></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

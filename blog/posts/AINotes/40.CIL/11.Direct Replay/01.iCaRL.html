@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#icarl-incremental-classifier-and-representation-learning">iCaRL: Incremental Classifier and Representation Learning</a></li>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#method">Method</a><ul>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#nearest-mean-of-exemplars-classification">Nearest-Mean-of-Exemplars Classification</a></li>
+<li><a href="#representation-learning">Representation Learning</a></li>
+<li><a href="#exemplar-management">Exemplar Management</a><ul>
+<li><a href="#construct-exemplarset">Construct Exemplarset</a></li>
+<li><a href="#reduce-exemplarset">Reduce Exemplarset</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#training">Training</a></li>
+<li><a href="#experiments">Experiments</a><ul>
+<li><a href="#dataset">Dataset</a></li>
+<li><a href="#protocol">protocol</a></li>
+<li><a href="#results">Results</a></li>
+</ul>
+</li>
+<li><a href="#reference">Reference</a></li>
+<li><a href="#kimi全文翻译-arrow_down">Kimi全文翻译 :arrow_down:</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-方法">2. 方法</a><ul>
+<li><a href="#21-类增量分类器学习">2.1 类增量分类器学习</a></li>
+<li><a href="#22-最近均值样本分类">2.2 最近均值样本分类</a></li>
+<li><a href="#23-表示学习">2.3 表示学习</a></li>
+<li><a href="#24-样本管理">2.4 样本管理</a></li>
+</ul>
+</li>
+<li><a href="#3-相关工作">3. 相关工作</a><ul>
+<li><a href="#31-具有固定数据表示的学习">3.1 具有固定数据表示的学习</a></li>
+<li><a href="#32-表示学习">3.2 表示学习</a></li>
+</ul>
+</li>
+<li><a href="#4-实验">4. 实验</a><ul>
+<li><a href="#41-评估协议">4.1 评估协议</a></li>
+<li><a href="#42-结果">4.2 结果</a></li>
+<li><a href="#43-差异分析">4.3 差异分析</a></li>
+</ul>
+</li>
+<li><a href="#5-结论">5. 结论</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/11.Direct Replay</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="icarl-incremental-classifier-and-representation-learning">iCaRL: Incremental Classifier and Representation Learning<a class="anchor-link" href="#icarl-incremental-classifier-and-representation-learning" title="Permanent link">&para;</a></h2>
+<h2 id="abstract">Abstract<a class="anchor-link" href="#abstract" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525530.png" alt="Untitled" style="zoom:50%;" /></p>
+<ul>
+<li>classifiers</li>
+<li>data representation</li>
+</ul>
+<h2 id="introduction">Introduction<a class="anchor-link" href="#introduction" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525805.png" alt="Untitled" style="zoom:50%;" /></p>
+<p>类增量学习算法应满足:</p>
+<ul>
+<li>it should be trainable from a stream of data in which examples of different classes occur at different times,（可训练）</li>
+<li>it should at any time provide a competitive multi-class classifier for the classes observed so far, （保性能）</li>
+<li>its computational requirements and memory footprint should remain bounded, or at least grow very slowly, with respect to the number of classes seen so far.（训练资源有限）</li>
+</ul>
+<h2 id="method">Method<a class="anchor-link" href="#method" title="Permanent link">&para;</a></h2>
+<p>本文提出的 iCaRL（incremental classifier and representation learning）的主要贡献点有以下<strong>三点</strong>：</p>
+<ul>
+<li>classification by a nearest-mean-of-exemplars rule, 基于样本均值的分类器</li>
+<li>prioritized exemplar selection based on herding, 基于羊群效应的优先样本选择策略</li>
+<li>representation learning using knowledge distillation and prototype rehearsal.基于知识蒸馏和原型重塑的特征表达学习</li>
+</ul>
+<h3 id="architecture">Architecture<a class="anchor-link" href="#architecture" title="Permanent link">&para;</a></h3>
+<p><span class="math-inline">\Theta :</span> a fixed number of parameters for the <strong>feature extraction</strong> part and a variable number of weight vectors(he number of classes that have been observed so far) 特征提取层+最后一层已知类别数目的参数层</p>
+<p>for any class <span class="math-inline">y \in {1, ...,t}</span></p>
+<p><img alt="Untitled" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525906.png" /></p>
+<h3 id="nearest-mean-of-exemplars-classification">Nearest-Mean-of-Exemplars Classification<a class="anchor-link" href="#nearest-mean-of-exemplars-classification" title="Permanent link">&para;</a></h3>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525487.png" alt="Untitled" style="zoom:50%;" /></p>
+<p>利用一个样本集去记录旧类别的少量图片，这个样本集的空间是有限的，只能储存<span class="math-inline">K</span> 图片。基于样本集，查找与图片<span class="math-inline">x</span> 量最接近的类别向量<span class="math-inline">u_y</span>，并将其分类为<span class="math-inline">y^*</span>。</p>
+<p>与传统的 FC-based 的分类器不同，本文采取的是 nearest-mean-of-exemplars 分类器，求类别的样本平均作为该类别的原型（prototype，即类别的整体表征），对于一个测试样本，选取距离最近的原型作为预测结果。</p>
+<p>训练结束后，更新训练样本集 <span class="math-inline">P</span>，只用 <span class="math-inline">P</span> 面的样本求每个类别的表征。</p>
+<p>为什么这里采用 nearest-mean-of-exemplars 分类器？</p>
+<p>1）传统的卷积网络采取的是 FC 分类器，这是一个与前面的卷积层独立的层，两者是解耦的（decoupled），所以在增量学习一旦卷积层发生了变化，该 FC 必须要随着而做出改变，否则将会预测结果必然会很糟糕。而 nearest-mean-of-exemplars 分类器使得分类器是依赖于 CNN 层的，当卷积层发生变化的时候，分类器会自适应地进行改变和修正。</p>
+<p>2）但是合理地构造样本集，我们可以得到一个与真实值或者理想值逼近的样本均值，从而保障旧数据上的性能，一定程度上可减轻灾难性遗忘的问题（具体的构造过程详见下面部分）</p>
+<h3 id="representation-learning">Representation Learning<a class="anchor-link" href="#representation-learning" title="Permanent link">&para;</a></h3>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525898.png" alt="Untitled" style="zoom:50%;" /></p>
+<p>表征学习过程要解决的关键问题是：如何很好地学习新类别并保留之前类别的信息，本文采取了以下设计去解决这个问题：</p>
+<ul>
+<li>Dataset: the currently available training examples together with the stored exemplars.(新类别+有限空间的样本集储存旧类别的“代表性”的少量样本)</li>
+<li>new classes: classification loss (新类别设计分类 loss)</li>
+<li>old classes: distillation loss，通过保留旧网络的知识的方式达到保留之前类别的信息</li>
+</ul>
+<p>具体操作：</p>
+<p><img alt="Untitled" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525924.png" /></p>
+<p>该 loss 包含了两项内容，一个是分类的 loss，使得数据能区分当前类别数据以及样本集中数据，另一个是蒸馏的 loss，使得当前数据的相应能尽可能地逼近其在旧模型上的响应值得注意的是，这里模型的输出并不是 softmax 后的结果，而是对每一个输出值做一个 sigmoid 操作，分类的 loss 其实采用的是一个多分类 loss（可认为是 n 个二分类），因此 loss 形式上与的有所区别。</p>
+<blockquote>
+<p>待验证——处理完第一批类后冻结特征表示，处理完相应的类后冻结分类层的权重。对于后续批次的类，只训练新类的权值向量。</p>
+</blockquote>
+<h3 id="exemplar-management">Exemplar Management<a class="anchor-link" href="#exemplar-management" title="Permanent link">&para;</a></h3>
+<h4 id="construct-exemplarset">Construct Exemplarset<a class="anchor-link" href="#construct-exemplarset" title="Permanent link">&para;</a></h4>
+<p>样本数量 <span class="math-inline">m=K/t</span></p>
+<ul>
+<li><span class="math-inline">t</span> classes have been observed</li>
+<li><span class="math-inline">K</span> total number of exemplars</li>
+</ul>
+<p>新类别样本集的构建</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525891.png" alt="Untitled" style="zoom:50%;" /></p>
+<p>对于新的类别，本文根据上述的方式选择样本，依次选择新的样本使得样本均值与真实样本均值的差异最小。因此构造的样本序列的顺序是有意义的，越往前的样本，可被认为是越重要的，对样本均值贡献越大。<br />
+TODO</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20240712203640.png"/></div>
+
+<blockquote>
+<p>https://blog.csdn.net/weixin_45775432/article/details/125193295</p>
+</blockquote>
+<h4 id="reduce-exemplarset">Reduce Exemplarset<a class="anchor-link" href="#reduce-exemplarset" title="Permanent link">&para;</a></h4>
+<p>旧类别样本集的删减</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525773.png" alt="Untitled" style="zoom:60%;" /></p>
+<p>上述构造样本集的过程使得样本集的顺序是有意义的，越往前的样本，重要性越高，因此删除样本集的过程可以简单地从样本集的末后进行依次删减。</p>
+<h2 id="training">Training<a class="anchor-link" href="#training" title="Permanent link">&para;</a></h2>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525207.png" alt="Untitled" style="zoom:50%;" /></p>
+<p><span class="math-inline">X_s</span> 表示<span class="math-inline">s</span> 类别的训练图片集，<span class="math-inline">\theta</span> 表示模型参数，<span class="math-inline">K</span> 示样本集可以保留的最多的图片数量，<span class="math-inline">P</span> 表示当前的样本集。具体地，<br />
+1）先利用当前类别的训练图片集和旧类别的图片集，训练更新参数<span class="math-inline">\theta</span>（UPDATEREPRESENTATION）<br />
+2）确定当前每个类别可保留的图片数量 m，对旧类别样本集进行删减 (REDUCEEXEMPLARSET)<br />
+3）对当前类别图片构造其样本集 （CONSTRUCTEXEMPLARSET)</p>
+<h2 id="experiments">Experiments<a class="anchor-link" href="#experiments" title="Permanent link">&para;</a></h2>
+<h3 id="dataset">Dataset<a class="anchor-link" href="#dataset" title="Permanent link">&para;</a></h3>
+<ul>
+<li>CIFAR-100</li>
+<li>train all 100 classes in batches of 2, 5, 10, 20 or 50 classes at a time</li>
+<li>run this benchmark ten times with different class orders and reports averages and standard deviations of the results</li>
+<li>32-layers ResNet</li>
+<li>K = 2000 exemplars</li>
+<li>minibatches of size 128</li>
+<li>ImageNet ILSVRC 2012</li>
+<li>using only a subset of 100 classes</li>
+<li>in batches of 10 (iILSVRC-small) or using all 1000 classes, processed in batches of 100 (iILSVRC-full)</li>
+<li>top-5 accuracy on the val part of the dataset</li>
+<li>K = 20000</li>
+<li>use the tensorflow framework to train an 18-layers ResNet</li>
+<li>minibatches of size 128</li>
+</ul>
+<h3 id="protocol">protocol<a class="anchor-link" href="#protocol" title="Permanent link">&para;</a></h3>
+<ul>
+<li>iCIFAR-100 benchmark</li>
+<li>train all 100 classes in batches of 2, 5, 10, 20 or 50 classes at a time.</li>
+<li>iILSVRC benchmark</li>
+<li>using only asubset of 100 classes, which are trained in batches of 10 (iILSVRC-small)</li>
+<li>using all 1000 classes, processed in batches of 100 (iILSVRC-full). The evaluation measure is the top-5 accuracy on the val part of the dataset.</li>
+</ul>
+<h3 id="results">Results<a class="anchor-link" href="#results" title="Permanent link">&para;</a></h3>
+<p><img alt="Untitled" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209141525243.png" /></p>
+<p><img alt="image-20220921094808298" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209210948388.png" /></p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://blog.csdn.net/FatMigo/article/details/101481138">小全读论文《iCaRL: Incremental classifier and representation learning》CVPR2017</a></li>
+<li><a href="https://blog.csdn.net/weixin_45775432/article/details/125193295?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-0-125193295-blog-101481138.pc_relevant_multi_platform_whitelistv1_exp2&amp;spm=1001.2101.3001.4242.1&amp;utm_relevant_index=3">理解论文笔记 iCaRL: Incremental Classifier and Representation Learning</a></li>
+<li><a href="https://blog.csdn.net/dhaiuda/article/details/102736082?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2-102736082-blog-101481138.pc_relevant_multi_platform_whitelistv1_exp2&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2-102736082-blog-101481138.pc_relevant_multi_platform_whitelistv1_exp2&amp;utm_relevant_index=4">深度学习论文笔记（增量学习）——Incremental Classifier and Representation Learning</a></li>
+</ul>
+<h2 id="kimi全文翻译-arrow_down">Kimi全文翻译 :arrow_down:<a class="anchor-link" href="#kimi全文翻译-arrow_down" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>在通往人工智能的道路上，一个主要的开放性问题就是开发能够随着时间从数据流中学习越来越多的概念的增量学习系统。在这项工作中，我们引入了一种新的训练策略，iCaRL，它允许以这样的类增量方式进行学习：只需要同时存在一小部分类别的训练数据，并且可以逐步添加新类别。iCaRL 同时学习强大的分类器和数据表示。这与早期的工作不同，早期的工作基本上局限于固定数据表示，因此与深度学习架构不兼容。我们通过在 CIFAR-100 和 ImageNet ILSVRC 2012 数据上的实验表明，iCaRL 能够逐步学习许多类别，而其他策略很快就失败了。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>自然视觉系统是固有的增量式：新的视觉效果在保留现有知识的同时不断被整合。例如，一个孩子参观动物园时会了解许多新的动物，而不会忘记家里的宠物。相比之下，大多数人工对象识别系统只能在批量设置中进行训练，其中所有对象类别都提前已知，并且可以同时且任意顺序地访问所有类别的训练数据。随着计算机视觉领域更接近人工智能，很明显需要更灵活的策略来处理现实世界对象分类情况的大规模和动态属性。至少，一个视觉对象分类系统应该能够在训练数据可用时，逐步学习新类别。我们将这种情况称为类增量学习。形式上，我们要求一个算法要作为类增量的，应该满足以下三个属性：(i) 它应该能够从不同类别的例子在不同时间出现的流数据中进行训练，(ii) 它应该在任何时候都能为迄今为止观察到的类别提供有竞争力的多类分类器，(iii) 它的计算需求和内存占用应该保持有界，或者至少与迄今为止看到的类别数量相比增长得非常缓慢。前两个标准表达了类增量学习的本质。第三个标准排除了诸如存储所有训练示例并在新数据可用时重新训练普通多类分类器等简单算法。有趣的是，尽管过去几十年图像分类取得了巨大进步，但现在还没有一个令人满意的类增量学习算法。大多数现有的多类技术简单地违反了 (i) 或 (ii)，因为它们只能处理固定数量的类别和/或需要所有训练数据同时可用。简单地说，人们可能会尝试通过使用随机梯度下降优化从类增量数据流中训练分类器来克服这一点。然而，这将导致分类准确性迅速恶化，这种现象在文献中被称为灾难性遗忘或灾难性干扰。少数确实满足上述属性的技术原则上限于固定数据表示的情况。它们不能扩展到同时学习分类器和特征表示的深度架构，因此在分类准确性方面不再具有竞争力。更多相关工作在第 3 节中讨论。在这项工作中，我们介绍了 iCaRL（增量分类器和表示学习），这是一种在类增量设置中同时学习分类器和特征表示的实际策略。在仔细分析现有方法的不足之后，我们引入了三个主要组件，这些组件结合起来允许 iCaRL 满足上述所有标准。这三个组件是：(1) 通过最近均值样本规则进行分类，(2) 基于放牧的优先样本选择，(3) 使用知识蒸馏和原型复习的表示学习。我们在第 2 节中详细解释这些步骤，并在第 3 节中将它们置于先前工作的背景下。在第 4 节中，我们报告了在 CIFAR 和 ImageNet 数据集上的实验，表明 iCaRL 能够在其他方法迅速失败的长时间内进行类增量学习。最后，我们在第 5 节中讨论剩余的限制和未来的工作。</p>
+<h2 id="2-方法">2. 方法<a class="anchor-link" href="#2-方法" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们描述了 iCaRL 的主要组件，并解释了它们的组合如何允许真正的类增量学习。2.1 节解释了底层架构，并提供了训练和分类步骤的高级概述。然后 2.2 至 2.4 节提供了算法细节并解释了设计选择。</p>
+<h3 id="21-类增量分类器学习">2.1 类增量分类器学习<a class="anchor-link" href="#21-类增量分类器学习" title="Permanent link">&para;</a></h3>
+<p>iCaRL 在类增量形式的数据流上同时学习分类器和特征表示，即样本集 <span class="math-inline">X_1, X_2, \ldots</span>，其中集合 <span class="math-inline">X_y = {x_{y1}, \ldots, x_{yny}}</span> 的所有示例都属于类别 <span class="math-inline">y \in \mathbb{N}</span>。分类。对于分类，iCaRL 依赖于从数据流中动态选择的样本图像集 <span class="math-inline">P_1, \ldots, P_t</span>。对于每个迄今为止观察到的类别，都有一个这样的样本集，并且 iCaRL 确保样本图像的总数永远不会超过固定的参数 <span class="math-inline">K</span>。算法 1 描述了用于将图像分类到迄今为止观察到的类别集合中所使用的均值样本分类器，见 2.2 节的详细解释。训练。对于训练，iCaRL 使用增量学习策略，一次处理一批类别。每当新类别的数据可用时，iCaRL 调用一个更新例程（算法 2，见 2.3 和 2.4 节）。该例程根据新观察中的额外信息（当前训练数据）调整 iCaRL 的内部知识（网络参数和样本）。这也是 iCaRL 了解新类别存在的方式。架构。在底层，iCaRL 使用卷积神经网络（CNN）<br />
+<div class="math-display"><br />
+    19<br />
+</div><br />
+。我们将网络解释为可训练的特征提取器 <span class="math-inline">\varphi: X \rightarrow \mathbb{R}^d</span>，后面跟着一个分类层，其 sigmoid 输出节点的数量与迄今为止观察到的类别数量一样多<br />
+<div class="math-display"><br />
+    3<br />
+</div><br />
+。所有特征向量都进行了 L2 归一化，并且对特征向量执行的任何操作（例如平均值）的结果也会被重新归一化，为了避免符号混乱，我们没有明确写出这一点。我们用 <span class="math-inline">\Theta</span> 表示网络的参数，将其分为用于特征提取部分的固定数量的参数和可变数量的权重向量。我们用 <span class="math-inline">w_1, \ldots, w_t \in \mathbb{R}^d</span> 表示后者，在以下各节中，我们使用 <span class="math-inline">t</span> 表示迄今为止观察到的类别数量的约定。对于任何类别 <span class="math-inline">y \in {1, \ldots, t}</span>，网络的输出是：<br />
+<div class="math-display"><br />
+    g_y(x) = \frac{1}{1 + \exp(-a_y(x))} \quad \text{with} \quad a_y(x) = w_y^\top \varphi(x). \quad (1)<br />
+</div><br />
+注意，尽管人们可以将这些输出解释为概率，但 iCaRL 仅使用网络进行表示学习，而不是实际的分类步骤。资源使用。由于其增量特性，iCaRL 不需要事先知道将出现哪些类别以及类别的数量，并且理论上可以无限期地运行。在其运行期间的任何时候，其内存需求将是特征提取参数的大小，存储 <span class="math-inline">K</span> 个样本图像以及观察到的类别数量一样多的权重向量。这使我们能够根据应用场景分配资源。如果知道类别数量的上限，可以简单地为所需的权重向量预分配空间，并使用所有剩余的可用内存来存储样本。如果没有上限，实际上会随着时间的推移增加权重向量的数量，并相应地减小样本集的大小。显然，至少需要一个样本图像和权重向量来学习每个类别，因此最终，除非允许在算法运行期间添加更多资源，否则只能学习有限数量的类别。请注意，iCaRL 可以在运行时随时处理资源的增加，而无需重新训练：它只会在内存限制迫使这样做时才丢弃样本。</p>
+<h3 id="22-最近均值样本分类">2.2 最近均值样本分类<a class="anchor-link" href="#22-最近均值样本分类" title="Permanent link">&para;</a></h3>
+<p>iCaRL 使用最近均值样本分类策略。为了预测新图像 <span class="math-inline">x</span> 的标签 <span class="math-inline">y^<em></span>，它计算每个迄今为止观察到的类别的原型向量 <span class="math-inline">\mu_1, \ldots, \mu_t</span>，其中 <span class="math-inline">\mu_y = \frac{1}{|P_y|} \sum_{p \in P_y} \varphi(p)</span> 是类别 <span class="math-inline">y</span> 的所有样本的平均特征向量。它还计算要分类的图像的特征向量，并将类别标签分配给与原型最相似的类别：<br />
+<div class="math-display"><br />
+    y^</em> = \arg\min_{y=1,\ldots,t} |\varphi(x) - \mu_y|. \quad (2)<br />
+</div><br />
+背景。最近均值样本分类规则克服了增量学习设置的两个主要问题，通过与多类分类的其他可能性进行对比可以看出这一点。神经网络的通常分类规则将是 <span class="math-inline">y^<em> = \arg\max_{y=1,\ldots,t} g_y(x)</span>，其中 <span class="math-inline">g_y(x)</span> 是如 (1) 所定义的网络输出，或者使用带有 softmax 输出层的另一种定义。因为 <span class="math-inline">\arg\max_y g_y(x) = \arg\max_y w_y^\top \varphi(x)</span>，网络的预测规则等同于使用非线性特征映射 <span class="math-inline">\varphi</span> 和权重向量 <span class="math-inline">w_1, \ldots, w_t</span> 的线性分类器。在类增量设置中，权重向量 <span class="math-inline">w_y</span> 与特征提取程序 <span class="math-inline">\varphi</span> 解耦是有问题的：每当 <span class="math-inline">\varphi</span> 变化时，所有 <span class="math-inline">w_1, \ldots, w_t</span> 也必须更新。否则，网络输出将无法控制地变化，这可以观察到作为灾难性遗忘。相比之下，最近均值样本规则 (2) 没有解耦的权重向量。类别原型在特征表示变化时自动变化，使分类器对特征表示的变化具有鲁棒性。选择平均向量作为原型是受到固定特征表示下增量学习的最近类均值分类器的启发。在类增量设置中，我们不能使用真实的类均值，因为必须存储所有训练数据才能在表示变化后重新计算这个量。相反，我们使用灵活数量的样本的平均值，这些样本被选择的方式来提供类均值的良好近似。请注意，因为我们使用归一化的特征向量，方程 (2) 可以等价地写成 <span class="math-inline">y^</em> = \arg\max_y \mu_y^\top \varphi(x)</span>。因此，我们也可以将分类步骤解释为使用权重向量的分类，但这个权重向量不是与数据表示解耦的，而是与它一致变化的。</p>
+<h3 id="23-表示学习">2.3 表示学习<a class="anchor-link" href="#23-表示学习" title="Permanent link">&para;</a></h3>
+<p>每当 iCaRL 获得新类别的数据 <span class="math-inline">X_s, \ldots, X_t</span> 时，它更新其特征提取程序和样本集。算法 3 列出了逐步改进特征表示的步骤。首先，iCaRL 构建一个增强的训练集，包括当前可用的训练示例和存储的样本。接下来，对于每个示例，使用当前网络进行评估，并将所有先前类别的网络输出结果存储（对于新类别不这样做，因为网络尚未为此训练）。最后，通过最小化损失函数来更新网络参数，该损失函数对于每个新图像鼓励网络输出新类别的正确类指示器（分类损失），并且对于旧类别，重现上一步中存储的分数（蒸馏损失）。</p>
+<p>背景。表示学习步骤类似于普通的网络微调：从先前学习的网络权重开始，它最小化一个训练集上的损失函数。因此，可以使用标准的端到端学习方法，如带有小批量的反向传播，以及最近的改进，如 dropout<br />
+<div class="math-display"><br />
+    38<br />
+</div><br />
+、自适应步长选择<br />
+<div class="math-display"><br />
+    14<br />
+</div><br />
+或批量归一化<br />
+<div class="math-display"><br />
+    13<br />
+</div><br />
+，以及潜在的未来改进。有两个修改是针对普通微调的，旨在防止或至少减轻灾难性遗忘。首先，训练集被增强。它不仅包括新的训练示例，还包括存储的样本。通过这种方式，确保至少有一些关于所有先前类别的数据分布的信息进入训练过程。请注意，这一步中存储样本作为图像很重要，而不是以随时间过时的特征表示存储。其次，损失函数也被增强。除了标准分类损失之外，它还包含蒸馏损失，确保在新的学习步骤中不会丢失先前学到的区分信息。</p>
+<h3 id="24-样本管理">2.4 样本管理<a class="anchor-link" href="#24-样本管理" title="Permanent link">&para;</a></h3>
+<p>每当 iCaRL 遇到新类别时，它调整其样本集。所有类别在这一点上都被平等对待，即，当迄今为止观察到 <span class="math-inline">t</span> 个类别并且 <span class="math-inline">K</span> 是可以存储的样本总数时，iCaRL 将为每个类别使用 <span class="math-inline">m = K/t</span> 个样本（四舍五入）。通过这种方式，确保 <span class="math-inline">K</span> 个样本的可用内存预算始终被充分利用，但永远不会超出。两个例程负责样本管理：一个用于为新类别选择样本，一个用于减少先前类别的样本集大小。算法 4 描述了样本选择步骤。样本 <span class="math-inline">p_1, \ldots, p_m</span> 被迭代选择并存储，直到达到目标数量 <span class="math-inline">m</span>。在每次迭代中，将当前训练集的一个更多示例添加到样本集中，即那个使所有样本的平均特征向量最好地近似所有训练示例的平均特征向量的示例。因此，样本“集”实际上是一个优先级列表。列表中元素的顺序很重要，列表中较早的元素更重要。移除样本的程序在算法 5 中指定。它特别简单：要从任何 <span class="math-inline">m'</span> 减少样本数量到 <span class="math-inline">m</span>，丢弃样本 <span class="math-inline">p_{m+1}, \ldots, p_{m'}</span>，只保留示例 <span class="math-inline">p_1, \ldots, p_m</span>。</p>
+<p>背景。样本管理程序旨在实现两个目标：初始样本集应该很好地近似类均值向量，并且应该可以在算法的运行期间随时移除样本，而不会违反这一属性。后者具有挑战性，因为当调用移除程序时，实际的类均值向量不再可供算法使用。因此，我们采用了一种数据独立的移除策略，从末尾开始固定顺序移除元素，并使样本集构建例程负责确保即使在后续调用移除程序时也满足所需的近似属性。优先级构建是这种条件的逻辑结果：它确保从第一个样本开始的任何子集的平均特征向量是均值向量的良好近似。相同的优先级构建也用于放牧<br />
+<div class="math-display"><br />
+    39<br />
+</div><br />
+，从分布中创建代表性的样本集。在那里，也表明迭代选择比随机抽样等需要更少的样本就能达到高近似质量。相比之下，其他潜在的样本选择方法，如<br />
+<div class="math-display"><br />
+    7, 26<br />
+</div><br />
+，是针对其他目标设计的，不能保证为任何数量的原型提供良好的近似质量。总的来说，iCaRL 的样本选择和缩减步骤完全适合增量学习设置：选择步骤只需要在每个类别首次观察到并且其训练数据可用时进行一次。在后来的时间，只需要调用缩减步骤，它不需要访问任何早期的训练数据。</p>
+<h2 id="3-相关工作">3. 相关工作<a class="anchor-link" href="#3-相关工作" title="Permanent link">&para;</a></h2>
+<p>iCaRL 建立在多个早期尝试解决类增量学习问题的基础上。在本节中，我们描述了其中最重要的一些，一方面将它们结构化为具有固定数据表示的学习技术，另一方面是也学习数据表示的技术，既包括经典连接主义时代，也包括最近的深度学习方法。</p>
+<h3 id="31-具有固定数据表示的学习">3.1 具有固定数据表示的学习<a class="anchor-link" href="#31-具有固定数据表示的学习" title="Permanent link">&para;</a></h3>
+<p>当数据表示固定时，类增量学习的主要挑战是设计一个可以在训练过程中随时容纳新类别的分类器架构，而不需要访问迄今为止看到的所有训练数据。</p>
+<p>Mensink 等人<br />
+<div class="math-display"><br />
+    23<br />
+</div><br />
+观察到最近类均值（NCM）分类器具有这一属性。NCM 表示每个类别为原型向量，该向量是迄今为止观察到的所有示例的平均特征向量。这个向量可以从数据流中递归计算，因此不需要存储所有训练示例。新示例通过将其分配给与示例特征向量最相似的类别原型来分类，关于度量也可以从数据中学习。尽管（或因为）其简单性，NCM 已被证明工作良好，并且在增量学习设置中比标准参数分类器更鲁棒<br />
+<div class="math-display"><br />
+    23, 24, 31<br />
+</div><br />
+。NCM 的主要缺点是它不能轻易地扩展到需要与分类器一起学习非线性数据表示的情况，因为这阻止了类别均值向量以递归方式计算。对于 iCaRL，我们从 NCM 采纳了基于原型的分类思想。然而，我们使用的原型不是所有示例的平均特征向量，而只是特定选择的子集，这使我们能够保持小内存占用并执行所有必要的更新，具有恒定的计算工作量。其他方法<br />
+<div class="math-display"><br />
+    17<br />
+</div><br />
+表明，只要所有类别的分类器可以从所有类别的至少少量数据中重新训练，就可以在向现有线性多类分类器添加新类别时避免准确性损失。Chen 等人<br />
+<div class="math-display"><br />
+    4, 5<br />
+</div><br />
+和 Divvala 等人<br />
+<div class="math-display"><br />
+    6<br />
+</div><br />
+引入了系统，它们可以从网络资源中自动检索图像并识别它们之间的关系，但它们不逐步学习对象分类器。Royer 和 Lampert<br />
+<div class="math-display"><br />
+    33<br />
+</div><br />
+适应时间变化的数据流的分类器，但他们的方法不能处理新出现的类别，而 Pentina 等人<br />
+<div class="math-display"><br />
+    29<br />
+</div><br />
+表明，按顺序学习多个任务是有益的，但选择顺序需要所有任务的数据同时可用。Li 和 Wechsler<br />
+<div class="math-display"><br />
+    20<br />
+</div><br />
+，Scheirer 等人<br />
+<div class="math-display"><br />
+    37<br />
+</div><br />
+，以及 Bendale 和 Boult<br />
+<div class="math-display"><br />
+    2<br />
+</div><br />
+针对的是相关但不同的开放集识别问题，即测试示例可能来自训练示例之前未见过的类别。Polikar 等人<br />
+<div class="math-display"><br />
+    28, 30<br />
+</div><br />
+引入了一种基于集成的方法，可以处理越来越多的类别，但需要所有类别的训练数据重复出现。Lampert 等人<br />
+<div class="math-display"><br />
+    18<br />
+</div><br />
+提出的零样本学习可以对以前未见过的类别的示例进行分类，但它不包括对这些类别的训练步骤。</p>
+<h3 id="32-表示学习">3.2 表示学习<a class="anchor-link" href="#32-表示学习" title="Permanent link">&para;</a></h3>
+<p>（深度）神经网络最近的成功在很大程度上归功于它们不仅学习分类器，还学习合适的数据表示的能力<br />
+<div class="math-display"><br />
+    3, 21, 25, 36<br />
+</div><br />
+，至少在标准的批量设置中是这样。在经典神经网络文献中可以找到以增量方式学习数据表示的首次尝试，例如<br />
+<div class="math-display"><br />
+    1, 8, 9, 32<br />
+</div><br />
+。特别是，在 1980 年代末，McCloskey 等人<br />
+<div class="math-display"><br />
+    22<br />
+</div><br />
+描述了灾难性遗忘的问题，即用新数据训练神经网络会导致它覆盖（从而忘记）在先前数据上学到的内容。然而，这些经典作品主要是在连接主义记忆网络的背景下，而不是分类器，并且使用的网络与当今的标准相比规模小且浅。总的来说，现有的算法和架构变化无法防止灾难性遗忘，例如，Moe-Helgesen 等人的调查<br />
+<div class="math-display"><br />
+    27<br />
+</div><br />
+针对经典和 Goodfellow 等人的<br />
+<div class="math-display"><br />
+    10<br />
+</div><br />
+针对现代架构，除非在特定设置中，如 Kirkpatrick 等人的<br />
+<div class="math-display"><br />
+    15<br />
+</div><br />
+。早期连接主义工作的主要成就之一是确定了解决灾难性遗忘的两种主要策略：1) 通过冻结网络权重的一部分，同时增长网络以保留学习能力，2) 通过复习，即不断地用最近的数据以及早期的数据刺激网络。关于神经网络的增量学习的最新工作主要遵循冻结/增长策略，但这要求随着时间的推移为网络分配越来越多的资源，因此违反了我们对类增量学习定义的第三条原则。例如，Xiao 等人<br />
+<div class="math-display"><br />
+    40<br />
+</div><br />
+学习了一个随着观察到更多类别而递增增长的树状模型。在多任务强化学习的背景下，Rusu 等人<br />
+<div class="math-display"><br />
+    35<br />
+</div><br />
+提出通过扩展所有层的水平方向来增长网络。对于 iCaRL，我们采用了复习的原则：为了更新学习表示的模型参数，我们不仅使用当前类别的训练数据，还使用早期类别的样本，这些样本反正是可用的，因为它们需要用于基于原型的分类规则。此外，iCaRL 还使用蒸馏来防止网络中信息随着时间的推移恶化过多。Hinton 等人<br />
+<div class="math-display"><br />
+    12<br />
+</div><br />
+最初提出蒸馏是在不同神经网络之间传递信息，而在 iCaRL 中，我们在同一网络的不同时间点之间使用它。相同的原则最近被 Li 和 Hoiem<br />
+<div class="math-display"><br />
+    21<br />
+</div><br />
+以“Learning without Forgetting”（LwF）的名义提出，用于逐步训练单个网络以学习多个任务，例如多个对象识别数据集。与类增量多类情况的主要区别在于预测步骤：多类学习者必须选择一个能够正确预测任何观察到的类别的分类器。多任务（多数据集）学习者可以利用多个分类器，每个分类器仅在其自己的数据上进行评估。</p>
+<h2 id="4-实验">4. 实验<a class="anchor-link" href="#4-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们提出了一个评估增量学习方法的协议，并将 iCaRL 的分类准确性与替代方法进行比较（第 4.1 节）。我们还报告了进一步的实验，通过隔离各个组成部分的效果来阐明 iCaRL 的工作机制（第 4.2 节）。</p>
+<h3 id="41-评估协议">4.1 评估协议<a class="anchor-link" href="#41-评估协议" title="Permanent link">&para;</a></h3>
+<p>迄今为止，尚无公认的评估类增量学习方法的基准协议。因此，我们提出以下评估程序：对于给定的多类分类数据集，类别以固定的随机顺序排列。然后以类增量方式对每种方法进行训练，使用可用的训练数据。在每批类别之后，对数据集的测试部分进行评估，仅考虑已经训练的类别。请注意，尽管测试数据多次使用，但算法不会发生过度拟合，因为测试结果不会向算法透露。评估的结果是每批类别之后的分类准确性曲线。如果需要一个数字，我们报告这些准确性的平均值，称为平均增量准确性。对于图像分类任务，我们引入了上述协议的两个实例。1) iCIFAR-100 基准：我们使用 CIFAR-100<br />
+<div class="math-display"><br />
+    16<br />
+</div><br />
+数据，并一次训练所有 100 个类别，每批 2、5、10、20 或 50 个类别。评估措施是测试集上的标准多类准确性。由于数据集大小适中，我们用不同的类别顺序运行此基准测试十次，并报告结果的平均值和标准差。2) iILSVRC 基准：我们使用 ImageNet ILSVRC 2012<br />
+<div class="math-display"><br />
+    34<br />
+</div><br />
+数据集的两个设置：仅使用 100 个类别的子集，每批训练 10 个（iILSVRC-small），或使用所有 1000 个类别，每批处理 100 个（iILSVRC-full）。评估措施是数据集验证部分的 top-5 准确性。</p>
+<h3 id="42-结果">4.2 结果<a class="anchor-link" href="#42-结果" title="Permanent link">&para;</a></h3>
+<p>我们的主要实验研究了不同方法在类增量条件下的分类准确性。除了 iCaRL，我们还实现了并测试了三种替代的类增量方法。微调学习一个普通的多类网络，没有采取任何措施来防止灾难性遗忘。它也可以被解释为通过微调先前学习的多类分类器来学习新类别的多类分类器。固定表示还学习一个多类分类网络，但以防止灾难性遗忘的方式进行。它在处理第一批类别后冻结了特征表示，并在处理相应类别后冻结了分类层的权重。对于后续类别的批次，仅训练新类别的权重向量。最后，我们还与一个在训练期间使用蒸馏损失来防止灾难性遗忘的网络分类器进行比较，就像 iCaRL 一样，但它不使用样本集。对于分类，它使用网络输出值本身。这本质上是应用于多类分类的 Learning without Forgetting 方法，所以我们用 LwF.MC 来表示它。</p>
+<p>图 2 显示了结果。可以看到，iCaRL 明显优于其他方法，而且随着设置的增量性增加（即同时处理的类别越少），优势越明显。在其他方法中，基于蒸馏的网络训练（LwF.MC）总是排名第二，除了 iILSVRC-full，在那里在第一批 100 个类别之后固定表示更好。微调始终取得最差的结果，证实了灾难性遗忘确实是类增量学习的一个主要问题。</p>
+<p>图 3 提供了对不同方法行为的进一步洞察。它显示了使用每批 10 个类别训练的 iCIFAR-100 上的 100 类分类器的混淆矩阵（更大的版本可以在补充材料中找到）。可以看到非常特征性的模式：iCaRL 的混淆矩阵在所有类别上看起来是均匀的，无论是对角线项（即正确预测）还是非对角线项（即错误）。这表明 iCaRL 对于在学习过程中早期或晚期遇到的类别没有内在的偏见。特别是，它没有遭受灾难性遗忘。</p>
+<p>相比之下，其他类别的混淆矩阵显示出不均匀的模式：基于蒸馏的训练（LwF.MC）在右侧有更多的非零项，即对于最近学习的类别。对于微调来说，效果更加极端，所有预测的类别标签都来自网络训练的最后一个类别批次。微调网络简单地忘记了早期类别的存在。固定表示显示出相反的模式：它更倾向于输出它最初训练的第一批类别中的类别（这些类别用于获得数据表示）。iILSVRC 的混淆矩阵显示出相同的模式，它们可以在补充材料中找到。</p>
+<h3 id="43-差异分析">4.3 差异分析<a class="anchor-link" href="#43-差异分析" title="Permanent link">&para;</a></h3>
+<p>为了进一步了解 iCaRL 的工作机制，我们在 iCIFAR-100 上进行了额外的实验，隔离了方法的各个部分。首先，我们分析了 iCaRL 为何能改进普通的微调训练，它与微调训练有三个不同之处：使用均值样本分类规则，使用样本进行表示学习，以及使用蒸馏损失。因此，我们创建了三个混合设置：第一种（hybrid1）像 iCaRL 一样学习表示，但直接使用网络输出进行分类，而不是均值样本分类器。第二种（hybrid2）使用样本进行分类，但在训练期间不使用蒸馏损失。第三种（hybrid3）既不使用蒸馏损失也不使用样本进行分类，但在表示学习中使用了样本。为了比较，我们再次包括 LwF.MC，它使用蒸馏，但根本不使用样本。表 1a 总结了结果，作为增量训练所有步骤的平均分类准确性。可以看到，混合设置主要在 iCaRL 和 LwF.MC 之间取得结果，表明 iCaRL 的所有新组件都对其良好性能做出了贡献。特别是，iCaRL 与 hybrid1 的比较表明，均值样本分类器对于较小的批次大小特别有利，即当执行更多表示更新时。比较 iCaRL 和 hybrid2，人们可以看到对于非常小的类别批次大小，蒸馏甚至可能与仅使用原型相比损害分类准确性。对于较大的批次大小和较少的更新，使用蒸馏损失显然是有利的。最后，比较 hybrid3 与 LwF.MC 的结果清楚地表明了样本在防止灾难性遗忘中的有效性。在第二组实验中，我们研究了使用均值样本作为分类原型而不是最近类均值（NCM）规则会损失多少准确性。对于后者，我们使用未修改的 iCaRL 学习表示，但使用 NCM 对图像进行分类，其中类均值在每次表示更新后使用当前特征提取器重新计算。请注意，这需要存储所有训练数据，因此不会作为类增量方法。表 1b 显示了 iCaRL 和 NCM 之间只有微小差异，证实了 iCaRL 可靠地识别代表性样本。图 4 说明了不同内存预算的影响，比较了 iCaRL 与表 1a 中的 hybrid1 分类器和表 1b 中的 NCM 分类器。所有方法都从更大的内存预算中受益，表明 iCaRL 的表示学习步骤确实从更多的原型中受益。如果有足够的原型（这里至少 1000 个），iCaRL 的均值样本分类器与 NCM 分类器表现相似，而通过网络输出进行分类则没有竞争力。</p>
+<h2 id="5-结论">5. 结论<a class="anchor-link" href="#5-结论" title="Permanent link">&para;</a></h2>
+<p>我们介绍了 iCaRL，这是一种类增量学习策略，它同时学习分类器和特征表示。iCaRL 的三个主要组成部分是：1) 最近均值样本分类器，它对数据表示的变化具有鲁棒性，同时只需要存储每个类别的少量样本，2) 基于放牧的优先样本选择步骤，3) 使用样本结合蒸馏的表示学习步骤，以避免灾难性遗忘。在 CIFAR-100 和 ImageNet ILSVRC 2012 数据上的实验表明，iCaRL 能够在其他方法迅速失败的长时间内逐步学习。iCaRL 强大的分类结果的主要原因是其使用样本图像。虽然直观上可以认为依赖存储的样本以及网络参数可能是有益的，但我们仍然发现这种效果在类增量设置中非常明显。因此，我们假设其他架构也应该能够从结合网络参数和样本中受益，特别是考虑到可以存储数以千计的图像（以压缩形式）的内存需求与当前深度网络的大小相当。尽管取得了有希望的结果，类增量分类还远远没有解决。特别是，iCaRL 的性能仍然低于在批量设置中训练的系统所达到的性能，即所有类别的所有训练示例同时可用。在未来的工作中，我们计划更详细地分析原因，以期缩小剩余的性能差距。我们还计划研究分类器不能以原始形式存储任何训练数据的相关场景，例如出于隐私原因。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

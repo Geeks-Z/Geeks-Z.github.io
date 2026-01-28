@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命令行的艺术</title>
+    <meta name="description" content="命令行的艺术 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#基础">基础</a></li>
+<li><a href="#日常使用">日常使用</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>命令行的艺术</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> ProgramNotes/01.Linux</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>转载自 https://github.com/jlevy/the-art-of-command-line</p>
+</blockquote>
+<p><em><a href="README-cs.md">Čeština</a> ∙ <a href="README-de.md">Deutsch</a> ∙ <a href="README-el.md">Ελληνικά</a> ∙ <a href="../README.md">English</a> ∙ <a href="README-es.md">Español</a> ∙ <a href="README-fr.md">Français</a> ∙ <a href="README-id.md">Indonesia</a> ∙ <a href="README-it.md">Italiano</a> ∙ <a href="README-ja.md">日本語</a> ∙ <a href="README-ko.md">한국어</a> ∙ <a href="README-pt.md">Português</a> ∙ <a href="README-ro.md">Română</a> ∙ <a href="README-ru.md">Русский</a> ∙ <a href="README-sl.md">Slovenščina</a> ∙ <a href="README-uk.md">Українська</a> ∙ <a href="README-zh.md">简体中文</a> ∙ <a href="README-zh-Hant.md">繁體中文</a></em></p>
+<h1 id="命令行的艺术">命令行的艺术<a class="anchor-link" href="#命令行的艺术" title="Permanent link">&para;</a></h1>
+<p><img alt="img" src="https://gitter.im/jlevy/the-art-of-command-line?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge" /></p>
+<ul>
+<li><a href="#前言">前言</a></li>
+<li><a href="#基础">基础</a></li>
+<li><a href="#日常使用">日常使用</a></li>
+<li><a href="#文件及数据处理">文件及数据处理</a></li>
+<li><a href="#系统调试">系统调试</a></li>
+<li><a href="#单行脚本">单行脚本</a></li>
+<li><a href="#冷门但有用">冷门但有用</a></li>
+<li><a href="#仅限-os-x-系统">仅限 OS X 系统</a></li>
+<li><a href="#仅限-windows-系统">仅限 Windows 系统</a></li>
+<li><a href="#更多资源">更多资源</a></li>
+<li><a href="#免责声明">免责声明</a></li>
+</ul>
+<p><img alt="img" src="https://raw.githubusercontent.com/jlevy/the-art-of-command-line/master/cowsay.png" /></p>
+<p>熟练使用命令行是一种常常被忽视，或被认为难以掌握的技能，但实际上，它会提高你作为工程师的灵活性以及生产力。本文是一份我在 Linux 上工作时，发现的一些命令行使用技巧的摘要。有些技巧非常基础，而另一些则相当复杂，甚至晦涩难懂。这篇文章并不长，但当你能够熟练掌握这里列出的所有技巧时，你就学会了很多关于命令行的东西了。</p>
+<p>这篇文章是<a href="AUTHORS.md">许多作者和译者</a>共同的成果。<br />
+这里的部分内容<br />
+<a href="http://www.quora.com/What-are-some-lesser-known-but-useful-Unix-commands">首次</a><br />
+<a href="http://www.quora.com/What-are-the-most-useful-Swiss-army-knife-one-liners-on-Unix">出现</a><br />
+于 <a href="http://www.quora.com/What-are-some-time-saving-tips-that-every-Linux-user-should-know">Quora</a>，<br />
+但已经迁移到了 Github，并由众多高手做出了许多改进。<br />
+如果你在本文中发现了错误或者存在可以改善的地方，请<a href="/CONTRIBUTING.md"><strong>贡献你的一份力量</strong></a>。</p>
+<h2 id="前言">前言<a class="anchor-link" href="#前言" title="Permanent link">&para;</a></h2>
+<p>涵盖范围：</p>
+<ul>
+<li>这篇文章不仅能帮助刚接触命令行的新手，而且对具有经验的人也大有裨益。本文致力于做到<em>覆盖面广</em>（涉及所有重要的内容），<em>具体</em>（给出具体的最常用的例子），以及<em>简洁</em>（避免冗余的内容，或是可以在其他地方轻松查到的细枝末节）。在特定应用场景下，本文的内容属于基本功或者能帮助您节约大量的时间。</li>
+<li>本文主要为 Linux 所写，但在<a href="#仅限-os-x-系统">仅限 OS X 系统</a>章节和<a href="#仅限-windows-系统">仅限 Windows 系统</a>章节中也包含有对应操作系统的内容。除去这两个章节外，其它的内容大部分均可在其他类 Unix 系统或 OS X，甚至 Cygwin 中得到应用。</li>
+<li>本文主要关注于交互式 Bash，但也有很多技巧可以应用于其他 shell 和 Bash 脚本当中。</li>
+<li>除去“标准的”Unix 命令，本文还包括了一些依赖于特定软件包的命令（前提是它们具有足够的价值）。</li>
+</ul>
+<p>注意事项：</p>
+<ul>
+<li>为了能在一页内展示尽量多的东西，一些具体的信息可以在引用的页面中找到。我们相信机智的你知道如何使用 Google 或者其他搜索引擎来查阅到更多的详细信息。文中部分命令需要您使用 <code>apt-get</code>，<code>yum</code>，<code>dnf</code>，<code>pacman</code>，<br />
+<code>pip</code> 或 <code>brew</code>（以及其它合适的包管理器）来安装依赖的程序。</li>
+<li>遇到问题的话，请尝试使用 <a href="http://explainshell.com/">Explainshell</a> 去获取相关命令、参数、管道等内容的解释。</li>
+</ul>
+<h2 id="基础">基础<a class="anchor-link" href="#基础" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>学习 Bash 的基础知识。具体地，在命令行中输入 <code>man bash</code> 并至少全文浏览一遍; 它理解起来很简单并且不冗长。其他的 shell 可能很好用，但 Bash 的功能已经足够强大并且到几乎总是可用的（ 如果你<em>只</em>学习 zsh，fish 或其他的 shell 的话，在你自己的设备上会显得很方便，但过度依赖这些功能会给您带来不便，例如当你需要在服务器上工作时）。</p>
+</li>
+<li>
+<p>熟悉至少一个基于文本的编辑器。通常而言 Vim （<code>vi</code>） 会是你最好的选择，毕竟在终端中编辑文本时 Vim 是最好用的工具（甚至大部分情况下 Vim 要比 Emacs、大型 IDE 或是炫酷的编辑器更好用）。</p>
+</li>
+<li>
+<p>学会如何使用 <code>man</code> 命令去阅读文档。学会使用 <code>apropos</code> 去查找文档。知道有些命令并不对应可执行文件，而是在 Bash 内置好的，此时可以使用 <code>help</code> 和 <code>help -d</code> 命令获取帮助信息。你可以用 <code>type 命令</code> 来判断这个命令到底是可执行文件、shell 内置命令还是别名。</p>
+</li>
+<li>
+<p>学会使用 <code>&gt;</code> 和 <code>&lt;</code> 来重定向输出和输入，学会使用 <code>|</code> 来重定向管道。明白 <code>&gt;</code> 会覆盖了输出文件而 <code>&gt;&gt;</code> 是在文件末添加。了解标准输出 stdout 和标准错误 stderr。</p>
+</li>
+<li>
+<p>学会使用通配符 <code>*</code> （或许再算上 <code>?</code> 和 <code>[</code>...<code>]</code>） 和引用以及引用中 <code>'</code> 和 <code>"</code> 的区别（后文中有一些具体的例子）。</p>
+</li>
+<li>
+<p>熟悉 Bash 中的任务管理工具：<code>&amp;</code>，<strong>ctrl-z</strong>，<strong>ctrl-c</strong>，<code>jobs</code>，<code>fg</code>，<code>bg</code>，<code>kill</code> 等。</p>
+</li>
+<li>
+<p>学会使用 <code>ssh</code> 进行远程命令行登录，最好知道如何使用 <code>ssh-agent</code>，<code>ssh-add</code> 等命令来实现基础的无密码认证登录。</p>
+</li>
+<li>
+<p>学会基本的文件管理工具：<code>ls</code> 和 <code>ls -l</code> （了解 <code>ls -l</code> 中每一列代表的意义），<code>less</code>，<code>head</code>，<code>tail</code> 和 <code>tail -f</code> （甚至 <code>less +F</code>），<code>ln</code> 和 <code>ln -s</code> （了解硬链接与软链接的区别），<code>chown</code>，<code>chmod</code>，<code>du</code> （硬盘使用情况概述：<code>du -hs *</code>）。 关于文件系统的管理，学习 <code>df</code>，<code>mount</code>，<code>fdisk</code>，<code>mkfs</code>，<code>lsblk</code>。知道 inode 是什么（与 <code>ls -i</code> 和 <code>df -i</code> 等命令相关）。</p>
+</li>
+<li>
+<p>学习基本的网络管理工具：<code>ip</code> 或 <code>ifconfig</code>，<code>dig</code>。</p>
+</li>
+<li>
+<p>学习并使用一种版本控制管理系统，例如 <code>git</code>。</p>
+</li>
+<li>
+<p>熟悉正则表达式，学会使用 <code>grep</code>／<code>egrep</code>，它们的参数中 <code>-i</code>，<code>-o</code>，<code>-v</code>，<code>-A</code>，<code>-B</code> 和 <code>-C</code> 这些是很常用并值得认真学习的。</p>
+</li>
+<li>
+<p>学会使用 <code>apt-get</code>，<code>yum</code>，<code>dnf</code> 或 <code>pacman</code> （具体使用哪个取决于你使用的 Linux 发行版）来查找和安装软件包。并确保你的环境中有 <code>pip</code> 来安装基于 Python 的命令行工具 （接下来提到的部分程序使用 <code>pip</code> 来安装会很方便）。</p>
+</li>
+</ul>
+<h2 id="日常使用">日常使用<a class="anchor-link" href="#日常使用" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>在 Bash 中，可以通过按 <strong>Tab</strong> 键实现自动补全参数，使用 <strong>ctrl-r</strong> 搜索命令行历史记录（按下按键之后，输入关键字便可以搜索，重复按下 <strong>ctrl-r</strong> 会向后查找匹配项，按下 <strong>Enter</strong> 键会执行当前匹配的命令，而按下右方向键会将匹配项放入当前行中，不会直接执行，以便做出修改）。</p>
+</li>
+<li>
+<p>在 Bash 中，可以按下 <strong>ctrl-w</strong> 删除你键入的最后一个单词，<strong>ctrl-u</strong> 可以删除行内光标所在位置之前的内容，<strong>alt-b</strong> 和 <strong>alt-f</strong> 可以以单词为单位移动光标，<strong>ctrl-a</strong> 可以将光标移至行首，<strong>ctrl-e</strong> 可以将光标移至行尾，<strong>ctrl-k</strong> 可以删除光标至行尾的所有内容，<strong>ctrl-l</strong> 可以清屏。键入 <code>man readline</code> 可以查看 Bash 中的默认快捷键。内容有很多，例如 <strong>alt-.</strong> 循环地移向前一个参数，而 <strong>alt-*</strong> 可以展开通配符。</p>
+</li>
+<li>
+<p>你喜欢的话，可以执行 <code>set -o vi</code> 来使用 vi 风格的快捷键，而执行 <code>set -o emacs</code> 可以把它改回来。</p>
+</li>
+<li>
+<p>为了便于编辑长命令，在设置你的默认编辑器后（例如 <code>export EDITOR=vim</code>），<strong>ctrl-x</strong> <strong>ctrl-e</strong> 会打开一个编辑器来编辑当前输入的命令。在 vi 风格下快捷键则是 <strong>escape-v</strong>。</p>
+</li>
+<li>
+<p>键入 <code>history</code> 查看命令行历史记录，再用 <code>!n</code>（<code>n</code> 是命令编号）就可以再次执行。其中有许多缩写，最有用的大概就是 <code>!$</code>， 它用于指代上次键入的参数，而 <code>!!</code> 可以指代上次键入的命令了（参考 man 页面中的“HISTORY EXPANSION”）。不过这些功能，你也可以通过快捷键 <strong>ctrl-r</strong> 和 <strong>alt-.</strong> 来实现。</p>
+</li>
+<li>
+<p><code>cd</code> 命令可以切换工作路径，输入 <code>cd \~</code> 可以进入 home 目录。要访问你的 home 目录中的文件，可以使用前缀 <code>\~</code>（例如 <code>\~/.bashrc</code>）。在 <code>sh</code> 脚本里则用环境变量 <code>$HOME</code> 指代 home 目录的路径。</p>
+</li>
+<li>
+<p>回到前一个工作路径：<code>cd -</code>。</p>
+</li>
+<li>
+<p>如果你输入命令的时候中途改了主意，按下 <strong>alt-#</strong> 在行首添加 <code>#</code> 把它当做注释再按下回车执行（或者依次按下 <strong>ctrl-a</strong>， <strong>#</strong>， <strong>enter</strong>）。这样做的话，之后借助命令行历史记录，你可以很方便恢复你刚才输入到一半的命令。</p>
+</li>
+<li>
+<p>使用 <code>xargs</code> （ 或 <code>parallel</code>）。他们非常给力。注意到你可以控制每行参数个数（<code>-L</code>）和最大并行数（<code>-P</code>）。如果你不确定它们是否会按你想的那样工作，先使用 <code>xargs echo</code> 查看一下。此外，使用 <code>-I{}</code> 会很方便。例如：</p>
+</li>
+</ul>
+<pre><code class="language-bash">      find . -name '*.py' | xargs grep some_function
+      cat hosts | xargs -I{} ssh root@{} hostname
+</code></pre>
+<ul>
+<li>
+<p><code>pstree -p</code> 以一种优雅的方式展示进程树。</p>
+</li>
+<li>
+<p>使用 <code>pgrep</code> 和 <code>pkill</code> 根据名字查找进程或发送信号（<code>-f</code> 参数通常有用）。</p>
+</li>
+<li>
+<p>了解你可以发往进程的信号的种类。比如，使用 <code>kill -STOP [pid]</code> 停止一个进程。使用 <code>man 7 signal</code> 查看详细列表。</p>
+</li>
+<li>
+<p>使用 <code>nohup</code> 或 <code>disown</code> 使一个后台进程持续运行。</p>
+</li>
+<li>
+<p>使用 <code>netstat -lntp</code> 或 <code>ss -plat</code> 检查哪些进程在监听端口（默认是检查 TCP 端口; 添加参数 <code>-u</code> 则检查 UDP 端口）或者 <code>lsof -iTCP -sTCP:LISTEN -P -n</code> (这也可以在 OS X 上运行)。</p>
+</li>
+<li>
+<p><code>lsof</code> 来查看开启的套接字和文件。</p>
+</li>
+<li>
+<p>使用 <code>uptime</code> 或 <code>w</code> 来查看系统已经运行多长时间。</p>
+</li>
+<li>
+<p>使用 <code>alias</code> 来创建常用命令的快捷形式。例如：<code>alias ll='ls -latr'</code> 创建了一个新的命令别名 <code>ll</code>。</p>
+</li>
+<li>
+<p>可以把别名、shell 选项和常用函数保存在 <code>\~/.bashrc</code>，具体看下这篇<a href="http://superuser.com/a/183980/7106">文章</a>。这样做的话你就可以在所有 shell 会话中使用你的设定。</p>
+</li>
+<li>
+<p>把环境变量的设定以及登陆时要执行的命令保存在 <code>\~/.bash_profile</code>。而对于从图形界面启动的 shell 和 <code>cron</code> 启动的 shell，则需要单独配置文件。</p>
+</li>
+<li>
+<p>要想在几台电脑中同步你的配置文件（例如 <code>.bashrc</code> 和 <code>.bash_profile</code>），可以借助 Git。</p>
+</li>
+<li>
+<p>当变量和文件名中包含空格的时候要格外小心。Bash 变量要用引号括起来，比如 <code>"<span class="math-inline">FOO"</code>。尽量使用 <code>-0</code> 或 <code>-print0</code> 选项以便用 NULL 来分隔文件名，例如 <code>locate -0 pattern | xargs -0 ls -al</code> 或 <code>find / -print0 -type d | xargs -0 ls -al</code>。如果 for 循环中循环访问的文件名含有空字符（空格、tab 等字符），只需用 <code>IFS=</span>'\n'</code> 把内部字段分隔符设为换行符。</p>
+</li>
+<li>
+<p>在 Bash 脚本中，使用 <code>set -x</code> 去调试输出（或者使用它的变体 <code>set -v</code>，它会记录原始输入，包括多余的参数和注释）。尽可能地使用严格模式：使用 <code>set -e</code> 令脚本在发生错误时退出而不是继续运行；使用 <code>set -u</code> 来检查是否使用了未赋值的变量；试试 <code>set -o pipefail</code>，它可以监测管道中的错误。当牵扯到很多脚本时，使用 <code>trap</code> 来检测 ERR 和 EXIT。一个好的习惯是在脚本文件开头这样写，这会使它能够检测一些错误，并在错误发生时中断程序并输出信息：</p>
+</li>
+</ul>
+<pre><code class="language-bash">      set -euo pipefail
+      trap &quot;echo 'error: Script failed: see failed command above'&quot; ERR
+</code></pre>
+<ul>
+<li>在 Bash 脚本中，子 shell（使用括号 <code>(...)</code>）是一种组织参数的便捷方式。一个常见的例子是临时地移动工作路径，代码如下：</li>
+</ul>
+<pre><code class="language-bash">      # do something in current dir
+      (cd /some/other/dir &amp;&amp; other-command)
+      # continue in original dir
+</code></pre>
+<ul>
+<li>
+<p>在 Bash 中，变量有许多的扩展方式。<code><span class="math-inline">{name:?error message}</code> 用于检查变量是否存在。此外，当 Bash 脚本只需要一个参数时，可以使用这样的代码 <code>input_file=</span>{1:?usage: <span class="math-inline">0 input_file}</code>。在变量为空时使用默认值：<code></span>{name:-default}</code>。如果你要在之前的例子中再加一个（可选的）参数，可以使用类似这样的代码 <code>output_file=<span class="math-inline">{2:-logfile}</code>，如果省略了 \</span>2，它的值就为空，于是 <code>output_file</code> 就会被设为 <code>logfile</code>。数学表达式：<code>i=<span class="math-inline">(( (i + 1) % 5 ))</code>。序列：<code>{1..10}</code>。截断字符串：<code></span>{var%suffix}</code> 和 <code><span class="math-inline">{var#prefix}</code>。例如，假设 <code>var=foo.pdf</code>，那么 <code>echo </span>{var%.pdf}.txt</code> 将输出 <code>foo.txt</code>。</p>
+</li>
+<li>
+<p>使用括号扩展（<code>{</code>...<code>}</code>）来减少输入相似文本，并自动化文本组合。这在某些情况下会很有用，例如 <code>mv foo.{txt,pdf} some-dir</code>（同时移动两个文件），<code>cp somefile{,.bak}</code>（会被扩展成 <code>cp somefile somefile.bak</code>）或者 <code>mkdir -p test-{a,b,c}/subtest-{1,2,3}</code>（会被扩展成所有可能的组合，并创建一个目录树）。</p>
+</li>
+<li>
+<p>通过使用 <code>&lt;(some command)</code> 可以将输出视为文件。例如，对比本地文件 <code>/etc/hosts</code> 和一个远程文件：</p>
+</li>
+</ul>
+<pre><code class="language-bash">      diff /etc/hosts &lt;(ssh somehost cat /etc/hosts)
+</code></pre>
+<ul>
+<li>编写脚本时，你可能会想要把代码都放在大括号里。缺少右括号的话，代码就会因为语法错误而无法执行。如果你的脚本是要放在网上分享供他人使用的，这样的写法就体现出它的好处了，因为这样可以防止下载不完全代码被执行。</li>
+</ul>
+<pre><code class="language-bash">{
+      # 在这里写代码
+}
+</code></pre>
+<ul>
+<li>
+<p>了解 Bash 中的“here documents”，例如 <code>cat &lt;&lt;EOF ...</code>。</p>
+</li>
+<li>
+<p>在 Bash 中，同时重定向标准输出和标准错误：<code>some-command &gt;logfile 2&gt;&amp;1</code> 或者 <code>some-command &amp;&gt;logfile</code>。通常，为了保证命令不会在标准输入里残留一个未关闭的文件句柄捆绑在你当前所在的终端上，在命令后添加 `</p>
+</li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

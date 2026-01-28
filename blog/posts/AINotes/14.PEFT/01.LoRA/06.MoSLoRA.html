@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#kimi全文翻译-arrow_down">Kimi全文翻译 :arrow_down:</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-预备知识和动机">2. 预备知识和动机</a><ul>
+<li><a href="#21-lora-和子空间视角">2.1 LoRA 和子空间视角</a></li>
+<li><a href="#22-混合两个子空间">2.2 混合两个子空间</a></li>
+</ul>
+</li>
+<li><a href="#3-方法论">3. 方法论</a><ul>
+<li><a href="#31-更细粒度的子空间">3.1 更细粒度的子空间</a></li>
+<li><a href="#32-混合器的初始化策略">3.2 混合器的初始化策略</a></li>
+<li><a href="#33-与专家混合的关系">3.3 与专家混合的关系</a></li>
+</ul>
+</li>
+<li><a href="#4-实验与分析">4. 实验与分析</a><ul>
+<li><a href="#41-常识推理">4.1 常识推理</a></li>
+<li><a href="#42-视觉指令调整">4.2 视觉指令调整</a></li>
+<li><a href="#43-主题驱动生成">4.3 主题驱动生成</a></li>
+</ul>
+</li>
+<li><a href="#5-相关工作">5. 相关工作</a><ul>
+<li><a href="#51-参数高效微调">5.1 参数高效微调</a></li>
+<li><a href="#52-lora-及其变体">5.2 LoRA 及其变体</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6 结论</a></li>
+<li><a href="#限制">限制</a></li>
+<li><a href="#伦理声明">伦理声明</a></li>
+<li><a href="#致谢">致谢</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/14.PEFT/01.LoRA</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="kimi全文翻译-arrow_down">Kimi全文翻译 :arrow_down:<a class="anchor-link" href="#kimi全文翻译-arrow_down" title="Permanent link">&para;</a></h2>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>在本文中，我们介绍了一种受子空间启发的低秩适应（LoRA）方法，该方法计算效率高，易于实现，并且可以轻松应用于大型语言、多模态和扩散模型。最初，我们将 LoRA 的权重等价地分解为两个子空间，并发现简单地混合它们可以增强性能。为了研究这种现象，我们通过细粒度的子空间视角重新审视它，表明这种修改等同于使用固定混合器融合子空间。为了更加灵活，我们与原始 LoRA 权重一起学习混合器，并称之为子空间混合 LoRA（MoSLoRA）。MoSLoRA 在不同模态的任务上一致性地优于 LoRA，包括常识推理、视觉指令调整和主题驱动的文本到图像生成，证明了其有效性和鲁棒性。代码可在 github 上找到。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>大型语言模型（LLMs），如 GPT-4（OpenAI, 2023）、LLaMA 3（AI@Meta, 2024）和 InternLM2（Cai et al., 2024），已在多个学科中展现出卓越的性能（Rozière et al., 2023; Thirunavukarasu et al., 2023）。这种强大的能力通常归因于训练数据和模型参数规模的增加。然而，这也给通过完全微调所有参数来适应这些 LLMs 的下游任务带来了越来越大的挑战。为了解决这个问题，参数高效微调（PEFT）已经发展起来（Hu et al., 2022; Lester et al., 2021; He et al., 2022），以最小化优化参数的数量，同时尽可能地实现相当的性能。在这些方法中，LoRA（Hu et al., 2022）因其简单和有效而越来越受欢迎，它提出了更新额外的低秩分支，并在推理期间将其合并到冻结的原始权重中。如图 1 所示，对于原始权重矩阵 <span class="math-inline">W_0 \in \mathbb{R}^{d_1 \times d_2}</span>，额外的低秩分支由一个下投影 <span class="math-inline">A \in \mathbb{R}^{d_1 \times r}</span> 和一个上投影 <span class="math-inline">B \in \mathbb{R}^{r \times d_2}</span> 组成，其中 <span class="math-inline">r \ll \min(d_1, d_2)</span>。因此，更新的参数数量从 <span class="math-inline">d_1 \times d_2</span> 减少到 <span class="math-inline">(d_1 + d_2)r</span>。在本文中，我们首先将 LoRA 中的子空间定义为具有较小秩值的并行组件，类似于多头注意力（MHA）设计中的子空间（Vaswani et al., 2017）。之后，我们可以通过结构重新参数化（Wu et al., 2023; Ding et al., 2021）将原始 LoRA 分解为多个子空间。图 2 显示了分解为两个子空间的过程。有趣的是，我们发现简单地混合这两个子空间在常识推理任务中表现更好。</p>
+<h2 id="2-预备知识和动机">2. 预备知识和动机<a class="anchor-link" href="#2-预备知识和动机" title="Permanent link">&para;</a></h2>
+<h3 id="21-lora-和子空间视角">2.1 LoRA 和子空间视角<a class="anchor-link" href="#21-lora-和子空间视角" title="Permanent link">&para;</a></h3>
+<p>基于模型适应期间权重更新表现出低内在秩的假设，LoRA（Hu et al., 2022）旨在通过两个低秩矩阵来模拟权重更新。对于预训练的权重矩阵 <span class="math-inline">W_0 \in \mathbb{R}^{d_1 \times d_2}</span> 和任意输入 <span class="math-inline">x</span>，他们修改前向传递如下：<br />
+<div class="math-display"><br />
+    xW_0 + x\Delta W = xW_0 + xAB,<br />
+</div><br />
+其中 <span class="math-inline">A \in \mathbb{R}^{d_1 \times r}</span>，<span class="math-inline">B \in \mathbb{R}^{r \times d_2}</span>，且 <span class="math-inline">r \ll \min(d_1, d_2)</span>。通常，<span class="math-inline">A</span> 初始化为高斯矩阵，<span class="math-inline">B</span> 初始化为零矩阵，以便在开始时 <span class="math-inline">\Delta W</span> 为零。在训练期间，原始权重 <span class="math-inline">W_0</span> 被冻结，而 <span class="math-inline">A</span> 和 <span class="math-inline">B</span> 包含可训练参数。之后，<span class="math-inline">A</span> 和 <span class="math-inline">B</span> 可以在推理期间合并到 <span class="math-inline">W_0</span> 中，因此不引入任何延迟。在本文中，我们通过结构重新参数化将 LoRA 分解为子空间，其中子空间被定义为具有较小秩值的并行组件。图 2 部分 a 显示了两个子空间的过程。具体来说，我们通过列将 <span class="math-inline">A</span> 分解为两部分（即 <span class="math-inline">A_1</span> 和 <span class="math-inline">A_2</span>），并通过行将 <span class="math-inline">B</span> 分解为 <span class="math-inline">B_1</span> 和 <span class="math-inline">B_2</span>。因此，我们可以轻松得到：<br />
+<div class="math-display"><br />
+    xAB = x[A_1 \ A_2] \ [B_1 \ B_2] = x(A_1B_1 + A_2B_2),<br />
+</div><br />
+其中 <span class="math-inline">A_1B_1</span> 和 <span class="math-inline">A_2B_2</span> 是两个子空间。在两个子空间视角中，原始 LoRA 等于两个子空间的和。此外，如果我们分别将 <span class="math-inline">A</span> 和 <span class="math-inline">B</span> 分割成更多的部分，我们可以得到更细粒度的视角。</p>
+<h3 id="22-混合两个子空间">2.2 混合两个子空间<a class="anchor-link" href="#22-混合两个子空间" title="Permanent link">&para;</a></h3>
+<p>如图 2b 所示，我们可以通过将 <span class="math-inline">A_1</span> 和 <span class="math-inline">A_2</span> 的输出相加来简单地混合两个子空间。</p>
+<h2 id="3-方法论">3. 方法论<a class="anchor-link" href="#3-方法论" title="Permanent link">&para;</a></h2>
+<h3 id="31-更细粒度的子空间">3.1 更细粒度的子空间<a class="anchor-link" href="#31-更细粒度的子空间" title="Permanent link">&para;</a></h3>
+<p>受到混合两个子空间可以带来更好性能的观察结果的启发，我们重新审视了更细粒度的子空间（即，秩=1）视角下的两个子空间混合 LoRA。具体来说，我们将 <span class="math-inline">A \in \mathbb{R}^{d_1 \times r}</span> 和 <span class="math-inline">B \in \mathbb{R}^{r \times d_2}</span> 分解为 <span class="math-inline">r</span> 个子空间（秩=1），可以公式化为：<br />
+<div class="math-display"><br />
+    A = [A_1 \ A_2 \ \cdots \ A_r], \quad B^T = [B_1^T \ B_2^T \ \cdots \ B_r^T],<br />
+</div><br />
+其中 <span class="math-inline">A_i \in \mathbb{R}^{d_1 \times 1}</span> 和 <span class="math-inline">B_i \in \mathbb{R}^{1 \times d_2}</span> 对于 <span class="math-inline">1 \leq i \leq r</span>。如图 3 所示，我们可以将原始 LoRA 视为：<br />
+<div class="math-display"><br />
+    xAB = x \sum_{i=1}^r A_iB_i = xAI_{r \times r}B,<br />
+</div><br />
+其中 <span class="math-inline">I_{r \times r} \in \mathbb{R}^{r \times r}</span> 表示单位矩阵。同时，两个子空间混合 LoRA 等于：<br />
+<div class="math-display"><br />
+    x \sum_{i=1}^{r/2} (A_i + A_{i+r/2})(B_i + B_{i+r/2}) = xA \begin{bmatrix} I_{r/2 \times r/2} &amp; I_{r/2 \times r/2} \ I_{r/2 \times r/2} &amp; I_{r/2 \times r/2} \end{bmatrix} B.<br />
+</div><br />
+有趣的是，我们可以发现方程 5 和方程 6 共享相同的范式：<br />
+<div class="math-display"><br />
+    AWB,<br />
+</div><br />
+其中 <span class="math-inline">W \in \mathbb{R}^{r \times r}</span>，我们定义 <span class="math-inline">W</span> 为混合子空间的混合器权重。对于原始 LoRA，混合器是固定的单位矩阵，融合 <span class="math-inline">r</span> 个子空间。对于两个子空间混合 LoRA，混合器是一个固定的蝴蝶因子，融合 <span class="math-inline">2r</span> 个子空间，这比 LoRA 多。因此，我们提出了 MoSLoRA，采用可训练的混合器融合所有可能的子空间。如表 2 所示，MoSLoRA 混合了 <span class="math-inline">r^2</span> 个子空间（秩=1）的信息，使用可训练权重，比 LoRA 更具模型信息和灵活性。</p>
+<h3 id="32-混合器的初始化策略">3.2 混合器的初始化策略<a class="anchor-link" href="#32-混合器的初始化策略" title="Permanent link">&para;</a></h3>
+<p>在提出的 MoSLoRA 中，我们采用可训练的混合器来融合所有可能的子空间。然而，MoSLoRA 的系统是线性的，不良的初始化会妨碍学习（He et al., 2015）。在 MoSLoRA 中，我们遵循 LoRA 中的设置，使用 Kaiming 均匀分布初始化 <span class="math-inline">A</span>，并将 <span class="math-inline">B</span> 初始化为零矩阵。对于混合器权重 <span class="math-inline">W</span>，我们比较了各种初始化策略，包括零矩阵、单位矩阵、正态分布、正交矩阵（Saxe et al., 2014）和 Kaiming 均匀分布（He et al., 2015）。微调的超参数可以在附录 B.1 中找到。表 3 报告了常识推理任务的结果。如果我们将混合器初始化为零矩阵，那么模型将不会收敛，因为所有的 <span class="math-inline">A</span>、<span class="math-inline">B</span> 和 <span class="math-inline">W</span> 都会得到零梯度（参见附录 C 以了解更多）。当将混合器初始化为单位矩阵并在训练期间更新时，性能与具有固定单位的原始 LoRA 相似（82.6 vs. 82.8）。此外，Kaiming 均匀分布和正交矩阵获得了强大的性能，因此我们将其适应为 MoSLoRA 中混合器的初始化。</p>
+<h3 id="33-与专家混合的关系">3.3 与专家混合的关系<a class="anchor-link" href="#33-与专家混合的关系" title="Permanent link">&para;</a></h3>
+<p>专家混合（MoE）方法旨在将一组参数划分为专家，并在训练和推理期间将输入样本路由到特定专家（Fedus et al., 2022a; Shi et al., 2024）。通常，他们采用路由器根据输入为每个专家生成分数，然后选择前 <span class="math-inline">k</span> 个专家（Fedus et al., 2022b; Lepikhin et al., 2021; DeepSeek-AI, 2024）。在本文中，我们提出了 MoSLoRA 来混合 LoRA 中的子空间，其中混合器中的 <span class="math-inline">w_{ij}</span> 可以被视为组合子空间 <span class="math-inline">A_iB_j</span> 的权重。然而，MoSLoRA 与 MoE 方法之间的差异如下：</p>
+<ul>
+<li>在 MoSLoRA 中，混合子空间的权重与输入无关，而 MoE 方法中的门控权重是输入特定的。</li>
+<li>在 MoSLoRA 中，我们同时适应所有子空间，而 MoE 方法从所有专家中选择前 <span class="math-inline">k</span> 个。</li>
+</ul>
+<h2 id="4-实验与分析">4. 实验与分析<a class="anchor-link" href="#4-实验与分析" title="Permanent link">&para;</a></h2>
+<h3 id="41-常识推理">4.1 常识推理<a class="anchor-link" href="#41-常识推理" title="Permanent link">&para;</a></h3>
+<p>我们对 LLaMA-3 8B 指令版本模型（AI@Meta, 2024）进行了常识推理问答任务的微调。我们首先使用 170k 训练样本（Hu et al., 2023）训练模型，然后在 8 个常识推理问答基准测试上测试微调后的模型（详见附录 A.1）。170k 训练集是这些基准测试的训练集的混合。除了 LoRA（Hu et al., 2022），我们还比较了 MoSLoRA 与各种基线，包括：1）LoKr（Yeh et al., 2023）使用 Kronecker 积进行矩阵分解的 <span class="math-inline">AB</span>；2）LoHa（Yeh et al., 2023）将原始 LoRA 分解为两个 LoRA 分支的 Hadamard 积；3）FLoRA（Si et al., 2024）引入了一个额外的核心，基于 Tucker 分解来维持与原始空间一致的拓扑结构 4）AdaLoRA（Zhang et al., 2023）以奇异值分解的形式参数化预训练权重矩阵的增量更新；以及 5）DoRA（Liu et al., 2024）将预训练权重分解为其大小和方向分量，并分别微调它们。所有实验都使用 1 个 Nvidia 80G A100 GPU 进行。超参数列在附录 B.1 中。基于表 3 的分析，我们按照 Kaiming 均匀分布初始化混合器。除了准确性，我们还报告了训练参数的数量和训练开销，包括时间和峰值 GPU 内存。表 4 显示了 8 个基准测试的结果。一些发现可以总结如下：</p>
+<ul>
+<li>MoSLoRA 优于所有基线，证明了混合子空间的有效性。具体来说，MoSLoRA 平均得分为 85.6，比 LoRA 的 82.8 高出 2.8 个百分点。此外，MoSLoRA 优于具有更高秩的 DoRA。</li>
+<li>与 LoRA 相比，MoSLoRA 需要的额外参数（少于 0.1M）和计算成本（少于 0.2 小时）可以忽略不计。同时，MoSLoRA 可以节省比 DoRA 少 44% 的训练时间，比 LoHa 少 68%。</li>
+<li>尽管 LoKr 通过 Kronecker 积减少了训练参数，但它需要比 MoSLoRA 多 3 倍的训练时间和 2 倍的 GPU 内存。此外，LoKr 的平均得分为 80.9，比 MoSLoRA 低 4.7 个百分点。</li>
+</ul>
+<p>更少的训练样本为了比较在更少样本设置下的性能，我们从原始的 170k 训练集中随机选择 12.5%/25%/50%/75% 的训练样本，并重复实验。如图 4 所示，更多的训练样本会带来更好的性能，MoSLoRA 在所有设置下都优于 LoRA。特别是，使用 50% 样本训练的 MoSLoRA 得分为 83.6，比使用 100% 样本的 LoRA 高出 1.8 个百分点。此外，随着训练样本的增加，MoSLoRA 和 LoRA 之间的性能差距变得更大，显示出 MoSLoRA 由于混合子空间而更好地模拟更复杂信息的优越性。</p>
+<h3 id="42-视觉指令调整">4.2 视觉指令调整<a class="anchor-link" href="#42-视觉指令调整" title="Permanent link">&para;</a></h3>
+<p>为了评估在多模态任务上的性能，我们对 LLaVA-1.5（Liu et al., 2023a）系列模型进行了视觉指令调整的微调，然后对模型进行了各种视觉问答基准测试。训练 LLaVA 有两个阶段：1）预训练一个两层 MLP 将视觉特征投影到语言空间，以及 2）优化 LLM 和视觉编码器（可选）进行视觉指令调整。在本文中，我们采用了 XTuner（Contributors, 2023b）提供的预训练投影器，并在 LLM 主干和视觉编码器上同时进行视觉指令调整。对于 LLM 主干，我们采用了 LLaMA3 8B（AI@Meta, 2024）和 InternLM2 7B（Cai et al., 2024），使用现成的投影器 3。对于视觉编码器，我们采用了 ViT 4（Dosovitskiy et al., 2021）大版本。由于资源有限，我们通过 LoRA/MoSLoRA 对 LLM 主干和视觉编码器进行了微调，而不是优化 LLM 中的所有参数。对于 InternLM2，我们采用了 4 位 QLoRA（Dettmers et al., 2023）和相应的 QMoSLoRA（QLoRA+MoSLoRA）。基于表 3 的结果，我们分别将混合器初始化为正交矩阵和 Kaiming 均匀分布。具体超参数，请参考附录 B.2。使用 4 个 Nvidia A100 80G GPU 进行微调大约需要 20 小时。视觉指令调整后，我们在 9 个流行基准测试上评估训练模型，包括 MMBench EN/CN（Liu et al., 2023b）、SEED Bench（Li et al., 2023a）、AI2D（Kembhavi et al., 2016）、SciQA（Lu et al., 2022b）、TextVQA（Singh et al., 2019）、MathVista testmini（Lu et al., 2023）、MM-Vet（Yu et al., 2023）和 MME（Fu et al., 2023）。所有评估都使用 VLMEvalKit（Contributors, 2023a）完成。请参考附录 A.2 以了解数据集和报告指标的详细信息。具体来说，我们将 MME 分数缩放到 100 以计算平均分数。表 5 显示了 9 个基准测试的结果。对于正交和 Kaiming 初始化，MoSLoRA 在各种基准测试上一致性地优于 LoRA。具体来说，MoSLoRA 在 InternnLM2+ViT 上的平均得分为 59.5，比 LoRA 高出 1.7 个百分点。此外，MoSLoRA 也优于与 4 位 QLoRA 结合时的 LoRA。它有效地展示了 MoSLoRA 与 QLoRA 的兼容性。因此，MoSLoRA 可以应用于与量化方法结合的低资源微调场景。总之，提出的 MoSLoRA 在各种设置中一致性地优于 LoRA，证明了其有效性和鲁棒性。</p>
+<p>更细粒度的能力此外，我们还在 MMbench EN/CN 测试集上的 6 个能力维度上可视化了标准化分数。如图 5 所示，我们可以观察到 MoSLoRA 在所有能力上的表现优于 LoRA，无论是英语还是中文场景，特别是在推理能力上。推理任务通常被认为更复杂和困难。与 LoRA 相比，MoSLoRA 混合了更多的子空间，因此更擅长处理更困难的任务，如逻辑推理。</p>
+<h3 id="43-主题驱动生成">4.3 主题驱动生成<a class="anchor-link" href="#43-主题驱动生成" title="Permanent link">&para;</a></h3>
+<p>我们进一步进行了实验，微调文本到图像扩散模型，进行主题驱动生成任务（Ruiz et al., 2023）。目标是根据给定提示生成遵循特定主题的图像，该主题在一些给定图像中定义。我们首先微调一个文本到图像模型，输入图像与包含唯一标识符的文本提示配对（例如，一张 [V] 猫的照片）。之后，我们可以使用包含唯一标识符的其他提示来生成相应的图像。图 6 显示了来自 DreamBooth 数据集（Ruiz et al., 2023）的一只猫的案例。我们通过 LoRA 和 MoSLoRA 对 SDXL5 模型（Podell et al., 2023）进行了微调。在 MoSLoRA 中，混合器被初始化为正交矩阵。在微调期间，学习率为 1e-4，批量大小为 4。我们训练模型 500 步，使用 1 个 80G A100 GPU 大约需要 16 分钟。在生成过程中，我们为给定提示推断 50 步。与原始 LoRA 相比，我们可以发现我们提出的 MoSLoRA 捕获了更多主题的细节，并更好地符合给定提示。具体来说，MoSLoRA 学习了关于给定猫的更多细节，包括脖子周围毛发的颜色和爪子的形状。同时，来自 MoSLoRA 的图像更符合给定提示，如湿的（因此成簇的）头发和漂浮的姿态（展开的手势）。</p>
+<p>人类评估我们还在生成的图像上进行了人类评估。首先，我们从 DreamBooth 数据集（Ruiz et al., 2023）中选择了四个主题（即猫、狗、灰色树懒毛绒玩具和罐头），并分别对 SDXL 模型进行了微调。然后，我们随机选择 8 个提示来生成相应的图像。之后，15 位人类专家被要求独立地为来自 LoRA 和 MoSLoRA 的配对图像评分胜利/平局/失败。在评估期间，我们打乱了这些配对，并且这些专家不知道每张图像的来源模型。我们采用了两个指标，包括 1）主题相似性定义为生成图像与给定图像之间的相似性，以及 2）提示一致性定义为提示与生成图像之间的一致性。表 6 报告了所有图像的平均分数。我们可以发现 MoSLoRA 在两个指标上都优于 LoRA。特别是，MoSLoRA 在提示一致性上的平均获胜比率为 45.1%，比 LoRA 高出 34.3 个百分点。请参考附录 D 以了解更多提示和来自 LoRA 和 MoSLoRA 的相应生成图像。</p>
+<h2 id="5-相关工作">5. 相关工作<a class="anchor-link" href="#5-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="51-参数高效微调">5.1 参数高效微调<a class="anchor-link" href="#51-参数高效微调" title="Permanent link">&para;</a></h3>
+<p>参数高效微调（PEFT），旨在更新一小部分参数以适应大型语言模型（LLMs），变得越来越重要。主流的 PEFT 方法可以分为：1）适配器基础方法（Houlsby et al., 2019; Lei et al., 2023），在变换器层之间插入模块；2）前缀调整方法（Li and Liang, 2021; Liu et al., 2021），将可调前缀向量添加到隐藏状态中；3）选择性方法（Zaken et al., 2022），选择部分参数进行更新；以及 4）低秩调整（LoRA）系列（Hu et al., 2022; Yeh et al., 2023），注入可训练的低秩分支来近似权重更新。在 LoRA 中，低秩分支可以在推理期间合并到原始权重中，因此不引入任何延迟。我们请读者参考 Han et al. (2024) 以获得更全面的调查。在本文中，我们专注于 LoRA 方法。</p>
+<h3 id="52-lora-及其变体">5.2 LoRA 及其变体<a class="anchor-link" href="#52-lora-及其变体" title="Permanent link">&para;</a></h3>
+<p>LoRA 的核心是更新可合并的低秩分支以模拟权重更新。Hu et al. (2022) 将分支初始化为两个低秩矩阵的乘积。以下变体可以分为：1）引入训练技巧，如设置不同的学习率（Hayou et al., 2024）和添加随机噪声（Lin et al., 2024）；2）搜索秩，如 DyLoRA（Valipour et al., 2023）和 AdaLoRA（Zhang et al., 2023）；以及 3）分支的新设计，如 LoKr（Yeh et al., 2023）、LoHa（Yeh et al., 2023）、VeRA（Kopiczko et al., 2023）、DoRA（Liu et al., 2024）和 FLoRA（Si et al., 2024）。LoKr 和 LoHa 分别使用 Kronecker 和 Hadamard 积替换原始矩阵乘积。DoRA 将预训练权重分解为其大小和方向分量，并分别微调它们。我们还注意到了一个非常近期的并行工作 FLoRA（Si et al., 2024）。MoSLoRA 和 FLoRA 之间的区别如下：1）初始化方法及其相应的动机：FLoRA 的动机是通过引入核心空间来维持原始高维参数空间的结构完整性（即，二维卷积）。不同地，MoSLoRA 的动机是基于第 2.2 节中的探索性实验观察，我们发现在更细粒度的子空间视角下，两个子空间混合 LoRA 有潜力学习复杂特征。因此，我们引入了一个额外的可训练混合器，初始化为 Kaiming 均匀分布或正交矩阵，我们通过实证（第 3.2 节）发现这对最终性能至关重要。2）分析和推导：我们的混合器设计来自于分析和推导两个子空间混合 LoRA 的过程。我们在更细粒度的视角（秩=1）和组合视角下重新审视两个子空间混合策略，然后我们发现 LoRA 和两个子空间混合 LoRA 等同于插入固定混合器矩阵。基于此，我们提出了 MoSLoRA，它采用可训练的混合器融合更多的子空间，更加灵活。3）模型和数据集：对于视觉指令调整任务，FLoRA 微调了 LLaVA-1.5-7B（基于 Vicuna-1.5-7B（Peng et al., 2023））并在七个视觉语言基准测试上进行评估：VQAv2（Goyal et al., 2019）、GQA（Hudson and Manning, 2019）、VisWiz（Gurari et al., 2018）、SQA（Lu et al., 2022a）、TextVQA（Singh et al., 2019）、POPE（Li et al., 2023b）和 MMBench（Liu et al., 2023b）。不同地，我们选择了 LLaMA3 8B 和 InternLM2 作为语言模型，并在 MMBench EN/CN（Liu et al., 2023b）、SEED Bench（Li et al., 2023a）、AI2D（Kembhavi et al., 2016）、SciQA（Lu et al., 2022b）、TextVQA（Singh et al., 2019）、MathVista testmini（Lu et al., 2023）、MM-Vet（Yu et al., 2023）和 MME（Fu et al., 2023）上评估微调模型。此外，对于语言模型，我们在 LLaMA3 8B 上评估 MoSLoRA，而 FLoRA 专注于 DeBERTaV3（He et al., 2023）。</p>
+<h2 id="6-结论">6 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>这项工作提出了一种新的 MoSLoRA 方法，用于参数高效微调。我们首先将 LoRA 分解为子空间，并发现简单地混合半秩子空间会带来更好的性能。之后，我们以更细粒度的视角（即，秩=1）重新审视原始 LoRA 和两个子空间混合策略，从而将两种方法统一为采用额外固定混合器。因此，我们提出了 MoSLoRA，它采用可训练的混合器融合更多信息，更加灵活。混合器需要的额外参数和计算成本可以忽略不计。在常识推理任务、视觉指令调整任务和主题驱动生成任务上的实验结果证明了所提出的 MoSLoRA 的有效性和鲁棒性。未来的工作，我们将考虑将 MoSLoRA 应用于更多任务。找到针对任务特定的混合器初始化方法以实现更快的收敛将是另一个有趣的话题。</p>
+<h2 id="限制">限制<a class="anchor-link" href="#限制" title="Permanent link">&para;</a></h2>
+<p>在本文中，我们在常识推理任务、视觉指令调整任务和主题驱动生成任务上进行了实验。LoRA 可以应用于更多场景，例如在微调稳定扩散模型时混合图像生成任务的风格。我们将这些任务留给未来的工作。</p>
+<h2 id="伦理声明">伦理声明<a class="anchor-link" href="#伦理声明" title="Permanent link">&para;</a></h2>
+<p>该项目旨在改进 LoRA 方法，并且可以用于主题驱动的文本到图像生成任务，其中用户可以微调稳定扩散模型以生成由输入图像定义的特定主题的图像。在某些情况下，恶意方可能会使用生成的图像误导观众。这是生成模型方法或内容操纵技术中的常见问题。</p>
+<h2 id="致谢">致谢<a class="anchor-link" href="#致谢" title="Permanent link">&para;</a></h2>
+<p>我们感谢所有匿名审稿人对提高我们论文的建设性反馈。我们感谢 Zenan Xu、Chaofan Tao、Chenchen Ding、Shuqi Wang 和 Zhengwu Liu 的富有成果的讨论。这项工作得到了香港特别行政区研究资助局（RGC）的主题研究计划（TRS）项目 T45-701/22R 的支持。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

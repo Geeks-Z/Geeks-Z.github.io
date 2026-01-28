@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-qkv三者之间的运算关系">1. Q、K、V三者之间的运算关系</a></li>
+<li><a href="#2-qkv是如何产生的与-multi-head-attention-有何关系">2. Q、K、V是如何产生的？与 Multi-Head Attention 有何关系？</a><ul>
+<li><a href="#21-w_qw_kw_v-三个权重矩阵的引入与作用">2.1 W_Q，W_K，W_V 三个权重矩阵的引入与作用</a></li>
+<li><a href="#22-multi-head-attention-多头注意力机制的引入">2.2 Multi-head Attention 多头注意力机制的引入</a></li>
+<li><a href="#23-embedding-空间中语义结构的多样性与-multi-head-多头之间的关系">2.3 Embedding 空间中语义结构的多样性与 Multi-Head 多头之间的关系</a></li>
+<li><a href="#24-被-multi-head-分解的语义逻辑子空间的重要意义">2.4 被 Multi-Head 分解的“语义逻辑子空间”的重要意义</a></li>
+</ul>
+</li>
+<li><a href="#3-multi-head-attention-多头注意力机制的运算方式">3. Multi-Head Attention 多头注意力机制的运算方式</a><ul>
+<li><a href="#31-先看看单头的attention-注意力机制的运算方式">3.1 先看看单头的“Attention 注意力机制”的运算方式</a></li>
+<li><a href="#32-multi-head-attention-多头注意力机制的运算方式">3.2 “Multi-Head Attention 多头注意力机制”的运算方式</a></li>
+<li><a href="#33wo矩阵的引入和作用">3.3W^{O}矩阵的引入和作用</a></li>
+</ul>
+</li>
+<li><a href="#4-对multi-head-attention-多头注意力机制最通俗易懂的比喻">4. 对“Multi-Head Attention 多头注意力机制”最通俗易懂的比喻</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/04.Transformer</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>文章来源：<a href="https://www.zhihu.com/question/592626839/answer/3304714001">为什么Self-Attention要通过线性变换计算Q K V，背后的原理或直观解释是什么？</a></p>
+</blockquote>
+<p>“线性变换”是机器学习中针对数据常用的变换方式，通过线性变换可以将数据进行降维、解耦、筛选精炼等操作。而 Transformer 中的“线性变换”有着十分独特且重要的意义，它是导致 Multi-Head Attention 机制得以成功运行的根基。</p>
+<p>但是要彻底了解 Transformer 中独特的“线性变换”机制，你首先要彻底理解 Q、K、V 三矩阵与生成它们的三个线性变换矩阵 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 之间的巧妙关系。</p>
+<h2 id="1-qkv三者之间的运算关系">1. Q、K、V三者之间的运算关系<a class="anchor-link" href="#1-qkv三者之间的运算关系" title="Permanent link">&para;</a></h2>
+<p>先举个不是100%贴切，但容易让我们理解的例子。<strong><span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 就好比当你在 YouTube 上搜索视频时，搜索引擎会将你的查询内容 <span class="math-inline">Q</span> （ Query 搜索栏中输入的查询内容）映射到数据库中与候选视频相关的一组关键字 <span class="math-inline">K</span>（Keys 视频标题、描述等）匹配相关性。最后系统通过计算，向你展示最匹配的 <span class="math-inline">K</span> 所对应的内容 <span class="math-inline">V</span>（ Values 值，在 YouTube 上给出的搜索结果为最匹配的视频的链接）</strong>。 而 Attention 机制就好比是对这全部查询过程的一个称呼。</p>
+<p>Attention 此时就是将你想要查询的 <span class="math-inline">Q</span> 与 YouTube 数据库中 <span class="math-inline">K</span> 进行比较，一对一地测量它们之间的相似度，并最终从最高相似度顺序向下依次返回并排列索引到的视频链接 <span class="math-inline">V</span>。</p>
+<p>所以，你也可以理解 Attention 为一个数据库查表的过程：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018696.jpg" />  </p>
+<p>在 YouTube 上搜索“a cute cat”相关的视频，系统运作的大体流程</p>
+<p>当然，以上只是一个对 <span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 这三个矩阵的作用的比喻。在具体的 NLP 领域，我们往往是要给 Transformer 大模型输入一个序列的文本，即一句话或一段话，甚至有可能是一篇论文、一本书的文字量。其中的每一个单词都会由一个 Embedding 向量来表达。这个 Attention 查表的过程，其实就是对海量的 Embedding 进行搜索查询的过程。</p>
+<p><strong><em>（实际上不是单词，而是 token。token 本质上与“单词”概念是有区别的，token 为词元，即最小语义单位。为了更精准地解释，下面我们将用正规的描述 “token” 来进行讲解。）</em></strong></p>
+<p>既然一个输入序列中，每一个 token 都只有一个 Embedding 向量来表达，那么，我们要如何获得针对这每一个 Embedding 向量进行上面所描述的 <span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 三者之间的搜索逻辑呢？</p>
+<hr />
+<h2 id="2-qkv是如何产生的与-multi-head-attention-有何关系">2. Q、K、V是如何产生的？与 Multi-Head Attention 有何关系？<a class="anchor-link" href="#2-qkv是如何产生的与-multi-head-attention-有何关系" title="Permanent link">&para;</a></h2>
+<p>在 Attention 机制中，从广义上来说 <span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 三者做了一种类似上面所说的搜索运算，从而找出在全部输入给 Attention 的序列中每一个 token 与序列中其他 token 之间的语义关联度。</p>
+<p>比如：输入给 Attention 一句话：How are you？。此时系统会首先把这个输入序列转化为四个token（“How”、“are”、“you”、“？”），然后找出这四个 token 互相之间的语义关联度，即 Attention 过程，即“How”与其余三个 token：“are”、“you”、“？”之间的的语义关联度，“are”与其余三个 token：“How”、“you”、“？”之间的的语义关联度，以此类推。</p>
+<p>是不是很无聊？四个token之间不用机器，肉眼一看就能懂。</p>
+<p>而一本10万字的书呢，机器是怎么通过 Attention 机制几秒钟的时间，一下子就读懂10万字之间的语义关系呢，最终又是怎样了解其中的语义逻辑呢？很明显，无论你输入给机器是四个 token 的一句话，还是10万字的一本书，它都在执行这同一套运算！Attention 都要把输入的序列中的每一个 token，转化成 Embedding 向量，然后再把 Embedding 向量“拆成”或者说是“分解成”、“变幻成”三个矩阵 <span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span>。</p>
+<h3 id="21-w_qw_kw_v-三个权重矩阵的引入与作用">2.1 W_Q，W_K，W_V 三个权重矩阵的引入与作用<a class="anchor-link" href="#21-w_qw_kw_v-三个权重矩阵的引入与作用" title="Permanent link">&para;</a></h3>
+<p>实际上，我们把每个 token 的 Embedding 向量分别做三次线性投影（或称为线性变换），也就是说它与三个具有不同权重的矩阵 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 分别相乘得到 <span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 三个矩阵。</p>
+<p>而 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 就是 Transformer 大模型在预训练阶段时，通过神经网络反向传播来训练出来的权重矩阵（注意，这里提到的“权重”，是指神经网络中的连接权重，与Attention中token之间的语义关联权重不是一个意思），这三个矩阵是 Transformer 大模型当初通过百万级的训练语料在 8 块 NVIDIA P100 GPU 上运算 3.5 天后的训练所得（当然，这是2017年 Google 团队首次提出 Transformer时的事情了，今天许多的多模态大模型中的 Transformer 架构在训练时往往采用至少百亿计的语料训练集，同时在几百甚至上千上万块至少是 A100 GPU 上，训练十几天才会完成，以后这个训练成本只可能是越来越巨大）。</p>
+<p>很多人会在这里感觉很迷惑， <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 这三个矩阵到底是从何而来的，因为很多介绍 Transformer 的文章在这里都只是一笔带过，仅仅说了一下 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 这三个权重矩阵是随机初始化的，但并没有说明是在模型“训练阶段”随机初始化的，这造成了诸多的混淆。因为，不同于“训练阶段”，在模型的“执行阶段”（模型预测阶段）这三个矩阵是固定的，即 Transformer 神经网络架构中的固定的节点连接权重，是早就被预先训练好的了（Pre-Trained）。比如说大家耳熟能详的 GPT ，就是 Generative Pre-Trained Transformer。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018698.jpg" />  </p>
+<p>每个 token 的 Embedding 向量分别做三次线性变换获得 Q、K、V 矩阵。</p>
+<p><strong><em>注意，这里因为是把全句子（输入的全序列）拆成具体的 token 来讲解，所以为了理解起来方便，暂用向量来表达。其实，在实际的运算过程中是以矩阵的方式来运行的，以提高运行效率，即整个序列中所有 token 的 Embedding 向量都放在一起组成一个矩阵同时进行运算。所以，该矩阵的维度由输入序列的 token 数</em></strong> <span class="math-inline">n</span> <strong><em>，与 Embedding 的维度（一般为512）决定。所以，该矩阵的形状为</em></strong> <span class="math-inline">n\times512</span> <strong><em>。</em></strong></p>
+<h3 id="22-multi-head-attention-多头注意力机制的引入">2.2 Multi-head Attention 多头注意力机制的引入<a class="anchor-link" href="#22-multi-head-attention-多头注意力机制的引入" title="Permanent link">&para;</a></h3>
+<p>实际上，权重矩阵<span class="math-inline">W^{Q}</span>，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 与 Multi-head Attention 多头注意力机制息息相关的，也就是说这三个矩阵是为了实现 Multi-head Attention 多头注意力机制而存在的。这三个权重矩阵将输入序列的完整矩阵进行“多头”处理，导致输入序列矩阵形状由原来的 <span class="math-inline">n\times512</span> 变成了 <span class="math-inline">n\times64</span>。刚才不是说 <span class="math-inline">n</span> 是输入序列的 token 总数，512 为单个 Embedding 的向量维度吗？那这个 64 又是从何而来的呢？</p>
+<p>512 与 64 差了8倍，也就是说把一个完整的进程分解为了 8 个并列的并行的进程来实施。这个进程被原论文称为“头”，即 head。这 8 个“头”之间互不干扰，各自运算各自的 Attention 机制。8 个头中的每一个头都只采用初始 Embedding 的向量长度 512 的 8 分之一来运行，即通过把 Embedding 向量与 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 三矩阵分别相乘之后，得到的向量长度为 Embedding 原始向量长度 512 的 1/8，即 64 维的向量。然后，这样的动作，做了8次，这就是多头自注意力机制了。</p>
+<p>当然，每次 Embedding 向量乘的 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 这三矩阵，都是不同的，所以，严谨地说，应该用 <span class="math-inline">W_{i}^{Q}</span> ，<span class="math-inline">W_{i}^{K}</span>，<span class="math-inline">W_{i}^{V}</span> （ <span class="math-inline">i</span> = 8，即 head 数 ）来表达。</p>
+<p>所以，这相当于把 Embedding 向量作线性变换的同时，顺便把它“切”成了 8 份来运行。当然，这样的“切”并不是直接在一个长度为 512 的向量上等分 8 份，而是通过与 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 三矩阵分别相乘，线性变换而来的。<strong><em>这样的降维变换明显含有某种特殊的意义，好比龙生九子，各有所好、各有特长一样，下面会详细讲解。这里，龙生了 8 个子。</em></strong></p>
+<h3 id="23-embedding-空间中语义结构的多样性与-multi-head-多头之间的关系">2.3 Embedding 空间中语义结构的多样性与 Multi-Head 多头之间的关系<a class="anchor-link" href="#23-embedding-空间中语义结构的多样性与-multi-head-多头之间的关系" title="Permanent link">&para;</a></h3>
+<p>这里我们再继续往下深挖，将挖出 Embedding 才是多头背后的真正内在成因。</p>
+<p>我之前的文章讲过，在 Embedding 的空间中，一个词的语义逻辑、语法逻辑、上下文逻辑、在全句中位置逻辑、分类逻辑等等，有很多种，如下两图中的几种 word embedding 逻辑。</p>
+<p>在 Embedding 的二维空间中 dog、cat、rabbit 三个向量的坐标点位排布，可以看到三个绿色的点距离很近，是因为他们三个相对于其他词汇来说语义上更接近。tree 和 flower 则离它们较远，但是 cat 会因为在很多语言的文章中都会有“爬树”的词汇出现在同一句话中，所以导致 cat 会与 tree 离得较近一些。同时 dog、rabbit 与 tree 的关系就较远。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018702.jpg" />  </p>
+<p>Word Embedding中词语的含义逻辑被自然地聚类</p>
+<p>想象一下全世界的所有语言文字里，是不是大体上都是这样，在如此众多的语言文字的资料里，描述“狗”的句子、段落、书籍里，提到“树”的次数，是不是要比描述“猫”的句子、段落、书籍里，提到“树”的次数要少，“兔子”与“树”共同出现就就更少了？这背后透露出了这个世界中的各种事物间的逻辑规律，是 AI 往 AGI 方向发展的内在核心。</p>
+<p>这就是 Embedding 最有意思的地方，也是 Embedding 的核心了。我会单独写一篇文章来详细介绍 Embedding 的！这里为了介绍 Multi-Head Attention ，先简要介绍一些 Embedding 的知识点。</p>
+<p>我们可以把在 Embedding 想象成一个多维的空间。在这个空间中，词与词之间的关系不仅仅限于像上面所举到的猫、狗与树之间仅仅是因为在海量训练语料中结伴出现的频次所导致了在 Embedding 空间中定位的远近亲疏。一个词所代表的事物与其他词所代表的事物之间能产生内在联系的因素往往有成百上千上万种之多。</p>
+<p>比如 man 和 woman，他们之间的关系还会映射出 king 和 queen 之间的关系。同时，语法也会带来一定的联系，比如在 Embedding 空间中，由 walking 到 walked 的距离与斜率竟然与 swimming 到 swam 的距离与斜率一致（即向量的长度与斜率一致），且距离几乎相等，见下图。因为这背后是两组动作单词的现在分词形式和过去分词形式的变化关系。我们可以尽情地想象，凡是事物或概念有逻辑联系的，甚至是逻辑与逻辑之间的联系的，在 Embedding 向量空间中都可以得到远近亲疏的空间表达。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018703.jpg" />  </p>
+<p>Word Embedding中词语的语法逻辑被自然地表征出来，词语的嵌套逻辑也自然地被表征出来</p>
+<p>（注：为了文章中表达方便，我们仅用二维或三维空间来表达，实际上 Embedding 空间的维度很高，至少要在 512 维之上！一维二维三维的空间大家容易在脑中想象出来对应的画面，但是四维以上以至于 512 维就难以图形化的想象了。所以，这里做了简化，以方便大家理解。）</p>
+<p>于是，通过把 Embedding 向量线性变幻成 8 个 1/8 的向量再分别去做 Attention 机制运算，这其实在本质上并不会耽误每个 token 的语义表达，而只是细分出了不同的语义子空间，即不同类型的细分语义逻辑而已，Attention 机制运算起来将更细腻精准、更有针对性。</p>
+<h3 id="24-被-multi-head-分解的语义逻辑子空间的重要意义">2.4 被 Multi-Head 分解的“语义逻辑子空间”的重要意义<a class="anchor-link" href="#24-被-multi-head-分解的语义逻辑子空间的重要意义" title="Permanent link">&para;</a></h3>
+<p>知道了多头的真正内因是 Embedding，那么让我们再看看这个 Embedding 中的语义逻辑子空间：<span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 这三个经过训练的权重矩阵可以帮我们把一个完整的 token 的 Embedding 向量中的这些不同细微逻辑，<strong><em>通过线性变换 “投射在某个细分语义逻辑子空间”的方式降维分解成 8 个细分的 Embedding 向量，并产生 8 套不同的<span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span>组合，以进行不同 head 的 Attention 计算</em></strong>。这样，实际上便是把 Attention 机制分割在 Embedding 中的不同细分逻辑子空间中（语义逻辑、语法逻辑、上下文逻辑、分类逻辑等等）来运作了。</p>
+<p><span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 均是 Transformer 大模型在训练阶段时，通过海量的对照语料训练集训练出来的，他们是专门用来拆解每个 token 在 Embedding 空间中的逻辑细分子空间用的。并且，这样的子空间可以有很多，不仅仅限于 8 个，一般在 Transformer 的大模型中，可以设置不同的多头数，head = 4、8、16、32 均可。但经过 Google 技术团队的反复测试得出一个结论，8 个头的综合技术得分最高，所以一般以 8 个头 head 为默认子空间数目。（注：BLEU 越高越好、PPL 则越低越好，同时还要考虑其他的指标，比如参数规模、模型维度、工作效率等等，见下表）</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018704.jpg" />  </p>
+<p>原论文中表格3：BLEU主要考量单词翻译精确度，越高越好。PPL主要考量困惑度，越低越好</p>
+<p>虽然从 Embedding 向量的角度看是从 512 维降到了每一个头的 64 维，缩小了，但实际上每一个头 head 同样可以在某个子空间中表达某些细分的语义逻辑。</p>
+<p>考虑一下这样的句子“The animal didn't cross the street because <strong><em>it</em></strong> was too tired.”。我们先模拟出两个“头head”来看看它们各自都是把语义逻辑做怎样的细分。下图总共 8 个头之中只启用 2 个头（橙黄色、绿色），可以看出橙黄色的头把 <strong><em>it</em></strong> 关注的细分语义逻辑重点放在了“The”、“animal”上，而绿色的头把 <strong><em>it</em></strong> 关注的细分语义逻辑重点放在了“tired”身上。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018705.jpg" />  </p>
+<p>总共8个头中启用2个头的语义逻辑关注点</p>
+<p>如果 8 个头全部启用，每个头的语义逻辑关注点则更细腻、更有针对性。这样的细腻性来源于 Embedding 空间的独特表达方式，之所以用 512 维的向量来表达一个 token，说明这个世界上任何一个单词（token）它背后的语义逻辑可以挖掘的点实在是很多很多，别以为 512 太多了（因为有的 Embedding 维度甚至为 1024 呢～），甚至从理论上来说是趋向于无限高维的。在我稍后单独写的一篇有关 Embedding 的文章中会详细解读。当然，你可以用 1024 维来表达，不过一般 512 维的向量就足够丰富了，人间足够用了。再多就带来了运算成本陡然提升的问题了，而效果未必带来长足的提升。</p>
+<p>加个题外话，中文语言的 Embedding 语义逻辑子空间的细腻和变化程度，应该比英文高。中文字符为二维的文字，如果把一个汉字转化为 token，其内涵，语义逻辑空间，势必要比靠一维字母组合的语言文字复杂一个数量级。这也导致我们以中文为母语的人类个体思维比较复杂，单位时间内考虑信息量偏多。而西方人比较直线条思维。是高一维度好呢还是低一维度好呢？可以说各有利弊吧…，先到为止，这里就不展开了。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018706.jpg" />  </p>
+<p>总共8个头全部启用，每个头的语义逻辑关注点</p>
+<p>一个头分成8个头，战斗完毕了，还要在变回来，总不能一直是8个头的状态。于是，在 Multi-head Attention 多头注意力机制运算结束后，系统会通过 Concat 方式把 8 个子进程的结果串联起来，并通过另一个线性变换的方式恢复为原 Embedding 的 512 维的向量长度。</p>
+<p>如何从 8 头再线性变换回来，稍后再讲解，我们先看看分成8个头后，在每个头中是如何具体运算的。</p>
+<h2 id="3-multi-head-attention-多头注意力机制的运算方式">3. Multi-Head Attention 多头注意力机制的运算方式<a class="anchor-link" href="#3-multi-head-attention-多头注意力机制的运算方式" title="Permanent link">&para;</a></h2>
+<h3 id="31-先看看单头的attention-注意力机制的运算方式">3.1 先看看单头的“Attention 注意力机制”的运算方式<a class="anchor-link" href="#31-先看看单头的attention-注意力机制的运算方式" title="Permanent link">&para;</a></h3>
+<p>针对每一个 token，单头的 Attention 机制运算如下：</p>
+<ol>
+<li>我们将一个输入序列中其中一个 token 的 Embedding 向量线性变换出来的 <span class="math-inline">Q_{i}</span> 向量（下图图例中为 <span class="math-inline">Q_{2}</span>）与同一序列中其他所有 token 的 Embedding 向量线性变换出来的 <span class="math-inline">K_{i}</span> 向量进行比较，计算两者之间的语义关联度得分（即原始论文中所说的点积相似度）；</li>
+<li>将这些语义关联度得分转换为权重值，权重数值的大小在 0~1 之间，数值接近 1 代表权重高，即语义逻辑很紧密，比如猫和树。数值接近 0 代表权重低，比如兔子和树。所有权重数值的总和为 1，即 Softmax 归一化；</li>
+<li>然后，把 Softmax 后的权重值与每个 token 的 Embedding 向量线性变换出来的 <span class="math-inline">V_{i}</span> 做加权和，最终生成结果 <span class="math-inline">Z_{i}</span>（图例中为 <span class="math-inline">Z_{2}</span>）。</li>
+</ol>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018707.jpg" />  </p>
+<p>Attention 机制的实际运算架构</p>
+<p>如图，在 <span class="math-inline">n</span> 个 token 组成的文本序列 <span class="math-inline">X_{i}</span> 中（黄色部分），做 <span class="math-inline">Q_{i}</span> 中第二个向量 <span class="math-inline">Q_{2}</span> （青色部分）的 Attention。首先用 <span class="math-inline">Q_{2}</span> 向量与 <span class="math-inline">K_{i}</span>（上图中 Keys 紫色部分） 中的每一个向量点乘得到紫色部分，然后再被 Softmax ，获取 0~1 之间取值范围的权重值向量，然后再和 <span class="math-inline">V_{i}</span> 做矩阵乘法（图中 Values 蓝色部分）。所以相当于是给 <span class="math-inline">V_{i}</span> 矩阵的每个向量做了一次加权和，得到 <span class="math-inline">Z_{2}</span> （橙色部分）。 <span class="math-inline">Z_{2}</span> 为 Attention 后，含有上下文语义权重的新 <span class="math-inline">X_{2}</span> ，也就是说 <span class="math-inline">X_{2}</span> 的变体，用 <span class="math-inline">Z_{2}</span> 表示。原论文中对此运算用公式表达为：</p>
+<p><span class="math-inline">Attention\left( Q,K,V \right)=softmax\left( \frac{QK^{T}}{\sqrt{d_{k}}} \right)V</span> </p>
+<p>（注：<span class="math-inline">Q_{i}</span> 与 <span class="math-inline">K_{i}</span> 点乘后的结果除以 <span class="math-inline">\sqrt{d_{k}}</span> ，是为了缓和并稳定“梯度”的作用。“梯度”则为“梯度下降法”中的“梯度”，为神经网络在训练过程中损失函数计算中的术语，以后会单独介绍。 <span class="math-inline">d_{k}</span> 为 <span class="math-inline">K</span> 矩阵的维度， <span class="math-inline">Q</span> 与 <span class="math-inline">K</span> 使用同样的维度，在这里：<span class="math-inline">d_{k}</span>=<span class="math-inline">d_{model}/h</span> = 64， <span class="math-inline">d_{model}</span> 为整个 Transformer 模型中所有子层和 Embedding 层的统一的输出维度，<span class="math-inline">d_{model}</span> 为 512。 <span class="math-inline">h</span> 为 head 数，<span class="math-inline">h</span> 默认为 8。）</p>
+<p>下面，用一个具体的例子来解释。</p>
+<p>比如这样一句话：“He booked a room at a hotel.”。我们对其中“booked”这个单词（实际上是 token）做 Attention 机制。“booked”会对“He booked a room at a hotel.”这句话中所有的 token ，包括“booked”自己，都做一遍点乘，然后做 Softmax 。再然后，Softmax 后的结果与“He booked a room at a hotel.”转换成的 <span class="math-inline">V</span> 向量相乘，得到加权后的变换结果：0.55*booked+0.15*room+0.3*hotel=booked，即“booked”这个单词可以用“0.55*booked+0.15*room+0.3*hotel” 这样一个复杂的单词来表示（把“0.55*booked+0.15*room+0.3*hotel”想象成一个单词，便能轻松理解这样表示的意义），见下图。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018708.jpg" />  </p>
+<p>booked 在 Attention 机制处理后诞生了 booked的变体“0.55*booked+0.15*room+0.3*hotel” </p>
+<p>从中可以看出“booked”在全句中与“hotel”关联度最大，其次是“room”。所以“booked”这个单词也可以理解为“hotel-room-booked”。这便把“booked”在这句话中的本质通过“变形”给体现出来了。“booked”本身并没有变，而是通过“变形”展示出了另外一种变体状态“hotel-room-booked”。灵魂没变，外在变了。想想哪吒的法身与肉身…</p>
+<p>我的上一篇文章中用变形金刚大黄蜂作比喻，说它的灵魂没有变，但是形状变了，由车变成人形机器人了，所以此时的功能也就变了，这也便是 “Transformer”这个词的来源，Google的技术团队就是利用了变形金刚这个词的梗，来直接命名这个技术术语。对此，如果想加深理解，请参看这篇文章：《<a href="https://zhuanlan.zhihu.com/p/666206302">https://zhuanlan.zhihu.com/p/666206302</a>》，这是一篇特别有意思的解读！</p>
+<h3 id="32-multi-head-attention-多头注意力机制的运算方式">3.2 “Multi-Head Attention 多头注意力机制”的运算方式<a class="anchor-link" href="#32-multi-head-attention-多头注意力机制的运算方式" title="Permanent link">&para;</a></h3>
+<p>如之前所讲，这样的 Attention 机制（下图中左侧部分为 Attention 机制的架构图）实际上是被分配到了 8 个头 head 之中去分别运行了。每一个头在各自运行之后，再通过 Concat 把得到的结果链接起来，然后再做一次线性变换，变回初始的形状。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018709.jpg" />  </p>
+<p>h 个 Scale Dot-Product Attention（左）并行为 Multi-Head Attention（右），在 Transformer 模型中默认 h=8</p>
+<p>一个完整的 Embedding 被有机分割成 8 个子语义逻辑的“小Embedding”后进行运算，在运算完之后，便需要把 8 个被 Attention 变换后的“小Embedding”再有机组合成完整的 Embedding。于是就需要把 8 个头中每个头的 Attention 运算结果 <span class="math-inline">Z_{i}</span> 做连接工作，即做 Concat（Concat 为一个可以连接相同形状的矩阵与矩阵的函数）。</p>
+<h3 id="33wo矩阵的引入和作用">3.3W^{O}矩阵的引入和作用<a class="anchor-link" href="#33wo矩阵的引入和作用" title="Permanent link">&para;</a></h3>
+<p>首先我们要知道 Concat 后的矩阵实际上并不是有机地融合 8 个“小Embedding”，而只是简单地做了矩阵的前后链接。而早在当初，分出 8个头 head 时，并非直接在物理层面上八等分切割 512 长度的 Embedding 到 64 长度，而是通过线性变换得来的 8 个具有独立语义逻辑的子空间“小Embedding”。所以在 Multi-Head 运行结束后，在 Concat 后，我们需要通过 <span class="math-inline">W^{O}</span> 矩阵再做一次线性变换，即再把 8 个小的语义逻辑子空间有机地整合成一个总体的 Embedding。</p>
+<p>这个 <span class="math-inline">W^{O}</span> 类似 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 也是在模型训练阶段一同训练出来的权重矩阵（右上角码“ <span class="math-inline">^{O}</span> ”，意为输出 “Output” 的意思）。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018710.jpg" />  </p>
+<p><span class="math-inline">W^O</span>矩阵将简单连接8个头的矩阵线性变幻（有机变换）成一个 Embedding 矩阵。</p>
+<p>以上，就是对 <span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 矩阵与权重矩阵 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span>，<span class="math-inline">W^{O}</span> 的“线性变换“与 Multi-Head Attention 机制的较正统的解读，当然也由于我的YY导致成了封神演义和王者荣耀版的解读。</p>
+<p>下面再看看 Multi-Head Attention 的公式表达。</p>
+<p>用原论文公式表示为：<br />
+<div class="math-display"><br />
+MultiHead\left( Q, K, V \right)=Concat\left( head_{1},...,head_{h} \right)W^{O}<br />
+</div></p>
+<p><div class="math-display"><br />
+head_{i}=Attention\left( QW_{i}^{Q},KW_{i}^{K},VW_{i}^{V} \right)<br />
+</div></p>
+<p>where（ <span class="math-inline">W_{i}^{Q}\inℝ^{d_{model}\times d_{k}}</span>, <span class="math-inline">W_{i}^{K}\inℝ^{d_{model}\times d_{k}}</span>, <span class="math-inline">W_{i}^{V}\inℝ^{d_{model}\times d_{v}}</span>, <span class="math-inline">W_{i}^{O}\inℝ^{hd_{v}\times d_{model}}</span> ）</p>
+<p><strong><em>注1</em></strong>： <span class="math-inline">\in</span> 为“属于”符号， <span class="math-inline">ℝ</span> 为“实数集”，<span class="math-inline">d_{model}</span> 为整个 Transformer 模型中所有子层和 Embedding 层的输出维度，<span class="math-inline">d_{model}</span> = 512， <span class="math-inline">d_{k}</span> = <span class="math-inline">d_{v}</span> = <span class="math-inline">d_{model}/h</span> = 64， <span class="math-inline">d_{k}</span> 与 <span class="math-inline">d_{v}</span> 在模型的执行阶段不用必须相等，可以取不同的值，<span class="math-inline">h</span> 为 head 数， <span class="math-inline">h</span> 默认为 8。</p>
+<p><strong><em>注2</em></strong>：以上公式有一处需要解释一下，针对 <span class="math-inline">head_{i}=Attention\left( QW_{i}^{Q},KW_{i}^{K},VW_{i}^{V} \right)</span> 这个公式很多朋友都问到了一个问题，那就是为什么用 <span class="math-inline">Q</span> 、 <span class="math-inline">K</span> 、 <span class="math-inline">V</span> 而不是用 <span class="math-inline">X </span> 来分别与 <span class="math-inline">W_{i}^{Q}</span>、<span class="math-inline">W_{i}^{K}</span>、<span class="math-inline">W_{i}^{V}</span> 相乘做线性变换，<span class="math-inline">Q</span> 、 <span class="math-inline">K</span> 、 <span class="math-inline">V</span> 应该是 <span class="math-inline">X </span> 分别与 <span class="math-inline">W_{i}^{Q}</span>、<span class="math-inline">W_{i}^{K}</span>、<span class="math-inline">W_{i}^{V}</span> 做线性变换所得到的结果啊，这里会不会是原论文的笔误。解释：在 Multi-Head Attention 中，这个公式里的 <span class="math-inline">Q</span> 、 <span class="math-inline">K</span> 、 <span class="math-inline">V</span> 实际上是一种名义上的称呼，是说他们要执行各自对应的使命，而本质上他们都是 <span class="math-inline">X </span> 本身。注意论文中的这个图（下图）中红框圈出的部分，进程走到这里简单地分成了四个分支，其中1支直接去往后端的 Add &amp; Norm 了，另外3支输入到 Multi-Head Attention 中，这3支就是 <span class="math-inline">Q</span> 、 <span class="math-inline">K</span> 、 <span class="math-inline">V</span>。如果这里需要线性变换的话，图中会给出对应的 Linear 变换标注的，而实际上并没有。可以将这个公式里的 <span class="math-inline">Q</span> 、 <span class="math-inline">K</span> 、 <span class="math-inline">V</span> 等价理解为输入矩阵 <span class="math-inline">X </span> 即可，即 <span class="math-inline">head_{i}=Attention\left( XW_{i}^{Q},XW_{i}^{K},XW_{i}^{V} \right)</span> ：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018711.jpg" /><br />
+上面这些公式，看起来挺唬人，其实当你把 Attention 和 Multi-Head Attention 都搞明白后，再看这些就显得简单多了。</p>
+<p>让我们举一个例子，假设一个输入的句子只有两个 token，那么 Attention 和 Multi-Head Attention 是这样运算的：</p>
+<ul>
+<li>首先，明确几个参数，<span class="math-inline">d_{model}</span>=512。设 <span class="math-inline">h</span> 为默认值 8。<span class="math-inline">d_{k}</span> = <span class="math-inline">d_{q}</span> = <span class="math-inline">d_{model}/h</span> = 64。设 <span class="math-inline">d_{v}</span>=100（<span class="math-inline">d_{v}</span> 可以等于 <span class="math-inline">d_{q}</span> 、 <span class="math-inline">d_{v}</span> ，也可以不等于，这里设置 100 并无实际意义，只是为了举例子时方便快速口算）。输入序列为2个 token 转化为 2 个 Embedding 向量，每个向量是 512 维度，即 512 个数值组成的向量，2 个这样的向量就组成了一个形状为 2×512 的矩阵，命名为 <span class="math-inline">X</span> 矩阵；</li>
+<li>训练好的权重矩阵 <span class="math-inline">W_{i}^{Q}</span> 和 <span class="math-inline">W_{i}^{K}</span> 是形状为 512×64（ <span class="math-inline">d_{model}</span>× <span class="math-inline">d_{k}</span> ）的矩阵。它们把 <span class="math-inline">X</span> 分别线性转化为 2×64 的 <span class="math-inline">Q_{i}</span> 矩阵和 <span class="math-inline">K_{i}</span> 矩阵（在这里，线性转化是通过矩阵乘法执行的，即 <span class="math-inline">X</span>×<span class="math-inline">W_{i}^{Q}</span> 与 <span class="math-inline">X</span>×<span class="math-inline">W_{i}^{K}</span> ）；</li>
+<li>然后 <span class="math-inline">Q_{i}</span> 与 <span class="math-inline">K_{i}^{T}</span> （ <span class="math-inline">K_{i}</span> 的转秩矩阵）做矩阵乘法（或者此处可以理解为把 <span class="math-inline">Q_{i}</span> 与 <span class="math-inline">K_{i}^{T}</span> 拆分为向量做点积，与论文中提到的“ the dot products of the query with all keys”一致，见下图），得到 2×2 矩阵，然后做 <span class="math-inline">softmax\left( \frac{QK^{T}}{\sqrt{d_{k}}} \right)</span> 运算，产生的结果依旧是 2×2 形状的矩阵，命名为 <span class="math-inline">Y_{i}</span> ；</li>
+</ul>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018712.jpg" />  </p>
+<p>原论文中《Attention Is All You Need》3.2.1节对“Scaled Dot-Product Attention”以及“compute the matrix”的描述</p>
+<ul>
+<li>预训练好的权重矩阵 <span class="math-inline">W_{i}^{V}</span> 是形状为 512×100（<span class="math-inline">d_{model}</span>×<span class="math-inline">d_{v}</span>）的矩阵。它把 <span class="math-inline">X</span> 线性变化为 2×100 的 <span class="math-inline">V_{i}</span> 矩阵；</li>
+<li>然后，用 <span class="math-inline">Y_{i}</span> 的 2×2 矩阵与 <span class="math-inline">V_{i}</span> 的 2×100 矩阵做矩阵乘法，即做 Attention 运算 <span class="math-inline">softmax\left( \frac{QK^{T}}{\sqrt{d_{k}}} \right)V</span> 得到结果 <span class="math-inline">Z_{i}</span> 矩阵，形状为 2×100；</li>
+<li>以上的进程做 8 次，即 <span class="math-inline">i</span> =1~8。并把每次 Attention 的结果 2×100 的 <span class="math-inline">Z_{i}</span> 矩阵 Concat 到一起，得到一个 2×800 的矩阵 <span class="math-inline">Z_{concat}</span>；</li>
+<li>最后，训练好的权重矩阵 <span class="math-inline">W_{i}^{O}</span> 是形状为 800×512（ <span class="math-inline">hd_{v}</span> × <span class="math-inline">d_{model}</span> ）的矩阵。它把 <span class="math-inline">Z_{concat}</span> 线性变化成一个 2×512 的新矩阵 <span class="math-inline">Z</span> 。 <span class="math-inline">Z</span> 与初始输入的矩阵 <span class="math-inline">X</span> 具有完全一样的形状，即 2×512。此时 <span class="math-inline">Z</span> 可以理解为 <span class="math-inline">X</span> 做过一次 Multi-Head Attention 机制后产生的变体，此变体即为 Transformer 一词的由来。</li>
+</ul>
+<p><strong><em>这就是 Transformer 的核心灵魂，Attention 和 Multi-Head Attention ！</em></strong></p>
+<p>至此，我们可以清晰地搞明白，<span class="math-inline">W^{O}</span> 权重矩阵与 <span class="math-inline">W^{Q}</span> ，<span class="math-inline">W^{K}</span>，<span class="math-inline">W^{V}</span> 矩阵类似，他们都是在训练阶段随机初始化的，但是一旦训练完毕，它们的数值和形状就固定了下来。当然，你可以事先根据不同的头数 <span class="math-inline">h</span> 来训练出多组这四个权重矩阵，即当 <span class="math-inline">h</span> 分别为 4、6、8、16、32 时，四个矩阵 <span class="math-inline">W_{i}^{Q}\inℝ^{d_{model}\times d_{k}}</span>, <span class="math-inline">W_{i}^{K}\inℝ^{d_{model}\times d_{k}}</span>, <span class="math-inline">W_{i}^{V}\inℝ^{d_{model}\times d_{v}}</span>, <span class="math-inline">W_{i}^{O}\inℝ^{hd_{v}\times d_{model}}</span> 。实际上官方自己也是这样做，只是他们根据结果的综合评分（PPL、BLEU、参数规模、<span class="math-inline">d_{model}</span> ）给出了一个建议：当 <span class="math-inline">h</span> 为 8 时效果最好。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018704.jpg" />  </p>
+<p>原论文中表格3：BLEU主要考量单词翻译精确度，越高越好。PPL主要考量困惑度，越低越好</p>
+<p><span class="math-inline">W^{O}</span> 矩阵的作用就是把 Concat 后的 <span class="math-inline">Z_{concat}</span> 矩阵线性变回同 <span class="math-inline">X</span> 一样形状的矩阵 <span class="math-inline">Z</span>。此时，这个 <span class="math-inline">Z</span> 便可以视作 <span class="math-inline">X</span> 在做过一次 Multi-Head Attention 机制之后的新变体来出现，然后作为下一层编码器的输入再继续做 Multi-Head Attention 运算。</p>
+<p>当然，形状的恢复只是 <span class="math-inline">W^{O}</span> 矩阵的附属功能，其主要功能则是将 8 个 head 中每个 head 的子语义逻辑空间中的 Attention 运算结果有机地整合到一个 <span class="math-inline">Z</span> 中来。</p>
+<p>最后，用一图流来把整个 Multi-Head Attention 的四个 <span class="math-inline">W</span> 权重矩阵、<span class="math-inline">Q</span>、<span class="math-inline">K</span>、<span class="math-inline">V</span> 三矩阵、Multi-Head 机制之间的逻辑关系表达一下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202410291018713.jpg" />  </p>
+<p>Multi-Head Attention中各要素间关系</p>
+<h2 id="4-对multi-head-attention-多头注意力机制最通俗易懂的比喻">4. 对“Multi-Head Attention 多头注意力机制”最通俗易懂的比喻<a class="anchor-link" href="#4-对multi-head-attention-多头注意力机制最通俗易懂的比喻" title="Permanent link">&para;</a></h2>
+<p>以上，虽然我已尽量减少用公式来解读，但是对比我一直坚持的“比喻解读”的方式则还是显得有点晦涩难懂。那么让我们看看用纯比喻的描述会是怎样的。</p>
+<p>在上一篇文章中（<a href="https://zhuanlan.zhihu.com/p/667905865">https://zhuanlan.zhihu.com/p/667905865</a>）我用一个公司中新进的一个员工来比喻“Self-Attention 自注意力机制”，这个新员工需要迅速地在全部成员之间做一遍工作岗位关联重要度的“Attention 注意力机制“的审查，以便自己能快速定位出自己在团队中的位置，找准自己的位置，接下来的业务与工作进展自然也会很流畅。</p>
+<p>其实，找准个人在团队中的定位，除了在业务流程上的考量外，还有很多其他的维度需要考量，比如职位的权重、性格匹配度、男女比例关系、前辈与新兵、人际关系。等等等等。如果在这些不同的维度领域，都来一套“Attention 注意力机制”，这就叫“Multi-head Attention 多头注意力机制”了。如果说“Self-Attention 自注意力机制”是一个团队成功的基本必要条件，那么“Multi-head Attention 多头注意力机制”就是确保全团队最优协作的充分条件了。</p>
+<p>相信任何一个长时间在一起磨合的团队，都会有意无意地走完这个“Multi-head Attention 多头注意力机制”的过程。这个过程可能会很漫长，并伴随着公司中各种大大小小数不尽的事情，但每每经历过一些磨合之后，团队的协作能力就会进一步提高。而且这种磨合的重头戏往往不是只集中在业务流程上，而是在职位、性格、性别、前辈与新兵、人际关系等等方面的磨合上。因为业务流程是团队存在的必须的基础，而其他方面才是团队的升华。</p>
+<p>这也好比一个代驾司机，驾驶汽车的刹车油门方向盘的配合，以及交通法规的遵守，那只是作为一个好司机必须的基础，是业务的最底层。但是，服务好客户不能仅靠这些，更需要靠热情的服务态度、整洁的车内外卫生环境、贴心的便利化设施等等周到考量，这便是”Multi-head“的作用和意义！</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

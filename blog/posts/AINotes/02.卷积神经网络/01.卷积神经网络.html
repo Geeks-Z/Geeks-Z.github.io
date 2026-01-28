@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#11-为什么cnn">1.1 为什么CNN</a><ul>
+<li><a href="#small-region">Small region</a></li>
+<li><a href="#same-patterns">Same Patterns</a></li>
+<li><a href="#subsampling">Subsampling</a></li>
+</ul>
+</li>
+<li><a href="#12-边缘检测示例">1.2 边缘检测示例</a></li>
+<li><a href="#13-padding">1.3 Padding</a></li>
+<li><a href="#14-卷积步长">1.4 卷积步长</a></li>
+<li><a href="#15-三维卷积">1.5 三维卷积</a></li>
+<li><a href="#16-单层卷积网络">1.6 单层卷积网络</a></li>
+<li><a href="#17-简单卷积网络示例">1.7 简单卷积网络示例</a></li>
+<li><a href="#18-convolution和fully-connected之间的关系">1.8 convolution和fully connected之间的关系</a></li>
+<li><a href="#19-池化层">1.9 池化层</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/02.卷积神经网络</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>Convolutional Neural Networks</p>
+</blockquote>
+<h2 id="11-为什么cnn">1.1 为什么CNN<a class="anchor-link" href="#11-为什么cnn" title="Permanent link">&para;</a></h2>
+<p>计算机视觉要面临一个挑战，就是数据的输入可能会非常大。举个例子，在过去的课程中，你们一般操作的都是64×64的小图片，实际上，它的数据量是64×64×3，因为每张图片都有3个颜色通道。如果计算一下的话，可得知数据量为12288，所以我们的特征向量<span class="math-inline">x</span> 度为12288。这其实还好，因为64×64真的是很小的一张图片。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943398.png" alt="" style="zoom: 80%;" /></div>
+
+<p>如果你要操作更大的图片，比如一张1000×1000的图片，它足有1兆那么大，但是特征向量的维度达到了1000×1000×3，因为有3个<strong>RGB</strong>通道，所以数字将会是300万。如果你在尺寸很小的屏幕上观察，可能察觉不出上面的图片只有64×64那么大，而下面一张是1000×1000的大图。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943786.png" style="zoom: 80%;" /></div>
+
+<p>如果你要输入300万的数据量，这就意味着，特征向量<span class="math-inline">x</span> 维度高达300万。所以在第一隐藏层中，你也许会有1000个隐藏单元，而所有的权值组成了矩阵 <span class="math-inline">W^{[1]}</span>。如果你使用了标准的全连接网络，这个矩阵的大小将会是1000×300万。因为现在<span class="math-inline">x</span> 维度为<span class="math-inline">3m</span>，<span class="math-inline">3m</span> 常用来表示300万。这意味着矩阵<span class="math-inline">W^{[1]}</span> 有30亿个参数，这是个非常巨大的数字。在参数如此大量的情况下，难以获得足够的数据来防止神经网络发生过拟合和竞争需求，要处理包含30亿参数的神经网络，巨大的内存需求让人不太能接受。</p>
+<p><strong>CNN做的事就是简化neural network的架构</strong>。</p>
+<h3 id="small-region">Small region<a class="anchor-link" href="#small-region" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459089.png" style="zoom: 80%;" /></div>
+
+<p>我们先来讲一下，为什么我们有可能把一些参数拿掉(为什么可以用比较少的参数可以来做影像处理这件事情)</p>
+<p>这里有几个观察，第一个是在影像处理里面，我们说第一层的 hidden layer那些neural要做的事就是侦测某一种pattern，有没有某一种patter出现。大部分的pattern其实要比整张的image还要小，对一个neural来说，假设它要知道一个image里面有没有某一个pattern出现，它其实是不需要看整张image，它只要看image的一小部分。</p>
+<p>举例来说，假设我们现在有一张图片，第一个hidden layer的某一种neural的工作就是要侦测有没有鸟嘴的存在(有一些neural侦测有没有爪子的存在，有一些neural侦测有没有翅膀的存在，有没有尾巴的存在，合起来就可以侦测图片中某一只鸟)。假设有一个neural的工作是要侦测有没有鸟嘴的存在，那并不需要看整张图，其实我们只需要给neural看着一小红色方框的区域(鸟嘴)，它其实就可以知道说，它是不是一个鸟嘴。对人来说也是一样，看这一小块区域这是鸟嘴，不需要去看整张图才知道这件事情。所以，每一个neural连接到每一个小块的区域就好了，不需要连接到整张完整的图。</p>
+<h3 id="same-patterns">Same Patterns<a class="anchor-link" href="#same-patterns" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459090.png" style="zoom: 80%;" /></div>
+
+<p>第二个观察是这样子，同样的pattern在image里面，可能会出现在image不同的部分，但是代表的是同样的含义，它们有同样的形状，可以用同样的neural，同样的参数就可以把pattern侦测出来。</p>
+<p>比如说，这张图里面有一张在左上角的鸟嘴，在这张图里面有一个在中央的鸟嘴，但是你并不需要说：我们不需要去训练两个不同的detector，一个专门去侦测左上角的鸟嘴，一个去侦测中央有没有鸟嘴。如果这样做的话，这样就太冗了。我们不需要太多的冗源，这个nerual侦测左上角的鸟嘴跟侦测中央有没有鸟嘴做的事情是一样的。我们并不需要两个neural去做两组参数，我们就要求这两个neural用同一组参数，就样就可以减少你需要参数的量</p>
+<h3 id="subsampling">Subsampling<a class="anchor-link" href="#subsampling" title="Permanent link">&para;</a></h3>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459091.png" style="zoom: 80%;" /></div>
+
+<p>第三个是：我们知道一个image你可以做subsampling，你把一个image的奇数行，偶数列的pixel拿掉，变成原来十分之一的大小，它其实不会影响人对这张image的理解。对你来说：这张image跟这张image看起来可能没有太大的差别。所以我们就可以用这样的概念把image变小，这样就可以减少你需要的参数。</p>
+<h2 id="12-边缘检测示例">1.2 边缘检测示例<a class="anchor-link" href="#12-边缘检测示例" title="Permanent link">&para;</a></h2>
+<p>卷积运算是卷积神经网络最基本的组成部分，使用边缘检测作为入门样例。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943779.png" style="zoom: 80%;" /></div>
+
+<p>让我们举个例子，给了这样一张图片，让电脑去搞清楚这张照片里有什么物体，你可能做的第一件事是检测图片中的垂直边缘。比如说，在这张图片中的栏杆就对应垂直线，与此同时，这些行人的轮廓线某种程度上也是垂线，这些线是垂直边缘检测器的输出。同样，你可能也想检测水平边缘，比如说这些栏杆就是很明显的水平线，它们也能被检测到。</p>
+<p>看一个例子，这是一个6×6的灰度图像。因为是灰度图像，所以它是6×6×1的矩阵，而不是6×6×3的，因为没有<strong>RGB</strong>三通道。为了检测图像中的垂直边缘，你可以构造一个3×3矩阵。在共用习惯中，在卷积神经网络的术语中，它被称为<strong>过滤器(filter)</strong>,每个filter里面的参数(matrix里面每一个element值)就是network的parameter(这些parameter是要学习出来的，并不是需要人去设计的)。我要构造一个3×3的过滤器，像这样<span class="math-inline">\begin{bmatrix}1 &amp; 0 &amp; -1\ 1 &amp; 0 &amp; -1\ 1 &amp; 0 &amp; -1\end{bmatrix}</span>。在论文它有时候会被称为<strong>核</strong>。对这个6×6的图像进行卷积运算，卷积运算用“<span class="math-inline">*</span>”来表示，用3×3的过滤器对其进行卷积。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943437.png" style="zoom: 80%;" /></div>
+
+<p>关于符号表示，有一些问题，在数学中“<span class="math-inline"><em></span>”就是卷积的标准标志，但是在</em><em>Python</em><em>中，这个标识常常被用来表示乘法或者元素乘法。所以这个“<span class="math-inline"></em></span>”有多层含义，它是一个重载符号。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943019.png" style="zoom: 80%;" /></div>
+
+<p>这个卷积运算的输出将会是一个4×4的矩阵，你可以将它看成一个4×4的图像。下面来说明是如何计算得到这个4×4矩阵的。为了计算第一个元素，在4×4左上角的那个元素，使用3×3的过滤器，将其覆盖在输入图像，如下图所示。然后进行元素乘法（<strong>element-wise products</strong>）运算，所以<span class="math-inline">\begin{bmatrix} 3 \times 1 &amp; 0 \times 0 &amp; 1 \times \left(1 \right) \ 1 \times 1 &amp; 5 \times 0 &amp; 8 \times \left( - 1 \right) \ 2 \times1 &amp; 7 \times 0 &amp; 2 \times \left( - 1 \right) \ \end{bmatrix} = \begin{bmatrix}3 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 8 \ 2 &amp; 0 &amp; - 2 \\end{bmatrix}</span>，然后将该矩阵每个元素相加得到最左上角的元素，即<span class="math-inline">3+1+2+0+0 +0+(-1)+(-8) +(-2)=-5</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943560.png" style="zoom: 80%;" /></div>
+
+<p>把这9个数加起来得到-5，当然，你可以把这9个数按任何顺序相加，我只是先写了第一列，然后第二列，第三列。</p>
+<p>接下来，为了弄明白第二个元素是什么，你要把蓝色的方块，向右移动一步，像这样，把这些绿色的标记去掉：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943049.png" style="zoom: 80%;" /></div>
+
+<p>继续做同样的元素乘法，然后加起来，所以是 <span class="math-inline">0×1+5×1+7×1+1×0+8×0+2×0+2×(-1)+ 9×(-1)+5×(-1)=-4 </span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943564.png" style="zoom: 80%;" /></div>
+
+<p>接下来也是一样，继续右移一步，把9个数的点积加起来得到0。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943098.png" style="zoom: 80%;" /></div>
+
+<p>继续移得到8，验证一下：<span class="math-inline">2×1+9×1+5×1+7×0+3×0+1×0+4×(-1)+ 1×(-1)+ 3×(-1)=8</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943614.png" style="zoom: 80%;" /></div>
+
+<p>接下来为了得到下一行的元素，现在把蓝色块下移，现在蓝色块在这个位置：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943395.png" style="zoom: 80%;" /></div>
+
+<p>重复进行元素乘法，然后加起来。通过这样做得到-10。再将其右移得到-2，接着是2，3。以此类推，这样计算完矩阵中的其他元素。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943130.png" style="zoom: 80%;" /></div>
+
+<p>为了说得更清楚一点，这个-16是通过底部右下角的3×3区域得到的。</p>
+<p>因此6×6矩阵和3×3矩阵进行卷积运算得到4×4矩阵。这些图片和过滤器是不同维度的矩阵，但左边矩阵容易被理解为一张图片，中间的这个被理解为过滤器，右边的图片我们可以理解为另一张图片。这个就是垂直边缘检测器。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943714.png" style="zoom: 80%;" /></div>
+
+<p>为什么这个可以做垂直边缘检测呢？让我们来看另外一个例子。为了讲清楚，我会用一个简单的例子。这是一个简单的6×6图像，左边的一半是10，右边一般是0。如果你把它当成一个图片，左边那部分看起来是白色的，像素值10是比较亮的像素值，右边像素值比较暗，我使用灰色来表示0，尽管它也可以被画成黑的。图片里，有一个特别明显的垂直边缘在图像中间，这条垂直线是从黑到白的过渡线，或者从白色到深色。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943345.png" style="zoom: 80%;" /></div>
+
+<p>所以，当你用一个3×3过滤器进行卷积运算的时候，这个3×3的过滤器可视化为下面这个样子，在左边有明亮的像素，然后有一个过渡，0在中间，然后右边是深色的。卷积运算后，你得到的是右边的矩阵。如果你愿意，可以通过数学运算去验证。举例来说，最左上角的元素0，就是由这个3×3块（绿色方框标记）经过元素乘积运算再求和得到的，<span class="math-inline">10×1+10×1+10×1+10×0+10×0+10×0+10×(-1)+10×(-1)+10×(-1)=0</span>。相反这个30是由这个（红色方框标记）得到的，<span class="math-inline">10×1+10×1+10×1+10×0+10×0+10×0+0×(-1)+0×(-1)+ 0×(-1)=30</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943886.png" style="zoom: 80%;" /></div>
+
+<p>如果把最右边的矩阵当成图像，它是这个样子。在中间有段亮一点的区域，对应检查到这个6×6图像中间的垂直边缘。这里的维数似乎有点不正确，检测到的边缘太粗了。因为在这个例子中，图片太小了。如果你用一个1000×1000的图像，而不是6×6的图片，你会发现其会很好地检测出图像中的垂直边缘。在这个例子中，在输出图像中间的亮处，表示在图像中间有一个特别明显的垂直边缘。从垂直边缘检测中可以得到的启发是，因为我们使用3×3的矩阵（过滤器），所以垂直边缘是一个3×3的区域，左边是明亮的像素，中间的并不需要考虑，右边是深色像素。在这个6×6图像的中间部分，明亮的像素在左边，深色的像素在右边，就被视为一个垂直边缘，卷积运算提供了一个方便的方法来发现图像中的垂直边缘。</p>
+<h2 id="13-padding">1.3 Padding<a class="anchor-link" href="#13-padding" title="Permanent link">&para;</a></h2>
+<p>为了构建深度神经网络，你需要学会使用的一个基本的卷积操作就是<strong>padding</strong>，让我们来看看它是如何工作的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943727.png" style="zoom: 80%;" /></div>
+
+<p>我们在之前视频中看到，如果你用一个3×3的过滤器卷积一个6×6的图像，你最后会得到一个4×4的输出，也就是一个4×4矩阵。那是因为你的3×3过滤器在6×6矩阵中，只可能有4×4种可能的位置。这背后的数学解释是，如果我们有一个<span class="math-inline">n×n</span> 图像，用<span class="math-inline">f×f</span> 过滤器做卷积，那么输出的维度就是<span class="math-inline">(n-f+1)×(n-f+1)</span>。在这个例子里是<span class="math-inline">6-3+1=4</span>，因此得到了一个4×4的输出。</p>
+<p>这样的话会有两个缺点，第一个缺点是每次做卷积操作，你的图像就会缩小，从6×6缩小到4×4，你可能做了几次之后，你的图像就会变得很小了，可能会缩小到只有1×1的大小。你可不想让你的图像在每次识别边缘或其他特征时都缩小，这就是第一个缺点。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943029.png" style="zoom: 80%;" /></div>
+
+<p>第二个缺点时，如果你注意角落边缘的像素，这个像素点（绿色阴影标记）只被一个输出所触碰或者使用，因为它位于这个3×3的区域的一角。但如果是在中间的像素点，比如这个（红色方框标记），就会有许多3×3的区域与之重叠。所以那些在角落或者边缘区域的像素点在输出中采用较少，意味着你丢掉了图像边缘位置的许多信息。</p>
+<p>为了解决这两个问题，一是输出缩小。当我们建立深度神经网络时，你就会知道你为什么不希望每进行一步操作图像都会缩小。比如当你有100层深层的网络，如果图像每经过一层都缩小的话，经过100层网络后，你就会得到一个很小的图像，所以这是个问题。另一个问题是图像边缘的大部分信息都丢失了。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943946.png" style="zoom: 80%;" /></div>
+
+<p>为了解决这些问题，你可以在卷积操作之前填充这幅图像。在这个案例中，你可以沿着图像边缘再填充一层像素。如果你这样操作了，那么6×6的图像就被你填充成了一个8×8的图像。如果你用3×3的图像对这个8×8的图像卷积，你得到的输出就不是4×4的，而是6×6的图像，你就得到了一个尺寸和原始图像6×6的图像。习惯上，你可以用0去填充，如果<span class="math-inline">p</span> 填充的数量，在这个案例中，<span class="math-inline">p=1</span>，因为我们在周围都填充了一个像素点，输出也就变成了<span class="math-inline">(n+2p-f+1)×(n+2p-f+1)</span>，所以就变成了<span class="math-inline">(6+2×1-3+1)×(6+2×1-3+1)=6×6</span>，和输入的图像一样大。这个涂绿的像素点（左边矩阵）影响了输出中的这些格子（右边矩阵）。这样一来，丢失信息或者更准确来说角落或图像边缘的信息发挥的作用较小的这一缺点就被削弱了。</p>
+<p>刚才我已经展示过用一个像素点来填充边缘，如果你想的话，也可以填充两个像素点，也就是说在这里填充一层。实际上你还可以填充更多像素。我这里画的这种情况，填充后<span class="math-inline">p=2</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943295.png" style="zoom: 80%;" /></div>
+
+<p>至于选择填充多少像素，通常有两个选择，分别叫做<strong>Valid</strong>卷积和<strong>Same</strong>卷积。</p>
+<p><strong>Valid</strong>卷积意味着不填充，这样的话，如果你有一个<span class="math-inline">n×n</span> 图像，用一个<span class="math-inline">f×f</span> 过滤器卷积，它将会给你一个<span class="math-inline">(n-f+1)×(n-f+1)</span> 的输出。这类似于我们在前面的视频中展示的例子，有一个6×6的图像，通过一个3×3的过滤器，得到一个4×4的输出。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943808.png" style="zoom: 80%;" /></div>
+
+<p>另一个经常被用到的填充方法叫做<strong>Same</strong>卷积，那意味你填充后，你的输出大小和输入大小是一样的。根据这个公式<span class="math-inline">n-f+1</span>，当你填充<span class="math-inline">p</span> 像素点，<span class="math-inline">n</span> 变成了<span class="math-inline">n+2p</span>，最后公式变为<span class="math-inline">n+2p-f+1</span>。因此如果你有一个<span class="math-inline">n×n</span> 图像，用<span class="math-inline">p</span> 像素填充边缘，输出的大小就是这样的<span class="math-inline">(n+2p-f+1)×(n+2p-f+1)</span>。如果你想让<span class="math-inline">n+2p-f+1=n</span> 话，使得输出和输入大小相等，如果你用这个等式求解<span class="math-inline">p</span>，那么<span class="math-inline">p=(f-1)/2</span>。所以当<span class="math-inline">f</span> 一个奇数的时候，只要选择相应的填充尺寸，你就能确保得到和输入相同尺寸的输出。这也是为什么前面的例子，当过滤器是3×3时，和上一张幻灯片的例子一样，使得输出尺寸等于输入尺寸，所需要的填充是(3-1)/2，也就是1个像素。另一个例子，当你的过滤器是5×5，如果<span class="math-inline">f=5</span>，然后代入那个式子，你就会发现需要2层填充使得输出和输入一样大，这是过滤器5×5的情况。</p>
+<p>习惯上，计算机视觉中，<span class="math-inline">f</span> 常是奇数，甚至可能都是这样。你很少看到一个偶数的过滤器在计算机视觉里使用，我认为有两个原因。</p>
+<p>其中一个可能是，如果<span class="math-inline">f</span> 一个偶数，那么你只能使用一些不对称填充。只有<span class="math-inline">f</span> 奇数的情况下，<strong>Same</strong>卷积才会有自然的填充，我们可以以同样的数量填充四周，而不是左边填充多一点，右边填充少一点，这样不对称的填充。</p>
+<p>第二个原因是当你有一个奇数维过滤器，比如3×3或者5×5的，它就有一个中心点。有时在计算机视觉里，如果有一个中心像素点会更方便，便于指出过滤器的位置。</p>
+<p>也许这些都不是为什么<span class="math-inline">f</span> 常是奇数的充分原因，但如果你看了卷积的文献，你经常会看到3×3的过滤器，你也可能会看到一些5×5，7×7的过滤器。习惯上，我推荐你只使用奇数的过滤器。我想如果你使用偶数<span class="math-inline">f</span> 可能会得到不错的表现，如果遵循计算机视觉的惯例，我通常使用奇数值的<span class="math-inline">f</span>。</p>
+<p>你已经看到如何使用<strong>padding</strong>卷积，为了指定卷积操作中的<strong>padding</strong>，你可以指定<span class="math-inline">p</span> 值。也可以使用<strong>Valid</strong>卷积，也就是<span class="math-inline">p=0</span>。也可使用<strong>Same</strong>卷积填充像素，使你的输出和输入大小相同。</p>
+<h2 id="14-卷积步长">1.4 卷积步长<a class="anchor-link" href="#14-卷积步长" title="Permanent link">&para;</a></h2>
+<p>卷积中的步幅是另一个构建卷积神经网络的基本操作。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943550.png" style="zoom: 80%;" /></div>
+
+<p>如果你想用3×3的过滤器卷积这个7×7的图像，和之前不同的是，我们把步幅设置成了2。你还和之前一样取左上方的3×3区域的元素的乘积，再加起来，最后结果为91。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943884.png" style="zoom: 80%;" /></div>
+
+<p>只是之前我们移动蓝框的步长是1，现在移动的步长是2，我们让过滤器跳过2个步长，注意一下左上角，这个点移动到其后两格的点，跳过了一个位置。然后你还是将每个元素相乘并求和，你将会得到的结果是100。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943300.png" style="zoom: 80%;" /></div>
+
+<p>现在我们继续，将蓝色框移动两个步长，你将会得到83的结果。当你移动到下一行的时候，你也是使用步长2而不是步长1，所以我们将蓝色框移动到这里：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943699.png" style="zoom: 80%;" /></div>
+
+<p>注意到我们跳过了一个位置，得到69的结果，现在你继续移动两个步长，会得到91，127，最后一行分别是44，72，74。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943405.png" style="zoom: 80%;" /></div>
+
+<p>所以在这个例子中，我们用3×3的矩阵卷积一个7×7的矩阵，得到一个3×3的输出。输入和输出的维度是由下面的公式决定的。如果你用一个<span class="math-inline">f×f</span> 过滤器卷积一个<span class="math-inline">n×n</span> 图像，你的<strong>padding</strong>为<span class="math-inline">p</span>，步幅为<span class="math-inline">s</span>，在这个例子中<span class="math-inline">s=2</span>，你会得到一个输出，因为现在你不是一次移动一个步子，而是一次移动<span class="math-inline">s</span> 步子，输出于是变为<span class="math-inline">\frac{n+2p - f}{s} + 1 \times \frac{n+2p - f}{s} + 1</span></p>
+<p>在我们的这个例子里，<span class="math-inline">n=7</span>，<span class="math-inline">p=0</span>，<span class="math-inline">f=3</span>，<span class="math-inline">s=2</span>，<span class="math-inline">\ \frac{7 + 0 - 3}{2} + 1 =3</span>，即3×3的输出。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943390.png" style="zoom: 80%;" /></div>
+
+<p>现在只剩下最后的一个细节了，如果商不是一个整数怎么办？在这种情况下，我们向下取整。<span class="math-inline">⌊ ⌋</span> 是向下取整的符号，这也叫做对<span class="math-inline">z</span> 行地板除(<strong>floor</strong>)，这意味着<span class="math-inline">z</span> 下取整到最近的整数。这个原则实现的方式是，你只在蓝框完全包括在图像或填充完的图像内部时，才对它进行运算。如果有任意一个蓝框移动到了外面，那你就不要进行相乘操作，这是一个惯例。你的3×3的过滤器必须完全处于图像中或者填充之后的图像区域内才输出相应结果，这就是惯例。因此正确计算输出维度的方法是向下取整，以免<span class="math-inline">\frac{n + 2p - f}{s}</span> 是整数。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943721.png" style="zoom: 80%;" /></div>
+
+<p>总结一下维度情况，如果你有一个<span class="math-inline">n×n</span> 矩阵或者<span class="math-inline">n×n</span> 图像，与一个<span class="math-inline">f×f</span> 矩阵卷积，或者说<span class="math-inline">f×f</span> 过滤器。<strong>Padding</strong>是<span class="math-inline">p</span>，步幅为<span class="math-inline">s</span>,输出尺寸就是这样：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943721.png" style="zoom: 80%;" /></div>
+
+<p>可以选择所有的数使结果是整数是挺不错的，尽管一些时候，你不必这样做，只要向下取整也就可以了。你也可以自己选择一些<span class="math-inline">n</span>，<span class="math-inline">f</span>，<span class="math-inline">p</span> <span class="math-inline">s</span> 值来验证这个输出尺寸的公式是对的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943331.png" style="zoom: 80%;" /></div>
+
+<h2 id="15-三维卷积">1.5 三维卷积<a class="anchor-link" href="#15-三维卷积" title="Permanent link">&para;</a></h2>
+<p>你已经知道如何对二维图像做卷积了，现在看看如何执行卷积不仅仅在二维图像上，而是三维立体上。</p>
+<p>我们从一个例子开始，假如说你不仅想检测灰度图像的特征，也想检测<strong>RGB</strong>彩色图像的特征。彩色图像如果是6×6×3，这里的3指的是三个颜色通道，你可以把它想象成三个6×6图像的堆叠。为了检测图像的边缘或者其他的特征，不是把它跟原来的3×3的过滤器做卷积，而是跟一个三维的过滤器，它的维度是3×3×3，这样这个过滤器也有三层，对应红绿、蓝三个通道。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943283.png" style="zoom: 80%;" /></div>
+
+<p>给这些起个名字（原图像），这里的第一个6代表图像高度，第二个6代表宽度，这个3代表通道的数目。同样你的过滤器也有一个高，宽和通道数，并且<strong>图像的通道数必须和过滤器的通道数匹配</strong>，所以这两个数（紫色方框标记的两个数）必须相等。这个的输出会是一个4×4的图像，注意是4×4×1，最后一个数不是3了。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943846.png" style="zoom: 80%;" /></div>
+
+<p>我们研究下这背后的细节，首先先换一张好看的图片。这个是6×6×3的图像，这个是3×3×3的过滤器，最后一个数字通道数必须和过滤器中的通道数相匹配。为了简化这个3×3×3过滤器的图像，我们不把它画成3个矩阵的堆叠，而画成这样，一个三维的立方体。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943425.png" style="zoom: 80%;" /></div>
+
+<p>为了计算这个卷积操作的输出，你要做的就是把这个3×3×3的过滤器先放到最左上角的位置，这个3×3×3的过滤器有27个数，27个参数就是3的立方。依次取这27个数，然后乘以相应的红绿蓝通道中的数字。先取红色通道的前9个数字，然后是绿色通道，然后再是蓝色通道，乘以左边黄色立方体覆盖的对应的27个数，然后把这些数都加起来，就得到了输出的第一个数字。</p>
+<p>如果要计算下一个输出，你把这个立方体滑动一个单位，再与这27个数相乘，把它们都加起来，就得到了下一个输出，以此类推。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943472.png" style="zoom: 80%;" /></div>
+
+<p>那么，这个能干什么呢？举个例子，这个过滤器是3×3×3的，如果你想检测图像红色通道的边缘，那么你可以将第一个过滤器设为<span class="math-inline">\begin{bmatrix}1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \\end{bmatrix}</span>，和之前一样，而绿色通道全为0，<span class="math-inline">\begin{bmatrix} 0&amp; 0 &amp; 0 \ 0 &amp;0 &amp; 0 \ 0 &amp; 0 &amp; 0 \\end{bmatrix}</span>，蓝色也全为0。如果你把这三个堆叠在一起形成一个3×3×3的过滤器，那么这就是一个检测垂直边界的过滤器，但只对红色通道有用。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943009.png" style="zoom: 80%;" /></div>
+
+<p>或者如果你不关心垂直边界在哪个颜色通道里，那么你可以用一个这样的过滤器，<span class="math-inline">\begin{bmatrix}1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \ \end{bmatrix}</span>，<span class="math-inline">\begin{bmatrix}1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \ \end{bmatrix}</span>，<span class="math-inline">\begin{bmatrix}1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \ 1 &amp; 0 &amp; - 1 \\end{bmatrix}</span>，所有三个通道都是这样。所以通过设置第二个过滤器参数，你就有了一个边界检测器，3×3×3的边界检测器，用来检测任意颜色通道里的边界。参数的选择不同，你就可以得到不同的特征检测器，所有的都是3×3×3的过滤器。</p>
+<p>按照计算机视觉的惯例，当你的输入有特定的高宽和通道数时，你的过滤器可以有不同的高，不同的宽，但是必须一样的通道数。理论上，我们的过滤器只关注红色通道，或者只关注绿色或者蓝色通道也是可行的。</p>
+<p>现在你已经了解了如何对立方体卷积，还有最后一个概念，对建立卷积神经网络至关重要。就是，如果我们不仅仅想要检测垂直边缘怎么办？如果我们同时检测垂直边缘和水平边缘，还有45°倾斜的边缘，还有70°倾斜的边缘怎么做？换句话说，如果你想同时用多个过滤器怎么办？</p>
+<p>这是我们上一张幻灯片的图片，我们让这个6×6×3的图像和这个3×3×3的过滤器卷积，得到4×4的输出。（第一个）这可能是一个垂直边界检测器或者是学习检测其他的特征。第二个过滤器可以用橘色来表示，它可以是一个水平边缘检测器。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943482.png" style="zoom: 80%;" /></div>
+
+<p>所以和第一个过滤器卷积，可以得到第一个4×4的输出，然后卷积第二个过滤器，得到一个不同的4×4的输出。我们做完卷积，然后把这两个4×4的输出，取第一个把它放到前面，然后取第二个过滤器输出，我把它画在这，放到后面。所以把这两个输出堆叠在一起，这样你就都得到了一个4×4×2的输出立方体，这里的2的来源于我们用了两个不同的过滤器。两个4×4的matrix合起来就叫做feature map，看你有几个filter，你就得到多少个image(你有100个filter，你就得到100个4 *4的image)</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943013.png" style="zoom: 80%;" /></div>
+
+<p>我们总结一下维度，如果你有一个<span class="math-inline">n \times n \times n_{c}</span>（通道数）的输入图像，在这个例子中就是6×6×3，这里的<span class="math-inline">n_{c}</span> 是通道数目，然后卷积上一个<span class="math-inline">f×f×n_{c}</span>，这个例子中是3×3×3，按照惯例，这个（前一个<span class="math-inline">n_{c}</span>）和这个（后一个<span class="math-inline">n_{c}</span>）必须数值相同。然后你就得到了<span class="math-inline">（n-f+1）×（n-f+1）×n_{c^{'}}</span>，这里<span class="math-inline">n_{c^{'}}</span> 实就是下一层的通道数，它就是你用的<strong>过滤器的个数</strong>，在我们的例子中，那就是4×4×2。我写下这个假设时，用的步幅为1，并且没有<strong>padding</strong>。如果你用了不同的步幅或者<strong>padding</strong>，那么这个<span class="math-inline">n-f+1</span> 值会变化，正如前面的视频演示的那样。</p>
+<p>对于这里的符号，我一直用通道数（<span class="math-inline">n_{c}</span>）来表示最后一个维度，在文献里大家也把它叫做3维立方体的深度。这两个术语，即通道或者深度，经常被用在文献中。</p>
+<h2 id="16-单层卷积网络">1.6 单层卷积网络<a class="anchor-link" href="#16-单层卷积网络" title="Permanent link">&para;</a></h2>
+<p>上一节讲了如何通过两个过滤器卷积处理一个三维图像，并输出两个不同的4×4矩阵。假设使用第一个过滤器进行卷积，得到第一个4×4矩阵。使用第二个过滤器进行卷积得到另外一个4×4矩阵。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943926.png" style="zoom: 80%;" /></div>
+
+<p>最终各自形成一个卷积神经网络层，然后增加偏差，它是一个实数，通过<strong>Python</strong>的广播机制给这16个元素都加上同一偏差。然后应用非线性函数，为了说明，它是一个非线性激活函数<strong>ReLU</strong>，输出结果是一个4×4矩阵。</p>
+<p>对于第二个4×4矩阵，我们加上不同的偏差，它也是一个实数，16个数字都加上同一个实数，然后应用非线性函数，也就是一个非线性激活函数<strong>ReLU</strong>，最终得到另一个4×4矩阵。然后重复我们之前的步骤，把这两个矩阵堆叠起来，最终得到一个4×4×2的矩阵。我们通过计算，从6×6×3的输入推导出一个4×4×2矩阵，它是卷积神经网络的一层，把它映射到标准神经网络中四个卷积层中的某一层或者一个非卷积神经网络中。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943362.png" style="zoom: 80%;" /></div>
+
+<p>注意前向传播中一个操作就是<span class="math-inline">z^{[1]} = W^{[1]}a^{[0]} + b^{[1]}</span>，其中<span class="math-inline">a^{[0]} =x</span>，执行非线性函数得到<span class="math-inline">a^{[1]}</span>，即<span class="math-inline">a^{[1]} = g(z^{[1]})</span>。这里的输入是<span class="math-inline">a^{\left\lbrack 0\right\rbrack}</span>，也就是<span class="math-inline">x</span>，这些过滤器用变量<span class="math-inline">W^{[1]}</span> 示。在卷积过程中，我们对这27个数进行操作，其实是27×2，因为我们用了两个过滤器，我们取这些数做乘法。实际执行了一个线性函数，得到一个4×4的矩阵。卷积操作的输出结果是一个4×4的矩阵，它的作用类似于<span class="math-inline">W^{[1]}a^{[0]}</span>，也就是这两个4×4矩阵的输出结果，然后加上偏差。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943174.png" style="zoom: 80%;" /></div>
+
+<p>这一部分（图中蓝色边框标记的部分）就是应用激活函数<strong>ReLU</strong>之前的值，它的作用类似于<span class="math-inline">z^{[1]}</span>，最后应用非线性函数，得到的这个4×4×2矩阵，成为神经网络的下一层，也就是激活层。</p>
+<p>这就是<span class="math-inline">a^{[0]}</span> <span class="math-inline">a^{[1]}</span> 演变过程，首先执行线性函数，然后所有元素相乘做卷积，具体做法是运用线性函数再加上偏差，然后应用激活函数<strong>ReLU</strong>。这样就通过神经网络的一层把一个6×6×3的维度<span class="math-inline">a^{[0]}</span> 化为一个4×4×2维度的<span class="math-inline">a^{[1]}</span>，这就是卷积神经网络的一层。</p>
+<p>示例中我们有两个过滤器，也就是有两个特征，因此我们才最终得到一个4×4×2的输出。但如果我们用了10个过滤器，而不是2个，我们最后会得到一个4×4×10维度的输出图像，因为我们选取了其中10个特征映射，而不仅仅是2个，将它们堆叠在一起，形成一个4×4×10的输出图像，也就是<span class="math-inline">a^{\left\lbrack1 \right\rbrack}</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943766.png" style="zoom: 80%;" /></div>
+
+<p>为了加深理解，我们来做一个练习。假设你有10个过滤器，而不是2个，神经网络的一层是3×3×3，那么，这一层有多少个参数呢？我们来计算一下，每一层都是一个3×3×3的矩阵，因此每个过滤器有27个参数，也就是27个数。然后加上一个偏差，用参数<span class="math-inline">b</span> 示，现在参数增加到28个。现在我们有10个，加在一起是28×10，也就是280个参数。</p>
+<p>请注意一点，不论输入图片有多大，1000×1000也好，5000×5000也好，参数始终都是280个。用这10个过滤器来提取特征，如垂直边缘，水平边缘和其它特征。即使这些图片很大，参数却很少，这就是卷积神经网络的一个特征，叫作“<strong>避免过拟合</strong>”。你已经知道到如何提取10个特征，可以应用到大图片中，而参数数量固定不变，此例中只有28个，相对较少。</p>
+<p>最后我们总结一下用于描述卷积神经网络中的一层（以<span class="math-inline">l</span> 为例），也就是卷积层的各种标记。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943098.png" style="zoom: 80%;" /></div>
+
+<p>这一层是卷积层，用<span class="math-inline">f^{[l]}</span> 示过滤器大小，我们说过过滤器大小为<span class="math-inline">f×f</span>，上标<span class="math-inline">\lbrack l\rbrack</span> 示<span class="math-inline">l</span> 中过滤器大小为<span class="math-inline">f×f</span>。通常情况下，上标<span class="math-inline">\lbrack l\rbrack</span> 来标记<span class="math-inline">l</span> 。用<span class="math-inline">p^{[l]}</span> 标记<strong>padding</strong>的数量，<strong>padding</strong>数量也可指定为一个<strong>valid</strong>卷积，即无<strong>padding</strong>。或是<strong>same</strong>卷积，即选定<strong>padding</strong>，如此一来，输出和输入图片的高度和宽度就相同了。用<span class="math-inline">s^{[l]}</span> 记步幅。</p>
+<p>这一层的输入会是某个维度的数据，表示为<span class="math-inline">n \times n \times n_{c}</span>，<span class="math-inline">n_{c}</span> 层上的颜色通道数。</p>
+<p>我们要稍作修改，增加上标<span class="math-inline">\lbrack l -1\rbrack</span>，即<span class="math-inline">n^{\left\lbrack l - 1 \right\rbrack} \times n^{\left\lbrack l -1 \right\rbrack} \times n_{c}^{\left\lbrack l - 1\right\rbrack}</span>，因为它是上一层的激活值。</p>
+<p>此例中，所用图片的高度和宽度都一样，但它们也有可能不同，所以分别用上下标<span class="math-inline">H</span> <span class="math-inline">W</span> 标记，即<span class="math-inline">n_{H}^{\left\lbrack l - 1 \right\rbrack} \times n_{W}^{\left\lbrack l - 1 \right\rbrack} \times n_{c}^{\left\lbrack l - 1\right\rbrack}</span>。那么在第<span class="math-inline">l</span> ，图片大小为<span class="math-inline">n_{H}^{\left\lbrack l - 1 \right\rbrack} \times n_{W}^{\left\lbrack l - 1  \right\rbrack} \times n_{c}^{\left\lbrack l - 1\right\rbrack}</span>，<span class="math-inline">l</span> 的输入就是上一层的输出，因此上标要用<span class="math-inline">\lbrack l - 1\rbrack</span>。神经网络这一层中会有输出，它本身会输出图像。其大小为<span class="math-inline">n_{H}^{[l]} \times n_{W}^{[l]} \times n_{c}^{[l]}</span>，这就是输出图像的大小。</p>
+<p>前面我们提到过，这个公式给出了输出图片的大小，至少给出了高度和宽度，<span class="math-inline">\lfloor\frac{n+2p - f}{s} + 1\rfloor</span>（注意：（<span class="math-inline">\frac{n + 2p - f}{s} +1)</span> 接用这个运算结果，也可以向下取整）。在这个新表达式中，<span class="math-inline">l</span> 输出图像的高度，即<span class="math-inline">n_{H}^{[l]} = \lfloor\frac{n_{H}^{\left\lbrack l - 1 \right\rbrack} +2p^{[l]} - f^{[l]}}{s^{[l]}} +1\rfloor</span>，同样我们可以计算出图像的宽度，用<span class="math-inline">W</span> 换参数<span class="math-inline">H</span>，即<span class="math-inline">n_{W}^{[l]} = \lfloor\frac{n_{W}^{\left\lbrack l - 1 \right\rbrack} +2p^{[l]} - f^{[l]}}{s^{[l]}} +1\rfloor</span>，公式一样，只要变化高度和宽度的参数我们便能计算输出图像的高度或宽度。这就是由<span class="math-inline">n_{H}^{\left\lbrack l - 1 \right\rbrack}</span> 导<span class="math-inline">n_{H}^{[l]}</span> 及<span class="math-inline">n_{W}^{\left\lbrack l - 1\right\rbrack}</span> 导<span class="math-inline">n_{W}^{[l]}</span> 过程。</p>
+<p>那么通道数量又是什么？这些数字从哪儿来的？我们来看一下。输出图像也具有深度，通过上一个示例，我们知道它等于该层中过滤器的数量，如果有2个过滤器，输出图像就是4×4×2，它是二维的，如果有10个过滤器，输出图像就是4×4×10。输出图像中的通道数量就是神经网络中这一层所使用的过滤器的数量。如何确定过滤器的大小呢？我们知道卷积一个6×6×3的图片需要一个3×3×3的过滤器，因此过滤器中通道的数量必须与输入中通道的数量一致。因此，输出通道数量就是输入通道数量，所以过滤器维度等于<span class="math-inline">f^{[l]} \times f^{[l]} \times n_{c}^{\left\lbrack l - 1 \right\rbrack}</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943631.png" style="zoom: 80%;" /></div>
+
+<p>应用偏差和非线性函数之后，这一层的输出等于它的激活值<span class="math-inline">a^{[l]}</span>，也就是这个维度（输出维度）。<span class="math-inline">a^{[l]}</span> 一个三维体，即<span class="math-inline">n_{H}^{[l]} \times n_{W}^{[l]} \times n_{c}^{[l]}</span>。当你执行批量梯度下降或小批量梯度下降时，如果有<span class="math-inline">m</span> 例子，就是有<span class="math-inline">m</span> 激活值的集合，那么输出<span class="math-inline">A^{[l]} = m \times n_{H}^{[l]} \times n_{W}^{[l]} \times n_{c}^{[l]}</span>。如果采用批量梯度下降，变量的排列顺序如下，首先是索引和训练示例，然后是其它三个变量。</p>
+<p>该如何确定权重参数，即参数W呢？过滤器的维度已知，为<span class="math-inline">f^{[l]} \times  f^{[l]} \times  n_{c}^{[l - 1]}</span>，这只是一个过滤器的维度，有多少个过滤器，这（<span class="math-inline">n_{c}^{[l]}</span>）是过滤器的数量，权重也就是所有过滤器的集合再乘以过滤器的总数量，即<span class="math-inline">f^{[l]} \times f^{[l]} \times  n_{c}^{[l - 1]} \times n_{c}^{[l]}</span>，损失数量L就是<span class="math-inline">l</span> 中过滤器的个数。</p>
+<p>最后我们看看偏差参数，每个过滤器都有一个偏差参数，它是一个实数。偏差包含了这些变量，它是该维度上的一个向量。后续课程中我们会看到，为了方便，偏差在代码中表示为一个1×1×1×<span class="math-inline">n_{c}^{[l]}</span> 四维向量或四维张量。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943079.png" style="zoom: 80%;" /></div>
+
+<p>卷积有很多种标记方法，这是我们最常用的卷积符号。大家在线搜索或查看开源代码时，关于高度，宽度和通道的顺序并没有完全统一的标准卷积，所以在查看<strong>GitHub</strong>上的源代码或阅读一些开源实现的时候，你会发现有些作者会采用把通道放在首位的编码标准，有时所有变量都采用这种标准。实际上在某些架构中，当检索这些图片时，会有一个变量或参数来标识计算通道数量和通道损失数量的先后顺序。只要保持一致，这两种卷积标准都可用。很遗憾，这只是一部分标记法，因为深度学习文献并未对标记达成一致。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943562.png" style="zoom: 80%;" /></div>
+
+<h2 id="17-简单卷积网络示例">1.7 简单卷积网络示例<a class="anchor-link" href="#17-简单卷积网络示例" title="Permanent link">&para;</a></h2>
+<p>整个CNN的架构如下图所示，首先input一张image以后，这张image会通过convolution layer，接下里做max pooling这件事，然后在做convolution，再做max pooling这件事。这个process可以反复无数次，反复的次数你觉得够多之后，(但是反复多少次你是要事先决定的，它就是network的架构(就像你的neural有几层一样)，你要做几层的convolution，做几层的Max Pooling，你再定neural架构的时候，你要事先决定好)。你做完决定要做的convolution和Max Pooling以后，你要做另外一件事，这件事情叫做flatten，再把flatten的output丢到一般fully connected feedforward network，然后得到影像辨识的结果。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459092.png" style="zoom: 80%;" /></div>
+
+<p>假设你有一张图片，你想做图片分类或图片识别，把这张图片输入定义为<span class="math-inline">x</span>，然后辨别图片中有没有猫，用0或1表示，这是一个分类问题，我们来构建适用于这项任务的卷积神经网络。针对这个示例，我用了一张比较小的图片，大小是39×39×3，这样设定可以使其中一些数字效果更好。所以<span class="math-inline">n_{H}^{[0]} = n_{W}^{[0]}</span>，即高度和宽度都等于39，<span class="math-inline">n_{c}^{[0]} =3</span>，即0层的通道数为3。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943130.png" style="zoom: 80%;" /></div>
+
+<p>假设第一层我们用一个3×3的过滤器来提取特征，那么<span class="math-inline">f^{[1]} = 3</span>，因为过滤器是3×3的矩阵。<span class="math-inline">s^{[1]} = 1</span>，<span class="math-inline">p^{[1]} =0</span>，所以高度和宽度使用<strong>valid</strong>卷积。如果有10个过滤器，神经网络下一层的激活值为37×37×10，写10是因为我们用了10个过滤器，37是公式<span class="math-inline">\frac{n + 2p - f}{s} + 1</span> 计算结果，也就是<span class="math-inline">\frac{39 + 0 - 3}{1} + 1 = 37</span>，所以输出是37×37，它是一个<strong>vaild</strong>卷积，这是输出结果的大小。第一层标记为<span class="math-inline">n_{H}^{[1]} = n_{W}^{[1]} = 37</span>，<span class="math-inline">n_{c}^{[1]} = 10</span>，<span class="math-inline">n_{c}^{[1]}</span> 于第一层中过滤器的个数，这（37×37×10）是第一层激活值的维度。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943815.png" style="zoom: 80%;" /></div>
+
+<p>假设还有另外一个卷积层，这次我们采用的过滤器是5×5的矩阵。在标记法中，神经网络下一层的<span class="math-inline">f=5</span>，即<span class="math-inline">f^{\left\lbrack 2 \right\rbrack} = 5</span> 幅为2，即<span class="math-inline">s^{\left\lbrack 2 \right\rbrack} = 2</span>。<strong>padding</strong>为0，即<span class="math-inline">p^{\left\lbrack 2 \right\rbrack} = 0</span>，且有20个过滤器。所以其输出结果会是一张新图像，这次的输出结果为17×17×20，因为步幅是2，维度缩小得很快，大小从37×37减小到17×17，减小了一半还多，过滤器是20个，所以通道数也是20，17×17×20即激活值<span class="math-inline">a^{\left\lbrack 2 \right\rbrack}</span> 维度。因此<span class="math-inline">n_{H}^{\left\lbrack 2 \right\rbrack} = n_{W}^{\left\lbrack 2 \right\rbrack} = 17</span>，<span class="math-inline">n_{c}^{\left\lbrack 2 \right\rbrack} = 20</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943250.png" style="zoom: 80%;" /></div>
+
+<p>我们来构建最后一个卷积层，假设过滤器还是5×5，步幅为2，即<span class="math-inline">f^{\left\lbrack 2 \right\rbrack} = 5</span>，<span class="math-inline">s^{\left\lbrack 3 \right\rbrack} = 2</span>，计算过程我跳过了，最后输出为7×7×40，假设使用了40个过滤器。<strong>padding</strong>为0，40个过滤器，最后结果为7×7×40。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943633.png" style="zoom: 80%;" /></div>
+
+<p>到此，这张39×39×3的输入图像就处理完毕了，为图片提取了7×7×40个特征，计算出来就是1960个特征。然后对该卷积进行处理，可以将其平滑或展开成1960个单元。平滑处理后可以输出一个向量，其填充内容是<strong>logistic</strong>回归单元还是<strong>softmax</strong>回归单元，完全取决于我们是想识图片上有没有猫，还是想识别<span class="math-inline">K</span> 不同对象中的一种，用<span class="math-inline">\hat y</span> 示最终神经网络的预测输出。明确一点，最后这一步是处理所有数字，即全部的1960个数字，把它们展开成一个很长的向量。为了预测最终的输出结果，我们把这个长向量填充到<strong>softmax</strong>回归函数中。</p>
+<h2 id="18-convolution和fully-connected之间的关系">1.8 convolution和fully connected之间的关系<a class="anchor-link" href="#18-convolution和fully-connected之间的关系" title="Permanent link">&para;</a></h2>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459099.png" style="zoom: 80%;" /></div>
+
+<p>convolution就是fully connected layer把一些weight拿掉了。经过convolution的output其实就是一个hidden layer的neural的output。如果把这两个link在一起的话，convolution就是fully connected拿掉一些weight的结果。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459100.png" style="zoom: 80%;" /></div>
+
+<p>我们在做convolution的时候，我们filter1放到左上角(先考虑filter1)，然后做inner product，得到内积为3，这件事情就等同于把6* 6的image拉直(变成如图所示)。然后你有一个neural的output是3，这个neural的output考虑了9个pixel，这9个pixel分别就是编号(1,2,3,7,8,9,13,14,15)的pixel。这个filter做inner product以后的output 3就是某个neuron output 3时，就代表这个neuron的weight只连接到(1,2,3,7,8,9,13,14,15)。这9个weight就是filter matrix里面的9个weight(同样的颜色)</p>
+<p>在fully connected中，一个neural应该是连接在所有的input(有36个pixel当做input，这个neuron应连接在36个input上)，但是现在只连接了9个input(detain一个pattern，不需要看整张image，看9个input就好)，这样做就是用了比较少的参数了。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209241459101.png" style="zoom: 80%;" /></div>
+
+<p>将stride=1(移动一格)做内积得到另外一个值-1，假设这个-1是另外一个neural的output，这个neural连接到input的(2,3,4，8,9,10,14，15,16)，同样的weight代表同样的颜色。在9个matrix</p>
+<p>当我们做这件事情就意味说：这两个neuron本来就在fully connect里面这两个neural本来是有自己的weight，当我们在做convolution时，首先把每一个neural连接的wight减少，强迫这两个neural共用一个weight。这件事就叫做shared weight，当我们做这件事情的时候，我们用的这个参数就比原来的更少。</p>
+<h2 id="19-池化层">1.9 池化层<a class="anchor-link" href="#19-池化层" title="Permanent link">&para;</a></h2>
+<p>除了卷积层，卷积网络也经常使用池化层来缩减模型的大小，提高计算速度，同时提高所提取特征的鲁棒性，我们来看一下。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943940.png" style="zoom: 80%;" /></div>
+
+<p>先举一个池化层的例子，然后我们再讨论池化层的必要性。假如输入是一个4×4矩阵，用到的池化类型是最大池化（<strong>max pooling</strong>）。执行最大池化的树池是一个2×2矩阵。执行过程非常简单，把4×4的输入拆分成不同的区域，我把这个区域用不同颜色来标记。对于2×2的输出，输出的每个元素都是其对应颜色区域中的最大元素值。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943234.png" style="zoom: 80%;" /></div>
+
+<p>左上区域的最大值是9，右上区域的最大元素值是2，左下区域的最大值是6，右下区域的最大值是3。为了计算出右侧这4个元素值，我们需要对输入矩阵的2×2区域做最大值运算。这就像是应用了一个规模为2的过滤器，因为我们选用的是2×2区域，步幅是2，这些就是最大池化的超参数。</p>
+<p>因为我们使用的过滤器为2×2，最后输出是9。然后向右移动2个步幅，计算出最大值2。然后是第二行，向下移动2步得到最大值6。最后向右移动3步，得到最大值3。这是一个2×2矩阵，即<span class="math-inline">f=2</span>，步幅是2，即<span class="math-inline">s=2</span>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943728.png" style="zoom: 80%;" /></div>
+
+<p>这是对最大池化功能的直观理解，你可以把这个4×4输入看作是某些特征的集合，也许不是。你可以把这个4×4区域看作是某些特征的集合，也就是神经网络中某一层的非激活值集合。数字大意味着可能探测到了某些特定的特征，左上象限具有的特征可能是一个垂直边缘，一只眼睛，或是大家害怕遇到的<strong>CAP</strong>特征。显然左上象限中存在这个特征，这个特征可能是一只猫眼探测器。然而，右上象限并不存在这个特征。最大化操作的功能就是只要在任何一个象限内提取到某个特征，它都会保留在最大化的池化输出里。所以最大化运算的实际作用就是，如果在过滤器中提取到某个特征，那么保留其最大值。如果没有提取到这个特征，可能在右上象限中不存在这个特征，那么其中的最大值也还是很小，这就是最大池化的直观理解。</p>
+<p>我们来看一个有若干个超级参数的示例，输入是一个5×5的矩阵。我们采用最大池化法，它的过滤器参数为3×3，即<span class="math-inline">f=3</span>，步幅为1，<span class="math-inline">s=1</span>，输出矩阵是3×3.之前讲的计算卷积层输出大小的公式同样适用于最大池化，即<span class="math-inline">\frac{n + 2p - f}{s} + 1</span>，这个公式也可以计算最大池化的输出大小。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943136.png" style="zoom: 80%;" /></div>
+
+<p>此例是计算3×3输出的每个元素，我们看左上角这些元素，注意这是一个3×3区域，因为有3个过滤器，取最大值9。然后移动一个元素，因为步幅是1，蓝色区域的最大值是9.继续向右移动，蓝色区域的最大值是5。然后移到下一行，因为步幅是1，我们只向下移动一个格，所以该区域的最大值是9。这个区域也是9。这两个区域的最大值都是5。最后这三个区域的最大值分别为8，6和9。超参数<span class="math-inline">f=3</span>，<span class="math-inline">s=1</span>，最终输出如图所示。</p>
+<p>以上就是一个二维输入的最大池化的演示，如果输入是三维的，那么输出也是三维的。例如，输入是5×5×2，那么输出是3×3×2。计算最大池化的方法就是分别对每个通道执行刚刚的计算过程。如上图所示，第一个通道依然保持不变。对于第二个通道，我刚才画在下面的，在这个层做同样的计算，得到第二个通道的输出。一般来说，如果输入是5×5×<span class="math-inline">n_{c}</span>，输出就是3×3×<span class="math-inline">n_{c}</span>，<span class="math-inline">n_{c}</span> 通道中每个通道都单独执行最大池化计算，以上就是最大池化算法。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943037.png" style="zoom: 80%;" /></div>
+
+<p>另外还有一种类型的池化，平均池化，它不太常用。我简单介绍一下，这种运算顾名思义，选取的不是每个过滤器的最大值，而是平均值。示例中，紫色区域的平均值是3.75，后面依次是1.25、4和2。这个平均池化的超级参数<span class="math-inline">f=2</span>，<span class="math-inline">s=2</span>，我们也可以选择其它超级参数。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943394.png" style="zoom: 80%;" /></div>
+
+<p>目前来说，最大池化比平均池化更常用。但也有例外，就是深度很深的神经网络，你可以用平均池化来分解规模为7×7×1000的网络的表示层，在整个空间内求平均值，得到1×1×1000，最大池化要比平均池化用得更多。</p>
+<p>总结一下，池化的超级参数包括过滤器大小<span class="math-inline">f</span> 步幅<span class="math-inline">s</span>，常用的参数值为<span class="math-inline">f=2</span>，<span class="math-inline">s=2</span>，应用频率非常高，其效果相当于高度和宽度缩减一半。也有使用<span class="math-inline">f=3</span>，<span class="math-inline">s=2</span> 情况。至于其它超级参数就要看你用的是最大池化还是平均池化了。你也可以根据自己意愿增加表示<strong>padding</strong>的其他超级参数，虽然很少这么用。最大池化时，往往很少用到超参数<strong>padding</strong>。大部分情况下，最大池化很少用<strong>padding</strong>。目前<span class="math-inline">p</span> 常用的值是0，即<span class="math-inline">p=0</span>。最大池化的输入就是<span class="math-inline">n_{H} \times n_{W} \times n_{c}</span>，假设没有<strong>padding</strong>，则输出<span class="math-inline">\lfloor\frac{n_{H} - f}{s} +1\rfloor \times \lfloor\frac{n_{w} - f}{s} + 1\rfloor \times n_{c}</span>。输入通道与输出通道个数相同，因为我们对每个通道都做了池化。需要注意的一点是，池化过程中没有需要学习的参数。执行反向传播时，反向传播没有参数适用于最大池化。只有这些设置过的超参数，可能是手动设置的，也可能是通过交叉验证设置的。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160943797.png" style="zoom: 80%;" /></div>
+
+<p>除了这些，池化的内容就全部讲完了。最大池化只是计算神经网络某一层的静态属性，没有什么需要学习的，它只是一个静态属性。</p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<p>- <a href=""></a></p>
+<p>- <a href="https://gitee.com/zzhzwh/Lhy_Machine_Learning">Lhy_Machine_Learning</a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

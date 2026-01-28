@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调用__call__()方法 C语言中文网 http://c.biancheng.net</title>
+    <meta name="description" content="调用__call__()方法 C语言中文网 http://c.biancheng.net - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#面向对象进阶">面向对象进阶</a><ul>
+<li><a href="#property-装饰器">@property 装饰器</a></li>
+<li><a href="#__slots__魔法">__slots__魔法</a></li>
+<li><a href="#类之间的关系">类之间的关系</a></li>
+<li><a href="#封装">封装</a></li>
+<li><a href="#继承和多态">继承和多态</a></li>
+<li><a href="#python-类特殊成员属性和方法">Python 类特殊成员（属性和方法）</a><ul>
+<li><a href="#__new__">__new__</a></li>
+<li><a href="#__call__方法">__call__()方法</a></li>
+</ul>
+</li>
+<li><a href="#__name____main__作用详解">__name__=='__main__'作用详解</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>调用__call__()方法 C语言中文网 http://c.biancheng.net</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/00.Python/03.进阶</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="面向对象进阶">面向对象进阶<a class="anchor-link" href="#面向对象进阶" title="Permanent link">&para;</a></h2>
+<h3 id="property-装饰器">@property 装饰器<a class="anchor-link" href="#property-装饰器" title="Permanent link">&para;</a></h3>
+<p>之前我们讨论过 Python 中属性和方法访问权限的问题，虽然我们不建议将属性设置为私有的，但是如果直接将属性暴露给外界也是有问题的，比如我们没有办法检查赋给属性的值是否有效。我们之前的建议是将属性命名以单下划线开头，通过这种方式来暗示属性是受保护的，不建议外界直接访问，那么如果想访问属性可以通过属性的 getter（访问器）和 setter（修改器）方法进行对应的操作。如果要做到这点，就可以考虑使用@property 包装器来包装 getter 和 setter 方法，使得对属性的访问既安全又方便，代码如下所示。</p>
+<pre><code class="language-Python">class Student(object):
+
+    @property
+    def score(self):
+        return self._score
+
+    @score.setter
+    def score(self, value):
+        if not isinstance(value, int):
+            raise ValueError('score must be an integer!')
+        if value &lt; 0 or value &gt; 100:
+            raise ValueError('score must between 0 ~ 100!')
+        self._score = value
+</code></pre>
+<p><code>@property</code>的实现比较复杂，我们先考察如何使用。把一个 getter 方法变成属性，只需要加上<code>@property</code>就可以了，此时，<code>@property</code>本身又创建了另一个装饰器<code>@score.setter</code>，负责把一个 setter 方法变成属性赋值，于是，我们就拥有一个可控的属性操作：</p>
+<pre><code class="language-python">&gt;&gt;&gt; s = Student()
+&gt;&gt;&gt; s.score = 60 # OK，实际转化为s.set_score(60)
+&gt;&gt;&gt; s.score # OK，实际转化为s.get_score()
+60
+&gt;&gt;&gt; s.score = 9999
+Traceback (most recent call last):
+  ...
+ValueError: score must between 0 ~ 100!
+
+</code></pre>
+<p>注意到这个神奇的<code>@property</code>，我们在对实例属性操作的时候，就知道该属性很可能不是直接暴露的，而是通过 getter 和 setter 方法来实现的。</p>
+<p>还可以定义只读属性，只定义 getter 方法，不定义 setter 方法就是一个只读属性:</p>
+<pre><code class="language-python">class Student(object):
+
+    @property
+    def birth(self):
+        return self._birth
+
+    @birth.setter
+    def birth(self, value):
+        self._birth = value
+
+    @property
+    def age(self):
+        return 2015 - self._birth
+</code></pre>
+<p>上面的<code>birth</code>是可读写属性，而<code>age</code>就是一个<em>只读</em>属性，因为<code>age</code>可以根据<code>birth</code>和当前时间计算出来。</p>
+<p>要特别注意：属性的方法名不要和实例变量重名。例如，以下的代码是错误的：</p>
+<pre><code class="language-python">class Student(object):
+
+    # 方法名称和实例变量均为birth:
+    @property
+    def birth(self):
+        return self.birth
+</code></pre>
+<p>这是因为调用<code>s.birth</code>时，首先转换为方法调用，在执行<code>return self.birth</code>时，又视为访问<code>self</code>的属性，于是又转换为方法调用，造成无限递归，最终导致栈溢出报错<code>RecursionError</code>。</p>
+<h3 id="__slots__魔法">__slots__魔法<a class="anchor-link" href="#__slots__魔法" title="Permanent link">&para;</a></h3>
+<p>我们讲到这里，不知道大家是否已经意识到，Python 是一门<a href="https://zh.wikipedia.org/wiki/%E5%8A%A8%E6%80%81%E8%AF%AD%E8%A8%80">动态语言</a>。通常，动态语言允许我们在程序运行时给对象绑定新的属性或方法，当然也可以对已经绑定的属性和方法进行解绑定。但是如果我们需要限定自定义类型的对象只能绑定某些属性，可以通过在类中定义__slots__变量来进行限定。需要注意的是__slots__的限定只对当前类的对象生效，对子类并不起任何作用。</p>
+<pre><code class="language-Python">class Person(object):
+
+    # 限定Person对象只能绑定_name, _age和_gender属性
+    __slots__ = ('_name', '_age', '_gender')
+
+    def __init__(self, name, age):
+        self._name = name
+        self._age = age
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, age):
+        self._age = age
+
+    def play(self):
+        if self._age &lt;= 16:
+            print('%s正在玩飞行棋.' % self._name)
+        else:
+            print('%s正在玩斗地主.' % self._name)
+
+
+def main():
+    person = Person('王大锤', 22)
+    person.play()
+    person._gender = '男'
+    # AttributeError: 'Person' object has no attribute '_is_gay'
+    # person._is_gay = True
+</code></pre>
+<h3 id="类之间的关系">类之间的关系<a class="anchor-link" href="#类之间的关系" title="Permanent link">&para;</a></h3>
+<p>简单的说，类和类之间的关系有三种：is-a、has-a 和 use-a 关系。</p>
+<ul>
+<li>is-a 关系也叫继承或泛化，比如学生和人的关系、手机和电子产品的关系都属于继承关系。</li>
+<li>has-a 关系通常称之为关联，比如部门和员工的关系，汽车和引擎的关系都属于关联关系；关联关系如果是整体和部分的关联，那么我们称之为聚合关系；如果整体进一步负责了部分的生命周期（整体和部分是不可分割的，同时同在也同时消亡），那么这种就是最强的关联关系，我们称之为合成关系。</li>
+<li>use-a 关系通常称之为依赖，比如司机有一个驾驶的行为（方法），其中（的参数）使用到了汽车，那么司机和汽车的关系就是依赖关系。</li>
+</ul>
+<p>我们可以使用一种叫做<a href="https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E5%BB%BA%E6%A8%A1%E8%AF%AD%E8%A8%80">UML</a>（统一建模语言）的东西来进行面向对象建模，其中一项重要的工作就是把类和类之间的关系用标准化的图形符号描述出来。关于 UML 我们在这里不做详细的介绍，有兴趣的读者可以自行阅读<a href="https://e.jd.com/30392949.html">《UML 面向对象设计基础》</a>一书。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152014801.png" /></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208152014116.png" /></p>
+<p>利用类之间的这些关系，我们可以在已有类的基础上来完成某些操作，也可以在已有类的基础上创建新的类，这些都是实现代码复用的重要手段。复用现有的代码不仅可以减少开发的工作量，也有利于代码的管理和维护，这是我们在日常工作中都会使用到的技术手段。</p>
+<h3 id="封装">封装<a class="anchor-link" href="#封装" title="Permanent link">&para;</a></h3>
+<p>简单的理解封装（Encapsulation），即在设计类时，刻意地将一些属性和方法隐藏在类的内部，这样在使用此类时，将无法直接以“类对象.属性名”（或者“类对象.方法名(参数)”）的形式调用这些属性（或方法），而只能用未隐藏的类方法间接操作这些隐藏的属性和方法。</p>
+<p>就好比使用电脑，我们只需要学会如何使用键盘和鼠标就可以了，不用关心内部是怎么实现的，因为那是生产和设计人员该操心的。</p>
+<blockquote>
+<p>注意，封装绝不是将类中所有的方法都隐藏起来，一定要留一些像键盘、鼠标这样可供外界使用的类方法。</p>
+</blockquote>
+<p>那么，类为什么要进行封装，这样做有什么好处呢？</p>
+<p>首先，封装机制保证了类内部<a href="http://c.biancheng.net/data_structure/">数据结构</a>的完整性，因为使用类的用户无法直接看到类中的数据结构，只能使用类允许公开的数据，很好地避免了外部对内部数据的影响，提高了程序的可维护性。</p>
+<p>除此之外，对一个类实现良好的封装，用户只能借助暴露出来的类方法来访问数据，我们只需要在这些暴露的方法中加入适当的控制逻辑，即可轻松实现用户对类中属性或方法的不合理操作。</p>
+<p>并且，对类进行良好的封装，还可以提高代码的复用性。</p>
+<p>和其它面向对象的编程语言（如 C++、Java）不同，Python 类中的变量和函数，不是公有的（类似 public 属性），就是私有的（类似 private），这 2 种属性的区别如下：</p>
+<ul>
+<li>public：公有属性的类变量和类函数，在类的外部、类内部以及子类（后续讲继承特性时会做详细介绍）中，都可以正常访问；</li>
+<li>private：私有属性的类变量和类函数，只能在本类内部使用，类的外部以及子类都无法使用。</li>
+</ul>
+<p>但是，Python 并没有提供 public、private 这些修饰符。为了实现类的封装，Python 采取了下面的方法：</p>
+<ul>
+<li>默认情况下，Python 类中的变量和方法都是公有（public）的，它们的名称前都没有下划线（_）；</li>
+<li>如果类中的变量和函数，其名称以双下划线“__”开头，则该变量（函数）为私有变量（私有函数），其属性等同于 private。</li>
+</ul>
+<p>除此之外，还可以定义以单下划线“_”开头的类属性或者类方法（例如 _name、_display(self)），这种类属性和类方法通常被视为私有属性和私有方法，虽然它们也能通过类对象正常访问，但这是一种约定俗称的用法，初学者一定要遵守。</p>
+<blockquote>
+<p>注意，Python 类中还有以双下划线开头和结尾的类方法（例如类的构造函数<strong>init</strong>(self)），这些都是 Python 内部定义的，用于 Python 内部调用。我们自己定义类属性或者类方法时，不要使用这种格式。</p>
+</blockquote>
+<p>例如，如下程序示范了 Python 的封装机制：</p>
+<pre><code class="language-python">class CLanguage :
+    def setname(self, name):
+        if len(name) &lt; 3:
+            raise ValueError('名称长度必须大于3！')
+        self.__name = name
+    def getname(self):
+        return self.__name
+    #为 name 配置 setter 和 getter 方法
+    name = property(getname, setname)
+    def setadd(self, add):
+        if add.startswith(&quot;http://&quot;):
+            self.__add = add
+        else:
+            raise ValueError('地址必须以 http:// 开头')
+    def getadd(self):
+        return self.__add
+
+    #为 add 配置 setter 和 getter 方法
+    add = property(getadd, setadd)
+    #定义个私有方法
+    def __display(self):
+        print(self.__name,self.__add)
+clang = CLanguage()
+clang.name = &quot;C语言中文网&quot;
+clang.add = &quot;http://c.biancheng.net&quot;
+print(clang.name)  #C语言中文网
+print(clang.add)  #http://c.biancheng.net
+</code></pre>
+<p>上面程序中，CLanguage 将 name 和 add 属性都隐藏了起来，但同时也提供了可操作它们的“窗口”，也就是各自的 setter 和 getter 方法，这些方法都是公有（public）的。</p>
+<p>不仅如此，以 add 属性的 setadd() 方法为例，通过在该方法内部添加控制逻辑，即通过调用 startswith() 方法，控制用户输入的地址必须以“http://”开头，否则程序将会执行 raise 语句抛出 ValueError 异常。</p>
+<blockquote>
+<p>有关 raise 的具体用法，后续章节会做详细的讲解，这里可简单理解成，如果用户输入不规范，程序将会报错。</p>
+</blockquote>
+<p>通过此程序的运行逻辑不难看出，通过对 CLanguage 类进行良好的封装，使得用户仅能通过暴露的 setter() 和 getter() 方法操作 name 和 add 属性，而通过对 setname() 和 setadd() 方法进行适当的设计，可以避免用户对类中属性的不合理操作，从而提高了类的可维护性和安全性。</p>
+<p>细心的读者可能还发现，CLanguage 类中还有一个 <strong>display() 方法，由于该类方法为私有（private）方法，且该类没有提供操作该私有方法的“窗口”，因此我们无法在类的外部使用它。换句话说，如下调用 </strong>display() 方法是不可行的：</p>
+<pre><code class="language-python">#尝试调用私有的 display() 方法
+clang.__display()
+</code></pre>
+<p>这会导致如下错误：</p>
+<blockquote>
+<p>Traceback (most recent call last):<br />
+File "D:\python3.6\1.py", line 33, in module<br />
+clang.<strong>display()<br />
+AttributeError: 'CLanguage' object has no attribute '</strong>display'</p>
+</blockquote>
+<h3 id="继承和多态">继承和多态<a class="anchor-link" href="#继承和多态" title="Permanent link">&para;</a></h3>
+<p>刚才我们提到了，可以在已有类的基础上创建新类，这其中的一种做法就是让一个类从另一个类那里将属性和方法直接继承下来，从而减少重复代码的编写。提供继承信息的我们称之为父类，也叫超类或基类；得到继承信息的我们称之为子类，也叫派生类或衍生类。子类拥有父类所有的属性和方法，即便该属性或方法是私有（private）的。子类除了继承父类提供的属性和方法，还可以定义自己特有的属性和方法，所以子类比父类拥有的更多的能力，在实际开发中，我们经常会用子类对象去替换掉一个父类对象，这是面向对象编程中一个常见的行为，对应的原则称之为<a href="https://zh.wikipedia.org/wiki/%E9%87%8C%E6%B0%8F%E6%9B%BF%E6%8D%A2%E5%8E%9F%E5%88%99">里氏替换原则</a>。下面我们先看一个继承的例子。</p>
+<pre><code class="language-Python">class Person(object):
+    &quot;&quot;&quot;人&quot;&quot;&quot;
+
+    def __init__(self, name, age):
+        self._name = name
+        self._age = age
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, age):
+        self._age = age
+
+    def play(self):
+        print('%s正在愉快的玩耍.' % self._name)
+
+    def watch_av(self):
+        if self._age &gt;= 18:
+            print('%s正在观看爱情动作片.' % self._name)
+        else:
+            print('%s只能观看《熊出没》.' % self._name)
+
+
+class Student(Person):
+    &quot;&quot;&quot;学生&quot;&quot;&quot;
+
+    def __init__(self, name, age, grade):
+        super().__init__(name, age)
+        self._grade = grade
+
+    @property
+    def grade(self):
+        return self._grade
+
+    @grade.setter
+    def grade(self, grade):
+        self._grade = grade
+
+    def study(self, course):
+        print('%s的%s正在学习%s.' % (self._grade, self._name, course))
+
+
+class Teacher(Person):
+    &quot;&quot;&quot;老师&quot;&quot;&quot;
+
+    def __init__(self, name, age, title):
+        super().__init__(name, age)
+        self._title = title
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, title):
+        self._title = title
+
+    def teach(self, course):
+        print('%s%s正在讲%s.' % (self._name, self._title, course))
+
+
+def main():
+    stu = Student('王大锤', 15, '初三')
+    stu.study('数学')
+    stu.watch_av()
+    t = Teacher('骆昊', 38, '砖家')
+    t.teach('Python程序设计')
+    t.watch_av()
+
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>子类在继承了父类的方法后，可以对父类已有的方法给出新的实现版本，这个动作称之为方法重写（override）。通过方法重写我们可以让父类的同一个行为在子类中拥有不同的实现版本，当我们调用这个经过子类重写的方法时，不同的子类对象会表现出不同的行为，这个就是多态（poly-morphism）。</p>
+<pre><code class="language-Python">from abc import ABCMeta, abstractmethod
+
+
+class Pet(object, metaclass=ABCMeta):
+    &quot;&quot;&quot;宠物&quot;&quot;&quot;
+
+    def __init__(self, nickname):
+        self._nickname = nickname
+
+    @abstractmethod
+    def make_voice(self):
+        &quot;&quot;&quot;发出声音&quot;&quot;&quot;
+        pass
+
+
+class Dog(Pet):
+    &quot;&quot;&quot;狗&quot;&quot;&quot;
+
+    def make_voice(self):
+        print('%s: 汪汪汪...' % self._nickname)
+
+
+class Cat(Pet):
+    &quot;&quot;&quot;猫&quot;&quot;&quot;
+
+    def make_voice(self):
+        print('%s: 喵...喵...' % self._nickname)
+
+
+def main():
+    pets = [Dog('旺财'), Cat('凯蒂'), Dog('大黄')]
+    for pet in pets:
+        pet.make_voice()
+
+
+if __name__ == '__main__':
+    main()
+</code></pre>
+<p>在上面的代码中，我们将<code>Pet</code>类处理成了一个抽象类，所谓抽象类就是不能够创建对象的类，这种类的存在就是专门为了让其他类去继承它。Python 从语法层面并没有像 Java 或 C#那样提供对抽象类的支持，但是我们可以通过<code>abc</code>模块的<code>ABCMeta</code>元类和<code>abstractmethod</code>包装器来达到抽象类的效果，如果一个类中存在抽象方法那么这个类就不能够实例化（创建对象）。上面的代码中，<code>Dog</code>和<code>Cat</code>两个子类分别对<code>Pet</code>类中的<code>make_voice</code>抽象方法进行了重写并给出了不同的实现版本，当我们在<code>main</code>函数中调用该方法时，这个方法就表现出了多态行为（同样的方法做了不同的事情）。</p>
+<h3 id="python-类特殊成员属性和方法">Python 类特殊成员（属性和方法）<a class="anchor-link" href="#python-类特殊成员属性和方法" title="Permanent link">&para;</a></h3>
+<p>Python 类中，凡是以双下划线 "__" 开头和结尾命名的成员（属性和方法），都被称为类的特殊成员（特殊属性和特殊方法）。例如，类的 __init__(self) 构造方法就是典型的特殊方法。</p>
+<p>Python 类中的特殊成员，其特殊性类似 C++ 类的 private 私有成员，即不能在类的外部直接调用，但允许借助类中的普通方法调用甚至修改它们。如果需要，还可以对类的特殊方法进行重写，从而实现一些特殊的功能。</p>
+<h4 id="__new__">__new__<a class="anchor-link" href="#__new__" title="Permanent link">&para;</a></h4>
+<p><a href="http://c.biancheng.net/view/5484.html">Python <strong>new</strong>()方法详解 (biancheng.net)</a></p>
+<p><a href="https://www.jianshu.com/p/08d7956601de">python 的<strong>new</strong>方法 - 简书 (jianshu.com)</a></p>
+<p><strong>__new__</strong>() 是一种负责创建类实例的静态方法，它无需使用 staticmethod 装饰器修饰，且该方法会优先 __init__() 初始化方法被调用。</p>
+<p>一般情况下，覆写 <strong>__new__</strong>() 的实现将会使用合适的参数调用其超类的 super().<strong>__new__</strong>() ，并在返回之前修改实例。例如：</p>
+<pre><code class="language-python">class demoClass:
+    instances_created = 0
+    def __new__(cls,*args,**kwargs):
+        print(&quot;__new__():&quot;,cls,args,kwargs)
+        instance = super().__new__(cls)
+        instance.number = cls.instances_created
+        cls.instances_created += 1
+        return instance
+    def __init__(self,attribute):
+        print(&quot;__init__():&quot;,self,attribute)
+        self.attribute = attribute
+test1 = demoClass(&quot;abc&quot;)
+test2 = demoClass(&quot;xyz&quot;)
+print(test1.number,test1.instances_created)
+print(test2.number,test2.instances_created)
+</code></pre>
+<p>输出结果：</p>
+<pre><code class="language-python">__new__(): &lt;class '__main__.demoClass'&gt; ('abc',) {}
+__init__(): &lt;__main__.demoClass object at 0x0000026FC0DF8080&gt; abc
+__new__(): &lt;class '__main__.demoClass'&gt; ('xyz',) {}
+__init__(): &lt;__main__.demoClass object at 0x0000026FC0DED358&gt; xyz
+0 2
+1 2
+</code></pre>
+<p>__new__<strong>() 通常会返回该类的一个实例，但有时也可能会返回其他类的实例，如果发生了这种情况，则会跳过对 </strong>__init____() 方法的调用。而在某些情况下（比如需要修改不可变类实例（<a href="http://c.biancheng.net/python/">Python</a> 的某些内置类型）的创建行为），利用这一点会事半功倍。比如：</p>
+<pre><code class="language-python">class nonZero(int):
+    def __new__(cls,value):
+        return super().__new__(cls,value) if value != 0 else None
+    def __init__(self,skipped_value):
+        #此例中会跳过此方法
+        print(&quot;__init__()&quot;)
+        super().__init__()
+print(type(nonZero(-12)))
+print(type(nonZero(0)))
+</code></pre>
+<p>运行结果：</p>
+<pre><code class="language-python">__init__()
+&lt;class '__main__.nonZero'&gt;
+&lt;class 'NoneType'&gt;
+</code></pre>
+<blockquote>
+<ol>
+<li>
+<p><strong>init</strong> 通常用于初始化一个新实例，控制这个初始化的过程，比如添加一些属性， 做一些额外的操作，发生在类实例被创建完以后。它是实例级别的方法。</p>
+</li>
+<li>
+<p><strong>new</strong> 通常用于控制生成一个新实例的过程。它是类级别的方法。</p>
+</li>
+<li>
+<p><strong>new</strong>至少要有一个参数 cls，代表要实例化的类，此参数在实例化时由 Python 解释器自动提供</p>
+</li>
+<li>
+<p>new<strong>必须要有返回值，返回实例化出来的实例，这点在自己实现</strong>new<strong>时要特别注意，可以 return 父类</strong>new<strong>出来的实例，或者直接是 object 的</strong>new**出来的实例</p>
+</li>
+<li>
+<p>可以将类比作制造商，<strong>new</strong>方法就是前期的原材料购买环节，<strong>init</strong>方法就是在有原材料的基础上，加工，初始化商品环节</p>
+</li>
+</ol>
+</blockquote>
+<p>那么，什么情况下使用 <strong>__new__</strong>() 呢？答案很简单，在 __<strong>init_</strong>_() 不够用的时候。</p>
+<p>主要是当你继承一些不可变的 class 时(比如 int, str, tuple)， 提供给你一个自定义这些类的实例化过程的途径。还有就是实现自定义的 metaclass。</p>
+<p>具体我们可以用 int 来作为一个例子：<br />
+假如我们需要一个永远都是正数的整数类型:</p>
+<pre><code class="language-python">class PositiveInteger(int):
+    def __init__(self, value):
+        super(PositiveInteger, self).__init__(self, abs(value))
+
+i = PositiveInteger(-3)
+print i
+</code></pre>
+<p>有些读者可能会认为，<em>_new</em>_() 对执行重要的对象初始化很有用，如果用户忘记使用 super()，可能会漏掉这一初始化。虽然这听上去很合理，但有一个主要的缺点，即如果使用这样的方法，那么即便初始化过程已经是预期的行为，程序员明确跳过初始化步骤也会变得更加困难。不仅如此，它还破坏了“<em>_init</em>_() 中执行所有初始化工作”的潜规则。</p>
+<p>但运行后会发现，结果根本不是我们想的那样，我们任然得到了-3。这是因为对于 int 这种 不可变的对象，我们只有重载它的<strong>new</strong>方法才能起到自定义的作用<br />
+修改后的代码:</p>
+<pre><code class="language-python">class PositiveInteger(int):
+    def __new__(cls, value):
+        return super(PositiveInteger, cls).__new__(cls, abs(value))
+
+i = PositiveInteger(-3)
+print i
+</code></pre>
+<p>通过重载<strong>new</strong>方法，我们实现了需要的功能。</p>
+<p>注意，由于 <em>_new</em>_() 不限于返回同一个类的实例，所以很容易被滥用，不负责任地使用这种方法可能会对代码有害，所以要谨慎使用。一般来说，对于特定问题，最好搜索其他可用的解决方案，最好不要影响对象的创建过程，使其违背程序员的预期。比如说，前面提到的覆写不可变类型初始化的例子，完全可以用工厂方法（一种<a href="http://c.biancheng.net/design_pattern/">设计模式</a>）来替代。</p>
+<h4 id="__call__方法">__call__()方法<a class="anchor-link" href="#__call__方法" title="Permanent link">&para;</a></h4>
+<p>该方法的功能类似于在类中重载 () 运算符，使得类实例对象可以像调用普通函数那样，以“对象名()”的形式使用。</p>
+<pre><code class="language-python">class CLanguage:
+    # 定义__call__方法
+    def __call__(self,name,add):
+        print(&quot;调用__call__()方法&quot;,name,add)
+clangs = CLanguage()
+clangs(&quot;C语言中文网&quot;,&quot;http://c.biancheng.net&quot;)
+# 调用__call__()方法 C语言中文网 http://c.biancheng.net
+</code></pre>
+<p>可以看到，通过在 CLanguage 类中实现 <strong>call</strong>() 方法，使的 clangs 实例对象变为了可调用对象。</p>
+<blockquote>
+<p>Python 中，凡是可以将 () 直接应用到自身并执行，都称为可调用对象。可调用对象包括自定义的函数、Python 内置函数以及本节所讲的类实例对象。</p>
+</blockquote>
+<p>对于可调用对象，实际上“名称()”可以理解为是“名称.<strong>call</strong>()”的简写。仍以上面程序中定义的 clangs 实例对象为例，其最后一行代码还可以改写为如下形式：</p>
+<pre><code class="language-python">clangs.__call__(&quot;C语言中文网&quot;,&quot;http://c.biancheng.net&quot;)
+</code></pre>
+<p>运行程序会发现，其运行结果和之前完全相同。</p>
+<h3 id="__name____main__作用详解">__name__=='__main__'作用详解<a class="anchor-link" href="#__name____main__作用详解" title="Permanent link">&para;</a></h3>
+<p>一般情况下，当我们写完自定义的模块之后，都会写一个测试代码，检验一些模块中各个功能是否能够成功运行。例如，创建一个 candf.py 文件，并编写如下代码：</p>
+<pre><code class="language-python">'''
+摄氏度和华氏度的相互转换模块
+'''
+def c2f(cel):
+    fah = cel * 1.8 + 32
+    return fah
+def f2c(fah):
+    cel = (fah - 32) / 1.8
+    return cel
+def test():
+    print(&quot;测试数据：0 摄氏度 = %.2f 华氏度&quot; % c2f(0))
+    print(&quot;测试数据：0 华氏度 = %.2f 摄氏度&quot; % f2c(0))
+test()
+</code></pre>
+<p>单独运行此模块文件，可以看到如下运行结果：</p>
+<blockquote>
+<p>测试数据：0 摄氏度 = 32.00 华氏度<br />
+测试数据：0 华氏度 = -17.78 摄氏度</p>
+</blockquote>
+<p>在 candf.py 模块文件的基础上，在同目录下再创建一个 demo.py 文件，并编写如下代码：</p>
+<pre><code class="language-python">import candf
+print(&quot;32 摄氏度 = %.2f 华氏度&quot; % candf.c2f(32))
+print(&quot;99 华氏度 = %.2f 摄氏度&quot; % candf.f2c(99))
+</code></pre>
+<p>运行 demo.py 文件，其运行结果如下所示：</p>
+<blockquote>
+<p>测试数据：0 摄氏度 = 32.00 华氏度<br />
+测试数据：0 华氏度 = -17.78 摄氏度<br />
+32 摄氏度 = 89.60 华氏度<br />
+99 华氏度 = 37.22 摄氏度</p>
+</blockquote>
+<p>可以看到，<a href="http://c.biancheng.net/python/">Python</a>解释器将模块（candf.py）中的测试代码也一块儿运行了，这并不是我们想要的结果。想要避免这种情况的关键在于，要让 Python 解释器知道，当前要运行的程度代码，是模块文件本身，还是导入模块的其它程序。</p>
+<p>为了实现这一点，就需要使用 Python 内置的系统变量 <strong>name</strong>，它用于标识所在模块的模块名。例如，在 demo.py 程序文件中，添加如下代码：</p>
+<pre><code class="language-python">print(__name__)
+print(candf.__name__)
+其运行结果为：
+__main__
+candf
+</code></pre>
+<p>可以看到，当前运行的程序，其 <strong>name</strong> 的值为 <strong>main</strong>，而导入到当前程序中的模块，其 <strong>name</strong> 值为自己的模块名。</p>
+<p>因此，<code>if __name__ == '__main__':</code> 的作用是确保只有单独运行该模块时，此表达式才成立，才可以进入此判断语法，执行其中的测试代码；反之，如果只是作为模块导入到其他程序文件中，则此表达式将不成立，运行其它程序时，也就不会执行该判断语句中的测试代码。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

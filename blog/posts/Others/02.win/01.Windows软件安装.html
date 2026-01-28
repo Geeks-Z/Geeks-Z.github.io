@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#anaconda">Anaconda</a></li>
+<li><a href="#centos">CentOS</a><ul>
+<li><a href="#新建虚拟机">新建虚拟机</a></li>
+<li><a href="#选择典型">选择典型</a></li>
+<li><a href="#选择centos镜像">选择CentOS镜像</a></li>
+<li><a href="#存储位置">存储位置</a></li>
+<li><a href="#虚拟机磁盘配置">虚拟机磁盘配置</a></li>
+<li><a href="#自定义其他配置">自定义其他配置</a></li>
+<li><a href="#电脑配置">电脑配置</a></li>
+<li><a href="#系统安装">系统安装</a></li>
+<li><a href="#linux配置">Linux配置</a></li>
+<li><a href="#centos7-防火墙的关闭">Centos7 防火墙的关闭</a></li>
+</ul>
+</li>
+<li><a href="#git-的安装">Git 的安装</a><ul>
+<li><a href="#git-的下载">git 的下载</a></li>
+<li><a href="#安装">安装</a></li>
+</ul>
+</li>
+<li><a href="#nvm">nvm</a><ul>
+<li><a href="#下载安装">下载安装</a></li>
+<li><a href="#检查环境变量">检查环境变量</a></li>
+<li><a href="#配置淘宝镜像">配置淘宝镜像</a></li>
+<li><a href="#常用命令">常用命令</a></li>
+</ul>
+</li>
+<li><a href="#nacos">Nacos</a><ul>
+<li><a href="#下载安装包">下载安装包</a></li>
+<li><a href="#解压">解压</a></li>
+<li><a href="#端口配置">端口配置</a></li>
+<li><a href="#启动">启动</a></li>
+<li><a href="#访问">访问</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> Others/02.win</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="anaconda">Anaconda<a class="anchor-link" href="#anaconda" title="Permanent link">&para;</a></h2>
+<ul>
+<li>官网 <a href="https://www.anaconda.com/products/individual">https://www.anaconda.com/products/individual</a> 选择适合自己系统的安装包，根据指示完成安装过程，并确保在安装过程中添加Anaconda到系统PATH环境变量。</li>
+<li>安装时记得勾选<code>Add Anaconda to my PATH environment variable</code> 添加到环境变量中。</li>
+<li>安装完成后打开<code>cmd</code>，输入<code>conda</code>回车出现如下信息，即为安装成功。</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251625778.png"/></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210251625800.png"/></div>
+
+<h2 id="centos">CentOS<a class="anchor-link" href="#centos" title="Permanent link">&para;</a></h2>
+<blockquote>
+<ul>
+<li>虚拟机：vmware</li>
+<li>操作系统：CentOS-7.4</li>
+</ul>
+</blockquote>
+<h4 id="新建虚拟机">新建虚拟机<a class="anchor-link" href="#新建虚拟机" title="Permanent link">&para;</a></h4>
+<p><img alt="(img-0Y8cBNy9-1651289700668)" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451761.png" /></p>
+<h4 id="选择典型">选择典型<a class="anchor-link" href="#选择典型" title="Permanent link">&para;</a></h4>
+<p><img alt="image-20220429103817610" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451980.png" /></p>
+<h4 id="选择centos镜像">选择CentOS镜像<a class="anchor-link" href="#选择centos镜像" title="Permanent link">&para;</a></h4>
+<p>我们在这次学习时使用mini版操作系统镜像，安装速度快，也去除了我们用不到的软件。</p>
+<p><img alt="image-20220429104028241" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451750.png" /></p>
+<h4 id="存储位置">存储位置<a class="anchor-link" href="#存储位置" title="Permanent link">&para;</a></h4>
+<p><img alt="image-20220429104123522" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451680.png" /></p>
+<h4 id="虚拟机磁盘配置">虚拟机磁盘配置<a class="anchor-link" href="#虚拟机磁盘配置" title="Permanent link">&para;</a></h4>
+<p><img alt="image-20220429104252587" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451753.png" /></p>
+<h4 id="自定义其他配置">自定义其他配置<a class="anchor-link" href="#自定义其他配置" title="Permanent link">&para;</a></h4>
+<p><img alt="(img-cv7EL99h-1651289700688)" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451811.png" /></p>
+<p>在自定义硬件中，我们可以再次配置虚拟机的内存、cpu等硬件属性：</p>
+<p><img alt="image-20220429104532662" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451074.png" /></p>
+<h4 id="电脑配置">电脑配置<a class="anchor-link" href="#电脑配置" title="Permanent link">&para;</a></h4>
+<p>内存：建议8G以上</p>
+<p>CPU：4核以上主流即可</p>
+<h4 id="系统安装">系统安装<a class="anchor-link" href="#系统安装" title="Permanent link">&para;</a></h4>
+<h5 id="1-虚拟机配置完成之后进入系统安装界面">1 虚拟机配置完成之后进入系统安装界面<a class="anchor-link" href="#1-虚拟机配置完成之后进入系统安装界面" title="Permanent link">&para;</a></h5>
+<p><img alt="image-20220429104742575" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451322.png" /></p>
+<p>出现此界面后敲“回车”进入安装程序</p>
+<p><img alt="image-20220429104809556" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451105.png" /></p>
+<h5 id="2-选择安装语言">2 选择安装语言<a class="anchor-link" href="#2-选择安装语言" title="Permanent link">&para;</a></h5>
+<p><img alt="image-20220429105000623" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451580.png" /></p>
+<h5 id="3-分区选择">3 分区选择<a class="anchor-link" href="#3-分区选择" title="Permanent link">&para;</a></h5>
+<p>虽然默认会自动帮我们格式化磁盘，但也需要点击确认一下。</p>
+<p><img alt="image-20220429105138184" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451192.png" /></p>
+<p>点击左上角完成即可</p>
+<p><img alt="image-20220429105205236" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451431.png" /></p>
+<h5 id="4-开始安装">4 开始安装<a class="anchor-link" href="#4-开始安装" title="Permanent link">&para;</a></h5>
+<p><img alt="image-20220429105238902" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451282.png" /></p>
+<p>安装过程中我们可以设置密码</p>
+<p><img alt="image-20220429105355312" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451423.png" /></p>
+<h5 id="5-安装完成">5 安装完成<a class="anchor-link" href="#5-安装完成" title="Permanent link">&para;</a></h5>
+<p>当出现 重启 按钮时，说明系统已经安装完成</p>
+<p><img alt="image-20220429105511251" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451504.png" /></p>
+<p>重启后的样子</p>
+<p><img alt="image-20220429105531308" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451518.png" /></p>
+<p>至此，我们在VMware中对CentOS的基本安装已经完成。</p>
+<h4 id="linux配置">Linux配置<a class="anchor-link" href="#linux配置" title="Permanent link">&para;</a></h4>
+<h5 id="配置上网">配置上网<a class="anchor-link" href="#配置上网" title="Permanent link">&para;</a></h5>
+<ul>
+<li>修改配置网卡配置文件</li>
+</ul>
+<p>:</p>
+<p><img alt="image-20220429111029259" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451698.png" /></p>
+<ul>
+<li>修改ONBOOT=yes</li>
+<li>重启网络服务</li>
+</ul>
+<p>systemctl restart network</p>
+<ul>
+<li>测试</li>
+</ul>
+<p>ping qq.com</p>
+<p><img alt="image-20220429111845497" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451728.png" /></p>
+<p>至此，我们的虚拟机就可以访问互联网了。</p>
+<h5 id="配置静态ip">配置静态ip<a class="anchor-link" href="#配置静态ip" title="Permanent link">&para;</a></h5>
+<p>查看本地ip:</p>
+<p><img alt="image-20220429112527136" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451751.png" /></p>
+<p>之前的网络配置是使用dhcp方式分配ip地址，这种方式会在系统每次联网的时候分配一个ip给我们用，也就是说有可能系统下次启动的时候ip会变，这样非常不方便我们管理。</p>
+<p>网段和网关可以通过以下方式查看：</p>
+<p><img alt="(img-TXTOdh17-1651289700735)" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451777.png" /></p>
+<p><img alt="image-20220429115544902" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061451877.png" /></p>
+<p>配置静态ip首先需要打开网卡配置文件</p>
+<pre><code class="language-bash">vi /etc/sysconfig/network-scripts/ifcfg-ens33
+</code></pre>
+<ul>
+<li>修改启动协议 BOOTPROTO=static</li>
+<li>手动配置ip地址</li>
+</ul>
+<pre><code>TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=d768f819-cfc1-4a6d-8bf5-cd7359a86c75
+DEVICE=ens33
+ONBOOT=yes
+## IP地址 （根据自己的环境修改）
+IPADDR=192.168.8.101
+## 子网掩码
+NETMASK=255.255.255.0
+## 网关（根据自己的环境修改）
+GATEWAY=192.168.8.2
+#DNS
+DNS1=223.5.5.5
+</code></pre>
+<p>完整配置截图如下：</p>
+<p><img alt="image-20220429115226394" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061509864.png" /></p>
+<p>环境不同，ip地址可能不同，所以需要安装自己的ip网段和网关地址进行配置。</p>
+<ul>
+<li>接下来重启网络服务</li>
+</ul>
+<p>systemctl restart network</p>
+<p>查看ip地址，发现ip地址已经变成固定ip 192.168.8.101：</p>
+<p><img alt="image-20220429113917631" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202210061509034.png" /></p>
+<h5 id="不能上网的错误排查">不能上网的错误排查<a class="anchor-link" href="#不能上网的错误排查" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p>vmware中网关是否正确</p>
+</li>
+<li>
+<p>直接ping ip是否能通（物理连接排查）</p>
+</li>
+<li>
+<p>卸载重装</p>
+</li>
+</ul>
+<h5 id="一些公网dns服务器">一些公网DNS服务器<a class="anchor-link" href="#一些公网dns服务器" title="Permanent link">&para;</a></h5>
+<pre><code>#阿里
+223.5.5.5
+223.6.6.6
+#腾讯
+119.29.29.29
+182.254.118.118
+#百度
+180.76.76.76
+#114 DNS
+114.114.114.114
+114.114.115.115
+#谷歌
+8.8.8.8
+8.8.4.4
+</code></pre>
+<h4 id="centos7-防火墙的关闭">Centos7 防火墙的关闭<a class="anchor-link" href="#centos7-防火墙的关闭" title="Permanent link">&para;</a></h4>
+<p>CentOS 7.0默认使用的是firewall作为防火墙</p>
+<p>查看防火墙状态</p>
+<pre><code>firewall-cmd --state
+</code></pre>
+<p>停止firewall</p>
+<pre><code>systemctl stop firewalld.service
+</code></pre>
+<p>禁止firewall开机启动</p>
+<pre><code>systemctl disable firewalld.service
+</code></pre>
+<p>放行端口</p>
+<pre><code>firewall-cmd --zone=public --add-port=80/tcp --permanent
+</code></pre>
+<p>重启防火墙</p>
+<pre><code>firewall-cmd --reload
+</code></pre>
+<h2 id="git-的安装">Git 的安装<a class="anchor-link" href="#git-的安装" title="Permanent link">&para;</a></h2>
+<h3 id="git-的下载">git 的下载<a class="anchor-link" href="#git-的下载" title="Permanent link">&para;</a></h3>
+<p>下载地址： https://git-scm.com/download</p>
+<p><img alt="1571990833074" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053986.png" /></p>
+<p>附件</p>
+<p><img alt="1571991253594" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053987.png" /></p>
+<hr/>
+
+<h3 id="安装">安装<a class="anchor-link" href="#安装" title="Permanent link">&para;</a></h3>
+<p>1) 按照附件的 顺序直接下一步傻瓜式安装即可</p>
+<p>2) 其中安装的过程中需要填写一个邮箱和用户名(任意即可)</p>
+<p><img alt="1572001054551" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053988.png" /></p>
+<p>3)  <span class="math-inline">\color{red}{注意: 安装完毕请重启资源管理器,或者重启电脑!!!}</span> </p>
+<p>4)  更改语言</p>
+<p><img alt="1571992521110" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202211042053990.png" /></p>
+<h2 id="nvm">nvm<a class="anchor-link" href="#nvm" title="Permanent link">&para;</a></h2>
+<blockquote>
+<ul>
+<li><a href="https://juejin.cn/post/7093787595951308836">Windows nvm安装与使用</a></li>
+</ul>
+</blockquote>
+<p>nvm是Node.js版本管理工具，可以用来安装和切换Node.js的版本。</p>
+<ul>
+<li>nvm：nodejs 版本管理工具，也就是说：一个 nvm 可以管理很多 node 版本和 npm 版本。</li>
+<li>nodejs：在项目开发时的所需要的代码库。</li>
+<li>npm：nodejs 包管理工具，在安装 nodejs 的时候，npm 也会跟着一起安装，它是包管理工具，npm 管理 nodejs 中的第三方插件。</li>
+</ul>
+<p>安装前注意事项： </p>
+<ul>
+<li><strong>首先最重要的是：一定要卸载已安装的 NodeJS，否则会发生冲突。</strong></li>
+<li>卸载node：确保在 Node.js 没有在后台运行的情况下，进行卸载。可以先打开软件，关闭后到控制面板中找到node.js进行卸载。</li>
+<li>删除相关文件: 卸载后，到文件夹中进行进一步的删除。node默认安装的文件夹，具体文件位置请查看自己安装时的位置！！</li>
+<li>C:\Program Files (x86)\Nodejs</li>
+<li>C:\Program Files\Nodejs</li>
+<li>C:\Users\admin\AppData\Roaming\npm</li>
+<li>C:\Users\admin\AppData\Roaming\npm-cache、</li>
+<li>检查环境变量，确保没有引用nodejs或者npm(右击我的电脑 --&gt; 属性 --&gt;高级系统设置 --&gt; 环境变量)</li>
+</ul>
+<h3 id="下载安装">下载安装<a class="anchor-link" href="#下载安装" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/coreybutler/nvm-windows/releases">下载nvm-windows</a></p>
+<ul>
+<li>nvm-noinstall.zip： 这个是绿色免安装版本，但是使用之前需要配置</li>
+<li><strong>nvm-setup.zip</strong>：这是一个安装包，下载之后点击安装，无需配置就可以使用，方便。</li>
+<li>Source code(zip)：zip压缩的源码</li>
+<li>Sourc code(tar.gz)：tar.gz的源码，一般用于Linux系统</li>
+</ul>
+<p>以管理员方式打开，安装文件 nvm-setup.exe</p>
+<p>注意：nvm路径最好好nodejs路径在同一文件夹下，文件夹名不要有中文名或者空格</p>
+<h3 id="检查环境变量">检查环境变量<a class="anchor-link" href="#检查环境变量" title="Permanent link">&para;</a></h3>
+<p><img alt="image-20231229182912118" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202312291829196.png" /></p>
+<h3 id="配置淘宝镜像">配置淘宝镜像<a class="anchor-link" href="#配置淘宝镜像" title="Permanent link">&para;</a></h3>
+<ul>
+<li>找到nvm安装目录下的settings.txt，加入以下命令</li>
+</ul>
+<h3 id="常用命令">常用命令<a class="anchor-link" href="#常用命令" title="Permanent link">&para;</a></h3>
+<ul>
+<li>查看本地安装的所有版本: nvm list 或者 nvm ls</li>
+<li>使用 nvm install 安装node版本：nvm install 版本号</li>
+<li>查看网络可以安装的版本: nvm list available </li>
+<li>切换版本：nvm use 版本号 （nvm use 16.14.0）</li>
+</ul>
+<h2 id="nacos">Nacos<a class="anchor-link" href="#nacos" title="Permanent link">&para;</a></h2>
+<h3 id="下载安装包">下载安装包<a class="anchor-link" href="#下载安装包" title="Permanent link">&para;</a></h3>
+<p>在 Nacos 的 GitHub 页面，提供有下载链接，可以下载编译好的 Nacos 服务端或者源代码：</p>
+<p>GitHub 主页：https://github.com/alibaba/nacos</p>
+<p>GitHub 的 Release 下载页：https://github.com/alibaba/nacos/releases</p>
+<p>如图：</p>
+<p><img alt="image-20210402161102887" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040323.png" /></p>
+<p>本课程采用 1.4.1.版本的 Nacos，课前资料已经准备了安装包：</p>
+<p><img alt="image-20210402161130261" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040399.png" /></p>
+<p>windows 版本使用<code>nacos-server-1.4.1.zip</code>包即可。</p>
+<h3 id="解压">解压<a class="anchor-link" href="#解压" title="Permanent link">&para;</a></h3>
+<p>将这个包解压到任意非中文目录下，如图：</p>
+<p><img alt="image-20210402161843337" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040414.png" /></p>
+<p>目录说明：</p>
+<ul>
+<li>bin：启动脚本</li>
+<li>conf：配置文件</li>
+</ul>
+<h3 id="端口配置">端口配置<a class="anchor-link" href="#端口配置" title="Permanent link">&para;</a></h3>
+<p>Nacos 的默认端口是 8848，如果你电脑上的其它进程占用了 8848 端口，请先尝试关闭该进程。</p>
+<p><strong>如果无法关闭占用 8848 端口的进程</strong>，也可以进入 nacos 的 conf 目录，修改配置文件中的端口：</p>
+<p><img alt="image-20210402162008280" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040421.png" /></p>
+<p>修改其中的内容：</p>
+<p><img alt="image-20210402162251093" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040426.png" /></p>
+<h3 id="启动">启动<a class="anchor-link" href="#启动" title="Permanent link">&para;</a></h3>
+<p>启动非常简单，进入 bin 目录，结构如下：</p>
+<p><img alt="image-20210402162350977" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040427.png" /></p>
+<p>然后执行命令即可：</p>
+<ul>
+<li>windows 命令：</li>
+</ul>
+<p><code>startup.cmd -m standalone</code></p>
+<p>执行后的效果如图：</p>
+<p><img alt="image-20210402162526774" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040758.png" /></p>
+<h3 id="访问">访问<a class="anchor-link" href="#访问" title="Permanent link">&para;</a></h3>
+<p>在浏览器输入地址：http://127.0.0.1:8848/nacos即可：</p>
+<p><img alt="image-20210402162630427" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040824.png" /></p>
+<p>默认的账号和密码都是 nacos，进入后：</p>
+<p><img alt="image-20210402162709515" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202302061040832.png" /></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

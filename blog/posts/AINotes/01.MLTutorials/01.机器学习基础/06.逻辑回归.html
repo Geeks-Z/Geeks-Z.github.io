@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistic Regression</title>
+    <meta name="description" content="Logistic Regression - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#classification">Classification</a></li>
+<li><a href="#hypothesis-representation">Hypothesis Representation</a><ul>
+<li><a href="#最大似然估计">最大似然估计</a></li>
+</ul>
+</li>
+<li><a href="#decision-boundary">Decision Boundary</a></li>
+<li><a href="#cost-function">Cost Function</a></li>
+<li><a href="#simplified-cost-function-and-gradient-descent">Simplified Cost Function and Gradient Descent</a></li>
+<li><a href="#advanced-optimization">Advanced Optimization</a></li>
+<li><a href="#multiclass-classification-one-vs-all">Multiclass Classification: One-vs-all</a></li>
+<li><a href="#logistic-损失函数的解释explanation-of-logistic-regression-cost-function">logistic 损失函数的解释（Explanation of logistic regression cost function）</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Logistic Regression</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="logistic-regression">Logistic Regression<a class="anchor-link" href="#logistic-regression" title="Permanent link">&para;</a></h1>
+<h2 id="classification">Classification<a class="anchor-link" href="#classification" title="Permanent link">&para;</a></h2>
+<p>在分类问题中，预测的结果是离散值（结果是否属于某一类），逻辑回归算法(Logistic Regression)被用于解决这类分类问题。</p>
+<ul>
+<li>垃圾邮件判断</li>
+<li>金融欺诈判断</li>
+<li>肿瘤诊断</li>
+</ul>
+<p>讨论肿瘤诊断问题：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000688.png" /></p>
+<p>肿瘤诊断问题的目的是告诉病人<strong>是否</strong>为恶性肿瘤，是一个<strong>二元分类问题(binary class problems)</strong>，则定义 <span class="math-inline"> y \in\lbrace 0, 1\rbrace</span>，其中 0 表示<strong>负向类(negative class)</strong>，代表恶性肿瘤("-")，1 为<strong>正向类(positive class)</strong>，代表良性肿瘤("+")。如图，定义最右边的样本为<strong>偏差项</strong>。</p>
+<p>在未加入偏差项时，线性回归算法给出了品红色的拟合直线，若规定</p>
+<p><span class="math-inline">h_\theta(x) \geqslant 0.5</span> ，预测为 <span class="math-inline">y = 1</span>，即正向类；</p>
+<p><span class="math-inline">h_\theta(x) \lt 0.5</span> ，预测为 <span class="math-inline">y = 0</span>，即负向类。</p>
+<p>即以 0.5 为<strong>阈值</strong>(threshold)，则我们就可以根据线性回归结果，得到相对正确的分类结果 <span class="math-inline">y</span>。</p>
+<p>接下来加入偏差项，线性回归算法给出了靛青色的拟合直线，如果阈值仍然为 0.5，可以看到算法在某些情况下会给出完全错误的结果，对于癌症、肿瘤诊断这类要求预测极其精确的问题，这种情况是无法容忍的。</p>
+<p>不仅如此，线性回归算法的值域为全体实数集（<span class="math-inline">h_\theta(x) \in R</span>），则当线性回归函数给出诸如 <span class="math-inline">h_\theta(x) = 10000, h_\theta(x) = -10000</span> 等很大/很小(负数)的数值时，结果 <span class="math-inline">y \in \lbrace 0, 1\rbrace</span>，这显得非常怪异。</p>
+<p>区别于线性回归算法，逻辑回归算法是一个分类算法，<strong>其输出值永远在 0 到 1 之间</strong>，即 <span class="math-inline">h_\theta(x) \in (0,1)</span>。</p>
+<h2 id="hypothesis-representation">Hypothesis Representation<a class="anchor-link" href="#hypothesis-representation" title="Permanent link">&para;</a></h2>
+<p><strong>对数几率函数（logistic function）</strong>正是我们所需要的（注意这里的 <span class="math-inline">y</span> 依然是实值）：</p>
+<p><div class="math-display"><br />
+y = \frac{1}{1+e^{-z}}<br />
+</div><br />
+对数几率函数有时也称为对率函数，是一种<strong>Sigmoid函数</strong>（即形似S的函数）。将它作为 <span class="math-inline">g^-(\cdot)</span> 代入广义线性模型可得：</p>
+<p><div class="math-display"><br />
+y = \frac{1}{1+ e^{-(\mathbf{w^Tx} + b)}}<br />
+</div><br />
+逻辑函数是 S 形函数，会将所有实数映射到 <span class="math-inline">(0, 1)</span> 范围。</p>
+<p><a href="https://en.wikipedia.org/wiki/Sigmoid_function">sigmoid 函数</a>（如下图）是逻辑函数的特殊情况，其公式为 <span class="math-inline">g\left( z \right)=\frac{1}{1+{{e}^{-z}}}</span>。 </p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000482.png" alt="image-20211223170049656" style="zoom:50%;" /></p>
+<p>应用 sigmoid 函数，则逻辑回归模型：<div class="math-display">h_{\theta}(x)=g(\theta^Tx) =\frac{1}{1+e^{-\theta^Tx}}</div></p>
+<p>该式可以改写为：<br />
+<div class="math-display"><br />
+\ln{\frac{y}{1-y}} = \mathbf{w^Tx} + b<br />
+</div><br />
+其中，<span class="math-inline">\frac{y}{1-y}</span> 称作<strong>几率（odds）</strong>，我们可以把 <span class="math-inline">y</span> 理解为该样本是正例的概率，把 <span class="math-inline">1-y</span> 理解为该样本是反例的概率，而几率表示的就是<strong>该样本作为正例的相对可能性</strong>。若几率大于1，则表明该样本更可能是正例。对几率取对数就得到<strong>对数几率（log odds，也称为logit）</strong>。几率大于1时，对数几率是正数。</p>
+<p>由此可以看出，对数几率回归的实质使用线性回归模型的预测值逼近分类任务真实标记的对数几率。它有几个优点：</p>
+<ol>
+<li>直接对分类的概率建模，无需实现假设数据分布，从而避免了假设分布不准确带来的问题；</li>
+<li>不仅可预测出类别，还能得到该预测的概率，这对一些利用概率辅助决策的任务很有用；</li>
+<li>对数几率函数是任意阶可导的凸函数，有许多数值优化算法都可以求出最优解。</li>
+</ol>
+<h4 id="最大似然估计">最大似然估计<a class="anchor-link" href="#最大似然估计" title="Permanent link">&para;</a></h4>
+<p>有了预测函数之后，我们需要关心的就是怎样求取模型参数了。这里介绍一种与最小二乘法异曲同工的办法，叫做<strong>极大似然法（maximum likelihood method）</strong>。我在另一个项目中有这方面比较详细的讲解，欢迎前往<a href="https://github.com/familyld/SYSU_Data_Mining/tree/master/Linear_Regression">项目主页</a>交流学习。</p>
+<p>前面说道可以把 <span class="math-inline">y</span> 理解为一个样本是正例的概率，把 <span class="math-inline">1-y</span> 理解为一个样本是反例的概率。而所谓极大似然，就是最大化预测事件发生的概率，也即<strong>最大化所有样本的预测概率之积</strong>。令 <span class="math-inline">p(c=1|\mathbf{x})</span> 和 <span class="math-inline">p(c=0|\mathbf{x})</span> 分别代表 <span class="math-inline">y</span> 和 <span class="math-inline">1-y</span>。（注：书中写的是 <span class="math-inline">y=1</span> 和 <span class="math-inline">y=0</span>，这里为了和前面的 <span class="math-inline">y</span> 区别开来，我用了 <span class="math-inline">c</span> 来代表标记）。简单变换一下公式，可以得到：<br />
+<div class="math-display"><br />
+p(c=1|\mathbf{x}) = \frac{e^(\mathbf{w^Tx} + b)}{1+e^{\mathbf{w^Tx} + b}}<br />
+</div></p>
+<p><div class="math-display"><br />
+p(c=0|\mathbf{x}) = \frac{1}{1+e^{\mathbf{w^Tx} + b}}<br />
+</div></p>
+<p>但是！由于预测概率都是小于1的，如果直接对所有样本的预测概率求积，所得的数会非常非常小，当样例数较多时，会超出精度限制。所以，一般来说会对概率去对数，得到<strong>对数似然（log-likelihood）</strong>，此时<strong>求所有样本的预测概率之积就变成了求所有样本的对数似然之和</strong>。对率回归模型的目标就是最大化对数似然，对应的似然函数是：</p>
+<p><div class="math-display"><br />
+\ell(\mathbf{w},b) = \sum_{i=1}^m \ln p(c_i | \mathbf{x_i;w};b)\<br />
+=\sum_{i=1}^m \ln (p_1(\hat{\mathbf{x_i}};\beta)^{c_i}(p_0(\hat{\mathbf{x_i}};\beta))^{(1-c_i)}\<br />
+= \sum_{i=1}^m \ln (c_ip_1(\hat{\mathbf{x_i}};\beta) + (1-c_i)p_0(\hat{\mathbf{x_i}};\beta))<br />
+</div><br />
+可以理解为若标记为正例，则加上预测为正例的概率，否则加上预测为反例的概率。其中 <span class="math-inline">\beta = (\mathbf{w};b)</span>。</p>
+<p>对该式求导，令导数为0可以求出参数的最优解。特别地，我们会发现似然函数的导数和损失函数是等价的，所以说<strong>最大似然解等价于最小二乘解</strong>。最大化似然函数等价于最小化损失函数：</p>
+<p><div class="math-display">E(\beta) = \sum_{i=1}^m (-y_i\beta^T\hat{x_i} + \ln (1+e^{\beta^T\mathbf{\hat{x_i}}}))</div></p>
+<p>这是一个关于 <span class="math-inline">\beta</span> 的高阶可导连续凸函数，可以用最小二乘求（要求矩阵的逆，计算开销较大），也可以用数值优化算法如<strong>梯度下降法（gradient descent method）</strong>、<strong>牛顿法（Newton method）</strong>等逐步迭代来求最优解（可能陷入局部最优解）。</p>
+<p>逻辑回归模型中，<span class="math-inline">h_\theta \left( x \right)</span> 的作用是，根据输入 <span class="math-inline">x</span> 以及参数 <span class="math-inline">\theta</span>，计算得出”输出 <span class="math-inline">y=1</span>“的可能性(estimated probability)，概率学中表示为：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; h_\theta(x) = P(y=1 | x ; \theta) = 1 - P(y=0 | x ; \theta) \<br />
+&amp; P(y = 0 | x;\theta) + P(y = 1 | x ; \theta) = 1<br />
+\end{align</em>}<br />
+</div><br />
+以肿瘤诊断为例，<span class="math-inline">h_\theta \left( x \right)=0.7</span> 表示病人有 <span class="math-inline">70\%</span> 的概率得了恶性肿瘤。</p>
+<h2 id="decision-boundary">Decision Boundary<a class="anchor-link" href="#decision-boundary" title="Permanent link">&para;</a></h2>
+<p>决策边界的概念，可帮助我们更好地理解逻辑回归模型的拟合原理。</p>
+<p>在逻辑回归中，有假设函数 <span class="math-inline">h_\theta \left( x \right)=g(z)=g\left(\theta^{T}x \right)</span>。</p>
+<p>为了得出分类的结果，这里和前面一样，规定以 <span class="math-inline">0.5</span> 为阈值：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; h_\theta(x) \geq 0.5 \rightarrow y = 1 \<br />
+&amp; h_\theta(x) &lt; 0.5 \rightarrow y = 0 \<br />
+\end{align</em>}<br />
+</div><br />
+回忆一下 sigmoid 函数的图像：</p>
+<p><img alt="sigmoid function" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000295.png" /></p>
+<p>观察可得当 <span class="math-inline">g(z) \geq 0.5</span> 时，有 <span class="math-inline">z \geq 0</span>，即 <span class="math-inline">\theta^Tx \geq 0</span>。</p>
+<p>同线性回归模型的不同点在于： <br />
+<div class="math-display"><br />
+\begin{align<em>}<br />
+z \to +\infty, e^{-\infty} \to 0 \Rightarrow g(z)=1 \<br />
+z \to -\infty, e^{\infty}\to \infty \Rightarrow g(z)=0<br />
+\end{align</em>}<br />
+</div><br />
+直观一点来个例子，<span class="math-inline">{h_\theta}\left( x \right)=g\left( {\theta_0}+{\theta_1}{x_1}+{\theta_{2}}{x_{2}}\right)</span> 是下图模型的假设函数：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000772.png" /></p>
+<p>根据上面的讨论，要进行分类，那么只要 <span class="math-inline"> {\theta_0}+{\theta_1}{x_1}+{\theta_{2}}{x_{2}}\geq0</span> 时，就预测 <span class="math-inline">y = 1</span>，即预测为正向类。</p>
+<p>如果取 <span class="math-inline">\theta = \begin{bmatrix} -3\1\1\end{bmatrix}</span>，则有 <span class="math-inline">z = -3+{x_1}+{x_2}</span>，当 <span class="math-inline">z \geq 0</span> 即 <span class="math-inline">{x_1}+{x_2} \geq 3</span> 时，易绘制图中的品红色直线即<strong>决策边界</strong>，为正向类（以红叉标注的数据）给出 <span class="math-inline">y=1</span> 的分类预测结果。</p>
+<p>上面讨论了逻辑回归模型中线性拟合的例子，下面则是一个多项式拟合的例子，和线性回归中的情况也是类似的。</p>
+<p>为了拟合下图数据，建模多项式假设函数：</p>
+<p><div class="math-display"><br />
+{h_\theta}\left( x \right)=g\left( {\theta_0}+{\theta_1}{x_1}+{\theta_{2}}{x_{2}}+{\theta_{3}}x_{1}^{2}+{\theta_{4}}x_{2}^{2} \right)<br />
+</div><br />
+这里取 <span class="math-inline">\theta = \begin{bmatrix} -1\0\0\1\1\end{bmatrix}</span>，决策边界对应了一个在原点处的单位圆（<span class="math-inline">{x_1}^2+{x_2}^2 = 1</span>），如此便可给出分类结果，如图中品红色曲线：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000317.png" /></p>
+<p>当然，通过一些更为复杂的多项式，还能拟合那些图像显得非常怪异的数据，使得决策边界形似碗状、爱心状等等。</p>
+<p>简单来说，决策边界就是<strong>分类的分界线</strong>，分类现在实际就由 <span class="math-inline">z</span> (中的 <span class="math-inline">\theta</span>)决定啦。</p>
+<h2 id="cost-function">Cost Function<a class="anchor-link" href="#cost-function" title="Permanent link">&para;</a></h2>
+<p>那我们怎么知道决策边界是啥样？<span class="math-inline">\theta</span> 多少时能很好的拟合数据？当然，见招拆招，总要来个 <span class="math-inline">J(\theta)</span>。</p>
+<p>如果直接套用线性回归的代价函数： <span class="math-inline">J\left( {\theta} \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{{{\left( h_{\theta} \left({x}^{\left( i \right)} \right)-{y}^{\left( i \right)} \right)}^{2}}}</span></p>
+<p>其中 <span class="math-inline">h_\theta(x) = g\left(\theta^{T}x \right)</span>，可绘制关于 <span class="math-inline">J(\theta)</span> 的图像，如下图</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000618.png" /></p>
+<p>回忆线性回归中的平方损失函数，其是一个二次凸函数（碗状），二次凸函数的重要性质是只有一个局部最小点即全局最小点。上图中有许多局部最小点，这样将使得梯度下降算法无法确定收敛点是全局最优。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000906.png" /></p>
+<p>如果此处的损失函数也是一个凸函数，是否也有同样的性质，从而最优化？这类讨论凸函数最优值的问题，被称为<strong>凸优化问题(Convex optimization)</strong>。</p>
+<p>当然，损失函数不止平方损失函数一种。</p>
+<p>对于逻辑回归，更换平方损失函数为<strong>对数损失函数</strong>，可由统计学中的最大似然估计方法推出代价函数 <span class="math-inline">J(\theta)</span>：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; J(\theta) = \dfrac{1}{m} \sum_{i=1}^m \mathrm{Cost}(h_\theta(x^{(i)}),y^{(i)}) \<br />
+&amp; \mathrm{Cost}(h_\theta(x),y) = -\log(h_\theta(x)) \; &amp; \text{if y = 1} \<br />
+&amp; \mathrm{Cost}(h_\theta(x),y) = -\log(1-h_\theta(x)) \; &amp; \text{if y = 0}<br />
+\end{align</em>}<br />
+</div><br />
+则有关于 <span class="math-inline">J(\theta)</span> 的图像如下：</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000301.png" /></p>
+<p>如左图，当训练集的结果为 <span class="math-inline">y=1</span>（正样本）时，随着假设函数趋向于 <span class="math-inline">1</span>，代价函数的值会趋于 <span class="math-inline">0</span>，即意味着拟合程度很好。如果假设函数此时趋于 <span class="math-inline">0</span>，则会给出一个<strong>很高的代价</strong>，拟合程度<strong>差</strong>，算法会根据其迅速纠正 <span class="math-inline">\theta</span> 值，右图 <span class="math-inline">y=0</span> 同理。</p>
+<p>区别于平方损失函数，对数损失函数也是一个凸函数，但没有局部最优值。</p>
+<h2 id="simplified-cost-function-and-gradient-descent">Simplified Cost Function and Gradient Descent<a class="anchor-link" href="#simplified-cost-function-and-gradient-descent" title="Permanent link">&para;</a></h2>
+<p>由于懒得分类讨论，对于二元分类问题，我们可把代价函数<strong>简化</strong>为一个函数： <br />
+<span class="math-inline">Cost\left( {h_\theta}\left( x \right),y \right)=-y\times log\left( {h_\theta}\left( x \right) \right)-(1-y)\times log\left( 1-{h_\theta}\left( x \right) \right)</span></p>
+<p>当 <span class="math-inline">y = 0</span>，左边式子整体为 <span class="math-inline">0</span>，当 <span class="math-inline">y = 1</span>，则 <span class="math-inline">1-y=0</span>，右边式子整体为0，也就和上面的分段函数一样了，而一个式子计算起来更方便。</p>
+<p><span class="math-inline">J(\theta) = - \frac{1}{m} \displaystyle \sum_{i=1}^m [y^{(i)}\log (h_\theta (x^{(i)})) + (1 - y^{(i)})\log (1 - h_\theta(x^{(i)}))]</span></p>
+<p>向量化实现：</p>
+<p><span class="math-inline">h = g(X\theta)</span>，<span class="math-inline">J(\theta) = \frac{1}{m} \cdot \left(-y^{T}\log(h)-(1-y)^{T}\log(1-h)\right)</span></p>
+<p>为了最优化 <span class="math-inline">\theta</span>，仍使用梯度下降法，算法同线性回归中一致：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{Repeat until convergence:} \; \lbrace \<br />
+&amp;{{\theta }<em>{j}}:={{\theta }</em>{j}}-\alpha \frac{\partial }{\partial {{\theta }_{j}}}J\left( {\theta}  \right) \<br />
+\rbrace<br />
+\end{align</em>}<br />
+</div></p>
+<p>解出偏导得：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{Repeat until convergence:} \; \lbrace \<br />
+&amp; \theta_j := \theta_j - \alpha \frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_j^{(i)} \; &amp; \text{for j := 0,1...n}\<br />
+\rbrace<br />
+\end{align</em>}<br />
+</div></p>
+<p>注意，虽然形式上梯度下降算法同线性回归一样，但其中的假设函不同，即<span class="math-inline">h_\theta(x) = g\left(\theta^{T}x \right)</span>，不过求导后的结果也相同。</p>
+<p>向量化实现：<span class="math-inline">\theta := \theta - \frac{\alpha}{m} X^{T} (g(X \theta ) - y)</span></p>
+<p><strong>逻辑回归中代价函数求导的推导过程</strong>：<a href=""></a></p>
+<p><div class="math-display"><br />
+J(\theta) = - \frac{1}{m} \displaystyle \sum_{i=1}^m [y^{(i)}\log (h_\theta (x^{(i)})) + (1 - y^{(i)})\log (1 - h_\theta(x^{(i)}))]<br />
+</div><br />
+令 <span class="math-inline">f(\theta) = {{y}^{(i)}}\log \left( {h_\theta}\left( {{x}^{(i)}} \right) \right)+\left( 1-{{y}^{(i)}} \right)\log \left( 1-{h_\theta}\left( {{x}^{(i)}} \right) \right)</span></p>
+<p>忆及 <span class="math-inline">h_\theta(x) = g(z)</span>，<span class="math-inline">g(z) = \frac{1}{1+e^{(-z)}}</span>，则</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+f(\theta) &amp;= {{y}^{(i)}}\log \left( \frac{1}{1+{{e}^{-z}}} \right)+\left( 1-{{y}^{(i)}} \right)\log \left( 1-\frac{1}{1+{{e}^{-z}}} \right) \<br />
+&amp;= -{{y}^{(i)}}\log \left( 1+{{e}^{-z}} \right)-\left( 1-{{y}^{(i)}} \right)\log \left( 1+{{e}^{z}} \right)<br />
+\end{align</em>}<br />
+</div></p>
+<p>忆及 <span class="math-inline">z=\theta^Tx^{(i)}</span>，对 <span class="math-inline">\theta_j</span> 求偏导，则没有 <span class="math-inline">\theta_j</span> 的项求偏导即为 <span class="math-inline">0</span>，都消去，则得：</p>
+<p><div class="math-display"><br />
+\frac{\partial z}{\partial {\theta_{j}}}=\frac{\partial }{\partial {\theta_{j}}}\left( \theta^Tx^{(i)}  \right)=x^{(i)}_j<br />
+</div><br />
+所以有：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+\frac{\partial }{\partial {\theta_{j}}}f\left( \theta  \right)&amp;=\frac{\partial }{\partial {\theta_{j}}}[-{{y}^{(i)}}\log \left( 1+{{e}^{-z}} \right)-\left( 1-{{y}^{(i)}} \right)\log \left( 1+{{e}^{z}} \right)] \<br />
+&amp;=-{{y}^{(i)}}\frac{\frac{\partial }{\partial {\theta_{j}}}\left(-z \right) e^{-z}}{1+e^{-z}}-\left( 1-{{y}^{(i)}} \right)\frac{\frac{\partial }{\partial {\theta_{j}}}\left(z \right){e^{z}}}{1+e^{z}} \<br />
+&amp;=-{{y}^{(i)}}\frac{-x^{(i)}<em>je^{-z}}{1+e^{-z}}-\left( 1-{{y}^{(i)}} \right)\frac{x^{(i)}_j}{1+e^{-z}} \<br />
+&amp;=\left({{y}^{(i)}}\frac{e^{-z}}{1+e^{-z}}-\left( 1-{{y}^{(i)}} \right)\frac{1}{1+e^{-z}}\right)x^{(i)}_j \<br />
+&amp;=\left({{y}^{(i)}}\frac{e^{-z}}{1+e^{-z}}-\left( 1-{{y}^{(i)}} \right)\frac{1}{1+e^{-z}}\right)x^{(i)}_j \<br />
+&amp;=\left(\frac{{{y}^{(i)}}(e^{-z}+1)-1}{1+e^{-z}}\right)x^{(i)}_j \<br />
+&amp;={({{y}^{(i)}}-\frac{1}{1+{{e}^{-z}}})x_j^{(i)}} \<br />
+&amp;={\left({{y}^{(i)}}-{h</em>\theta}\left( {{x}^{(i)}} \right)\right)x_j^{(i)}} \<br />
+&amp;=-{\left({h_\theta}\left( {{x}^{(i)}} \right)-{{y}^{(i)}}\right)x_j^{(i)}}<br />
+\end{align</em>}<br />
+</div></p>
+<p>则可得代价函数的导数：</p>
+<p><div class="math-display"><br />
+\frac{\partial }{\partial {\theta_{j}}}J(\theta) = -\frac{1}{m}\sum\limits_{i=1}^{m}{\frac{\partial }{\partial {\theta_{j}}}f(\theta)}=\frac{1}{m} \sum\limits_{i=1}^{m} (h_\theta(x^{(i)}) - y^{(i)}) \cdot x_j^{(i)}<br />
+</div></p>
+<h2 id="advanced-optimization">Advanced Optimization<a class="anchor-link" href="#advanced-optimization" title="Permanent link">&para;</a></h2>
+<p>运行梯度下降算法，其能最小化代价函数 <span class="math-inline">J(\theta)</span> 并得出 <span class="math-inline">\theta</span> 的最优值，在使用梯度下降算法时，如果不需要观察代价函数的收敛情况，则直接计算 <span class="math-inline">J(\theta)</span> 的导数项即可，而不需要计算 <span class="math-inline">J(\theta)</span> 值。</p>
+<p>我们编写代码给出代价函数及其偏导数然后传入梯度下降算法中，接下来算法则会为我们最小化代价函数给出参数的最优解。这类算法被称为<strong>最优化算法(Optimization Algorithms)</strong>，梯度下降算法不是唯一的最小化算法[^1]。</p>
+<p>一些最优化算法：</p>
+<ul>
+<li>梯度下降法(Gradient Descent)</li>
+<li>共轭梯度算法(Conjugate gradient)</li>
+<li>牛顿法和拟牛顿法(Newton's method &amp; Quasi-Newton Methods)</li>
+<li>DFP算法</li>
+<li>局部优化法(BFGS)</li>
+<li>有限内存局部优化法(L-BFGS)</li>
+<li>拉格朗日乘数法(Lagrange multiplier)</li>
+</ul>
+<p>比较梯度下降算法：一些最优化算法虽然会更为复杂，难以调试，自行实现又困难重重，开源库又效率也不一，哎，做个调包侠还得碰运气。不过这些算法通常效率更高，并无需选择学习速率 <span class="math-inline">\alpha</span>（少一个参数少一份痛苦啊！）。</p>
+<p>Octave/Matlab 中对这类高级算法做了封装，易于调用。</p>
+<p>假设有 <span class="math-inline">J(\theta) = (\theta_1-5)^2 + (\theta_2-5)^2</span>，要求参数 <span class="math-inline">\theta=\begin{bmatrix} \theta_1\\theta_2\end{bmatrix}</span> 最优值。</p>
+<h2 id="multiclass-classification-one-vs-all">Multiclass Classification: One-vs-all<a class="anchor-link" href="#multiclass-classification-one-vs-all" title="Permanent link">&para;</a></h2>
+<p>一直在讨论二元分类问题，这里谈谈多类别分类问题（比如天气预报）。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000938.png" /></p>
+<p>原理是，转化多类别分类问题为<strong>多个二元分类问题</strong>，这种方法被称为 One-vs-all。</p>
+<p>正式定义：<span class="math-inline">h_\theta^{\left( i \right)}\left( x \right)=p\left( y=i|x;\theta  \right), i=\left( 1,2,3....k \right)</span></p>
+<blockquote>
+<p><span class="math-inline">h_\theta^{\left( i \right)}\left( x \right)</span>: 输出 <span class="math-inline">y=i</span>（属于第 <span class="math-inline">i</span> 个分类）的可能性</p>
+<p><span class="math-inline">k</span>: 类别总数，如上图 <span class="math-inline">k=3</span>。</p>
+</blockquote>
+<p>注意多类别分类问题中 <span class="math-inline">h_\theta(x)</span> 的结果不再只是一个实数而是一个向量，如果类别总数为 <span class="math-inline">k</span>，现在 <span class="math-inline">h_\theta(x)</span> 就是一个 <span class="math-inline">k</span> 维向量。</p>
+<p>对于某个样本实例，需计算所有的 <span class="math-inline">k</span> 种分类情况得到 <span class="math-inline">h_\theta(x)</span>，然后看分为哪个类别时预测输出的值最大，就说它输出属于哪个类别，即 <span class="math-inline">y = \mathop{\max}\limits_i\,h_\theta^{\left( i \right)}\left( x \right)</span>。</p>
+<h2 id="logistic-损失函数的解释explanation-of-logistic-regression-cost-function">logistic 损失函数的解释（Explanation of logistic regression cost function）<a class="anchor-link" href="#logistic-损失函数的解释explanation-of-logistic-regression-cost-function" title="Permanent link">&para;</a></h2>
+<p>在前面的视频中，我们已经分析了逻辑回归的损失函数表达式，在这节选修视频中，我将给出一个简洁的证明来说明逻辑回归的损失函数为什么是这种形式。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000426.png" /></p>
+<p>回想一下，在逻辑回归中，需要预测的结果<span class="math-inline">\hat{y}</span>,可以表示为<span class="math-inline">\hat{y}=\sigma(w^{T}x+b)</span>，<span class="math-inline">\sigma</span> 我们熟悉的<span class="math-inline">S</span> 函数 <span class="math-inline">\sigma(z)=\sigma(w^{T}x+b)=\frac{1}{1+e^{-z}}</span> 。我们约定 <span class="math-inline">\hat{y}=p(y=1|x)</span> ，即算法的输出<span class="math-inline">\hat{y}</span> 是给定训练样本 <span class="math-inline">x</span> 条件下 <span class="math-inline">y</span> 等于1的概率。换句话说，如果<span class="math-inline">y=1</span>，在给定训练样本 <span class="math-inline">x</span> 条件下<span class="math-inline">y=\hat{y}</span>；反过来说，如果<span class="math-inline">y=0</span>，在给定训练样本<span class="math-inline">x</span> 件下 <span class="math-inline">y</span> 等于1减去<span class="math-inline">\hat{y}(y=1-\hat{y})</span>，因此，如果 <span class="math-inline">\hat{y}</span> 代表 <span class="math-inline">y=1</span> 的概率，那么<span class="math-inline">1-\hat{y}</span> 是 <span class="math-inline">y=0</span> 概率。接下来，我们就来分析这两个条件概率公式。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000666.png" /></p>
+<p>这两个条件概率公式定义形式为 <span class="math-inline">p(y|x)</span> 且代表了 <span class="math-inline">y=0</span> 或者 <span class="math-inline">y=1</span> 这两种情况，我们可以将这两个公式合并成一个公式。需要指出的是我们讨论的是二分类问题的损失函数，因此，<span class="math-inline">y</span> 取值只能是0或者1。上述的两个条件概率公式可以合并成如下公式：</p>
+<p><span class="math-inline">p(y|x)={\hat{y}}^{y}{(1-\hat{y})}^{(1-y)}</span></p>
+<p>接下来我会解释为什么可以合并成这种形式的表达式：<span class="math-inline">(1-\hat{y})</span> <span class="math-inline">(1-y)</span> 方这行表达式包含了上面的两个条件概率公式，我来解释一下为什么。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000367.png" /></p>
+<p>第一种情况，假设 <span class="math-inline">y=1</span>，由于<span class="math-inline">y=1</span>，那么<span class="math-inline">{(\hat{y})}^{y}=\hat{y}</span>，因为 <span class="math-inline">\hat{y}</span> 1次方等于<span class="math-inline">\hat{y}</span>，<span class="math-inline">1-{(1-\hat{y})}^{(1-y)}</span> 指数项<span class="math-inline">(1-y)</span> 于0，由于任何数的0次方都是1，<span class="math-inline">\hat{y}</span> 以1等于<span class="math-inline">\hat{y}</span>。因此当<span class="math-inline">y=1</span>  <span class="math-inline">p(y|x)=\hat{y}</span>（图中绿色部分）。</p>
+<p>第二种情况，当 <span class="math-inline">y=0</span> 时 <span class="math-inline">p(y|x)</span> 等于多少呢?<br />
+假设<span class="math-inline">y=0</span>，<span class="math-inline">\hat{y}</span> <span class="math-inline">y</span> 方就是 <div class="math-display">\hat{y}</div> 的0次方，任何数的0次方都等于1，因此 <span class="math-inline">p(y|x)=1×{(1-\hat{y})}^{1-y}</span> ，前面假设 <span class="math-inline">y=0</span> 因此<span class="math-inline">(1-y)</span> 等于1，因此 <span class="math-inline">p(y|x)=1×(1-\hat{y})</span>。因此在这里当<span class="math-inline">y=0</span> ，<span class="math-inline">p(y|x)=1-\hat{y}</span>。这就是这个公式(第二个公式，图中紫色字体部分)的结果。</p>
+<p>因此，刚才的推导表明 <span class="math-inline">p(y|x)={\hat{y}}^{(y)}{(1-\hat{y})}^{(1-y)}</span>，就是 <span class="math-inline">p(y|x)</span> 的完整定义。由于 log 函数是严格单调递增的函数，最大化 <span class="math-inline">log(p(y|x))</span> 等价于最大化 <span class="math-inline">p(y|x)</span> 并且计算 <span class="math-inline">p(y|x)</span> 的 log对数，就是计算 <span class="math-inline">log({\hat{y}}^{(y)}{(1-\hat{y})}^{(1-y)})</span> (其实就是将 <span class="math-inline">p(y|x)</span> 代入)，通过对数函数化简为：</p>
+<p><span class="math-inline">ylog\hat{y}+(1-y)log(1-\hat{y})</span></p>
+<p>而这就是我们前面提到的损失函数的负数 <span class="math-inline">(-L(\hat{y},y))</span> ，前面有一个负号的原因是当你训练学习算法时需要算法输出值的概率是最大的（以最大的概率预测这个值），然而在逻辑回归中我们需要最小化损失函数，因此最小化损失函数与最大化条件概率的对数 <span class="math-inline">log(p(y|x))</span> 关联起来了，因此这就是单个训练样本的损失函数表达式。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000915.png" /></p>
+<p>在 <span class="math-inline">m</span> 训练样本的整个训练集中又该如何表示呢，让我们一起来探讨一下。</p>
+<p>让我们一起来探讨一下，整个训练集中标签的概率，更正式地来写一下。假设所有的训练样本服从同一分布且相互独立，也即独立同分布的，所有这些样本的联合概率就是每个样本概率的乘积:</p>
+<p><span class="math-inline">P\left(\text{labels  in training set} \right) = \prod_{i =1}^{m}{P(y^{(i)}|x^{(i)})}</span>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000494.png" /></p>
+<p>如果你想做最大似然估计，需要寻找一组参数，使得给定样本的观测值概率最大，但令这个概率最大化等价于令其对数最大化，在等式两边取对数：</p>
+<p><span class="math-inline">logp\left( \text{labels  in  training set} \right) = log\prod_{i =1}^{m}{P(y^{(i)}|x^{(i)})} = \sum_{i = 1}^{m}{logP(y^{(i)}|x^{(i)})} = \sum_{i =1}^{m}{- L(\hat y^{(i)},y^{(i)})}</span></p>
+<p>在统计学里面，有一个方法叫做最大似然估计，即求出一组参数，使这个式子取最大值，也就是说，使得这个式子取最大值，<span class="math-inline">\sum_{i= 1}^{m}{- L(\hat y^{(i)},y^{(i)})}</span>，可以将负号移到求和符号的外面，<span class="math-inline">- \sum_{i =1}^{m}{L(\hat y^{(i)},y^{(i)})}</span>，这样我们就推导出了前面给出的<strong>logistic</strong>回归的成本函数<span class="math-inline">J(w,b)= \sum_{i = 1}^{m}{L(\hat y^{(i)},y^{\hat( i)})}</span>。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222000494.png" /></p>
+<p>由于训练模型时，目标是让成本函数最小化，所以我们不是直接用最大似然概率，要去掉这里的负号，最后为了方便，可以对成本函数进行适当的缩放，我们就在前面加一个额外的常数因子<span class="math-inline">\frac{1}{m}</span>，即:<span class="math-inline">J(w,b)= \frac{1}{m}\sum_{i = 1}^{m}{L(\hat y^{(i)},y^{(i)})}</span>。</p>
+<p>总结一下，为了最小化成本函数<span class="math-inline">J(w,b)</span>，我们从<strong>logistic</strong>回归模型的最大似然估计的角度出发，假设训练集中的样本都是独立同分布的条件下。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

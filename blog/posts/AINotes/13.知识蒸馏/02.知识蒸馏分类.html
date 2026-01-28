@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#1-基于响应特征关系的知识蒸馏划分">1 基于响应、特征、关系的知识蒸馏划分</a><ul>
+<li><a href="#11-基于响应的知识蒸馏">1.1 基于响应的知识蒸馏</a><ul>
+<li><a href="#111-解释基于响应的知识蒸馏">1.1.1 解释基于响应的知识蒸馏</a></li>
+<li><a href="#112-通过辅助结构减少教师-学生性能差距">1.1.2 通过辅助结构减少教师-学生性能差距</a></li>
+<li><a href="#113-通过自适应蒸馏减少教师-学生性能差距">1.1.3 通过自适应蒸馏减少教师-学生性能差距</a></li>
+</ul>
+</li>
+<li><a href="#12-基于特征的知识蒸馏">1.2 基于特征的知识蒸馏</a><ul>
+<li><a href="#121-知识探索转换中间层特征图得到有意义的知识">1.2.1 知识探索：转换中间层特征图得到有意义的知识</a></li>
+<li><a href="#122-知识迁移好的模仿算法让学生学得更好">1.2.2 知识迁移：好的模仿算法让学生学得更好</a></li>
+<li><a href="#123-视觉transformer方面的蒸馏工作">1.2.3 视觉Transformer方面的蒸馏工作</a></li>
+</ul>
+</li>
+<li><a href="#13-基于关系的知识蒸馏">1.3 基于关系的知识蒸馏</a><ul>
+<li><a href="#131-跨样本的知识蒸馏">1.3.1 跨样本的知识蒸馏</a></li>
+<li><a href="#1311-利用不同的边权重构建关系图">1.3.1.1 利用不同的边权重构建关系图</a></li>
+<li><a href="#1312-利用有意义的转换构建关系图">1.3.1.2 利用有意义的转换构建关系图</a></li>
+<li><a href="#132-跨层的知识蒸馏">1.3.2 跨层的知识蒸馏</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2-蒸馏机制">2 蒸馏机制</a><ul>
+<li><a href="#21-离线知识蒸馏">2.1 离线知识蒸馏</a></li>
+<li><a href="#22-在线知识蒸馏">2.2 在线知识蒸馏</a><ul>
+<li><a href="#221-基于响应的在线知识蒸馏">2.2.1 基于响应的在线知识蒸馏</a></li>
+<li><a href="#222-基于特征的在线知识蒸馏">2.2.2 基于特征的在线知识蒸馏</a></li>
+<li><a href="#223-基于关系的在线知识蒸馏">2.2.3 基于关系的在线知识蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#23-自知识蒸馏">2.3 自知识蒸馏</a><ul>
+<li><a href="#231-基于辅助结构的自知识蒸馏">2.3.1 基于辅助结构的自知识蒸馏</a></li>
+<li><a href="#232-基于数据增强的自知识蒸馏">2.3.2 基于数据增强的自知识蒸馏</a></li>
+<li><a href="#233-基于序列快照的自知识蒸馏">2.3.3 基于序列快照的自知识蒸馏</a></li>
+<li><a href="#234-自监督学习和自知识蒸馏">2.3.4 自监督学习和自知识蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#24-三种知识蒸馏综合比较">2.4 三种知识蒸馏综合比较</a></li>
+</ul>
+</li>
+<li><a href="#3-蒸馏算法">3 蒸馏算法</a><ul>
+<li><a href="#31-多教师知识蒸馏">3.1 多教师知识蒸馏</a><ul>
+<li><a href="#311-从集成的逻辑分布中蒸馏">3.1.1 从集成的逻辑分布中蒸馏</a></li>
+<li><a href="#312-从集成的特征表达中蒸馏">3.1.2 从集成的特征表达中蒸馏</a></li>
+<li><a href="#313-从子网络得到计算高效的蒸馏">3.1.3 从子网络得到计算高效的蒸馏</a></li>
+<li><a href="#314-多任务多教师蒸馏">3.1.4 多任务多教师蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#32-跨模态知识蒸馏">3.2 跨模态知识蒸馏</a></li>
+<li><a href="#33-基于注意力的知识蒸馏">3.3 基于注意力的知识蒸馏</a><ul>
+<li><a href="#331-蒸馏注意力图">3.3.1 蒸馏注意力图</a></li>
+<li><a href="#332-自注意力机制加权蒸馏">3.3.2 自注意力机制加权蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#34-无需数据的知识蒸馏">3.4 无需数据的知识蒸馏</a><ul>
+<li><a href="#341-无需数据的蒸馏">3.4.1 无需数据的蒸馏</a></li>
+<li><a href="#342-数据集知识蒸馏">3.4.2 数据集知识蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#35-对抗蒸馏">3.5 对抗蒸馏</a></li>
+</ul>
+</li>
+<li><a href="#4总结">4.总结</a></li>
+<li><a href="#参考文献">参考文献</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/13.知识蒸馏</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/664343770">Springer知识蒸馏专著解读 | 面向图像识别的知识蒸馏综述</a></p>
+</blockquote>
+<p>本次文章介绍我们发表于由Springer出版的专著《<a href="https://link.zhihu.com/?target=https%3A//link.springer.com/book/10.1007/978-3-031-32095-8">Advancements in Knowledge Distillation: Towards New Horizons of Intelligent Systems</a> 》中的第一章“Categories of Response-Based, Feature-Based, and Relation-Based Knowledge Distillation”。该篇文章的主要内容是整理了面向图像识别的知识蒸馏的相关工作，首先在<strong>response-based、feature-based和relation-based</strong>三种知识形式来介绍离线知识蒸馏的相关工作，然后整理了<strong>在线知识蒸馏</strong>和<strong>自知识蒸馏</strong>的相关工作，在其中也对<strong>自监督学习蒸馏</strong>和<strong><a href="https://zhida.zhihu.com/search?content_id=235760946&amp;content_type=Article&amp;match_order=1&amp;q=%E8%A7%86%E8%A7%89Transformer&amp;zhida_source=entity">视觉Transformer</a>（ViT）蒸馏</strong>也进行了介绍。最后讲解了扩展的蒸馏技术领域，包括<strong>多教师知识蒸馏、跨模态知识蒸馏、<a href="https://zhida.zhihu.com/search?content_id=235760946&amp;content_type=Article&amp;match_order=1&amp;q=%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%E7%9F%A5%E8%AF%86%E8%92%B8%E9%A6%8F&amp;zhida_source=entity">注意力机制知识蒸馏</a>、<a href="https://zhida.zhihu.com/search?content_id=235760946&amp;content_type=Article&amp;match_order=1&amp;q=%E6%97%A0%E6%95%B0%E6%8D%AE%E7%9F%A5%E8%AF%86%E8%92%B8%E9%A6%8F&amp;zhida_source=entity">无数据知识蒸馏</a>和对抗知识蒸馏</strong>。</p>
+<p>论文官方地址：<a href="https://link.springer.com/chapter/10.1007/978-3-031-32095-8_1">https://link.springer.com/chapter/10.1007/978-3-031-32095-8_1</a></p>
+<p>arXiv地址：<a href="https://arxiv.org/pdf/2306.10687">https://arxiv.org/pdf/2306.10687.pdf</a></p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/![](httpspic3.zhimg.comv2-8ecad2ee87be0c5f96a398d2b1a05cea_1440w.jpg).png" style="zoom: 80%;" /></div>
+
+<h2 id="1-基于响应特征关系的知识蒸馏划分">1 基于响应、特征、关系的知识蒸馏划分<a class="anchor-link" href="#1-基于响应特征关系的知识蒸馏划分" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Categories of response-based, feature-based, and relation-based knowledge distillation. </p>
+</blockquote>
+<p>目前的离线知识蒸馏方法通常涉及知识类型和蒸馏策略。前者侧重于探索学生模仿的各种信息类型。后者旨在帮助学生有效地学习老师。在本节中，我们将研究基于响应、基于特征和基于关系的知识，以及基于预定义信息的常用类型。基于响应的KD引导教师的最终输出以指导学生的输出。直观上，学生可以直接学习到老师产生的预测。除了最终输出外，中间特征还对神经网络的知识提取过程进行编码。基于特征的KD可以教学生在整个隐藏层中获得更有意义的语义信息。基于响应和基于特征的KD通常考虑从单个数据样本中提取知识。相反，基于关系的KD试图挖掘整个数据集的跨样本关系。在本节中，我们回顾了每种知识类型的一些代表性方法，并总结了它们的差异。示意图概述如下图所示。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250603210600.png" style="zoom: 40%;" /></div>
+
+<h3 id="11-基于响应的知识蒸馏">1.1 基于响应的知识蒸馏<a class="anchor-link" href="#11-基于响应的知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>基于响应的KD侧重于从最后一层学习知识作为响应。它旨在使教师和学生之间的最终预测保持一致。基于响应的KD的特性是结果驱动学习，使其易于扩展到各种任务。开创性的KD可以追溯到Hinton等人工作[1]。核心思想是通过软化的softmax（即“软标签”）提取类概率分布。对于分类任务，软概率分布被公式化为：<br />
+<div class="math-display"><br />
+p(z_{i};T)=\frac{\exp{(z_{i}/T)}}{\sum_{j=1}^{N}\exp{(z_{j}/T)}},<br />
+</div><br />
+给定来自教师和学生的类别概率分布 <span class="math-inline">p(z^{T};T)</span> 和 <span class="math-inline">p(z^{S};T)</span> ，基于响应的KD尝试使用距离函数 <span class="math-inline">\mathcal{L}<em>{dis}</span> 对齐二者。<br />
+<div class="math-display"><br />
+\mathcal{L}</em>{response_kd}(p(z^{S};T),p(z^{T};T))=\mathcal{L}<em>{dis}(p(z^{S};T),p(z^{T};T)),<br />
+</div><br />
+其中 <span class="math-inline">\mathcal{L}</em>{dis}</span> 可以是Kullback-Leibler（KL）散度、均平方误差等。</p>
+<h4 id="111-解释基于响应的知识蒸馏">1.1.1 解释基于响应的知识蒸馏<a class="anchor-link" href="#111-解释基于响应的知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>基于响应的KD的核心思想很容易理解。它引导学生学习教师网络生成的最终结果。基于响应的KD的有效性也可以与标签平滑正则化联系起来。Yuan等人将基于KL散度的KD方程求解为标签平滑。Muller等人观察到标签平滑抑制了KD的有效性。他们认为，标签平滑会导致不同类别样本之间相似性的逻辑信息丢失，这对基于响应的KD很有价值。然而，Shen等人提供了一项实证研究，说明标签平滑通常不会抑制KD的有效性。他们发现，在两种情况下，标签平滑可能会产生负面影响：长尾类分布和类数量增加。Mobahi等人展示了一种理论观点，即两个相同网络架构之间的蒸馏放大了Hilbert空间中的正则化。最新的DKD将原始KD损失解耦为目标类KD和非目标类KD。通过仅引入两个超参数来灵活平衡两个项，DKD提高了原始KD的有效性。</p>
+<h4 id="112-通过辅助结构减少教师-学生性能差距">1.1.2 通过辅助结构减少教师-学生性能差距<a class="anchor-link" href="#112-通过辅助结构减少教师-学生性能差距" title="Permanent link">&para;</a></h4>
+<p>由于教师和学生之间的能力差距，KD可能存在性能差距，导致性下降问题。为了缓解这个问题，TAKD引入了一个中等规模的网络作为教师助理，并执行了一个连续的KD过程。沿着这条脉络，HKD应用了一个辅助教师网络来传输分层信息流。DGKD提出了一种密集引导模式，并由所有前任教师执行多步KD。SFTN首先训练一名教师和学生分支，然后将更容易传授的知识传授给学生。TOFD和HSAKD在教师和学生之间附加了几个辅助分支，以促进知识互动。然而，这些方法为训练图引入了额外的架构，并增加了训练成本。</p>
+<h4 id="113-通过自适应蒸馏减少教师-学生性能差距">1.1.3 通过自适应蒸馏减少教师-学生性能差距<a class="anchor-link" href="#113-通过自适应蒸馏减少教师-学生性能差距" title="Permanent link">&para;</a></h4>
+<p>一些工作试图研究样本自适应蒸馏以提高性能。WSL从偏差-方差权衡的角度提出了样本加权软标签。ATKD使用基于标准偏差的自适应温度来缩小教师和学生之间的锐度差距。MKD利用元学习来搜索可学习的温度参数。SCKD从梯度相似性的角度研究了不匹配问题，使学生自适应地学习其有益的知识。PAD提出了一种具有数据不确定性的自适应样本加权机制，该机制基于困难实例可能对KD难以处理的这一现象。除了探索依赖于样本的蒸馏外，Song等人和Li等人还提出了一种混合前向传播方案，使学生通过联合训练隐式学习教师的知识。在课程学习的驱使下，RCO引导学生从头开始模仿老师的训练轨迹，直至收敛。ESKD提前停止教师训练，以产生更柔和的逻辑分布。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250603212252.png" style="zoom: 80%;" /></div>
+
+<p><strong>总结。</strong>我们在表1中对各种基于响应的KD方法进行了实验结果对比。大多数方法都应用于卷积神经网络，而最近的MKD进一步旨在改进视觉Transformer。基于响应的KD的核心思想是结果驱动学习，并且很容易应用于现有的深度学习任务。对于目标检测，Chen等人建议引导学生模仿老师的目标概率和回归边界框。对于语义分割，结果驱动的知识是逐像素的类概率分布。类似地，对于自然语言处理中的Bert压缩，DistilBERT传递掩码词汇的类预测。尽管基于响应的KD已成功应用于许多任务，但性能差距仍然是一个值得探索的问题。当教师和学生之间的性能差距很大时，学生可能无法吸收有意义的知识，这可能会导致不利的监管效果。此外，基于响应的KD忽略了神经网络隐藏层中编码的中间信息，导致性能提升有限。</p>
+<h3 id="12-基于特征的知识蒸馏">1.2 基于特征的知识蒸馏<a class="anchor-link" href="#12-基于特征的知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>正如我们上面讨论的，基于响应的KD忽略了中层监督。为了解决这一缺陷，基于特征的KD侧重于探索中间特征信息，以提供全面的监督，如特征图及其提取的信息。基于特征的蒸馏损失可以公式化为：<br />
+<div class="math-display"><br />
+\mathcal{L}<em>{feature_kd}(F^{S},F^{T})=\mathcal{L}</em>{dis}{(\phi^{S}(F^{S}),\phi^{T}(F^{T}))},$​<br />
+</div><br />
+其中 <span class="math-inline">F^{S}</span> 和 <span class="math-inline">F^{T}</span> 表示来自学生和教师的中间特征图，<span class="math-inline">\phi^{S}</span> 和 <span class="math-inline">\phi^{T}</span> 是产生蒸馏信息的转换函数，如注意力机制、激活边界、神经元选择性和概率分布等，<span class="math-inline">\mathcal{L}_{dis}</span> 是一个距离函数，用于衡量匹配特征信息的相似性，例如，均方误差损失和KL散度损失。</p>
+<h4 id="121-知识探索转换中间层特征图得到有意义的知识">1.2.1 知识探索：转换中间层特征图得到有意义的知识<a class="anchor-link" href="#121-知识探索转换中间层特征图得到有意义的知识" title="Permanent link">&para;</a></h4>
+<p>开创性的FitNet是第一种基于特征的KD方法，其核心思想是在教师和学生之间以逐层的方式对齐从隐藏层生成的中层特征图。这项简单直观的工作可能不需要高级知识。后续的方法试图探索从原始特征图中编码更有意义的信息。AT将特征图转换为空间注意力图，作为有价值的信息。NST提取激活热图作为神经元转移的选择性。Srinivas等人在特征图之间应用了雅可比匹配。PKT将特征图表示为概率分布，并由KL散度模拟。FSP引入了Gramian矩阵来测量不同层特征图之间的求解过程流。Seung等人使用奇异值分解来解析特征知识。FT引入了自动编码器，以无监督的方式将教师的特征图解析为“因素”，并引入了翻译器，将“因素”转换为易于理解的知识。AB考虑隐藏特征空间中的激活边界，并迫使学生学习与老师一致的边界。Overhaul重新思考了蒸馏特征位置，使用新设计的 ReLU和L2距离函数来过滤冗余信息。</p>
+<p>最近，TOFD和HSAKD将辅助分类器附加到由额外任务监督的中层特征图上，以产生信息丰富的概率分布。前者利用了原始的监督任务，而后者引入了有意义的自监督增强任务。MGD使用自适应通道分配算法执行细粒度特征提取。ICKD从包含特征空间多样性和同源性的特征图中挖掘通道间相关性。在通道维度之外，TTKD使用自注意力机制进行空间级特征匹配。总之，以前的方法通常会为KD提取更丰富的特征信息，从而获得比经典FitNet更好的性能。</p>
+<h4 id="122-知识迁移好的模仿算法让学生学得更好">1.2.2 知识迁移：好的模仿算法让学生学得更好<a class="anchor-link" href="#122-知识迁移好的模仿算法让学生学得更好" title="Permanent link">&para;</a></h4>
+<p>除了知识探索，另一个有价值的问题是如何有效地迁移知识。大多数基于特征的KD方法使用简单的均方误差损失进行知识对齐。除此之外，VID还引用了信息论框架，认为KD是教师和学生之间互信息的最大化。Wang等人将学生视为生成器，并应用了一个额外的鉴别器来区分学生或老师产生的特征，这种对抗过程引导学生学习与教师相似的特征分布。Xu等人提出对倒数第二层的特征嵌入进行归一化，以抑制噪声的负面影响。除了研究模仿度量损失外，在教师和学生之间使用共享分类器还可以帮助学生隐式地对齐教师的特征。</p>
+<h4 id="123-视觉transformer方面的蒸馏工作">1.2.3 视觉Transformer方面的蒸馏工作<a class="anchor-link" href="#123-视觉transformer方面的蒸馏工作" title="Permanent link">&para;</a></h4>
+<p>Vision Transformer（ViT）在图像识别方面表现出了卓越的性能。然而，基于ViT的网络需要很高的计算成本。KD为训练具有理想性能的小型ViT提供了出色的解决方案。在关系层次上，流形蒸馏将逐块关系作为ViT蒸馏的知识类型进行探索。在特征级别上，AttnDistill将注意力图从教师转移到学生。ViTKD为ViT特征蒸馏提供了实用指南。除了同质ViT之间的特征模仿外，一些工作还试图从CNN中提取到的归纳偏置蒸馏到ViT。一些有前景的知识类型仍值得进一步挖掘，如中间特征、注意力关系和蒸馏位置。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250603212807.png" style="zoom: 80%;" /></div>
+
+<p><strong>总结。</strong>我们在表2中对各种基于特征的KD方法进行了实验结果对比。一般来说，基于特征的KD是对基于响应的KD的全面补充，它提供了封装学习过程的中间特征。然而，简单地在教师和学生之间对齐相同的阶段性特征信息可能会导致负面监督，特别是在性能差距或架构差异较大的情况下。一个更有价值的方向可能是基于学生友好的特征KD，它提供了语义一致的监督。</p>
+<h3 id="13-基于关系的知识蒸馏">1.3 基于关系的知识蒸馏<a class="anchor-link" href="#13-基于关系的知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>基于响应和基于特征的KD通常考虑从单个样本中提取知识。相反，基于关系的KD将跨样本或跨层关系视为有意义的知识。</p>
+<h4 id="131-跨样本的知识蒸馏">1.3.1 跨样本的知识蒸馏<a class="anchor-link" href="#131-跨样本的知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>基于关系的跨样本蒸馏损失公式一般为：<br />
+<div class="math-display"><br />
+\mathcal{L}<em>{relation_kd}(F^{S},F^{T})=\sum</em>{i,j}\mathcal{L}<em>{dis}{(\psi^{S}(v^{S}</em>{i},v^{S}<em>{j}),\psi^{T}(v^{T}</em>{i},v^{T}<em>{j}))},$<br />
+</div><br />
+其中 <span class="math-inline">F^{S}</span> 和 <span class="math-inline">F^{T}</span> 分别表示教师和学生的特征集， <span class="math-inline">v</em>{i}</span> 和 <span class="math-inline">v_{j}</span> 是第 <span class="math-inline">i</span> 个和第 <span class="math-inline">j</span> 个样本的特征嵌入， <span class="math-inline">(v^{S}<em>{i},v^{S}</em>{j})\in F^{S}</span> ， <span class="math-inline">(v^{T}<em>{i},v^{T}</em>{j})\in F^{T}</span> 。 <span class="math-inline">\psi^{S}</span> 和 <span class="math-inline">\psi^{T}</span> 是 <span class="math-inline">(v^{S}<em>{i},v^{S}</em>{j})</span> 和 <span class="math-inline">(v^{T}<em>{i},v^{T}</em>{j})</span> 的相似度度量函数。 <span class="math-inline">\mathcal{L}_{dis}</span> 是一个距离函数，用于衡量实例图的相似性，例如，均方误差损失和Kullback-Leibler散度损失。</p>
+<h4 id="1311-利用不同的边权重构建关系图">1.3.1.1 利用不同的边权重构建关系图<a class="anchor-link" href="#1311-利用不同的边权重构建关系图" title="Permanent link">&para;</a></h4>
+<p>基于关系的KD知识可以看作是一个实例图，其中节点表示样本的特征嵌入。大多数基于关系的KD研究各种相似性度量函数来计算边权重。DarkRank是第一种基于深度度量学习嵌入的欧几里德距离来建模交叉样本相似性的方法。MHGD使用多头注意力网络处理基于图的表示。RKD使用相互关系的距离和角度相似性作为结构化知识。CCKD使用基于核的高斯RBF捕获实例之间的相关性。SP在给定一个批数据的情况下构建成对相似性矩阵。IRG通过顶点和边变换对实例关系图进行建模。REFILLED引导老师重新加权对于学生困难的三元组样本权重，以进行关系匹配。所有方法都侧重于在样本级特征嵌入上对关系图进行建模，但在各种边权重生成策略上有所不同。</p>
+<h4 id="1312-利用有意义的转换构建关系图">1.3.1.2 利用有意义的转换构建关系图<a class="anchor-link" href="#1312-利用有意义的转换构建关系图" title="Permanent link">&para;</a></h4>
+<p>使用简单的度量函数直接对边权重进行建模可能无法有意义地捕捉相关性或高阶依赖性。CRD引入了有监督对比学习，基于InfoNCE的误差形式，使得老师和学生的表征对齐。在CRD上，CRCD根据特征及其梯度提出了互补关系对比蒸馏。为了在原始监督学习的基础上提取更丰富的知识，SSKD遵循SimCLR框架，并利用图像旋转的自监督对比蒸馏。为了利用标签中的类别信息，CSKD构建了类内和类间的结构化关系。以前的方法通常关注实例级特征及其关系，但忽略了局部特征和细节。因此，LKD利用类感知注意力模块来捕获重要区域，然后使用局部补丁对局部关系矩阵进行建模。GLD构造了一个关系图，其中包含由局部空间池化层提取的局部特征。</p>
+<h4 id="132-跨层的知识蒸馏">1.3.2 跨层的知识蒸馏<a class="anchor-link" href="#132-跨层的知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>除了在数据样本上建立关系外，模型内的跨层交互信息编码也是一种有价值的知识形式。基于关系的跨层蒸馏损失公式为：<br />
+<div class="math-display"><br />
+\mathcal{L}<em>{relation_kd}(f^{S},f^{T})=\mathcal{L}</em>{dis}{(g^{S}(f^{S}<em>{i},f^{S}</em>{j}),g^{T}(f^{T}<em>{i},f^{T}</em>{j}))},$​<br />
+</div><br />
+其中 <span class="math-inline">f^{S}</span> 和 <span class="math-inline">f^{T}</span> 分别代表从教师和学生不同层中提取的特征集合， <span class="math-inline">f_{i}</span> 和 <span class="math-inline">f_{j}</span> 是来自第 <span class="math-inline">i</span> 层和第 <span class="math-inline">j</span> 层的特征嵌入， <span class="math-inline">(f^{S}<em>{i},f^{S}</em>{j})\in f^{S}, (f^{T}<em>{i},f^{T}</em>{j})\in f^{T}</span> 。 <span class="math-inline">g^{S}</span> 和 <span class="math-inline">g^{T}</span> 是 <span class="math-inline">(f^{S}<em>{i},f^{S}</em>{j})</span> 和 <span class="math-inline">(f^{T}<em>{i},f^{T}</em>{j})</span> 的层聚合函数。 <span class="math-inline">\mathcal{L}_{dis}</span> 是距离函数来衡量跨层特征的相似度。</p>
+<p>FSP是捕获KD跨层特征图之间关系的开创性方法，它引入了Gramian矩阵，将求解过程的流程表示为知识。Passalis等人指出，具有不同性能的教师和学生网络之间的同一层可能会出现语义抽象差距。以前的方法通常依赖于手工制作的一对一的层分配策略，然而，这种简单的对齐可能会导致成对师生层之间的语义不匹配问题。许多后续工作考虑在多个特征层上建模有意义的知识。Jang等人引入了用于加权层级特征匹配的元网络。在自注意力机制的启发下，一些工作利用基于注意力的权重进行自适应层分配。除了研究层匹配问题外，一些工作还试图聚合所有阶段特征图，以构建更具信息量的特征作为监督信号。ReviewKD利用教师的多层次特征，根据各种特征融合模块指导学生的每一层。LONDON总结了多层次特征图，以模拟Lipschitz连续性。除了手工策略外，DFA还应用了搜索方法来自动找到合适的特征聚合。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250603213243.png" style="zoom: 60%;" /></div>
+
+<p><strong>总结。</strong>我们在表3中对各种基于关系的KD方法进行了实验结果对比。不同于基于特征和基于响应的KD，基于关系的方法旨在捕捉各种样本或不同层之间的高阶关系。关系图捕获了整个数据集的结构化依赖关系。跨层特征关系对语义过程的信息进行编码。如何使用更有意义的节点转换和度量函数或聚合适当的层信息来建模更好的关系仍然是需要进一步研究的核心问题。</p>
+<h2 id="2-蒸馏机制">2 蒸馏机制<a class="anchor-link" href="#2-蒸馏机制" title="Permanent link">&para;</a></h2>
+<p>蒸馏机制通常分为离线知识蒸馏、在线知识蒸馏和自知识蒸馏，如图2所示：</p>
+<p><img alt="" src="https://pic3.zhimg.com/v2-3996cd7191851adf51c11a52d583bf00_1440w.jpg" /></p>
+<p>图2 离线知识蒸馏、在线知识蒸馏和自知识蒸馏机制示意图</p>
+<h3 id="21-离线知识蒸馏">2.1 离线知识蒸馏<a class="anchor-link" href="#21-离线知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>离线KD是所谓的基于教师和学生的学习，之前的研究已经对其进行了广泛的研究。离线KD的核心思想是将知识从一个高性能的大型预训练教师网络转移到一个小型快速的学生网络。在实践中，离线KD通常会进行两阶段的训练：（1）教师网络在任务上进行预训练，以实现卓越的性能；以及（2）在训练阶段引导学生模仿老师的信息。当离线KD使用公开的预训练模型来训练学生网络时，离线KD也可以被视为一个单阶段的训练流程。由于教师网络是预先训练和冻结的，我们将基于教师-学生的学习称为离线KD。</p>
+<p>离线知识蒸馏的工作主要在第一章节”Categories of response-based, feature-based, and relation-based knowledge distillation(基于响应、特征、关系的知识蒸馏划分)“进行讲解。因此在这里仅展示了不同蒸馏方法对于蒸馏性能和蒸馏时间的权衡,如表4所示。我们全面比较了代表性的离线KD方法在准确性和蒸馏时间方面的表现。我们可以观察到，各种KD方法具有不同的性质。传统的KD蒸馏时间最短，但仅能获得适度的增益。相比之下，HSAKD实现了最佳的蒸馏性能，甚至与教师的准确率相匹配，但时间比传统KD高出3倍。DKD是传统KD的改进版本，在精度和蒸馏时间之间达到了理想的平衡。从模型压缩的角度来看，最佳蒸馏的ResNet-20的参数和FLOP减少了3倍，但与教师ResNet-56相比，性能仅下降了0.1%。在实践中，我们可以根据实际需求和计算资源选择合适的KD算法。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-6fcb164b20634c1ccdfc3a23b570f18d_1440w.jpg" /></p>
+<p>表4 不同离线知识蒸馏方法在CIFAR-100数据集上性能和训练时间的权衡</p>
+<h3 id="22-在线知识蒸馏">2.2 在线知识蒸馏<a class="anchor-link" href="#22-在线知识蒸馏" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="https://pic2.zhimg.com/v2-58c59e129cd39daf32ee256387901cb1_1440w.jpg" /></p>
+<p>图3 两个学生网络基于响应、特征、关系的在线知识蒸馏整体示意图</p>
+<p>在线KD旨在从零开始同时训练一组学生网络，并在训练阶段相互传递知识。与离线KD不同，在线KD是一个端到端的优化过程，不需要事先明确的预训练教师网络。根据知识类型，当前的在线KD主要分为基于响应、基于特征和基于关系的方法，如图3所示。我们在表5中提供了各种在线KD方法的实验结果。</p>
+<p><img alt="" src="https://pic1.zhimg.com/v2-979b54f8cf449c049006d7ec968fd590_1440w.jpg" /></p>
+<p>表5 不同在线知识蒸馏方法在CIFAR-100上的准确率对比</p>
+<p>在线知识蒸馏按照迁移的知识类型分为基于响应、特征和关系的在线知识蒸馏：</p>
+<h4 id="221-基于响应的在线知识蒸馏">2.2.1 基于响应的在线知识蒸馏<a class="anchor-link" href="#221-基于响应的在线知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>在线KD可以追溯到深度相互学习（Deep Mutual Learning, DML）。DML表明，在传统学习方案中，将每个学生的类别后验与其他学生的类别后验对齐比单独训练更好。Song等人将这一想法进一步扩展到具有共享浅层和分离的高层分支的分层架构。Anil等人将相互蒸馏应用于大规模分布式神经网络。DCML通过在隐藏层中添加精心设计的辅助分类器来增强相互学习。MutualNet使用不同输入分辨率对应的不同宽度的子网络进行相互学习，以探索多尺度特征。MMT和PCL为每个对等体引入了一个时间均值教师，为相互学习生成更好的伪标签。除了同伴教学方式，ONE还组装了集成概率分布，构建了一个虚拟教师角色，以提供软标签。OKDDip利用自注意力机制来提高同伴多样性，然后将辅助同伴的集合知识传递给组长。KDCL研究了从两个数据增强视图中使用各种聚合策略生成软集成目标。一些工作考虑使用特征融合和额外的分类器来输出有意义的标签。</p>
+<h4 id="222-基于特征的在线知识蒸馏">2.2.2 基于特征的在线知识蒸馏<a class="anchor-link" href="#222-基于特征的在线知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>以前的在线KD方法通常侧重于学习类概率，主要在各种策略或架构上有所不同，但忽略了在线学习的特征级信息。Walawalkar等人对模型压缩的中间特征图进行了在线蒸馏。Zhang等人表明，直接对齐特征图可能会减小群体多样性并损害在线KD。许多方法都提出了在线对抗特征提取来相互学习特征分布。对抗性在线KD的想法是为每个网络添加一个鉴别器，该鉴别器可以将自身的特征图分类为伪造，或将另一个网络的特征图分类为真实。</p>
+<h4 id="223-基于关系的在线知识蒸馏">2.2.3 基于关系的在线知识蒸馏<a class="anchor-link" href="#223-基于关系的在线知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>相互对比学习（Mutual Contrastive Learning, MCL)将每个网络视为一个单独的视图，并从对比表征学习的角度引入了基于相互关系的蒸馏。与之前的工作相比，MCL帮助每个网络学习更好的视觉特征表示。先前在线知识蒸馏方法的一个共同点是从单个原始任务中提取知识。HSSAKD在特征映射后附加分类器，以学习额外的自监督增强任务，并引导网络相互蒸馏自监督分布。</p>
+<h3 id="23-自知识蒸馏">2.3 自知识蒸馏<a class="anchor-link" href="#23-自知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>Self-KD旨在从网络中提取知识并自学。与离线和在线KD不同，Self-KD没有额外的教师或同伴网络进行知识交流。因此，现有的Self-KD方法通常利用辅助架构，数据增强或序列快照蒸馏来探索外部知识以实现自我提升。此外，通过手动设计正则化分布来代替教师，Self-KD也可以与标签平滑联系起来。我们在表6中提供了各种Self-KD方法的实验结果对比。除了将Self-KD应用于传统的监督学习之外，最近的研究还试图借鉴Self-KD的思想进行自监督学习。</p>
+<p><img alt="" src="https://pica.zhimg.com/v2-591dad15b56e3b47c132b61b38300e92_1440w.jpg" /></p>
+<p>表6 不同自知识蒸馏方法在CIFAR-100上的准确率对比</p>
+<h4 id="231-基于辅助结构的自知识蒸馏">2.3.1 基于辅助结构的自知识蒸馏<a class="anchor-link" href="#231-基于辅助结构的自知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>这种方法的想法是附加辅助架构来捕获额外的知识，以补充主网络。DKS插入几个辅助分支，并在这些分支和主骨干之间进行成对的知识转移。BYOT将概率和特征信息从网络的较深部分转移到较浅部分。SAD使用来自深层的注意力图，以逐层的方式监督浅层的注意力图。除了点对点传输，MetaDistiller还通过自上而下的方式融合特征图来构建标签生成器，并使用元学习对其进行优化。FRSKD以类似BiFPN的方式聚合特征图，以构建一个自学网络，提供高质量的特征图和软标签。一个问题是，基于辅助架构的方法高度依赖于人工设计的网络，其可扩展性较差。</p>
+<h4 id="232-基于数据增强的自知识蒸馏">2.3.2 基于数据增强的自知识蒸馏<a class="anchor-link" href="#232-基于数据增强的自知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>基于数据增强的方法通常会强制从两个不同的增强视图生成类似的预测。沿着这一思路，DDGSD对同一图像应用了两种不同的增强算子。CS-KD从同一类别中随机抽取两个不同的实例。MixSKD将Mixup图像视为特征和概率空间中的一个视图，将线性插值图像视为另一个视图。为了挖掘跨图像知识，BAKE试图通过加权聚合其他样本的知识，形成一个软目标。一般来说，与基线相比，基于数据增强的Self-KD需要多个正向过程，因此提高了训练成本。</p>
+<h4 id="233-基于序列快照的自知识蒸馏">2.3.3 基于序列快照的自知识蒸馏<a class="anchor-link" href="#233-基于序列快照的自知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>这一思路考虑利用训练轨迹上的网络快照来提供监督信号。BAN在先前受过训练的网络快照监督下，以连续的方式逐步改进网络。SD从早期时代获取网络快照，以教导其后期时代。PS-KD建议通过总结真实标签和过去的预测来逐步完善软目标。DLB在上一个和当前的小批量数据之间执行一致性正则化。一般来说，基于快照的Self-KD需要保存训练模型的多个副本，因此增加了内存成本。</p>
+<h4 id="234-自监督学习和自知识蒸馏">2.3.4 自监督学习和自知识蒸馏<a class="anchor-link" href="#234-自监督学习和自知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>自监督学习侧重于给定未标注数据学习到好的特征表示。Self-KD和自监督学习之间有一些有趣的联系。在自监督的场景中，该框架通常构建两个角色：在线和目标网络。前者是训练网络，后者是平均教师，具有来自在线网络的移动平均权重。目标网络与在线网络具有相同的架构，但权重不同。目标网络通常用于提供监督信号来训练在线网络。MoCo利用目标网络生成一致的正负对比样本。一些自监督方法将目标网络视为一个自教师来提供回归目标，如BYOL、DINO和SimSiam。受BYOT的启发，SDSSL引导中间特征嵌入，以对比最终层的特征。尽管之前的方法在自监督表示学习方面取得了理想的性能，但可能仍存在两个值得探索的方向。首先，目标网络是以移动平均的方式从在线网络中构建的。我们是否有更有意义的方法来构建目标网络？其次，损失通常是为了对齐最终的特征嵌入，未来可以进一步挖掘在线网络和目标网络之间的一些中间特征或对比关系。</p>
+<h3 id="24-三种知识蒸馏综合比较">2.4 三种知识蒸馏综合比较<a class="anchor-link" href="#24-三种知识蒸馏综合比较" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="https://pic2.zhimg.com/v2-13d2465d2641f93737223485dabcc013_1440w.jpg" /></p>
+<p>表7 三种知识蒸馏方法在不同方面的比较，其中*代表预训练的教师是现成的</p>
+<p>如表7所示，本文展示三种知识蒸馏方法在不同方面的比较。离线蒸馏需要一个额外的教师模型来训练学生，而在线蒸馏或自蒸馏通过端到端优化训练一组模型或单个模型。当公开可用的预训练教师模型不可用时，离线蒸馏需要预先训练一个高性能的教师网络，因此训练代价较高。自蒸馏利用单一模型实现自我提升，通常具有较低的计算复杂度。值得注意的是，离线蒸馏在预训练教师模型为公开模型时也具有较低的训练复杂性，因为训练过程中教师网络是不需要梯度传播训练的。</p>
+<h2 id="3-蒸馏算法">3 蒸馏算法<a class="anchor-link" href="#3-蒸馏算法" title="Permanent link">&para;</a></h2>
+<h3 id="31-多教师知识蒸馏">3.1 多教师知识蒸馏<a class="anchor-link" href="#31-多教师知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>在传统的KD中，知识从一个高性能的老师转移到一个轻量的学生身上，但在这种情况下，知识的多样性和有效性是有限的。不同的老师可以为学生提供他们独特而有价值的知识。通过这种方式，学生可以从多个教师网络中学习各种知识表示。遵循传统的KD，逻辑分布或中层特征形式的知识可以用作监督信号。多教师KD的示意图如下图4所示。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250603213424.png" style="zoom: 50%;" /></div>
+
+<h4 id="311-从集成的逻辑分布中蒸馏">3.1.1 从集成的逻辑分布中蒸馏<a class="anchor-link" href="#311-从集成的逻辑分布中蒸馏" title="Permanent link">&para;</a></h4>
+<p>模型集成的逻辑分布是多教师知识蒸馏的直接方法之一。基于这一理念，引导学生学习教师集成逻辑的软输出。然而，对多教师的预测进行简单平均可能会忽视教师群体多样性。因此，一些工作(<a href="https://arxiv.org/pdf/1805.04770">BANs</a>，<a href="https://arxiv.org/abs/2001.01536">LFME</a>)提出了通过自适应地模仿教师的输出并使用各种聚合权重来学习学生模型。</p>
+<h4 id="312-从集成的特征表达中蒸馏">3.1.2 从集成的特征表达中蒸馏<a class="anchor-link" href="#312-从集成的特征表达中蒸馏" title="Permanent link">&para;</a></h4>
+<p>除了从逻辑分布中提取外，中间层特征的集成可以为学生提供更多的语义信息。然而，从特征表示中提取更具挑战性，因为教师池中的每个成员在特定层中都有不同的特征表示。为了解决这个问题，Park等人在特征图级别对多个教师网络应用了非线性变换。Wu等人提出通过<strong>最小化教师和学生的相似性矩阵之间的距离</strong>来提取知识。刘等人提出让学生网络学习教师模型的可学习转换矩阵。为了利用逻辑和中间特征，Chen等人引入了双教师网络，分别提供响应级和特征级知识。</p>
+<h4 id="313-从子网络得到计算高效的蒸馏">3.1.3 从子网络得到计算高效的蒸馏<a class="anchor-link" href="#313-从子网络得到计算高效的蒸馏" title="Permanent link">&para;</a></h4>
+<p>使用多教师引入了额外的训练计算成本，因此一些方法从单个教师网络中创建了一些子教师。Nguyen等人利用随机块和跳过教师网络上的连接来生成多个教师角色。一些方法设计了多头架构，以产生多个教师角色。</p>
+<h4 id="314-多任务多教师蒸馏">3.1.4 多任务多教师蒸馏<a class="anchor-link" href="#314-多任务多教师蒸馏" title="Permanent link">&para;</a></h4>
+<p>在大多数情况下，多教师KD是基于同一任务的。知识融合旨在通过从所有接受过不同任务训练的教师那里学习知识，来培养一个多才多艺的学生。Luoemph等人旨在学习一个能够从异质教师那里吸收全面知识的多人才学生网络。Ye 等人将目标网络集中用于定制任务，由从不同任务中预先训练的多名教师指导。学生从异质教师那里继承了理想的能力，因此可以同时执行多项任务。Rusu等人引入了一种多教师策略蒸馏方法，将代理的多种策略转移到单个学生网络。</p>
+<p><strong>总结。</strong>总之，由于不同的教师提供不同的知识，因此可以通过多教师蒸馏来培养多才多艺的学生。然而，仍有几个问题需要解决。一方面，教师数量是训练成本和性能提高之间的权衡问题。另一方面，有效整合多教师的各种知识仍然是一个值得探索的问题。</p>
+<h3 id="32-跨模态知识蒸馏">3.2 跨模态知识蒸馏<a class="anchor-link" href="#32-跨模态知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>在常见的KD方法中，教师和学生往往具有相同的模态。然而，另一种模态的训练数据或标签可能是不可用的。在不同模态之间转移知识是一个有价值的实践领域。跨模态KD的核心思想是将知识从受过数据模态训练的教师转移到另一种数据模态的学生网络。跨模态KD的示意图如图5所示。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-1ca0188bcb03fade5e64920d96eb173f_1440w.jpg" /></p>
+<p>图5 跨模态知识蒸馏基本思想示意图</p>
+<p>给定一个在具有良好标记样本的一种模态上预先训练的教师模型，Gupta等人利用无监督配对样本在带注释的RGB图像和未带注释的光流图像之间传递信息。通过标签引导的成对样本范式已被广泛应用于跨模态KD。Thoker等人使用配对样本将RGB视频中的知识转移到3D人体动作识别模型中。Roheda等人提出了使用GANs从可用模态到缺失模态的跨模态蒸馏。Do等人探索了一种基于KD的视觉问答方法，并依靠监督学习使用真实标签进行跨模态迁移。Passalis等人提出了概率KD，将知识从文本模态转移到视觉模态。</p>
+<p><strong>总结。</strong>一般来说，KD在跨模式场景中表现良好。然而，当存在显著的模态缺失时，跨模态KD很难对知识交互进行建模。</p>
+<h3 id="33-基于注意力的知识蒸馏">3.3 基于注意力的知识蒸馏<a class="anchor-link" href="#33-基于注意力的知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>基于注意力的蒸馏利用注意力信息进行有效的知识转移。目前的工作遵循两条主线：（1）提取从特征图中提炼出的注意力图，以及（2）基于自注意力机制的加权提取，如下图6所示。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-c8d551efeea05821d3e8a84926a0d4dd_1440w.jpg" /></p>
+<p>图6 基于注意力机制的知识蒸馏基本思想示意图</p>
+<h4 id="331-蒸馏注意力图">3.3.1 蒸馏注意力图<a class="anchor-link" href="#331-蒸馏注意力图" title="Permanent link">&para;</a></h4>
+<p>注意力图通常反映有价值的语义信息，并抑制不重要的部分。开创性的AT通过计算通道维度上特征图的统计数据来构建空间注意力图，并在教师和学生网络之间对注意力图进行对齐。空间注意力图包含类别感知语义区域，帮助学生捕捉辨别特征。CD采用压缩和激活模块生成通道注意力图，让学生学习老师的通道注意力权重。CWD为每个通道提取一个空间注意力图，表示密集预测的语义掩码。TinyBert转移Transformer层蒸馏的自注意力矩阵。LKD引入了一个类别感知注意力模块，用于捕获类相关区域以构建局部相关矩阵。</p>
+<h4 id="332-自注意力机制加权蒸馏">3.3.2 自注意力机制加权蒸馏<a class="anchor-link" href="#332-自注意力机制加权蒸馏" title="Permanent link">&para;</a></h4>
+<p>自注意力技术是一种捕获特征之间相似关系的机制。一些方法应用基于注意力的权重进行自适应层间语义匹配。SemCKD自动为每个学生层分配从合适的教师层聚合的目标，这些目标具有基于注意力的相似性。AFD提出了一种基于注意力的元网络来模拟教师和学生特征之间的相对相似性。ALP-KD将教师端的信息与基于注意力的层投影融合，用于Bert蒸馏。与特征层分配正交，TTKD应用自注意力机制进行空间级特征匹配。</p>
+<p><strong>总结。</strong>基于注意力图捕捉显著区域并过滤冗余信息，帮助学生学习最关键的特征。然而，注意力图压缩了特征图的维度，可能会丢失有意义的知识。此外，注意力图有时可能不会聚焦在正确的区域，从而导致负面的监督影响。</p>
+<h3 id="34-无需数据的知识蒸馏">3.4 无需数据的知识蒸馏<a class="anchor-link" href="#34-无需数据的知识蒸馏" title="Permanent link">&para;</a></h3>
+<p>传统的KD方法通常需要大量的训练样本。然而，出于隐私或安全考虑，训练数据集有时可能是不可得到的。现有工作已经提出了一些方法来处理这个问题，主要分为无数据KD和数据集KD。无数据KD的示意图如下图7所示。</p>
+<p><img alt="" src="https://picx.zhimg.com/v2-47af089901206a0d4cc01bc034b77d35_1440w.jpg" /></p>
+<p>图7 无需数据的知识蒸馏基本思想示意图</p>
+<h4 id="341-无需数据的蒸馏">3.4.1 无需数据的蒸馏<a class="anchor-link" href="#341-无需数据的蒸馏" title="Permanent link">&para;</a></h4>
+<p>训练样本通常是使用生成对抗网络（GAN）合成的。教师网络以生成的样本作为输入来监督学生网络。Lopes 等人使用不同类型的激活记录来重建原始数据。DeepInversion探索存储在批归一化层中的信息，以生成无数据KD的样本。Nayak等人通过将softmax空间建模为教师参数的狄利克雷分布，从而引入了一种样本提取机制。除了最终输出之外，还可以使用教师特征表示的信息生成目标数据。Paul等人优化了一个对抗生成器来搜索困难的图像，然后使用这些图像来训练学生。CMI引入了对比学习，使合成实例与已经合成的实例区分开来。FastDFKD优化了元合成器，以重用共享的通用功能，实现更快的无数据KD。</p>
+<h4 id="342-数据集知识蒸馏">3.4.2 数据集知识蒸馏<a class="anchor-link" href="#342-数据集知识蒸馏" title="Permanent link">&para;</a></h4>
+<p>除了无数据KD之外，数据集蒸馏是合成小数据集以表示原始完整数据集而不会降低精度的重要方向。为了利用全监督设置，Radosavovic等人通过单个模型从未标记数据的多次转换中组装预测，以产生新的训练注释。DDFlow提出学习光流估计，并从教师模型中提取预测，以监督学生网络进行光流学习。未标记的数据可能会阻碍图卷积网络（GCN）学习基于图的数据。一般来说，未标记数据的伪标签可以为训练GCN提供额外的监督。RDD提出了一种可靠的数据驱动的半监督GCN训练方法，它可以更好地使用高质量的数据，并通过定义节点和边的可靠性来改进图表示学习。Cazenavette等人沿着提取的合成数据和真实数据之间的训练轨迹进行了长距离参数匹配。</p>
+<p><strong>总结。</strong>在大多数无数据KD方法中，合成数据通常是从预训练的教师网络的特征表示中生成的。尽管当前的无数据KD工作在处理数据不可用问题方面表现出了显著的性能，但生成更高质量和多样化的训练样本仍然是一个有待研究的挑战。</p>
+<h3 id="35-对抗蒸馏">3.5 对抗蒸馏<a class="anchor-link" href="#35-对抗蒸馏" title="Permanent link">&para;</a></h3>
+<p>对抗蒸馏是利用生成对抗网络的基本思想来改进KD，主要分为三条主线：（1）使用GAN生成额外的数据样本，（2）对抗机制来辅助KD算法，（3）压缩GAN以高效生成图像。对抗性KD的示意图如下图8所示。</p>
+<p><img alt="" src="https://pic2.zhimg.com/v2-bda835e1086c3abeef19af85b9bc8029_1440w.jpg" /></p>
+<p>图8 对抗知识蒸馏基本思想示意图</p>
+<p>3.5.1 Using GAN to generate extra data samples（使用对抗生成网络产生额外的数据样本）</p>
+<p>几乎现有的KD算法都是数据驱动的，即依赖于原始或替代数据，这在现实世界中可能是不可用的。生成对抗网络可以应用于学习真实的数据分布并解决这个问题。DFAD让教师和学生网络共同发挥鉴别器的作用，以减少差异。同时，它添加了一个额外的生成器来产生困难样本，以对抗性地放大它。一些方法引入了条件GAN（CGAN）来生成数据。Roheda等人使用CGAN在给定其他可用模态的前提下从缺失模态中蒸馏知识。终身GAN将以前网络中学习到的知识转移到新网络中，以持续生成有条件的图像。</p>
+<p>3.5.2 Adversarial mechanism to assist general KD（对抗机制来辅助知识蒸馏）</p>
+<p>传统的KD通常通过调整知识分布来缩小教师和学生之间的差距。对抗机制可以作为提高模仿难度的辅助方法。一般来说，核心思想是引入一个额外的鉴别器来对教师或学生网络中的特征表示进行分类。Wang等人利用鉴别器作为教学助手，使学生与教师学习相似的特征分布，以进行图像分类。Wang等人采用对抗性KD进行单阶段目标检测。Liu等人将逐像素的类概率以对抗的方式应用于语义分割蒸馏中。除了基于师生的对抗学习外，一些方法还应用了在线对抗KD在多个学生网络之间相互提取特征图。</p>
+<p>3.5.3 Compressing GAN for efficient image generation（压缩对抗生成网络来进行高效的图像生成）</p>
+<p>Aguinaldo等人引导一个较小的“学生”GAN对齐更大的“教师”GAN。Chen等人让学生生成器从相应的老师那里学习低阶和高阶知识。此外，学生鉴别器由教师网络通过triplet损失进行监督。Li等人通过从中间表示中转移知识并通过神经架构搜索探索高效架构，提出了一种用于条件GAN的通用压缩框架。Zhang等人指出，小型GAN通常难以生成所需的高频信息。小波KD通过离散小波变换将图像分解为不同的频带，然后只传输有价值的高频带。</p>
+<p><strong>总结。</strong>尽管基于对抗的KD有助于知识模仿，但在实践中可能很难确保GAN网络的收敛性。对于GAN压缩，从特征中提取哪些信息适合蒸馏GAN仍然是一个值得探索的问题。</p>
+<h2 id="4总结">4.总结<a class="anchor-link" href="#4总结" title="Permanent link">&para;</a></h2>
+<p>本篇综述首先按照基于响应、特征和关系三种层面的知识类型总结了离线知识蒸馏的工作。通过剖析离线知识蒸馏需要预训练教师的问题，引出了在线知识蒸馏和自知识蒸馏。面向实际场景中，本文又引入了跨模态知识蒸馏和无数据的知识蒸馏。此外，本文展示了一些用于提升知识蒸馏效果的扩展机制，例如多教师知识蒸馏、注意力机制知识蒸馏和对抗知识蒸馏。</p>
+<p>本文对以上领域的代表性相关工作进行调研，并总结核心思想与贡献，对未来知识蒸馏的挑战进行展望。相比于先前发布的知识蒸馏综述[2,3]，本文包含了更多发表于2022年以后的工作，以及介绍了一些先进的知识蒸馏方向，例如自监督蒸馏和ViT蒸馏。本文希望可以通过总结过去工作让读者更快地学习领域的现状，从而提出更先进的知识蒸馏方法，推动领域的发展。</p>
+<h2 id="参考文献">参考文献<a class="anchor-link" href="#参考文献" title="Permanent link">&para;</a></h2>
+<p>[1] Hinton G. Distilling the Knowledge in a Neural Network[J]. arXiv preprint arXiv:1503.02531, 2015.</p>
+<p>[2] Gou J, Yu B, Maybank S J, et al. Knowledge distillation: A survey[J]. International Journal of Computer Vision, 2021, 129: 1789-1819.</p>
+<p>[3] Wang L, Yoon K J. Knowledge distillation and student-teacher learning for visual intelligence: A review and new outlooks[J]. IEEE transactions on pattern analysis and machine intelligence, 2021, 44(6): 3048-3068.</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

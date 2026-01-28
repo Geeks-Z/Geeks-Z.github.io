@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#propulsion-steering-llm-with-tiny-fine-tuning">Propulsion: Steering LLM with Tiny Fine-Tuning</a></li>
+<li><a href="#1-introduction">1 Introduction</a></li>
+<li><a href="#3-neural-tangent-kernel-ntk-analysis">3 Neural Tangent Kernel (NTK) Analysis</a></li>
+<li><a href="#4-experiments">4 Experiments</a></li>
+<li><a href="#baselines">Baselines</a></li>
+<li><a href="#language-model-performance">Language Model Performance</a></li>
+<li><a href="#large-language-models-performance">Large Language Models Performance</a></li>
+<li><a href="#efficiency-comparison">Efficiency Comparison</a></li>
+<li><a href="#5-related-work">5 Related Work</a></li>
+<li><a href="#6-conclusion">6 Conclusion</a></li>
+<li><a href="#参考">参考</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/14.PEFT</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="propulsion-steering-llm-with-tiny-fine-tuning"><a href="https://arxiv.org/abs/2409.10927">Propulsion: Steering LLM with Tiny Fine-Tuning</a><a class="anchor-link" href="#propulsion-steering-llm-with-tiny-fine-tuning" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>自然语言处理（NLP）和相邻领域因大型语言模型的快速发展而实现了前所未有的进步。然而，为特定任务微调这些模型的计算成本仍然很高，而且可能降低先学习到的特征。为了应对这些挑战，作者提出了一种名为 Propulsion 的全新高效微调方法，旨在在大幅降低计算成本的同时优化特定任务的性能。受物理运动中控制调整概念的启发， Propulsion 选择性地重新缩放预训练模型的特定维度，指导输出预测直接朝着任务目标，而不修改模型的参数。通过在预训练层引入可训练的轻量级 Propulsion 参数，作者在微调过程中最小化更新的参数数量，从而防止过度拟合或覆盖现有知识。</p>
+<p>作者的理论分析，支持神经切空间（NTK）理论，表明 Propulsion 可以通过训练 far fewer 可训练参数达到全量微调的效果。</p>
+<p>在实践中，Propulsion 使参数数量从 355.3百万减少到仅仅 0.086百万——相对于标准的 LoRA 方法实现了十倍以上的减少，同时保持了各个基准上的竞争力。</p>
+<p>代码可在 https://github.com/Kowsher/Propulsion。</p>
+</blockquote>
+<h2 id="1-introduction">1 Introduction<a class="anchor-link" href="#1-introduction" title="Permanent link">&para;</a></h2>
+<p>训练大型语言模型需要消耗大量的计算资源，有时甚至需要花费长达六个月的赵等（2023年）。这为人工智能的发展带来了瓶颈并引发了环境问题。为了缓解这一问题，作者通常会选择微调预训练模型，如BERT Devlin等人（2018年）、GPT Mann等人（2020年）和RoBERTa Liu等人（2019年），而不是从头开始训练。然而，由于这些预训练模型的大小较大，微调这些模型仍然具有挑战性。例如，现代LLMs（大语言模型）可以有高达70亿个参数Jiang等人（2023年）；Touvron等人（2023年）；Almazrouei等人（2023年）；Le Scao等人（2023年）。传统完全模型微调是有效的，但通常既昂贵又低效，受制于计算资源和时间Bender等人（2021年）；Kim等人（2024年）；吴等人（2024年）。</p>
+<p>近期，为了应对这些挑战，已经探索了PEFT（迁移学习与微调，一种用于处理深度神经网络的训练策略）领域的技术。例如，具有适配层的方法Lin等人（2020年）；Houlsby等人（2019年），提示调优Lester等人（2021年），低秩适配Hu等人（2021年），量化Gray和Neuhoff（1998年），以及轻量微调Liu等人（2021年）的替代方法提出了只需要调整模型总参数的一部分的修改方法。虽然这些方法有着很大的潜力，但往往在效率、性能和适应性之间需要做出权衡，因此空间仍需优化。</p>
+<p>为了应对现有PEFT方法的局限性，作者提出了 <em>Propulsion</em> 一种新的 fine-tuning 方法，该方法利用了一个观察结果，即模型层输出向量的微小、有针对性的变化会导致模型整体行为的巨大转变。在物理动力学中，推进可以通过一系列小心控制的小型、定向力的爆发来改变或控制目标的轨迹。类似地，作者提出的 <em>Propulsion</em> 方法对神经网络预训练参数的细微调整或缩放进行最小程度的应用，从而有效地以最小化能量消耗和最大化保留先学习的特征的方式“指导”模型响应。</p>
+<p>为此，作者引入了一系列可训练的线性参数--被称为 <em>Propulsion</em> 参数。这些参数经过精确微调，可以放大或减弱模型行为的具体方面，从而优化特定任务上的性能，同时具有最小的计算开销。如图1所示，作者将不同的PEFT方法与作者 的 <em>Propulsion</em> 方法进行了比较。</p>
+<p><img alt="图片" src="https://mmbiz.qpic.cn/sz_mmbiz_jpg/CGMcIH6OkC4iath7rJcSiaQBNGTSN6pqOtxc8DdyeWJsaUW5lRfzKKDnDgjBeAWUTr9JFQ6ic4vib62LRiaHN6NxtrA/640?wx_fmt=jpeg&amp;from=appmsg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1&amp;wx_co=1" /></p>
+<p>为了在理论上支持作者的方法，作者在NTK（神经元元恪克理论）的框架下对 <em>Propulsion</em> 进行了分析。由Jacot等人（2018年）引入的NTK描述了网络在大神经元宽度趋于无限大时的训练动力学。在该框架下，已经证明像LoRA这样的微调方法可以近似地将神经网络的全参数微调，关注的是低秩子空间。类似地，作者的分析也表明，Propulsion 可以直接近似于全参数微调的NTK，只需更新模型参数的一个对角子集。这样的理论基础确保了 Propulsion 可以实现与全参数微调类似的性能，尽管降低了计算要求。</p>
+<p>作者将在不同的语言模型上的多个基准测试上评估作者的方法的效率。作者的实验结果表明，与目前的PEFT技术相比，Propulsion 在降低可训练参数的同时取得了更好的性能。</p>
+<p>2 Propulsion</p>
+<p>作者提出了推进概念及其实践效益的明确框架。考虑作者有一个预训练语言模型，它具有层，如，其中所有参数被冻结。作者将任意给定的输入表示为，其中表示 Token 序列的长度，表示每个 Token 的维度，可以是神经网络中的任何隐藏层输出或下一层输入，包括Key, Queries, Values等。以作为输入，作者提取，其中是有预训练冻结权值的。</p>
+<p>为了引入特定的任务修改，作者初始化一个可训练的矩阵，其中。每对输出向量中相应的每个元素进行元素求乘以进行逐元素单向变换，以指导层的输出投影。表示中个 Token 的表示。</p>
+<p>作者对进行训练，通过计算元素求乘来生成，其中表示元素求乘操作。这个操作定义如下：</p>
+<p>类似地，通过遵循公式1；对所有个 Token ，作者可以通过 mathbf{z_{i}}来指导V_{i}$ 输出。它可以定义为：</p>
+<p>一旦被计算，它将被用作下一层的输入。所以层的已转换输出作为层的输入。</p>
+<p>作者在推进概念中结合多项式缩放引入了参数。通过将乘以，即多项式缩放，作者允许模型对输入特征的响应具有更灵活和动态的调整。这种缩放调整推进效果的幅度，提供了在不同的学习阶段或不同数据部分调整推进参数的方法。</p>
+<h2 id="3-neural-tangent-kernel-ntk-analysis">3 Neural Tangent Kernel (NTK) Analysis<a class="anchor-link" href="#3-neural-tangent-kernel-ntk-analysis" title="Permanent link">&para;</a></h2>
+<p>由Jacot等人（2018）引入的NTK，表征了网络参数的微小变化如何影响其输出。在NTK领域，当网络的宽度变得非常大时，神经网络的训练动态由NTK决定，该动态在训练期间几乎保持不变。</p>
+<p>在本节中，作者分析了Propulsion方法在NTK领域中的应用，并表明Propulsion的NTK近似于全量微调的NTK。</p>
+<p><em>此外，Propulsion的NTK与全量微调的NTK之间的误差可以使用Johnson-Lindenstrauss引理进行界定。具体地，对于任意和常数，以高概率：</em></p>
+<h2 id="4-experiments">4 Experiments<a class="anchor-link" href="#4-experiments" title="Permanent link">&para;</a></h2>
+<p>作者在NLP任务上评估作者的方法，包括General Language Understanding Evaluation（GLUE）基准测试、问答、文本摘要、常识推理和算术推理。训练和算法的详细信息已在附录E中描述。</p>
+<h2 id="baselines">Baselines<a class="anchor-link" href="#baselines" title="Permanent link">&para;</a></h2>
+<p>作者在基准比较中使用了著名的PEFT方法，包括Houlsby等人（2019年）的Adapter、Lester等人（2021年）的Prompt Tuning、Li和Liang（2021年）的Prefix-Tuning、Liu等人（2022年）的（IA）、Zaken等人（2021年）的Bitfit、Hu等人（2021年）的LoRA、Zhang等人在（2023年）的AdaLoRA、He等人（2021年）的MAM Adapter、Zeng等人（2023年）的PROPETL、Edalati等人（2022年）的LoKr和Hyeon-Woo等人（2021年）的LoHa。这些方法的实现都来源于Hugging Face（2022年）的论文。实验设置遵循了Xu等人（2023年）在GLUE基准测试中的设置，对于其余的数据集，作者遵循了Zhang等人的方法（2023年）。</p>
+<h2 id="language-model-performance">Language Model Performance<a class="anchor-link" href="#language-model-performance" title="Permanent link">&para;</a></h2>
+<p><strong>数据集：</strong> 在GLUE基准测试中，作者在CoLA，SST-2，MRPC，STS-B，QQP，MNLI，QNLI和RTE任务上评估作者的【推进力】方法（见Wang等人，2018年）。作者还使用SQuAD v1.1 Rajpurkar等人（2016年）和SQuAD v2.0 Rajpurkar等人（2018年）数据集来衡量在问答任务上的性能，和使用XSum Narayan等人（2018年）和CNN/DailyMail Hermann等人（2015年）数据集来衡量文本总结性能。对于这些</p>
+<p><strong>模型选择与超参数：</strong> 在GLUE基准测试中，作者选择的用于微调的模型使作者罗伯特基（RoBERTa-base）具有125M参数和罗伯特基大（RoBL）具有355M参数（见Liu等人，2019年）。作者将推进力 Level 设置为2（见第二节），用于SST-2，QQP，RTE和STS-B任务；55用于QNLI和MRPC；和在所有GLUE数据集上为其他设置 Level 20（见第二节）。</p>
+<p>对于SQuAD v1.1和SQuAD v2.0数据集，作者使用DeBERTaV3-base He等人（2020）。对于SQuAD v1.1和SQuAD v2.0，作者将推进力 Level 设置为35（见第二节）。</p>
+<p>对于XSum和CNN/DailyMail数据集，作者选择了具有406M参数的BART-large模型Lewis等人（2019）。对于XSum和CNN/DailyMail，作者将推进力 Level 设置为35和25（见第二节）。</p>
+<p><strong>结果：</strong> 表1显示了【推进力】在GLUE任务上的验证结果。在与其他 Baseline 的比较中，作者可以看到【推进力】在GLUE数据集上，相比现有PEFT方法，能实现更好的或与现有方法相媲美的性能，但可训练参数数量却远少。总的来说，与AdaLoRA，PROPETL前缀和（IA）³相比，【推进力】在准确性上提高了2.68％，3.32％，和3.31％，在F1得分上也分别提高了1.94％，1.87％，和8.92％。</p>
+<p><img alt="图片" src="data:image/svg+xml,%3C%3Fxml%20version='1.0'%20encoding='UTF-8'%3F%3E%3Csvg%20width='1px'%20height='1px'%20viewBox='0%200%201%201'%20version='1.1'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Ctitle%3E%3C/title%3E%3Cg%20stroke='none'%20stroke-width='1'%20fill='none'%20fill-rule='evenodd'%20fill-opacity='0'%3E%3Cg%20transform='translate%28-249.000000,%20-126.000000%29'%20fill='%23FFFFFF'%3E%3Crect%20x='249'%20y='126'%20width='1'%20height='1'%3E%3C/rect%3E%3C/g%3E%3C/g%3E%3C/svg%3E" /></p>
+<h2 id="large-language-models-performance">Large Language Models Performance<a class="anchor-link" href="#large-language-models-performance" title="Permanent link">&para;</a></h2>
+<p>数据集：作者使用13个数据集对模型进行全面的评估，涵盖常识推理和数学推理任务。</p>
+<p>对于常识推理，作者应用了多种数据集，包括 BooIQ (Clark 等，2019年)、PIQA (Bisk等人，2020年)、SIQA (Sap等人，2019年)、HellaSwag (Zellers等人，2019年)、WinoGrande (Sakaguchi等人，2021年)、ARC-easy 和 ARC-challenge (Clark等人，2018年) 和 OBQA (Mihaylov等人，2018年)，以确保对模型处理常识推理各种方面的全面评估。</p>
+<p>对于算术推理任务，作者还使用许多专业数据集，包括MultiArith (Roy和Roth，2016)，GSM8K (Cobbe等人，2021)，AddSub (Hosseini等人，2014)，SingleEq (Koncel-Kedziorski等人，2015)和SVAMP (Patel等人，2021)，以评估作者的模型在解决各种不同算术推理相关问题的性能。</p>
+<p><strong>模型选择与超参数：</strong> 对于描述的常识和数学推理任务，作者选择几个LLM使用标准的 Baseline 和作者提出的推进方法进行微调进行比较。</p>
+<p>所选择的 LLMs 包括 BLOOMz（7B 参数）（Muennighoff 等，2022年）、GPT-J（6B 参数）、LaMA（7B 参数，记为 ）和LaMA（13B 参数，记为 ）。对于 BLOOMz，， 和 ，作者将推理任务的 <em>Propulsion</em> 程度设置为 15。此外，作者对隐藏层和注意力机制都应用了 0.1 的丢弃率，以及 L2 正则化。每个模型层使用 5 个不同的 <em>Propulsion</em> 参数进行微调，以评估作者方法的有效性。</p>
+<h2 id="efficiency-comparison">Efficiency Comparison<a class="anchor-link" href="#efficiency-comparison" title="Permanent link">&para;</a></h2>
+<p>本研究评估了多种PEFT技术在性能、训练效率和内存使用方面的表现。作者使用SST-2数据集进行实验，分为64个批次。作者在具有80 GB内存的H100上进行训练。默认参数包括学习率，权重衰减0.02，dropout 0.1。</p>
+<p><strong>训练效率：</strong> 图3显示了作者的模型和 Baseline 的训练收敛情况。图3的左侧显示，作者的 Propulsion 模型显示了快速收敛，仅在50次迭代后达到了0.9的较高准确性，而 Baseline AdaLoRA方法需要约200次迭代才能达到0.87的准确性，LoRA方法则需要近75次迭代才能达到与 Propulsion 相当的质量。此外，其他方法，包括LoKr，(IA)和LoHa，需要超过150次迭代才能达到0.8的质量。</p>
+<p><img alt="图片" src="data:image/svg+xml,%3C%3Fxml%20version='1.0'%20encoding='UTF-8'%3F%3E%3Csvg%20width='1px'%20height='1px'%20viewBox='0%200%201%201'%20version='1.1'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Ctitle%3E%3C/title%3E%3Cg%20stroke='none'%20stroke-width='1'%20fill='none'%20fill-rule='evenodd'%20fill-opacity='0'%3E%3Cg%20transform='translate%28-249.000000,%20-126.000000%29'%20fill='%23FFFFFF'%3E%3Crect%20x='249'%20y='126'%20width='1'%20height='1'%3E%3C/rect%3E%3C/g%3E%3C/g%3E%3C/svg%3E" /></p>
+<p><strong>参数效率：</strong> 在参数方面，作者在表1和表2中展示了每个方法的效率，并在图3（右侧）中以图形形式进行展示。很明显，Propulsion 在训练时间较短和内存使用减少方面表现出优越的效率，通过参数的减少实现这一点。表4比较了作者的 Propulsion 方法和其他 Baseline PEFT方法的空间/时间复杂度和总可训练参数。</p>
+<p><strong>内存效率：</strong> 对于GPU的内存效率，如图4所示，《Propulsion》仅消耗约17.2 GB的GPU内存进行训练，包括模型权重和优化。相比之下，其他 Baseline 方法消耗了超过26.0 GB的GPU内存，使 Propulsion 的内存效率大约是其他PEFT方法的两倍多。此外，在附录D（表6）中，作者显示了在优化过程中的反向传播（+ V + Q）参数重参化方法在SST-2数据集上的质量比为93.72%，分别对 Query （Q）、值（V）的质量和单独的质量进行分别检查，作者得到了 Query （Q）91.52%、值（V）92.52%和改进的质量为92.68%。然而，在嵌入层中的Propulsion 的表现并不与其他层相媲美。然而，在所有层中的 Propulsion 都导致了SST-2、MRPC、QQP、QNLI和RTE数据集的显著质量改进，改进分别为94.89%、90.52%、90.86%、92.79%和77.60%。</p>
+<p><img alt="图片" src="data:image/svg+xml,%3C%3Fxml%20version='1.0'%20encoding='UTF-8'%3F%3E%3Csvg%20width='1px'%20height='1px'%20viewBox='0%200%201%201'%20version='1.1'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Ctitle%3E%3C/title%3E%3Cg%20stroke='none'%20stroke-width='1'%20fill='none'%20fill-rule='evenodd'%20fill-opacity='0'%3E%3Cg%20transform='translate%28-249.000000,%20-126.000000%29'%20fill='%23FFFFFF'%3E%3Crect%20x='249'%20y='126'%20width='1'%20height='1'%3E%3C/rect%3E%3C/g%3E%3C/g%3E%3C/svg%3E" /></p>
+<p><img alt="图片" src="data:image/svg+xml,%3C%3Fxml%20version='1.0'%20encoding='UTF-8'%3F%3E%3Csvg%20width='1px'%20height='1px'%20viewBox='0%200%201%201'%20version='1.1'%20xmlns='http://www.w3.org/2000/svg'%20xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Ctitle%3E%3C/title%3E%3Cg%20stroke='none'%20stroke-width='1'%20fill='none'%20fill-rule='evenodd'%20fill-opacity='0'%3E%3Cg%20transform='translate%28-249.000000,%20-126.000000%29'%20fill='%23FFFFFF'%3E%3Crect%20x='249'%20y='126'%20width='1'%20height='1'%3E%3C/rect%3E%3C/g%3E%3C/g%3E%3C/svg%3E" /></p>
+<h2 id="5-related-work">5 Related Work<a class="anchor-link" href="#5-related-work" title="Permanent link">&para;</a></h2>
+<p>参数高效的微调（PEFT）技巧在自然语言处理（NLP）中的发展至关重要，因为语言模型的复杂性在不断增加。这些技巧在降低计算和内存需求的同时，提升了性能，这在刘等人（2022年）、阮等人（2023年）和周等人（2024年）的研究中得到了证明。PEFT技巧在NLP任务中取得了广泛的成功，包括于等人（2023年）、贺等人（2021年）。以前的研究如刘等人（2023年）、张等人（2023年）、胡等人（2021年）、李与李（2021年）、扎aken等人（2021年）表明，PEFT技巧可以显著提高语言模型的性能，同时利用较低资源的。</p>
+<p>提示调优涉及在模型输入层的虚拟标记或者在每个层内的添加可学习参数，如同层网络中使用一维的Lester等人（2021年）或LI和刘（2021年）。最近的发展已经将这些方法在自然语言理解（NLU）中进行了微调，如刘等人（2021年）、安等人（2022年），包括加上了残差模块以提升稳定性Razdabiedina等人（2023年）和在持续学习中适应Razdabiedina等人（2023年）。创新的技巧如MixPAVE Yang等人（2023年）和E2VPT Han等人（2023年）将输入和值提示结合以提升性能。这些方法显著提高了文本分类、机器翻译和对话生成等NLP任务。</p>
+<p>低秩适应（LoRA），由胡等人（2021年）引入，是一种内存高效的微调技术。其中，雷丁恰等人（2023年）探讨了其多任务学习的潜力。王等人（2023年）说明了其实际应用，而德特默等人（2024年）优化了内存使用。李等人（2023年）提出了ReLoRA，需要一个全秩的预热。张等人（2023年）动态地调整低秩参数。艾达塔等人（2022年）引入了低秩克隆卡乘（LoKr），而石等人（2024年）发展了ReLoRA，具有残差路径。李等人（2021年）提出低秩哈达玛乘法（LoHa），同时，秋等人（2024年）和刘等人（2024年）引入了正交微调（OFT）和正交微调带有蝴蝶折叠（BOFT），使用正交矩阵来修改预训练权重，提高了微调效率和性能。</p>
+<p>与先前的PEFT方法不同，作者提出了一种新的适应性 Propulsion 概念，通过Propulsion施加一个力，改变模型的输出方向以达到任务特定的目标。作者训练过程中调整 Propulsion 参数，决定了需要增加多少推力以改变方向。</p>
+<h2 id="6-conclusion">6 Conclusion<a class="anchor-link" href="#6-conclusion" title="Permanent link">&para;</a></h2>
+<p>调整庞大的语言模型在硬件和存储切换方面可能非常昂贵，而host不同任务的独立实例需要巨大的财务投入。</p>
+<p>作者提出了一种称为 Propulsion 的参数高效的微调方法，在保持原始参数不变的同时向每个层中添加可训练的 Propulsion参数。</p>
+<p>Propulsion的目标是在不修改大语言模型的原始参数的情况下，实现特定任务的目标。作者在自然语言处理、问答、文本摘要、常识推理和数学推理等领域的实验表明，与现有方法相比，Propulsion 在准确性、效率、更快收敛、减少训练时间和降低内存使用方面具有优势。</p>
+<p>作者的结果表明，Propulsion 在所需调整参数较少的情况下，优于当前的参数微调技术。例如，与AdaLoRA相比，Propulsion只需要37倍 fewer的参数，却能实现4.05%更高的准确率。</p>
+<h2 id="参考">参考<a class="anchor-link" href="#参考" title="Permanent link">&para;</a></h2>
+<p>[1].Propulsion: Steering LLM with Tiny Fine-Tuning.</p>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/94l8sDKFvOdALhB1Nl91KA">Propulsion 超越 LoRA，大幅降低参数量，高效微调降低 NLP 任务计算成本 ！</a></li>
+</ul>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

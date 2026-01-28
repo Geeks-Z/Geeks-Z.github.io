@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#模型表示model-representation">模型表示(Model Representation)</a></li>
+<li><a href="#代价函数cost-function">代价函数(Cost Function)</a></li>
+<li><a href="#梯度下降gradient-descent">梯度下降(Gradient Descent)</a></li>
+<li><a href="#梯度下降直观理解gradient-descent-intuition">梯度下降直观理解(Gradient Descent Intuition)</a></li>
+<li><a href="#线性回归中的梯度下降gradient-descent-for-linear-regression">线性回归中的梯度下降(Gradient Descent For Linear Regression)</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p>单变量线性回归(Linear Regression with One Variable)</p>
+</blockquote>
+<h2 id="模型表示model-representation">模型表示(Model Representation)<a class="anchor-link" href="#模型表示model-representation" title="Permanent link">&para;</a></h2>
+<ol>
+<li>房价预测训练集</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Size in <span class="math-inline">feet^2</span> (<span class="math-inline">x</span>)</th>
+<th>Price (\<span class="math-inline">) in 1000's(</span>y$)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2104</td>
+<td>460</td>
+</tr>
+<tr>
+<td>1416</td>
+<td>232</td>
+</tr>
+<tr>
+<td>1534</td>
+<td>315</td>
+</tr>
+<tr>
+<td>852</td>
+<td>178</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>房价预测训练集中，同时给出了输入 <span class="math-inline">x</span> 和输出结果 <span class="math-inline">y</span>，即给出了人为标注的"正确结果"，且预测的量是连续的，属于监督学习中的回归问题。</p>
+<ol start="2">
+<li><strong>问题解决模型</strong></li>
+</ol>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003055.png"/></div>
+
+<p>其中 <span class="math-inline">h</span> 代表结果函数，也称为<strong>假设(hypothesis)</strong> 。假设函数根据输入(房屋的面积)，给出预测结果输出(房屋的价格)，即是一个 <span class="math-inline">X\to Y</span> 的映射。</p>
+<p><span class="math-inline">h_\theta(x)=\theta_0+\theta_1x</span>，为解决房价问题的一种可行表达式。</p>
+<blockquote>
+<p><span class="math-inline">x</span>: 特征/输入变量。</p>
+</blockquote>
+<p>上式中，<span class="math-inline">\theta</span> 为参数，<span class="math-inline">\theta</span> 的变化才决定了输出结果，不同以往，这里的 <span class="math-inline">x</span> 被我们<strong>视作已知</strong>(不论是数据集还是预测时的输入)，所以怎样解得 <span class="math-inline">\theta</span> 以更好地拟合数据，成了求解该问题的最终问题。</p>
+<p>单变量，即只有一个特征(如例子中房屋的面积这个特征)。</p>
+<h2 id="代价函数cost-function">代价函数(Cost Function)<a class="anchor-link" href="#代价函数cost-function" title="Permanent link">&para;</a></h2>
+<p>我们的目的在于求解预测结果 <span class="math-inline">h</span> 最接近于实际结果 <span class="math-inline">y</span> 时 <span class="math-inline">\theta</span> 的取值，则问题可表达为<strong>求解 <span class="math-inline">\sum\limits_{i=0}^{m}(h_\theta(x^{(i)})-y^{(i)})</span> 的最小值</strong>。</p>
+<blockquote>
+<p><span class="math-inline">m</span>: 训练集中的样本总数</p>
+<p><span class="math-inline">y</span>: 目标变量/输出变量</p>
+<p><span class="math-inline">\left(x, y\right)</span>: 训练集中的实例</p>
+<p><span class="math-inline">\left(x^{\left(i\right)},y^{\left(i\right)}\right)</span>: 训练集中的第 <span class="math-inline">i</span> 个样本实例</p>
+<p>假设函数(Hypothesis): <span class="math-inline">h_\theta(x)=\theta_0+\theta_1x</span></p>
+<p>参数(Parameters): <span class="math-inline">\theta_0, \theta_1</span></p>
+<p>代价函数(Cost Function): <span class="math-inline">J\left( \theta_0, \theta_1  \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}^{2}}}</span></p>
+<p>目标(Goal): <span class="math-inline">\underset{\theta_0, \theta_1}{\text{minimize}} J \left(\theta_0, \theta_1 \right)</span></p>
+</blockquote>
+<p>为了直观理解代价函数到底是在做什么，先假设 <span class="math-inline">\theta_1 = 0</span>，并假设训练集有三个数据，分别为<span class="math-inline">\left(1, 1\right), \left(2, 2\right), \left(3, 3\right)</span>，这样在平面坐标系中绘制出 <span class="math-inline">h_\theta\left(x\right)</span> ，并分析 <span class="math-inline">J\left(\theta_0, \theta_1\right)</span> 的变化。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003723.png"/></div>
+
+<p>右图 <span class="math-inline">J\left(\theta_0, \theta_1\right)</span> 随着 <span class="math-inline">\theta_1</span> 的变化而变化，可见<strong>当 <span class="math-inline">\theta_1 = 1</span> 时，<span class="math-inline">J\left(\theta_0, \theta_1 \right) = 0</span>，取得最小值</strong>对应于左图青色直线，即函数 <span class="math-inline">h</span> 拟合程度最好的情况。</p>
+<p>参数在 <span class="math-inline">\theta_0</span> 不恒为 <span class="math-inline">0</span> 时代价函数 <span class="math-inline">J\left(\theta\right)</span> 关于 <span class="math-inline">\theta_0, \theta_1</span> 的<strong>轮廓图(contour plot)</strong>如下图所示，其中相同颜色的一个圈代表着同一高度（同一 <span class="math-inline">J\left(\theta\right)</span> 值）。</p>
+<p><span class="math-inline">\theta_0 = 360, \theta_1 =0</span> 时：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003248.png"/></div>
+
+<p>大概在 <span class="math-inline">\theta_0 = 250, \theta_1 =0.12</span> 时：</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003866.png"/></div>
+
+<p>上图中最中心的点（红点），近乎为图像中的最低点，也即代价函数的最小值，此时对应 <span class="math-inline">h_\theta\left(x\right)</span> 对数据的拟合情况如左图所示。</p>
+<p>为了求解最小值，引入了代价函数(Cost Function)概念，用于度量建模误差。考虑到要计算最小值，应用二次函数对求和式建模，即应用统计学中的平方损失函数（最小二乘法）：</p>
+<p><div class="math-display"><br />
+J(\theta_0,\theta_1)=\dfrac{1}{2m}\displaystyle\sum_{i=1}^m\left(\hat{y}<em>{i}-y</em>{i} \right)^2=\dfrac{1}{2m}\displaystyle\sum_{i=1}^m\left(h_\theta(x_{i})-y_{i}\right)^2<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">\hat{y}</span>: <span class="math-inline">y</span> 的预测值</p>
+<p>系数 <span class="math-inline">\frac{1}{2}</span> 存在与否都不会影响结果，这里是为了在应用梯度下降时便于求解，平方的导数会抵消掉 <span class="math-inline">\frac{1}{2}</span> 。</p>
+</blockquote>
+<p>讨论到这里，我们的问题就转化成了<strong>求解 <span class="math-inline">J\left( \theta_0, \theta_1  \right)</span> 的最小值</strong>。</p>
+<p>最小二乘法（least square method）<strong>就是基于均方误差最小化来进行模型求解的一种方法，寻找可使损失函数值最小的参数 <span class="math-inline">w</span> 和 <span class="math-inline">b</span> 的过程称为最小二乘</strong>参数估计（parameter estimation）。</p>
+<p>通过对损失函数分别求参数 <span class="math-inline">w</span> 和 <span class="math-inline">b</span> 的偏导，并且令导数为 0，可以得到这两个参数的<strong>闭式（closed-form）解</strong>（也即<strong>解析解</strong>）：</p>
+<p><div class="math-display"><br />
+w = \frac{\sum_{i=1}^m y_i(x_i - \bar{x})}{\sum_{i=1}^m x_i^2 - \frac{1}{m}(\sum_{i=1}^m x_i)^2} \<br />
+b = \frac{1}{m} \sum_{i=1}^m (y_i-wx_i)<br />
+</div></p>
+<p>在实际任务中，只要我们把自变量（x, y, m）的值代入就可以求出数值解了。</p>
+<p>为什么可以这样求解呢？因为损失函数是一个<strong>凸函数</strong>（记住是向下凸，类似 U 型曲线），导数为 0 表示该函数曲线最低的一点，此时对应的参数值就是能使均方误差最小的参数值。特别地，<strong>要判断一个函数是否凸函数，可以求其二阶导数</strong>，若二阶导数在区间上<strong>非负</strong>则称其为凸函数，若在区间上<strong>恒大于</strong>零则称其为<strong>严格凸函数</strong>。</p>
+<blockquote>
+<p>凸函数： <span class="math-inline">f(\frac{x_1+x_2}{2}) \leq \frac{f(x_1)+f(x_2)}{2}</span></p>
+</blockquote>
+<h2 id="梯度下降gradient-descent">梯度下降(Gradient Descent)<a class="anchor-link" href="#梯度下降gradient-descent" title="Permanent link">&para;</a></h2>
+<p>在特征量很大的情况下，即便是借用计算机来生成图像，人工的方法也很难读出 <span class="math-inline">J\left(\theta\right)</span> 的最小值，并且大多数情况无法进行可视化，故引入<strong>梯度下降(Gradient Descent)方法，让计算机自动找出最小化代价函数时对应的 <span class="math-inline">\theta</span> 值。</strong></p>
+<p>梯度下降背后的思想是：开始时，我们随机选择一个参数组合<span class="math-inline">\left( {\theta_{0}},{\theta_{1}},......,{\theta_{n}} \right)</span> 起始点，计算代价函数，然后寻找下一个能使得代价函数下降最多的参数组合。不断迭代，直到找到一个<strong>局部最小值(local minimum)</strong>，由于下降的情况只考虑当前参数组合周围的情况，所以无法确定当前的局部最小值是否就是<strong>全局最小值(global minimum)</strong>，不同的初始参数组合，可能会产生不同的局部最小值。</p>
+<p>下图根据不同的起始点，产生了两个不同的局部最小值。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003587.jpg"/></div>
+
+<p>视频中举了下山的例子，即我们在山顶上的某个位置，为了下山，就不断地看一下周围<strong>下一步往哪走</strong>下山比较快，然后就<strong>迈出那一步</strong>，一直重复，直到我们到达山下的某一处<strong>陆地</strong>。</p>
+<p>梯度下降公式：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{Repeat until convergence:} \; \lbrace \<br />
+&amp;{{\theta }<em>{j}}:={{\theta }</em>{j}}-\alpha \frac{\partial }{\partial {{\theta }<em>{j}}}J\left( {\theta</em>{0}},{\theta_{1}}  \right) \<br />
+\rbrace<br />
+\end{align</em>}<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">{\theta }_{j}</span>: 第 <span class="math-inline">j</span> 个特征参数</p>
+<p>”:=“: 赋值操作符</p>
+<p><span class="math-inline">\alpha</span>: 学习速率(learning rate), <span class="math-inline">\alpha &gt; 0</span></p>
+<p><span class="math-inline">\frac{\partial }{\partial {{\theta }_{j}}}J\left( \theta_0, \theta_1  \right)</span>: <span class="math-inline">J\left( \theta_0, \theta_1 \right)</span> 的偏导</p>
+</blockquote>
+<p>公式中，学习速率决定了参数值变化的速率即”<strong>走多少距离</strong>“，而偏导这部分决定了下降的方向即”<strong>下一步往哪里</strong>“走（当然实际上的走多少距离是由偏导值给出的，学习速率起到调整后决定的作用），收敛处的局部最小值又叫做极小值，即”<strong>陆地</strong>“。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003224.png"/></div>
+
+<p>注意，在计算时要<strong>批量更新 <span class="math-inline">\theta</span> 值</strong>，即如上图中的左图所示，否则结果上会有所出入，原因不做细究。</p>
+<h2 id="梯度下降直观理解gradient-descent-intuition">梯度下降直观理解(Gradient Descent Intuition)<a class="anchor-link" href="#梯度下降直观理解gradient-descent-intuition" title="Permanent link">&para;</a></h2>
+<p>该节探讨 <span class="math-inline">\theta_1</span> 的梯度下降更新过程，即 <span class="math-inline">\theta_1 := \theta_1 - \alpha\frac{d}{d\theta_1}J\left(\theta_1\right)</span>，此处为了数学定义上的精确性，用的是 <span class="math-inline">\frac{d}{d\theta_1}J\left(\theta_1\right)</span>，如果不熟悉微积分学，就把它视作之前的 <span class="math-inline">\frac{\partial}{\partial\theta}</span> 即可。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003764.png"/></div>
+
+<p>把红点定为初始点，切于初始点的红色直线的斜率，表示了函数 <span class="math-inline">J\left(\theta\right)</span> 在初始点处有<strong>正斜率</strong>，也就是说它有<strong>正导数</strong>，则根据梯度下降公式 ，<span class="math-inline">{{\theta }<em>{j}}:={{\theta }</em>{j}}-\alpha \frac{\partial }{\partial {{\theta }_{j}}}J\left( \theta_0, \theta_1  \right)</span> 右边的结果是一个正值，即 <span class="math-inline">\theta_1</span> 会<strong>向左边移动</strong>。这样不断重复，直到收敛（达到局部最小值，即斜率为 0）。</p>
+<p>初始 <span class="math-inline">\theta</span> 值（初始点）是任意的，若初始点恰好就在极小值点处，梯度下降算法将什么也不做（<span class="math-inline">\theta_1 := \theta_1 - \alpha*0</span>）。</p>
+<blockquote>
+<p>不熟悉斜率的话，就当斜率的值等于图中三角形的高度除以水平长度好啦，精确地求斜率的方法是求导。</p>
+</blockquote>
+<p>对于学习速率 <span class="math-inline">\alpha</span>，需要选取一个合适的值才能使得梯度下降算法运行良好。</p>
+<ul>
+<li>学习速率过小图示：</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003177.png"/></div>
+
+<p>收敛的太慢，需要更多次的迭代。</p>
+<ul>
+<li>学习速率过大图示：</li>
+</ul>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003323.png"/></div>
+
+<p>可能越过最低点，甚至导致无法收敛。</p>
+<p><strong>学习速率只需选定即可</strong>，不需要在运行梯度下降算法的时候进行动态改变，随着斜率越来越接近于 0，代价函数的变化幅度会越来越小，直到收敛到局部极小值。</p>
+<p>如图，品红色点为初始点，代价函数随着迭代的进行，变化的幅度越来越小。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003980.png"/></div>
+
+<p><strong>最后，梯度下降不止可以用于线性回归中的代价函数，还通用于最小化其他的代价函数。</strong></p>
+<h2 id="线性回归中的梯度下降gradient-descent-for-linear-regression">线性回归中的梯度下降(Gradient Descent For Linear Regression)<a class="anchor-link" href="#线性回归中的梯度下降gradient-descent-for-linear-regression" title="Permanent link">&para;</a></h2>
+<p>线性回归模型</p>
+<ul>
+<li><span class="math-inline">h_\theta(x)=\theta_0+\theta_1x</span></li>
+<li><span class="math-inline">J\left( \theta_0, \theta_1  \right)=\frac{1}{2m}\sum\limits_{i=1}^{m}{{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}^{2}}}</span></li>
+</ul>
+<p>梯度下降算法</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+  &amp; \text{Repeat until convergence:} \; \lbrace \<br />
+  &amp;{{\theta }<em>{j}}:={{\theta }</em>{j}}-\alpha \frac{\partial }{\partial {{\theta }<em>{j}}}J\left( {\theta</em>{0}},{\theta_{1}}  \right) \<br />
+  \rbrace<br />
+  \end{align</em>}<br />
+</div></p>
+<p>直接将线性回归模型公式代入梯度下降公式可得出公式</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003532.png"/></div>
+
+<p>当 <span class="math-inline">j = 0, j = 1</span> 时，<strong>线性回归中代价函数求导的推导过程</strong>：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+\frac{\partial}{\partial\theta_j} J(\theta_1, \theta_2)&amp;=\frac{\partial}{\partial\theta_j} \left(\frac{1}{2m}\sum\limits_{i=1}^{m}{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}^{2}} \right)\<br />
+&amp;=\left(\frac{1}{2m}</em>2\sum\limits_{i=1}^{m}{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}} \right)<em>\frac{\partial}{\partial\theta_j}{{\left( {{h}<em>{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}}\<br />
+&amp;=\left(\frac{1}{m}\sum\limits</em>{i=1}^{m}{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}} \right)</em>\frac{\partial}{\partial\theta_j}{{\left(\theta_0{x_0^{(i)}} + \theta_1{x_1^{(i)}}-{{y}^{(i)}} \right)}}<br />
+\end{align*}<br />
+</div></p>
+<p>所以当 <span class="math-inline">j = 0</span> 时：</p>
+<p><div class="math-display"><br />
+\frac{\partial}{\partial\theta_0} J(\theta)=\frac{1}{m}\sum\limits_{i=1}^{m}{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}} *x_0^{(i)}<br />
+</div></p>
+<p>所以当 <span class="math-inline">j = 1</span> 时：</p>
+<p><div class="math-display"><br />
+\frac{\partial}{\partial\theta_1} J(\theta)=\frac{1}{m}\sum\limits_{i=1}^{m}{{\left( {{h}_{\theta }}\left( {{x}^{(i)}} \right)-{{y}^{(i)}} \right)}} *x_1^{(i)}<br />
+</div></p>
+<p>上文中所提到的梯度下降，都为批量梯度下降(Batch Gradient Descent)，即每次计算都使用<strong>所有</strong>的数据集 <span class="math-inline">\left(\sum\limits_{i=1}^{m}\right)</span> 更新。</p>
+<p>由于线性回归函数呈现<strong>碗状</strong>，且<strong>只有一个</strong>全局的最优值，所以函数<strong>一定总会</strong>收敛到全局最小值（学习速率不可过大）。同时，函数 <span class="math-inline">J</span> 被称为<strong>凸二次函数</strong>，而线性回归函数求解最小值问题属于<strong>凸函数优化问题</strong>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202209222003408.png"/></div>
+
+<p>另外，使用循环求解，代码较为冗余，后面会讲到如何使用<strong>向量化(Vectorization)</strong>来简化代码并优化计算，使梯度下降运行的更快更好。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

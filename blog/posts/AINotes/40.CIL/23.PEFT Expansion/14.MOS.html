@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-相关工作">2. 相关工作</a><ul>
+<li><a href="#21-类增量学习cil">2.1. 类增量学习（CIL）</a></li>
+<li><a href="#22-基于预训练模型的-cil">2.2. 基于预训练模型的 CIL</a></li>
+</ul>
+</li>
+<li><a href="#3-预备知识">3. 预备知识</a><ul>
+<li><a href="#31-类增量学习">3.1. 类增量学习</a></li>
+<li><a href="#32-使用-ptms-的-cil-学习分析">3.2. 使用 PTMs 的 CIL 学习分析</a></li>
+</ul>
+</li>
+<li><a href="#4-mos基于预训练模型的-cil-模型手术">4. MOS：基于预训练模型的 CIL 模型手术</a><ul>
+<li><a href="#41-渐进式合并适配器">4.1. 渐进式合并适配器</a></li>
+<li><a href="#42-自精炼适配器检索机制">4.2. 自精炼适配器检索机制</a></li>
+</ul>
+</li>
+<li><a href="#5-实验">5. 实验</a><ul>
+<li><a href="#51-实施细节">5.1. 实施细节</a><ul>
+<li><a href="#数据集">数据集</a></li>
+<li><a href="#数据集分割">数据集分割</a></li>
+<li><a href="#训练细节">训练细节</a></li>
+<li><a href="#比较方法">比较方法</a></li>
+<li><a href="#评估协议">评估协议</a></li>
+</ul>
+</li>
+<li><a href="#52-基准比较">5.2. 基准比较</a></li>
+<li><a href="#53-消融研究">5.3. 消融研究</a></li>
+<li><a href="#54-可视化">5.4. 可视化</a></li>
+</ul>
+</li>
+<li><a href="#6-结论">6. 结论</a></li>
+<li><a href="#附录">附录</a><ul>
+<li><a href="#1-进一步分析">1. 进一步分析</a><ul>
+<li><a href="#参数敏感性">参数敏感性</a></li>
+<li><a href="#多次运行">多次运行</a></li>
+<li><a href="#运行时间比较">运行时间比较</a></li>
+<li><a href="#更多可视化">更多可视化</a></li>
+<li><a href="#适配器调整与-vpt">适配器调整与 VPT</a></li>
+</ul>
+</li>
+<li><a href="#2-高斯分布的分类器对齐示例生成细节">2. 高斯分布的分类器对齐示例生成细节</a></li>
+<li><a href="#3-比较方法的详细介绍">3. 比较方法的详细介绍</a></li>
+<li><a href="#4-不同设置下更多结果">4. 不同设置下更多结果</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/23.PEFT Expansion</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <blockquote>
+<p><a href="http://arxiv.org/abs/2412.09441">MOS: Model Surgery for Pre-Trained Model-Based Class-Incremental Learning</a></p>
+</blockquote>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>类增量学习（CIL）要求模型在不断获取新类别知识的同时，不忘记旧知识。尽管预训练模型（PTMs）在 CIL 中表现出色，但在学习新概念时仍会发生灾难性遗忘。现有工作试图利用轻量级组件来调整 PTM，但遗忘现象仍然来自参数和检索级别。具体来说，模型的迭代更新导致参数漂移，而错误检索不相关的模块导致推理期间的不匹配。为此，我们提出了模型手术（MOS），以挽救模型免于忘记先前的知识。通过训练任务特定的适配器，我们不断调整 PTM 以适应下游任务。为了减轻参数级别的遗忘，我们提出了一种适配器合并方法来学习任务特定的适配器，旨在弥合不同组件之间的差距，同时保留任务特定信息。此外，为了解决检索级别的遗忘，我们在推理期间引入了一种无需训练的自精炼适配器检索机制，利用模型的固有能力以更好地检索适配器。通过联合纠正这些步骤的模型，MOS 可以稳健地抵抗学习过程中的灾难性遗忘。在七个基准数据集上的广泛实验验证了 MOS 的最新性能。代码可在：<a href="https://github.com/sun-hailong/AAAI25-MOS">https://github.com/sun-hailong/AAAI25-MOS</a> 获取。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>近年来，深度学习在许多实际应用中取得了显著成果。然而，在开放世界中，数据通常以流式格式出现，需要一种能够增量获取新类别知识的机器学习范式，这被称为类增量学习（CIL）。CIL 中的一个重要挑战是灾难性遗忘，即模型在逐步学习新类别后，逐渐失去识别旧类别的能力。为了应对这一挑战，随着预训练模型（PTMs）的出现，CIL 领域也在不断发展。与“从零开始训练”的传统方法不同，当代 CIL 方法越来越多地利用 PTMs，这些模型最初在庞大的数据集上使用大量资源进行预训练。这种预训练过程赋予了 PTMs 强大的泛化能力。因此，设计一种有效利用 PTMs 并抵抗灾难性遗忘的 CIL 方法，已经引起了研究者的极大关注。由于 PTMs 的泛化能力，现有工作通常冻结预训练权重，并使用额外的轻量级模块来适应增量任务。例如，视觉提示调整定制提示以修改模型行为，促进对下游任务的适应。具体来说，L2P 设计了一个关键查询匹配策略，从提示池中检索实例特定的提示。基于 L2P，DualPrompt 引入了专家提示来编码任务特定信息，并探索了提示深度的影响。此外，CODA-Prompt 提出了一种基于注意力的提示加权方法以增强提示检索的有效性。然而，随着模型学习新概念，灾难性遗忘仍然发生。这种遗忘现象发生在参数和检索级别。在训练阶段，尽管许多方法使用轻量级组件来调整 PTM，但这些组件的迭代更新将导致参数漂移并触发遗忘。此外，现有工作致力于防止提示之间的冲突或实现正交投影，这加剧了新旧组件之间的参数漂移。在推理期间，训练多个轻量级模块需要选择最相关的一个，但模型可能会错误地检索不相关的模块，导致性能下降。这促使我们质疑是否可能联合纠正模型以抵抗参数和检索级别的灾难性遗忘？面对参数和检索级别的挑战，我们的模型应该能够有效地设计机制来克服这些问题。为了解决参数级别的遗忘，模型需要开发有效的更新方法，确保更新后的参数对旧数据保持区分性。为了克服检索级别的遗忘，模型需要有效的自我纠正策略，以帮助利用相关信息，协助实例特定的轻量级模块检索。为此，我们提出了预训练模型基于类增量学习的模型手术（MOS），以挽救模型免于忘记先前的知识。这种手术分为训练和推理阶段。为了减轻参数级别的遗忘，我们在训练期间提出了一种适配器合并方法，学习任务特定的适配器，同时弥合组件之间的差距，并保留任务特定信息。为了解决检索级别的遗忘，我们在推理期间引入了一种无需训练的自精炼适配器检索机制，利用模型的固有能力以更好地检索适配器。这种机制不需要额外的训练开销，使算法简单高效。最后，为了使模型能够在稳定性和可塑性之间取得平衡，我们提出了一种模型集成方法，整合了模型在多个阶段的能力。它不仅确保了强大的泛化能力，还允许模型快速识别和更新信息。在七个基准数据集上的实验验证了 MOS 的有效性。此外，自精炼适配器检索机制的可视化表明，MOS 有效地学习了适配器检索，以适应各种下游任务。</p>
+<h2 id="2-相关工作">2. 相关工作<a class="anchor-link" href="#2-相关工作" title="Permanent link">&para;</a></h2>
+<h3 id="21-类增量学习cil">2.1. 类增量学习（CIL）<a class="anchor-link" href="#21-类增量学习cil" title="Permanent link">&para;</a></h3>
+<p>CIL 的目标是使模型能够获取新类别的知识，同时保留先前学习的信息。现有工作大致可以分为几类。基于知识蒸馏的方法建立了前一阶段模型与当前模型之间的映射，从而帮助后者在增量学习过程中保留早期更新的特征。基于数据重放的方法在训练新类别时选择并重放旧类别的关键示例，以不断修订以前的知识。基于参数正则化的方法旨在通过正则项预测和最小化关键参数的漂移。基于模型校正的方法专注于校正模型的归纳偏差，以确保无偏估计。基于模型扩展的方法为每个任务构建不相互干扰的子网络。在推理期间，它们被组合成一个更大的特征图，并训练一个分类器以有效地校准所有类别。</p>
+<h3 id="22-基于预训练模型的-cil">2.2. 基于预训练模型的 CIL<a class="anchor-link" href="#22-基于预训练模型的-cil" title="Permanent link">&para;</a></h3>
+<p>基于 PTM 的 CIL 已成为当前 CIL 研究领域的热点。随着预训练技术的进展，已经开发了许多参数高效的微调（PEFT）方法。这些方法旨在在冻结预训练权重的同时，以最小的额外资源提高模型性能。在这种情况下，L2P 引入了一个提示池，通过关键查询匹配选择机制选择实例特定的提示来指导 PTM 的响应。DualPrompt 通过设计 G-Prompt 和 E-Prompt 来扩展 L2P，它们分别编码任务不变和任务特定指令。CODA-Prompt 通过开发分解的提示，并使用基于注意力的加权方法将它们组合起来。DAP 将提示选择扩展到提示生成。SLCA 揭示了在表示层以较低的学习率微调 ViT 骨干网络比提示策略获得更高的准确性。APER 探索了各种 PEFT 方法，并表明原型分类器作为一个强基线，而 RanPAC 进一步扩展了 APER 在随机投影中。EASE 将多个任务特定骨干的特征表示连接起来。</p>
+<h2 id="3-预备知识">3. 预备知识<a class="anchor-link" href="#3-预备知识" title="Permanent link">&para;</a></h2>
+<h3 id="31-类增量学习">3.1. 类增量学习<a class="anchor-link" href="#31-类增量学习" title="Permanent link">&para;</a></h3>
+<p>类增量学习的目标是获取不断演变的数据流引入的新类别知识，同时保留先前的知识，以构建统一的分类器。考虑一系列 B 个训练阶段，表示为 <span class="math-inline">{D_1, D_2, \cdots, D_B}</span>，其中 <span class="math-inline">Db = {(x_b^i, y_b^i)}^{n_b}<em>{i=1}</span> 表示第 b 个增量阶段，包含 <span class="math-inline">n_b</span> 个实例。相应地，测试集表示为 <span class="math-inline">{D</em>{1t}, D_{2t}, \cdots, D_{Bt}}</span>。在此设置中，每个训练实例 <span class="math-inline">x_b^i \in \mathbb{R}^D</span> 与类别 <span class="math-inline">y_b^i \in Y_b</span> 相关联。这里，<span class="math-inline">Y_b</span> 定义了任务 b 的标签集，确保对于任何 <span class="math-inline">b \neq b'</span>，<span class="math-inline">Y_b \cap Y_{b'} = \emptyset</span>。在第 b 个训练阶段，模型仅使用来自 <span class="math-inline">Db</span> 的数据进行更新。在本文中，我们遵循 <span class="math-inline">Wang et al. 2022c,b; Zhou et al. 2024a</span> 中的示例自由设置，这意味着在第 b 阶段训练期间不使用来自先前类别的任何历史示例。因此，模型只能在第 b 阶段使用来自 <span class="math-inline">Db</span> 的数据进行训练。模型的有效性是在每个 CIL 任务后，跨所有先前遇到的类别，集体表示为 <span class="math-inline">Y_b = Y_1 \cup \cdots \cup Y_b</span> 进行评估。具体来说，我们的目标是找到一个模型 <span class="math-inline">f(x): X \rightarrow Y_b</span>，它最小化了所有测试数据集上的实证风险：<br />
+<div class="math-display"><br />
+    f^* = \arg\min_{f \in \mathcal{H}} \mathbb{E}<em>{(x,y) \sim D</em>{1t} \cup \cdots \cup D_{b t}} I(y \neq f(x)),<br />
+</div><br />
+其中 <span class="math-inline">\mathcal{H}</span> 是假设空间，<span class="math-inline">I(\cdot)</span> 表示指示函数。<span class="math-inline">D_{b t}</span> 表示任务 b 的测试集。满足方程 (1) 的有效的 CIL 模型在所有类别上表现出区分能力。它在学习和保留旧信息之间取得了平衡。遵循典型的基于 PTM 的 CIL 工作，我们假设有一个预训练模型（例如，视觉变换器（ViT））作为 <span class="math-inline">f(x)</span> 的初始化。为了更清晰的理解，我们将 PTM 分解为两个组件：<span class="math-inline">f(x) = W^\top \phi(x)</span>，其中 <span class="math-inline">\phi(\cdot): \mathbb{R}^D \rightarrow \mathbb{R}^d</span> 是特征提取器，<span class="math-inline">W \in \mathbb{R}^{d \times |Y_b|}</span> 是分类器。我们表示类别 k 的分类器为 <span class="math-inline">w_k</span>：<span class="math-inline">W = [w_1, w_2, \cdots, w_{|Y_b|}]</span>。对于一个标准的 ViT，初始编码层将图像转换为输出特征序列，表示为 <span class="math-inline">x_e \in \mathbb{R}^{L \times d}</span>，其中 L 是序列长度。我们通过将 xe 中的第一个 token 视为 [CLS]token 来简化这一点。序列 xe 然后通过后续层处理，包括多头自注意力和 MLP，以产生最终的嵌入。最后，嵌入的 [CLS]token 被视为 <span class="math-inline">\phi(x)</span>。</p>
+<h3 id="32-使用-ptms-的-cil-学习分析">3.2. 使用 PTMs 的 CIL 学习分析<a class="anchor-link" href="#32-使用-ptms-的-cil-学习分析" title="Permanent link">&para;</a></h3>
+<p>在类增量学习中使用 PTMs 的代表性工作是 L2P 方法。他们引入了一种冻结预训练权重的策略，并构建了一个可学习的提示池，可以在所有任务中共享。这个提示池表示为 <span class="math-inline">P = {P_1, P_2, \cdots, P_M}</span>，其中 <span class="math-inline">P_j \in \mathbb{R}^{L_p \times d}</span> 是一个单个提示，具有 token 长度 <span class="math-inline">L_p</span>，与 <span class="math-inline">x_e</span> 的嵌入大小 d 相同。M 是提示池的大小。池中的每个提示对应一个特定的键 {(k_1, P_1), (k_2, P_2), \cdots, (k_M, P_M)}<span class="math-inline">，其中</span>k_i \in \mathbb{R}^{d_k}<span class="math-inline">。首先，他们使用没有提示的 PTM（即，</span>\phi(\cdot)<span class="math-inline">）将特征编码到键的嵌入空间，并检索与键相似的提示。在推理期间，给定一个输入 x，模型使用</span>\phi(x)$ 找通过解决方程 (2) 中的目标来选择的前 N 个键。这个过程检索了最相关的键及其相应的提示。<br />
+<div class="math-display"><br />
+    K_x = \arg\min_{{s_i}<em>{i=1}^N \subseteq [1, M]} \sum</em>{i=1}^N \gamma (\phi(x), k_{s_i}),<br />
+</div><br />
+其中 K 是所有键的集合，<span class="math-inline">K_x</span> 选定的前 N 个键。<span class="math-inline">\gamma(\cdot, \cdot)</span> 示余弦距离。最后，L2P 最小化端到端训练损失函数：<br />
+<div class="math-display"><br />
+    \min_{P, K, \phi} \ell(W^\top \phi(x; P), y) + \lambda \sum_{s_i \in K_x} \gamma (\phi(x), k_{s_i}),<br />
+</div><br />
+其中<span class="math-inline">\ell(\cdot, \cdot)</span> 交叉熵损失，用于衡量预测和真实值之间的差异。<span class="math-inline">\lambda</span> 一个标量，用于权衡损失。优化方程 (3) 增强了 PTM 整合任务特定信息的能力，使其能够更有效地适应不断演变的数据实例。参数和检索级别的遗忘。L2P 持续更新提示，并检索实例特定的提示以指导 PTM 的响应。然而，尽管模型学习了新概念，灾难性遗忘仍然发生在参数和检索级别。具体来说，方程 (3) 显示了 L2P 如何使用轻量级模块来调整 PTM 以适应下游任务。随着提示的迭代更新，它们逐渐适应后续任务，导致参数漂移。另一方面，训练多个轻量级模块需要在推理期间选择最相关的一个，而模型可能会错误地检索不相关的模块，导致性能下降。错误检索来自三个方面：首先，以前任务中学到的模块可能会被重新选择用于新任务，导致旧模块和新模块之间的检索混淆。此外，由于当前训练期间不存在后续任务的键，键和特征嵌入之间可能会出现差距，导致推理期间的错误检索。因此，设计一种方法来联合纠正模型以抵抗参数和检索级别的灾难性遗忘至关重要。 </p>
+<h2 id="4-mos基于预训练模型的-cil-模型手术">4. MOS：基于预训练模型的 CIL 模型手术<a class="anchor-link" href="#4-mos基于预训练模型的-cil-模型手术" title="Permanent link">&para;</a></h2>
+<p>面对抵抗灾难性遗忘的挑战，我们需要一种联合纠正模型的方法。MOS 的关键思想是在两个方面设计模型手术，即减轻参数漂移的训练阶段手术和测试阶段手术，以检索更好的轻量级模块。训练阶段手术的目标是利用先前学到的知识来提高当前任务的性能，使模型能够更快地适应新任务。测试阶段手术寻求一种机制，以更好的方式检索适配器，而无需额外的开销。因此，模型可以从持续的轻量级模块更新和有效的检索能力中受益，而不会忘记现有知识。我们首先介绍用于减轻参数漂移的渐进式合并适配器的处理过程，然后讨论自精炼适配器检索机制。我们在最后部分用伪代码总结了推理功能。 </p>
+<h3 id="41-渐进式合并适配器">4.1. 渐进式合并适配器<a class="anchor-link" href="#41-渐进式合并适配器" title="Permanent link">&para;</a></h3>
+<p>为了处理模型迭代更新引起的参数漂移，我们需要弥合不同轻量级模块之间的差距。换句话说，随着模型不断接收新数据和任务，有效地保留和利用先前学到的知识至关重要。这种方法允许模型将先前的知识转移到新任务，并减轻参数漂移问题。在方程 (3) 中，给定输入 x 的嵌入是使用实例特定提示获得的。在增量阶段，可能会出现潜在问题，即对现有提示的迭代更新可能使它们更好地匹配新任务，可能导致忘记旧任务。由于上述方法中的大型提示池加剧了错误检索，我们建议通过使用较少数量的轻量级模块来减轻这个问题。具体来说，通过直接将适配器调整（Rebuffi, Bilen, and Vedaldi 2017）整合到 PTM 中以优化单个适配器来编码任务特定信息，我们通过应用这种方法实现了这一目标。这种增强的整合有助于更有效地吸收任务特定信息。通过这种方法，我们只需要优化一组适配器来编码任务特定信息。表示预训练模型中有 L 个变换器块，每个块都有一个自注意力模块和一个 MLP 层。我们通过残差连接将适配器集成到每个层的 MLP 中。适配器是一个瓶颈模块，包括一个下投影层<span class="math-inline">W_{\text{down}} \in \mathbb{R}^{d \times r}</span>，一个非线性激活函数 ReLU，以及一个上投影层<span class="math-inline">W_{\text{up}} \in \mathbb{R}^{d \times r}</span>。MLP 的输出公式如下：<br />
+<div class="math-display"><br />
+    x_o = \text{MLP}(x_i) + \text{ReLU}(x_i W_{\text{down}}) W_{\text{up}},<br />
+</div><br />
+其中<span class="math-inline">x_i</span> <span class="math-inline">x_o</span> 别是 MLP 的输入和输出。方程 (4) 说明了如何通过将适配器的残差连接添加到原始输出来增强任务信息。在 ViT 的背景下，对于特定的第 i 个任务，我们定义了所有 L 个变换器块中的适配器集合为<span class="math-inline">A_i</span>，表示任务特定的适配器。此外，我们表示给定<span class="math-inline">A_i</span>  PTM 结合的输出嵌入为<span class="math-inline">\phi(x; A_i)</span>。因此，当新任务出现时，我们冻结 PTM 的权重，只专注于优化适配器和相应的分类器 W：<br />
+<div class="math-display"><br />
+    \min_{A_i, W} \sum_{(x,y) \in D_b} \ell(W^\top \phi(x; A_i), y).<br />
+</div><br />
+我们通过优化方程 (5)，使适配器将任务特定信息整合到嵌入中，从而促进新任务的学习。在理想情况下，如果测试样本的任务 ID 已知，我们可以使用此 ID 轻松选择相应的任务特定适配器以获得最佳结果。然而，在 CIL 设置中，测试阶段不允许获得这样的任务 ID。为了解决这一挑战并减轻参数漂移，我们提出了训练阶段手术，该手术使用基于指数移动平均（EMA）的适配器合并策略：<br />
+<div class="math-display"><br />
+    A_b = (1 - \alpha) \hat{A}<em>b + \alpha \sum</em>{k=1}^{b-1} A_k,<br />
+</div><br />
+其中<span class="math-inline">\hat{A}<em>b</span> 示第 b 个训练阶段的适配器集合，<span class="math-inline">A_b</span>  EMA 过程后的最终结果。具体来说，给定适配器包括<span class="math-inline">W</em>{\text{up}}</span> <span class="math-inline">W_{\text{down}}</span>，我们在两者上执行合并过程以促进适配器的整合。当训练新的<span class="math-inline">A_b</span> ，所有先前训练的<span class="math-inline">A_k</span> 被冻结，适配器合并过程在每次反向传播后执行。 </p>
+<h3 id="42-自精炼适配器检索机制">4.2. 自精炼适配器检索机制<a class="anchor-link" href="#42-自精炼适配器检索机制" title="Permanent link">&para;</a></h3>
+<p>在获得这些任务特定适配器后，我们使用基于原型的分类器进行预测。具体来说，在每个增量阶段的训练过程后，我们使用适配器<span class="math-inline">A_b</span> 取第 i 个类别的类原型：<br />
+<div class="math-display"><br />
+    p_{i,b} = \frac{1}{N} \sum_{j=1}^{|D_b|} I(y_j = i) \phi(x_j; A_b),<br />
+</div><br />
+其中 N 是类别 i 的实例数量。方程 (7) 说明了分类器的构造。在推理期间，我们直接采用类原型作为分类器权重，即<span class="math-inline">w_i = p_i</span>，并使用余弦分类器进行分类：<br />
+<div class="math-display"><br />
+    f(x|A_i) = \left( \frac{W}{|W|_2} \right)^\top \left( \frac{\phi(x; A_i)}{|\phi(x; A_i)|_2} \right),<br />
+</div><br />
+其中<span class="math-inline">A_i</span> 示输入 x 选择的适配器。方程 (2) 说明了如何从提示池中选择提示。随后，L2P 将选定的提示整合到原始 PTM 中（即，<span class="math-inline">\phi(x; P)</span>）以指导模型的响应。然而，这种方法严重依赖于键 - 查询对的检索机制。错误地检索不相关的提示常常导致性能下降。为了解决检索级别的问题，我们设计了测试阶段手术，该手术使用自精炼适配器检索机制。这是一种高效且无需训练的方法，使模型能够自主纠正这个问题，从而提高适配器检索。这种机制不需要任何额外的训练开销，仅在推理过程中使用，使算法既简单又高效。由于 PTM 和下游数据集之间存在差距，我们首先使用适配器对 PTM 在第一个增量任务上进行微调，将模型表示为<span class="math-inline">f(x; A_1)</span>。这个过程有效地弥合了这一差距，使模型适合作为初始选择器。在推理期间，我们利用<span class="math-inline">f(x; A_1)</span> 得每个测试样本的嵌入，并执行任务特定适配器的初始检索。具体来说，给定一个输入 x，我们首先通过方程 (8) 获得模型的预测结果<span class="math-inline">f(x|A_1)</span>。然后，我们可以很容易地推断出其相应的任务 ID i：<br />
+<div class="math-display"><br />
+    i = \arg\max (f(x|A_1)) \mod |Y_b|,<br />
+</div><br />
+其中<span class="math-inline">Y_b</span> 每个任务的类别数量。在此结果的基础上，我们引入了一个迭代自精炼过程。正如方程 (8) 所定义的，这个过程主要使用<span class="math-inline">f(x; A_i)</span> 行预测并识别任务 ID j。由于每个适配器都是特定于任务的，我们可以检查是否结束迭代，方法是检查 i 是否等于 j。具体来说，通过<span class="math-inline">f(x|A_i)</span>，我们可以推断其相应的任务 ID j：<br />
+<div class="math-display"><br />
+    j = \arg\max (f(x|A_i)) \mod |Y_b|.<br />
+</div><br />
+例如，在每个任务包含 10 个类别的场景中，类别 0 到 9 在任务 0 中，而类别 10 到 19 在任务 1 中。随后，如果<span class="math-inline">i \neq j</span>，我们用 j 替换 i，并重复方程 (10) 的过程，直到<span class="math-inline">i = j</span>，确保自我一致性。 ### 4.3. 多阶段模型集成 受到人类大脑互补学习系统（McClelland, McNaughton, and O’Reilly 1995; Kumaran, Hassabis, and McClelland 2016）的启发，该系统表明前扣带回路负责快速模式识别和无意识记忆，而海马回路负责深度处理和有意识记忆。因此，我们实现了一个两阶段模型集成：<br />
+<div class="math-display"><br />
+    y^* = \arg\max_y \left( f(x|A_1) + \sum_j f(x|A_j) \right).<br />
+</div><br />
+在方程 (11) 中，第 1 部分仅在第一个增量任务上训练，作为上游和下游数据集之间的重要桥梁。它不仅表现出强大的泛化能力，还具有快速识别和更新信息的能力。相比之下，第 2 部分采用渐进式合并适配器和自精炼适配器检索机制进行深度处理和有意识记忆。 </p>
+<h2 id="5-实验">5. 实验<a class="anchor-link" href="#5-实验" title="Permanent link">&para;</a></h2>
+<p>在本节中，我们在七个基准数据集上评估 MOS，并将其与其他最新方法进行比较，以展示其优越性。此外，我们提供了消融研究和可视化分析，以验证 MOS 的鲁棒性。 </p>
+<h3 id="51-实施细节">5.1. 实施细节<a class="anchor-link" href="#51-实施细节" title="Permanent link">&para;</a></h3>
+<h4 id="数据集">数据集<a class="anchor-link" href="#数据集" title="Permanent link">&para;</a></h4>
+<p>由于 PTMs 拥有关于上游任务的广泛知识，我们遵循 Zhou et al. 2024a，在 CIFAR100、CUB200、ImageNetR、ImageNet-A、objectNet、Omnibenchmark 和 VTAB 上评估性能。这些数据集代表了典型的 CIL 基准，并包括与 ImageNet（即预训练数据集）存在显著领域差异的离群数据集。具体来说，VTAB 有 50 个类别，CIFAR100 有 100 个类别，CUB、ImageNet-R、ImageNet-A、ObjectNet 有 200 个类别，OmniBenchmark 有 300 个类别。更多细节报告在补充材料中。</p>
+<h4 id="数据集分割">数据集分割<a class="anchor-link" href="#数据集分割" title="Permanent link">&para;</a></h4>
+<p>遵循基准设置 Rebuffi et al. 2017; Wang et al. 2022c，我们使用“B-m Inc-n”的表示法来表示类别分割，其中 m 表示初始任务中的类别数量，n 表示每个后续增量任务中的类别数量。m=0 表示总类别平均分配给每个任务。为了进行一致和公平的比较，我们在分割数据之前使用随机种子 1993 随机洗牌类别顺序。我们确保所有方法在训练和测试集的一致性，遵循 Zhou et al. 2024a。 </p>
+<h4 id="训练细节">训练细节<a class="anchor-link" href="#训练细节" title="Permanent link">&para;</a></h4>
+<p>我们使用 PyTorch 和 PILOT 在 NVIDIA RTX 4090 上使用相同的网络骨干实现所有模型。由于 PTMs 的广泛范围是公开可用的，我们选择了两个代表性模型，分别表示为 ViTB/16-IN1K 和 ViT-B/16-IN21K。它们都最初在 ImageNet21K 上预训练，而前者在 ImageNet1K 上进行了微调。在 MOS 中，我们将批量大小设置为 48，并使用 SGD 优化器进行 20 个周期的训练，动量为 0.9。学习率最初设置为 0.01，并遵循余弦退火衰减模式。适配器中的投影维度 r 设置为 16，EMA 因子参数α设置为 0.1。</p>
+<h4 id="比较方法">比较方法<a class="anchor-link" href="#比较方法" title="Permanent link">&para;</a></h4>
+<p>我们选择了最新的基于 PTM 的 CIL 方法进行比较，如 Finetune Adapter、L2P、DualPrompt、CODA-Prompt、SimpleCIL、APER、SLCA、EASE。此外，我们将 MOS 与传统的 CIL 方法进行比较，这些方法通过 PTM 进行了修改，包括 LwF、FOSTER、MEMO、iCaRL、DER。我们报告了顺序微调 PTM 的基线方法，表示为 Finetune。所有方法都使用相同的 PTM 实现，以进行公平比较。 </p>
+<h4 id="评估协议">评估协议<a class="anchor-link" href="#评估协议" title="Permanent link">&para;</a></h4>
+<p>遵循 Rebuffi et al. 2017 建立的基准，我们将第 b 阶段后的 Top-1 准确率表示为<span class="math-inline">A_b</span>。此外，我们使用<span class="math-inline">A_B</span>（最后阶段后的性能）和<span class="math-inline">\bar{A} = \frac{1}{B} \sum_{b=1}^B A_b</span>（增量阶段的平均性能）作为测量指标。</p>
+<h3 id="52-基准比较">5.2. 基准比较<a class="anchor-link" href="#52-基准比较" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们在七个数据集和各种骨干权重上将 MOS 与其他最新方法进行比较。如表 1 所示，MOS 在所有七个基准测试中表现出最佳性能，显著超过了最新方法，如 SLCA、EASE 和 APER。此外，我们使用 ViT-B/16-IN1K 在图 2 中展示了不同方法在增量性能趋势的分析。值得注意的是，MOS 在 CUB、ObjectNet 和 OmniBenchmark 上比亚军方法高出 2%∼5%，如每个图像末尾的注释中突出显示的那样。除了表 1 和图 2 中呈现的 B0 设置外，我们将实验扩展到更大的基础设置。在图 3a 中，我们使用相同的 PTM 将 MOS 与几种最新方法和传统方法进行比较。尽管传统方法需要存储示例以恢复以前的知识，MOS 在这种设置中也实现了最新性能。广泛的实验验证了 MOS 的有效性。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120638.png" style="zoom: 80%;" /></div>
+
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120657.png" style="zoom: 80%;" /></div>
+
+<h3 id="53-消融研究">5.3. 消融研究<a class="anchor-link" href="#53-消融研究" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们通过逐步添加每个组件来进行消融研究，以评估它们在 MOS 中的有效性。具体来说，我们在 ImageNet-R B0 Inc20 设置上展示了这种消融研究。如图 3b 所示，“基线”指的是与<span class="math-inline">A_1</span> 成的 PTM（即，<span class="math-inline">\phi(x|A_1)</span>）。由于我们的目标是减轻参数漂移并构建任务特定适配器，我们仅使用方程 (6) 报告了“w/ Adapter Merge”的性能。由于上述错误检索问题，我们提出了使用模型的固有能力来纠正错误。我们使用这种技术和适配器合并策略报告了“w/ Self-Refined Adapter Retrieval Mechanism”的性能。如图中所示，适配器合并策略和自精炼适配器检索机制都显著提高了性能，这表明 MOS 有能力自我纠正并减轻灾难性遗忘。最后，我们使用方程 (11) 调整 logits 以权衡稳定性和可塑性，表示为“w/ Ensemble”。消融验证了 MOS 中的每个组件都有助于提高性能。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120716.png" style="zoom: 80%;" /></div>
+
+<h3 id="54-可视化">5.4. 可视化<a class="anchor-link" href="#54-可视化" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们讨论了自精炼适配器检索机制的工作方式。为了直观地说明这一点，我们提供了自精炼过程前后的预测结果的可视化，并分析了它们的差异。我们从 ImageNet-R 中选择了图像，并使用了在 B0 Inc20 设置下训练的模型。结果如图 4 所示。正如这些图所示，MOS 能够纠正错误的预测。这在下面的例子中尤为明显，最初的前 5 个类别预测概率不包括真实类别，但 MOS 准确地纠正了这个错误。它表明模型可以使用其固有的能力选择当前样本最合适的适配器。因此，MOS 可以使用这个适配器提取更合适的特征，这有助于提高预测准确性。这些可视化揭示了自精炼适配器检索机制可以帮助纠正输出，从而增强对真实类别的关注。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120736.png" style="zoom: 80%;" /></div>
+
+<h2 id="6-结论">6. 结论<a class="anchor-link" href="#6-结论" title="Permanent link">&para;</a></h2>
+<p>增量学习是现实世界系统中日益突出的范式。本文提出了一种新的模型手术（MOS），用于基于预训练模型的 CIL，以挽救模型免于忘记先前的知识。具体来说，我们引入了适配器合并方法来减轻参数漂移，并设计了一种无需训练的自精炼适配器检索机制，以便在推理期间更好地检索适配器。我们的方法通过利用模型的固有能力，平衡了稳定性和可塑性的困境，增强了泛化和适应性。在七个基准数据集上的广泛实验验证了 MOS 的有效性。在未来的工作中，我们旨在探索更多的应用场景，如少样本类增量学习。</p>
+<h2 id="附录">附录<a class="anchor-link" href="#附录" title="Permanent link">&para;</a></h2>
+<p>在本补充部分，我们提供了关于 MOS 的更多信息，包括对其组件的进一步分析、参数敏感性、多次运行、运行时间比较以及自精炼适配器检索机制的更多可视化。</p>
+<h3 id="1-进一步分析">1. 进一步分析<a class="anchor-link" href="#1-进一步分析" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们对 MOS 的组件进行了进一步分析，以研究它们的有效性，例如参数敏感性、多次运行和自精炼机制的更多可视化。此外，我们还比较了 MOS 与其他方法的运行时间。</p>
+<h4 id="参数敏感性">参数敏感性<a class="anchor-link" href="#参数敏感性" title="Permanent link">&para;</a></h4>
+<p>在主要论文中，我们介绍了渐进式合并适配器，其中包含两个关键超参数：适配器中的投影维度 r 和用于指数移动平均（EMA）方法的合并动量α。为了评估这些参数的敏感性，我们在 ImageNet-R B0 Inc20 数据集上进行了实验。具体来说，我们将 r 在集合{8, 16, 32, 64, 128}中变化，将α在{0.001, 0.01, 0.1, 0.2, 0.5}中变化。这些设置的平均性能如图 5 所示。如图中所示，模型的性能在一系列参数值中保持稳定。此外，我们可以推断出这些参数并不高度敏感。基于这些发现，并考虑到减少参数数量的可能性，我们推荐默认设置 r = 16, α = 0.1 用于其他数据集。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120755.png" style="zoom: 80%;" /></div>
+
+<h4 id="多次运行">多次运行<a class="anchor-link" href="#多次运行" title="Permanent link">&para;</a></h4>
+<p>在主要论文中，我们在不同数据集上进行了实验，遵循 Rebuffi 等人的方法，使用种子 1993 随机化类别顺序。本节通过使用多个随机种子重复这些实验，具体为{1993, 1994, 1995, 1996, 1997}，来扩展这项工作。这种方法产生了不同方法的五组增量结果，使我们能够计算并呈现图 6 中的平均值和标准差。如图中所示，我们可以推断 MOS 在不同随机种子中一致地超越其他方法。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120817.png" style="zoom: 80%;" /></div>
+
+<h4 id="运行时间比较">运行时间比较<a class="anchor-link" href="#运行时间比较" title="Permanent link">&para;</a></h4>
+<p>本节介绍了不同类增量学习方法的比较运行时间。所有实验都在单个 NVIDIA 4090 GPU 上进行。具体来说，我们在 ImageNet-R 上训练所有方法 10 个周期，在 CIFAR-100 上训练 20 个周期。结果如图 7 所示。结果表明 MOS 在运行时间上优于 CODA-Prompt、L2P 和 DualPrompt，同时实现了更好的性能。这些结果验证了 MOS 的有效性。</p>
+<h4 id="更多可视化">更多可视化<a class="anchor-link" href="#更多可视化" title="Permanent link">&para;</a></h4>
+<p>在主要论文中，通过四个可视化图解释了自精炼机制的工作方式。为了进一步直观地展示这种方法的有效性，提供了额外的可视化图。具体来说，我们从 ImageNet-R 中选择了图像，并使用了在 B0 Inc20 设置下训练的模型，ViT-B/16-IN1K。进一步的结果如图 9 所示。这些图示展示了 MOS 纠正错误预测的能力。此外，这些可视化图突出了自精炼机制在纠正输出和增强对真实类别关注方面的帮助。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120839.png" style="zoom: 80%;" /></div>
+
+<h4 id="适配器调整与-vpt">适配器调整与 VPT<a class="anchor-link" href="#适配器调整与-vpt" title="Permanent link">&para;</a></h4>
+<p>在主要论文中，我们通过适配器调整构建了任务特定组件。然而，除了适配器调整外，还有其他方法可以高效地调整预训练模型的参数，如视觉提示调整（VPT）。在本节中，我们将我们的方法与各种参数高效微调（PEFT）技术集成，并在 CIFAR100 和 ImageNet-R 上进行了实验。我们保持一致的设置，只改变 PEFT 训练方法，并在图 8 中展示了结果。从图中，我们观察到使用适配器进行模型手术比使用 VPT 实现了更好的性能，这些数据集上的性能提高了约 2%。这种优越性主要来自两个方面：首先，适配器调整比 VPT 具有更强的调整能力。其次，适配器调整只需要为每个任务学习一组适配器，而 VPT 需要构建一个大的提示池，使检索变得复杂。因此，我们选择适配器调整作为 MOS 中模型手术的实现方式。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/20250214120858.png" style="zoom: 80%;" /></div>
+
+<h3 id="2-高斯分布的分类器对齐示例生成细节">2. 高斯分布的分类器对齐示例生成细节<a class="anchor-link" href="#2-高斯分布的分类器对齐示例生成细节" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们提供了如何使用高斯分布对分类器进行对齐的详细说明。由于预训练模型（PTM）的表示通常是良态分布的，因此在训练每个任务特定的适配器 <span class="math-inline">A_i</span> 后，我们提取每个训练类别的特征的均值（<span class="math-inline">\mu_c</span>）和方差（<span class="math-inline">\Sigma_c</span>）。然后通过向高斯分布添加高斯噪声来恢复这些统计数据。这使得模型能够在每个阶段学习任务特定适配器后，减轻引入到分类器的偏差，从而有助于对齐分类器。首先，我们的方法涉及存储特征的均值（<span class="math-inline">\mu \in \mathbb{R}^d</span>）和协方差（<span class="math-inline">\Sigma \in \mathbb{R}^{d \times d}</span>）。然后使用高斯分布生成和重放这些存储的特征，以消除分类器中的偏差，确保其正确对齐。具体来说，在增量训练过程中，对于第 b 个训练阶段，使用任务特定的 <span class="math-inline">A_b</span> 从所有类别的样本中提取特征，计算它们的均值和协方差：<br />
+<div class="math-display"><br />
+    \mu_c = \frac{1}{K} \sum_{i=1}^{|D_b|} I(y_i = c) \phi(x_i; A_b),<br />
+</div></p>
+<p><div class="math-display"><br />
+    \Sigma_c = \frac{1}{K} \sum_{i=1}^{|D_b|} \sum_{j=1}^{|D_b|} I(y_i = c) (\phi(x_i; A_b) - \mu_c)(\phi(x_j; A_b) - \mu_c),<br />
+</div><br />
+其中 <span class="math-inline">K = \sum_{i=1}^{|D_b|} I(y_i = c)</span>。这使得模型能够在每个阶段学习任务特定适配器后，减轻与分类器相关的偏差，从而有助于对齐分类器。在每个测试阶段之前，使用高斯分布恢复每个类别存储的均值和协方差。对于每个类别 <span class="math-inline">c \in Y_b</span>，我们生成相当于五倍批量大小的特征，以与分类器对齐：<br />
+<div class="math-display"><br />
+    \hat{\phi}_c = \mathcal{N}(\mu_c, \Sigma_c),<br />
+</div><br />
+其中 <span class="math-inline">\hat{\phi}_c</span> 表示一组生成的特征，<span class="math-inline">\mathcal{N}</span> 代表高斯分布。由于我们之前提出的渐进式合并适配器可以使所有 <span class="math-inline">A_i</span> 具有特异性，同时也具有一定相关性，并且由于预训练模型的独特泛化能力，以这种方式提取的特征和生成的特征可以很好地对齐分类器。因此，我们可以使用这种方法减少分类器之间的偏差。这种偏差通常是由于分类器对新任务过于自信，容易导致灾难性遗忘。</p>
+<h3 id="3-比较方法的详细介绍">3. 比较方法的详细介绍<a class="anchor-link" href="#3-比较方法的详细介绍" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们详细介绍了主要论文中比较的方法。每种方法都使用相同的预训练模型（PTM）以确保公平比较。这些方法列举如下：</p>
+<ul>
+<li>
+<p><strong>Finetune</strong>：在新任务上持续训练时更新所有参数与 PTM，但容易受到显著的灾难性遗忘影响。</p>
+</li>
+<li>
+<p><strong>LwF</strong>：旨在通过知识蒸馏抵抗遗忘，创建最后阶段模型与当前模型之间的桥梁，以传递过去知识。</p>
+</li>
+<li>
+<p><strong>L2P</strong>：将视觉提示调整集成到类增量学习中，使用预训练的视觉变换器。它进一步建立了一个提示池，便于选择实例特定的提示。</p>
+</li>
+<li>
+<p><strong>DualPrompt</strong>：基于 L2P 方法引入了两类提示：通用提示和专家提示。</p>
+</li>
+<li>
+<p><strong>CODA-Prompt</strong>：认识到实例特定提示选择的局限性。这种方法试图通过提示重新加权来克服这些挑战。具体来说，它通过注意力机制改进了提示选择过程，用于提示重新加权。</p>
+</li>
+<li>
+<p><strong>SimpleCIL</strong>：提出了一个基于原型的分类器，使用 PTM。初始化 PTM，为每个类别建立一个原型分类器，使用余弦分类器进行分类过程。</p>
+</li>
+<li>
+<p><strong>APER</strong>：通过整合预训练模型和适应模型扩展 SimpleCIL。这种方法将初始增量阶段视为唯一的适应阶段，在该阶段定制 PTM 以提取任务特定特征。因此，该模型有效地统一了泛化能力和适应性。</p>
+</li>
+<li>
+<p><strong>SLCA</strong>：将先前类别的高斯建模扩展到先前工作中的分类器校正。</p>
+</li>
+<li>
+<p><strong>EASE</strong>：连接多个任务特定骨干的特征表示，从而实现优越性能。它设计了一个语义映射策略，用于分类器补充，以补偿不断扩展的特征和先前分类器。</p>
+</li>
+</ul>
+<p>上述方法都是示例自由的，意味着它们不需要使用示例。另一方面，我们还在主要论文中评估了一些基于示例的方法，如下：</p>
+<ul>
+<li>
+<p><strong>iCaRL</strong>：使用知识蒸馏和基于示例的重放来复习以前的知识。此外，它利用最近中心均值分类器进行最终分类过程。</p>
+</li>
+<li>
+<p><strong>DER</strong>：利用动态可扩展的表示，更有效地增强增量概念建模。</p>
+</li>
+<li>
+<p><strong>FOSTER</strong>：为了减少 DER 相关的内存负担，这种方法建议通过知识蒸馏压缩骨干网络。因此，整个学习过程中只维护一个单一的骨干网络。这种方法有效地实现了特征扩展，同时最小化内存消耗。</p>
+</li>
+<li>
+<p><strong>MEMO</strong>：试图从另一种策略减少与 DER 相关的内存需求。它将网络架构有效地分为两个不同的部分：专门的（深层）层和泛化的（浅层）层。这种设计使得专门的层可以扩展，同时利用现有的泛化层作为共同基础。</p>
+</li>
+</ul>
+<p>在实验中，我们根据这些方法的源代码和 PILOT 重现了上述方法。</p>
+<h3 id="4-不同设置下更多结果">4. 不同设置下更多结果<a class="anchor-link" href="#4-不同设置下更多结果" title="Permanent link">&para;</a></h3>
+<p>在本节中，我们展示了不同方法在各种设置下的更多实验结果。我们特别详细说明了这些方法在使用 ViT-B/16-IN21K 和 ViT-B/16-IN1K 时的增量性能，如图 10、图 11 和图 12 所示。结果表明 MOS 在不同数据集上始终超越其他方法，实现了显著的优势。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

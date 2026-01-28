@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型评估与选择</title>
+    <meta name="description" content="模型评估与选择 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#误差">误差</a></li>
+<li><a href="#评估方法">评估方法</a><ul>
+<li><a href="#调参和最终模型">调参和最终模型</a></li>
+</ul>
+</li>
+<li><a href="#性能度量">性能度量</a><ul>
+<li><a href="#错误率和精度">错误率和精度</a></li>
+<li><a href="#查准率查全率f1">查准率，查全率，F1</a></li>
+<li><a href="#roc-与-auc">ROC 与 AUC</a></li>
+<li><a href="#mean-average-precisionmap">Mean Average Precision(MAP)</a></li>
+<li><a href="#mean-reciprocal-rankmrr">Mean Reciprocal Rank(MRR)</a></li>
+<li><a href="#代价敏感错误率与代价曲线">代价敏感错误率与代价曲线</a></li>
+<li><a href="#top1-top5">top1 top5</a></li>
+</ul>
+</li>
+<li><a href="#比较检验">比较检验</a><ul>
+<li><a href="#单个模型单个数据集上的泛化性能检验">单个模型、单个数据集上的泛化性能检验</a><ul>
+<li><a href="#二项检验">二项检验</a></li>
+<li><a href="#t-检验">t 检验</a></li>
+</ul>
+</li>
+<li><a href="#两个模型算法单个数据集上的泛化性能检验">两个模型/算法、单个数据集上的泛化性能检验</a><ul>
+<li><a href="#交叉验证-t-检验">交叉验证 t 检验</a></li>
+<li><a href="#mcnemar-检验">McNemar 检验</a></li>
+</ul>
+</li>
+<li><a href="#多个模型算法多个数据集上的泛化性能检验">多个模型/算法、多个数据集上的泛化性能检验</a><ul>
+<li><a href="#friedman-检验">Friedman 检验</a></li>
+<li><a href="#nemenyi-后续检验">Nemenyi 后续检验</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#偏差与方差">偏差与方差</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>模型评估与选择</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/02.模型与算法</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="模型评估与选择">模型评估与选择<a class="anchor-link" href="#模型评估与选择" title="Permanent link">&para;</a></h1>
+<h2 id="误差">误差<a class="anchor-link" href="#误差" title="Permanent link">&para;</a></h2>
+<p>在分类任务中，通常把错分的样本数占样本总数的比例称为<strong>错误率（error rate）</strong>。比如 m 个样本有 a 个预测错了，错误率就是<code>a/m</code>；与错误率相对的有<strong>精度（accuracy）</strong>，或者说正确率，数值上等于 1-错误率。</p>
+<p>更一般地，通常会把模型输出和真实值之间的差异称为<strong>误差（error）</strong>。在训练集上的误差称为<strong>训练误差（training error）</strong>或者<strong>经验误差（empirical error）</strong>。而在新样本上的误差则称为<strong>泛化误差（generalization error）</strong>。我们希望模型的泛化误差尽可能小，但现实是，我们无法知道新样本是怎样的，所以只能尽可能地利用训练数据来最小化经验误差。</p>
+<p>但是否经验误差小，泛化误差就一定小呢？这不是一定的，如果模型相比训练数据来说过于复杂，那就很有可能把训练数据本身的一些特点当作整个样本空间的特点，从而使得在训练数据上有很小的经验误差，但一旦面对新样本就会有很大误差，这种情况叫做<strong>过拟合（overfitting）</strong>。相对的是<strong>欠拟合（underfitting）</strong>。</p>
+<p>欠拟合很容易避免，只要适当地增加模型复杂度（比方说增加神经网络的层数）就好。但<strong>过拟合是无法彻底避免的</strong>，只能缓解（减少模型复杂度/增加训练数据），这也是机器学习发展中的一个关键阻碍。</p>
+<p>在现实任务中，要处理一个问题，我们往往有多种算法可以选择，即使是同一个算法也需要进行参数的选择，这就是机器学习中的<strong>模型选择</strong>（model selection）问题。既然泛化误差无法使用，而经验误差又存在着过拟合问题，不适合作为标准，那么我们应该如何进行模型选择呢？针对这个问题，后面的三个小节会给出回答。</p>
+<p>这里先简单归纳一下，书中将模型选择问题拆解为（1）评估方法；（2）性能度量；（3）比较检验；三个子问题。可以这样理解：</p>
+<ul>
+<li>
+<p><strong>评估方法</strong>：用什么数据做评估？如何获得这些数据？</p>
+</li>
+<li>
+<p><strong>性能度量</strong>：评估时如何衡量模型的好坏？有哪些评价标准？</p>
+</li>
+<li>
+<p><strong>比较检验</strong>：如何比较模型的性能？注意不是简单地比大小！在机器学习中性能比较是相当复杂的。</p>
+</li>
+</ul>
+<h2 id="评估方法">评估方法<a class="anchor-link" href="#评估方法" title="Permanent link">&para;</a></h2>
+<h3 id="调参和最终模型">调参和最终模型<a class="anchor-link" href="#调参和最终模型" title="Permanent link">&para;</a></h3>
+<p><strong>调参</strong>（parameter tuning）一般先选定一个范围和变化步长，比如(0,1]，步长 0.2，这样就有五个参数候选值。然后进行评估，选出最好的一个。这样选出的未必是全局最优的参数，但为了在开销和性能之间折中，只能这么做，毕竟我们无法试尽参数的所有取值。而且多个参数组合的情况是指数上升的，比方说有 3 个参数，每个参数评估 5 种取值，就需要测试多达 <span class="math-inline">5^3</span> 种情形。</p>
+<p><strong>特别注意</strong>，训练/验证这个过程是为了让我们<strong>确定学习算法和算法的参数</strong>，确定了这些之后，我们需要再利用整个源数据集进行训练，这次训练所得的模型才是最终模型，也即提交给用户，进行测试的模型。</p>
+<h2 id="性能度量">性能度量<a class="anchor-link" href="#性能度量" title="Permanent link">&para;</a></h2>
+<p><strong>性能度量</strong>（performance measure）指的是用于衡量模型泛化能力的评价标准。使用不同的性能度量往往导致不同的评判结果。比方说搭建推荐系统，两个模型中一个精度高，一个覆盖度高，如果我们想让更多的商品得到推荐可以就会选后一个模型。所以说，模型的好坏是相对的，取决于我们采用什么性能度量，而<strong>采用什么性能度量则应取决于我们的任务需求</strong>。</p>
+<h4 id="错误率和精度">错误率和精度<a class="anchor-link" href="#错误率和精度" title="Permanent link">&para;</a></h4>
+<p>精度（Accuracy）：分类正确的样本占总样本的比例。</p>
+<p><strong>精度的局限性</strong>：当样本分布不合理时，精度不具备参考价值；eg：由于健康人&gt;&gt;病人，所以，将所有人判定为健康人，仍有较高的精度。</p>
+<h4 id="查准率查全率f1">查准率，查全率，F1<a class="anchor-link" href="#查准率查全率f1" title="Permanent link">&para;</a></h4>
+<p>假设我们正常处理一个二分类问题，按照模型预测值和真实值可以把测试样本划分为四种情形<strong>：真正例（true positive），假正例（false positive），真反例（true negative），假反例（false negative）</strong>。可以把结果表示为下图这个矩阵——<strong>混淆矩阵(confusion matrix)</strong>。</p>
+<table>
+  <tr>
+    <th rowspan="2" align="center">真实情况</th>
+    <th colspan="2" align="center">预测结果</th>
+    </tr>
+  <tr>
+    <td align="center">正例</td>
+    <td align="center">反例</td>
+</tr>
+  <tr>
+    <td align="center">正例</td>
+    <td align="center">TP（真正例）</td>
+    <td align="center">FN（假反例）</td>
+</tr>
+<tr>
+    <td align="center">反例</td>
+    <td align="center">FP（假正例）</td>
+    <td align="center">TN（真反例）</td>
+</tr>
+</table>
+
+<p><strong>查准率，又称准确率（precision）</strong>，分类正确的正样本数占分类器判定为正样本的样本个数的比例。用于衡量模型<strong>避免错误</strong>的能力，分母是模型预测的正例数目。</p>
+<p><div class="math-display"><br />
+precision = \frac{TP}{TP+FP}<br />
+</div></p>
+<p><strong>查全率，又称召回率（recall）</strong>，分类正确的正样本数占真正的正样本个数的比例。用于衡量模型<strong>避免缺漏</strong>的能力，分母是测试样本真正包含的正例数目。</p>
+<p>一般来说，这两者是矛盾的，提高其中一者则另一者必然会有所降低。</p>
+<p><div class="math-display"><br />
+recall = \frac{TP}{TP+FN}<br />
+</div></p>
+<p><strong>F1</strong>，是查准率和查全率的调和平均，用于综合考虑这两个性能度量。</p>
+<p><div class="math-display"><br />
+\frac{1}{F1} = \frac{1}{2} \times (\frac{1}{precision} + \frac{1}{recall}) \Rightarrow F1 = \frac{2 \times precision \times recall}{presion + recall}<br />
+</div></p>
+<p>有时候我们对查准率，查全率的需求是不同的。比方说广告推荐，要尽量避免打扰用户，因此查准率更重要；而逃犯检索，因为漏检的危害很大，所以查全率更重要。这时就需要使用<span class="math-inline">F_\beta</span> 。</p>
+<p><strong><span class="math-inline">F_\beta</span>​</strong>，是查准率和查全率的加权调和平均，用于综合考虑这两个性能度量，并采用不同的权重。</p>
+<p><div class="math-display"><br />
+\frac{1}{F_\beta} = \frac{1}{1+\beta^2} \times (\frac{1}{precision} + \frac{\beta^2}{recall}) \Rightarrow F_\beta = \frac{(1+\beta^2) \times precision \times recall}{(\beta^2 \times presion) + recall}<br />
+</div></p>
+<p>其中 <span class="math-inline">\beta&gt;0</span> 度量了查全率对查准率的相对重要性，等于 1 时<span class="math-inline">F_\beta</span>​ 退化为 F1，小于 1 时查准率更重要，大于 1 时查全率更重要。</p>
+<p>在排序问题中，通常没有一个确定的阈值把得到的结果直接判定为正样本或负样本，而是采用<span class="math-inline">TopN</span>​ 返回结果的<span class="math-inline">Precision</span>​ 值和<span class="math-inline">Recall</span>​ 值来衡量排序模型的性能，即认为模型返回的<span class="math-inline">TopN</span>​ 的结果就是模型判定的正样本，然后计算前<span class="math-inline">N</span>​ 个位置上的准确率<span class="math-inline">Precision@N</span>​ 和前<span class="math-inline">N</span>​ 个位置上的召回率<span class="math-inline">Recall@N</span>​。</p>
+<p>书中还介绍了如何对多次训练/测试产生的多个混淆矩阵进行评估，包括宏方法（先分别计算性能度量，再计算均值）和微方法（先对混淆矩阵各元素计算均值，再基于均值计算性能度量）两种途径。</p>
+<p><strong>P-R 曲线的比较</strong>：若一个学习器曲线被另一个学习器曲线完全“包住”，则认为后者更优；如果出现交叉，可通过比较平衡点（查准率=查全率），大者更优。</p>
+<p><strong>P-R 曲线的绘制</strong>：对于一个排序模型来说，其 P-R 曲线的一个点代表着，在某一阈值下，模型将大于该阈值的结果判定为正样本，小于该阈值的结果判定为负样本，此时返回结果对应查全率和查准率；整条 P-R 曲线是通过<strong>将阈值从高到低</strong>移动而生成的。</p>
+<h4 id="roc-与-auc">ROC 与 AUC<a class="anchor-link" href="#roc-与-auc" title="Permanent link">&para;</a></h4>
+<p>很多时候，使用模型对测试样本进行预测得到的是一个实值或者概率（比如神经网络），需要进一步设置<strong>阈值（threshold）</strong>，然后把预测值和阈值进行比较才能获得最终预测的标记。</p>
+<p>我们可以按照预测值对所有测试样本进行排序，最可能是正例的排前面，最不能是正例的排后面。这样分类时就像是在这个序列中以某个<strong>截断点（cut point）</strong>把样本分成两部分。我们需要<strong>根据任务需求来设置截断点</strong>。比如广告推荐更重视查准率，可能就会把截断点设置得更靠前。</p>
+<p>因此！<strong>排序本身的质量很能体现出一个模型的泛化性能</strong>，ROC 曲线就是一个用来衡量排序质量的工具。</p>
+<p><strong>ROC，全称受试者工作特征（Receiver Operating Characteristic）</strong>。怎样画 ROC 曲线呢？先定义两个重要的计算量<strong>：真正例率（True Positive Rate，简称 TPR）</strong>和<strong>假正例率（False Positive Rate，简称 FPR）</strong>。<br />
+<div class="math-display"><br />
+TPR = \frac{TP}{TP+FN}<br />
+</div></p>
+<p><div class="math-display"><br />
+FPR = \frac{FP}{TN+FP}<br />
+</div></p>
+<p>只看定义确实有点绕，为了更直观地说明这个问题，我们举一个医院诊断病人的例子。假设有 10 位疑似癌症患者，其中有 3 位很不幸确实患了癌症（P=3），<br />
+另外 7 位不是癌症患者（N=7）。医院对这 10 位疑似患者做了诊断，诊断出 3 位癌症患者，其中有 2 位确实是真正的患者（TP=2）。那么真阳性率 TPR=TP/P=2/3。对于 7 位非癌症患者来说，有一位很不幸被误诊为癌症患者（FP=1），那么假阳性率 FPR=FP/N=1/7。对于“该医院”这个分类器来说，这组分类结果就对应 ROC 曲线上的一个点（1/7，2/3）。</p>
+<p><strong>如何绘制 ROC 曲线</strong>：</p>
+<p>事实上，ROC 曲线是通过不断移动分类器的“截断点”来生成曲线上的一组关键点的，通过下面的例子进一步来解释“截断点”的概念。在二值分类问题中，模型的输出一般都是预测样本为正例的概率。假设测试集中有 20 个样本，表 2.1 是模型的输出结果。样本按照预测概率从高到低排序。在输出最终的正例、负例之前，我们需要指定一个阈值，预测概率大于该阈值的样本会被判为正例，小于该阈值的样本则会被判为负例。比如，指定阈值为 0.9，那么只有第一个样本会被预测为正例，其他全部都是负例。上面所说的“截断点”指的就是区分正负预测结果的阈值。通过动态地调整截断点，从最高的得分开始（实际上是从正无穷开始，对应着 ROC 曲线的零点），逐渐调整到最低得分，每一个截断点都会对应一个 FPR 和 TPR，在 ROC 图上绘制出每个截断点对应的位置，再连接所有点就得到最终的 ROC 曲线。</p>
+<p><img alt="image-20210816132112881" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956119.png" /></p>
+<p>就本例来说，当截断点选择为正无穷时，模型把全部样本预测为负例，那么 FP 和 TP 必然都为 0，FPR 和 TPR 也都为 0，因此曲线的第一个点的坐标就是（0,0）。当把截断点调整为 0.9 时，模型预测 1 号样本为正样本，并且该样本确实是正样本，因此，TP=1，20 个样本中，所有正例数量为 P=10，故 TPR=TP/P=1/10；这里没有预测错的正样本，即 FP=0，负样本总数 N=10，故 FPR=FP/N=0/10=0，对应 ROC 曲线上的点（0,0.1）。依次调整截断点，直到画出全部的关键点，再连接关键点即得到最终的 ROC 曲线。</p>
+<p><img alt="image-20210816093118228" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956511.png" /></p>
+<p>其实，还有一种更直观地绘制 ROC 曲线的方法。首先，根据样本标签统计出正负样本的数量，假设正样本数量为 P，负样本数量为 N；接下来，把横轴的刻度<br />
+间隔设置为 1/N，纵轴的刻度间隔设置为 1/P；再根据模型输出的预测概率对样本进行排序（从高到低）；依次遍历样本，同时从零点开始绘制 ROC 曲线，每遇到一个正样本就沿纵轴方向绘制一个刻度间隔的曲线，每遇到一个负样本就沿横轴方向绘制一个刻度间隔的曲线，直到遍历完所有样本，曲线最终停在（1,1）这个<br />
+点，整个 ROC 曲线绘制完成。</p>
+<p>有两个值得注意的特例：</p>
+<ul>
+<li>
+<p>经过 (0,1) 点的曲线，这代表所有正例都在反例之前出现（否则会先出现假正例从而无法经过 (0,1) 点），这是一个<strong>理想模型</strong>，我们可以设置一个阈值，完美地分割开正例和反例。</p>
+</li>
+<li>
+<p>对角线，这对应于<strong>随机猜测</strong>模型，可以理解为真正例和假正例轮换出现，即每预测对一次接下来就预测错一次，可以看作是随机猜测的结果。</p>
+</li>
+</ul>
+<p>若一个模型的 ROC 曲线完全包住了另一个模型的 ROC 曲线，我们就认为这个模型更优。但是如果两条曲线发生交叉，要怎么判断呢？比较合理的判据是<strong>AUC（Area Under ROC Curve）</strong>，即 ROC 曲线下的面积。</p>
+<p><div class="math-display">AUC=\frac{1}{2}\sum_{i=1}^{m-1}(x_{i+1}-x_i)\cdot(y_i+y_{i+1})</div></p>
+<p>补充一点，ROC 曲线上的面积等于<strong>排序损失（loss）</strong>。也即有：</p>
+<p><div class="math-display">AUC = 1 - \ell_{rank}</div></p>
+<h4 id="mean-average-precisionmap">Mean Average Precision(MAP)<a class="anchor-link" href="#mean-average-precisionmap" title="Permanent link">&para;</a></h4>
+<p>与 recall 的概念有些类似，不过是“顺序敏感”的 recall。对于用户<span class="math-inline">u</span>，给她推荐一些物品，那么<span class="math-inline">u</span> 平均准确率为</p>
+<p><div class="math-display"><br />
+AP_u=\frac{1}{\Omega_u}\sum\limits_{i\in\Omega_u}\frac{\sum_{j\in\Omega_u}h(p_{uj}&lt;p_{ui})+1}{p_{ui}}<br />
+</div></p>
+<p><span class="math-inline">\Omega_u</span> 示 ground-truth，<span class="math-inline">p_{ui}</span> 示<span class="math-inline">i</span> 品在推荐列表中的位置，<span class="math-inline">p_{uj}&lt;p_{ui}</span> 示<span class="math-inline">j</span> 品在推荐列表中排在<span class="math-inline">i</span> 品之前。</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956147.png" alt="image-20210912160643076" style="zoom:80%;" /></p>
+<h4 id="mean-reciprocal-rankmrr">Mean Reciprocal Rank(MRR)<a class="anchor-link" href="#mean-reciprocal-rankmrr" title="Permanent link">&para;</a></h4>
+<p>正确检索结果值在检索结果中的排名来评估检索系统的性能。</p>
+<p><img alt="image-20211122203237178" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956008.png" /></p>
+<h4 id="代价敏感错误率与代价曲线">代价敏感错误率与代价曲线<a class="anchor-link" href="#代价敏感错误率与代价曲线" title="Permanent link">&para;</a></h4>
+<p>现实任务中，有时会遇到不同类型错误造成后果不同的状况。比如医生误诊，把患者诊断为健康人的影响远大于把健康人诊断为患者，因为可能因为这次误诊丧失了最佳治疗时机。为了权衡不同类型错误带来的不同损失，可以为这些错误类型赋以<strong>非均等代价（unequal cost）</strong>。</p>
+<p>还是举二分类为类，可以<strong>根据任务的领域知识</strong>来设定一个<strong>代价矩阵（cost matrix）</strong>:</p>
+<p><head><br />
+<br />
+<script type="text/javascript"
+   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></p>
+<p></head></p>
+<table>
+  <tr>
+    <th rowspan="2" align="center">真实类别</th>
+    <th colspan="2" align="center">预测类别</th>
+</tr>
+  <tr>
+    <td align="center">第0类</td>
+    <td align="center">第1类</td>
+</tr>
+<tr>
+    <td align="center">第0类</td>
+    <td align="center">0</td>
+    <td align="center">cost_{01}</td>
+</tr>
+<tr>
+    <td align="center">第1类</td>
+    <td align="center">cost_{10}</td>
+    <td align="center">0</td>
+</tr>
+</table>
+
+<p>预测值与真实值相等时，自然错误代价为 0。但把第 0 类错预测为第 1 类和把第 1 类错预测为第 0 类这两种错误的代价是不同的。注意，<strong>重要的不是代价在数值上的大小，而是它们的比值</strong>。比方说 <span class="math-inline">\frac{cost_{01}}{cost_{10}} &gt; 1</span>， 这就说明把第 0 类错预测为第 1 类的代价更高。</p>
+<p>使用了非均等代价之后，我们在使用性能度量时自然也需要作出相应的改变，比方说<strong>代价敏感（cost-sensitive）</strong>版本的错误率：</p>
+<p><div class="math-display">E(f;D;cost) = \frac{1}{m}\lgroup\sum_{x_i \in D^+}\mathbb{I}(f(x_i) \neq y_i) \times cost_{01} + \sum_{x_i \in D^-}\mathbb{I}(f(x_i) \neq y_i) \times cost_{10}\rgroup</div></p>
+<p>由于 ROC 曲线不能反应使用非均等代价之后的期望总体代价，所以改用<strong>代价曲线（cost curve）</strong>来取替。</p>
+<p>代价曲线图的纵轴为归一化代价（将代价映射到 [0,1] 区间），横轴为正例概率代价。画法类似于 ROC 曲线，它是将 ROC 曲线的每一个点转为图中的一条线。依次计算出 ROC 曲线每个点对应的 FPR 和 FNR，然后把点 (0,FPR) 和点 (0,FNR) 连线。最终所得的图中，所有线的下界所围成的面积就是该模型的期望总体代价。</p>
+<h3 id="top1-top5">top1 top5<a class="anchor-link" href="#top1-top5" title="Permanent link">&para;</a></h3>
+<p>top1: 预测的label取最后概率向量里面最大的那一个作为预测结果，如果预测结果中概率最大的那个分类正确，则预测正确；否则预测错误。<br />
+top5: 最后概率向量最大的前五名中，只要出现了正确概率即为预测正确；否则预测错误。</p>
+<h2 id="比较检验">比较检验<a class="anchor-link" href="#比较检验" title="Permanent link">&para;</a></h2>
+<p>看起来似乎有了获取测试集的评估方法和用于比较模型的性能度量之后，就能够通过不同模型在测试集上的性能表现来判断优劣了。但是！事实上，在机器学习中，模型比较并不是这样简单的比大小，而是要考虑更多。</p>
+<p>注：指验证集，但无论是书中还是论文中，都使用测试集较多，明白两者的区别就可以了。</p>
+<p>在模型比较中，主要有以下三个重要考虑：</p>
+<ol>
+<li>测试集上的性能只是泛化性能的近似，未必相同；</li>
+<li>测试集的选择对测试性能有很大影响，即使规模一致，但测试样例不同，结果也不同；</li>
+<li>一些机器学习算法有随机性，即便算法参数相同，在同一测试集上跑多次，结果也可能不同；</li>
+</ol>
+<p>那么应该如何有效地进行模型比较呢？答案是采用<strong>假设检验（hypothesis test）</strong>。基于假设检验的结果，我们可以推断出，若在测试集上观察到模型 A 优于 B，则是否 A 的泛化性能在统计意义上也优于 B，以及做这个结论的把握有多大。</p>
+<p>本小节首先介绍最基本的二项检验和 t 检验，然后再深入介绍其他几种比较检验方法。默认以错误率作为性能度量。</p>
+<p>几个基础概念：</p>
+<ul>
+<li><strong>置信度</strong>：表示有多大的把握认为假设是正确的。</li>
+<li><strong>显著度</strong>：也称“显著性水平”，表示假设出错的概率。显著度越大，假设被拒绝的可能性越大。</li>
+<li><strong>自由度</strong>：不被限制的样本数，也可以理解为能自由取值的样本数，记为 <span class="math-inline">v</span> 或 <span class="math-inline">df</span>。</li>
+</ul>
+<h3 id="单个模型单个数据集上的泛化性能检验">单个模型、单个数据集上的泛化性能检验<a class="anchor-link" href="#单个模型单个数据集上的泛化性能检验" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>我们有多大把握相信对一个模型泛化性能的假设？</p>
+</blockquote>
+<h4 id="二项检验">二项检验<a class="anchor-link" href="#二项检验" title="Permanent link">&para;</a></h4>
+<p>在进行比较检验前，完成了一次模型预测，已知测试错误率为 <span class="math-inline">\hat{\epsilon}</span>。</p>
+<p>一个泛化错误率为 <span class="math-inline">\epsilon</span> 的模型在 <span class="math-inline">m</span> 个样本上预测错 <span class="math-inline">m'</span> 个样本的概率为：</p>
+<p><div class="math-display"> P(\hat{\epsilon};\epsilon) = \binom{m}{m'} \epsilon^{m'} (1-\epsilon)^{m - m'}</div></p>
+<p>这个概率符合二项分布:</p>
+<p><img alt="二项分布" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956035.gif" /></p>
+<p>又因为已知测试错误率为 <span class="math-inline">\hat{\epsilon}</span>，也即知道了该模型在 <span class="math-inline">m</span> 个样本上实际预测错 了<span class="math-inline">\hat{\epsilon} \times m</span> 个样本。代入公式，对 <span class="math-inline">\epsilon</span> 求偏导会发现，给定这些条件时，<strong><span class="math-inline">\epsilon = \hat{\epsilon}</span> 的概率是最大的</strong>。</p>
+<p>使用<strong>二项检验（binomial test）</strong>，假设泛化错误率 <span class="math-inline">\epsilon \leq \epsilon_0</span>，并且设定置信度为 <span class="math-inline">1-\alpha</span>。则可以这样定义错误率的阈值 <span class="math-inline">\overline{\epsilon}</span>：</p>
+<p><div class="math-display">\overline{\epsilon} = \max{\epsilon} \qquad s.t. \qquad \sum_{i=\epsilon_0 \times m+1}^m \binom{m}{i}\epsilon^i (1-\epsilon)^{m-i} &lt; \alpha</div></p>
+<p>其中 <span class="math-inline">s.t.</span> 表示左式在右边条件满足时成立。右式计算的是发生不符合假设的事件的总概率，如果我们要有 <span class="math-inline">1-\alpha</span> 的把握认为假设成立，那么发生不符合假设的事件的总概率就必须低过 <span class="math-inline">\alpha</span>。</p>
+<p>在满足右式的所有 <span class="math-inline">\epsilon</span> 中，选择最大的作为阈值 <span class="math-inline">\overline{\epsilon}</span>。如果在测试集中观测到的测试错误率 <span class="math-inline">\hat{\epsilon}</span> 是小于阈值 <span class="math-inline">\overline{\epsilon}</span> ， 我们就能以<span class="math-inline">1-\alpha</span> 的把握认为假设成立，即该模型的泛化误差 <span class="math-inline">\epsilon \leq \epsilon_0</span>。</p>
+<h4 id="t-检验">t 检验<a class="anchor-link" href="#t-检验" title="Permanent link">&para;</a></h4>
+<p>二项检验只用于检验某一次测试的性能度量，但实际任务中我们会进行多次的训练/测试，得到多个测试错误率，比方说进行了 k 次测试，得到 <span class="math-inline">\hat{\epsilon}_1</span>,<span class="math-inline">\hat{\epsilon}_2</span>, ... ,<span class="math-inline">\hat{\epsilon}_k</span>。这次就会用到<strong>t 检验(t-test)</strong>。</p>
+<p>定义这 <span class="math-inline">k</span> 次测试的平均错误率 <span class="math-inline">\mu</span> 和方差 <span class="math-inline">\sigma^2</span>：</p>
+<p><div class="math-display">\mu = \frac{1}{k} \sum_{i=1}^k \hat{\epsilon_i}</div></p>
+<p><div class="math-display">\sigma^2 = \frac{1}{k-1} \sum_{i=1}^k (\hat{\epsilon_i} - \mu)^2</div></p>
+<p>注意！这里使用的是<strong>无偏估计</strong>的<strong>样本方差</strong>，分母是 <span class="math-inline">k-1</span>，因为当均值确定，并且已知 <span class="math-inline">k-1</span> 个样本的值时，第 <span class="math-inline">k</span> 个样本的值是可以算出来的，也可以说是<strong>受限的</strong>。</p>
+<p>假设泛化错误率 <span class="math-inline">\epsilon = \epsilon_0</span>，并且设定显著度为 <span class="math-inline">\alpha</span>。计算统计量 t：</p>
+<p><div class="math-display">t = \frac{\sqrt{k}(\mu-\epsilon_0)}{\sigma}</div></p>
+<p>该统计量服从自由度 <span class="math-inline">v = k-1</span> 的 t 分布，如下图：</p>
+<p><img alt="t分布" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208160956475.jpg" /></p>
+<p>自由度越大，约接近于正态分布，自由度为无穷大时变为标准正态分布（<span class="math-inline">\mu=0</span>，<span class="math-inline">\sigma=1</span>）。</p>
+<p>如果计算出的 t 统计量落在临界值范围 [<span class="math-inline">t_{-a/2}</span>,<span class="math-inline">t_{a/2}</span>] 之内（注：临界值由自由度 <span class="math-inline">k</span> 和显著度 <span class="math-inline">\alpha</span> 决定，通过查表得出），我们就能以<span class="math-inline">1-\alpha</span> 的把握认为假设成立，即该模型的泛化误差 <span class="math-inline">\epsilon = \epsilon_0</span>。</p>
+<h3 id="两个模型算法单个数据集上的泛化性能检验">两个模型/算法、单个数据集上的泛化性能检验<a class="anchor-link" href="#两个模型算法单个数据集上的泛化性能检验" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>我们有多大把握相信两个模型的泛化性能无显著差别？</p>
+</blockquote>
+<h4 id="交叉验证-t-检验">交叉验证 t 检验<a class="anchor-link" href="#交叉验证-t-检验" title="Permanent link">&para;</a></h4>
+<p>对两个模型 A 和 B，各使用 k 折交叉验证分别得到 k 个测试错误率，即<span class="math-inline">\hat{\epsilon}_1^A</span>,<span class="math-inline">\hat{\epsilon}_2^A</span>, ... ,<span class="math-inline">\hat{\epsilon}_k^A</span> 和 <span class="math-inline">\hat{\epsilon}_1^B</span>,<span class="math-inline">\hat{\epsilon}_2^B</span>, ... ,<span class="math-inline">\hat{\epsilon}_k^B</span>。使用<strong>k 折交叉验证成对 t 检验（paired t-tests）</strong>来进行比较检验。</p>
+<p>对于这两组 k 个测试错误率，计算两组之间的每一对的差，即 <span class="math-inline">\triangle_i = \hat{\epsilon}_k^A - \hat{\epsilon}_k^B</span>，从而得到 k 个 <span class="math-inline">\triangle</span>。我们可以计算 <span class="math-inline">\triangle</span> 的均值 <span class="math-inline">\mu</span> 和方差 <span class="math-inline">\sigma^2</span>，定义统计量 t：</p>
+<p><div class="math-display">t = \lvert \frac{\sqrt{k}\mu}{\sigma} \rvert</div></p>
+<p>可以看到，和前面的 t 检验相比，这里的分子没有被减项，其实是省略了。因为我们假设两个模型的泛化错误率相同，实际上是假设 <span class="math-inline">\lvert \epsilon^A - \epsilon^B \rvert = 0</span>，这个 <span class="math-inline">0</span> 被省略了。</p>
+<p>类似地，这个统计量服从自由度 <span class="math-inline">v = k-1</span> 的 t 分布。我们设定好显著度 <span class="math-inline">\alpha</span>，查表获取临界值范围，如果计算出的 t 统计量落在在范围内，就能以<span class="math-inline">1-\alpha</span> 的把握认为假设成立，即两个模型的泛化性能无显著差别，否则认为平均测试错误率较低的模型更胜一筹。</p>
+<h4 id="mcnemar-检验">McNemar 检验<a class="anchor-link" href="#mcnemar-检验" title="Permanent link">&para;</a></h4>
+<p>对于一个二分类问题，如果使用留出法，我们不仅可以获得两个算法 A 和 B 各自的测试错误率，或能够获得它们分类结果的差别（都预测正确、都预测错误、一个预测正确一个预测错误），构成一张<strong>列联表（contingency table）</strong>：</p>
+<table>
+
+<tr>
+    <th rowspan="2" align="center">算法B</th>
+    <th colspan="2" align="center">算法A</th>
+</tr>
+
+<tr>
+    <td align="center">分类正确</td>
+    <td align="center">分类错误</td>
+</tr>
+<tr>
+    <td align="center">分类正确</td>
+    <td align="center"><span class="math-inline">e_{00}</span></td>
+    <td align="center"><span class="math-inline">e_{01}</span></td>
+</tr>
+<tr>
+    <td align="center">分类错误</td>
+    <td align="center"><span class="math-inline">e_{10}</span></td>
+    <td align="center"><span class="math-inline">e_{11}</span></td>
+</tr>
+</table>
+
+<p>假设两个算法的泛化性能无显著区别，则 <span class="math-inline">e_{01}</span> 应该等于 <span class="math-inline">e_{10}</span>，变量 <span class="math-inline">\lvert e_{01}-e_{10} \rvert</span> 应服从均值为 <span class="math-inline">1</span>，方差为 <span class="math-inline">e_{01} + e_{10}</span> 的正态分布，可以计算统计量 <span class="math-inline">\chi^2</span>：</p>
+<p><div class="math-display">\chi^2 = \frac{(\lvert e_{01}-e_{10} \rvert -1)^2}{e_{01} + e_{10}}</div></p>
+<p>该变量服从自由度为 <span class="math-inline">v=1</span> 的 <span class="math-inline">\chi^2</span> 分布（卡方分布），类似 t 检验，设定好显著度 <span class="math-inline">\alpha</span>，按照自由度和显著度查表获得临界值。若计算所得的统计量 <span class="math-inline">\chi^2</span> 小于临界值，则能以<span class="math-inline">1-\alpha</span> 的把握认为假设成立，即两个算法的泛化性能无显著差别，否则认为平均测试错误率较低的算法更胜一筹。</p>
+<p>注：这里 <span class="math-inline">v</span> 为 1 是因为只有 2 个算法</p>
+<h3 id="多个模型算法多个数据集上的泛化性能检验">多个模型/算法、多个数据集上的泛化性能检验<a class="anchor-link" href="#多个模型算法多个数据集上的泛化性能检验" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>我们有多大把握相信多个模型的泛化性能皆无显著差别？若有，接下来怎样做？</p>
+</blockquote>
+<p>在<strong>一组数据集</strong>上进行<strong>多个算法</strong>的比较，情况就变得较复杂了，一种做法是使用前面的方法分开两两比较；另一种更直接的做法是使用基于算法排序的 Friedman 检验。</p>
+<h4 id="friedman-检验">Friedman 检验<a class="anchor-link" href="#friedman-检验" title="Permanent link">&para;</a></h4>
+<p>假设有 <span class="math-inline">N=4</span> 个数据集，<span class="math-inline">k=3</span> 种算法，可以使用一种评估方法，获得各个算法在各个数据集上的测试结果，然后按照性能度量由好到坏进行排序，序值为 1，2，3。若并列，则取序值的平均值。然后对各个算法在各数据集上的序值求平均得到平均序值，如：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">数据集</th>
+<th style="text-align: center;">算法 A</th>
+<th style="text-align: center;">算法 B</th>
+<th style="text-align: center;">算法 C</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">D1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr>
+<td style="text-align: center;">D2</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2.5</td>
+<td style="text-align: center;">2.5</td>
+</tr>
+<tr>
+<td style="text-align: center;">D3</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr>
+<td style="text-align: center;">D4</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr>
+<td style="text-align: center;">平均序值</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">2.125</td>
+<td style="text-align: center;">2.875</td>
+</tr>
+</tbody>
+</table>
+<p>令 <span class="math-inline">r_i</span> 表示第 <span class="math-inline">i</span> 个算法的平均序值，则 <span class="math-inline">r_i</span> 服从均值为 <span class="math-inline">\frac{k+1}{2}</span>，方差为 <span class="math-inline">\frac{(k^2)-1}{12}</span> 的正态分布。可以计算统计量 <span class="math-inline">\chi^2</span>：</p>
+<p><div class="math-display">\chi^2 = \frac{12N}{k(k+1)}(\sum_{i=1}^k r_i^2 - \frac{k(k+1)^2}{4})</div></p>
+<p>在 <span class="math-inline">k</span> 和 <span class="math-inline">N</span> 都较大时(通常要求 <span class="math-inline">k&gt;30</span>)，该变量服从自由度为 <span class="math-inline">v=k-1</span> 的 <span class="math-inline">\chi^2</span> 分布（卡方分布）。</p>
+<p>以上这种检验方式也称为<strong>原始 Friedman 检验</strong>，被认为过于保守，现在通常用统计量 <span class="math-inline">F</span> 代替：</p>
+<p><div class="math-display">F = \frac{(N-1)\chi^2}{N(k-1)-\chi^2}</div></p>
+<p>该变量服从于自由度为 <span class="math-inline">v=k-1</span> 或 <span class="math-inline">v=(k-1)(N-1)</span> 的 <span class="math-inline">F</span> 分布。</p>
+<p>和前面的检验方式有所区别，F 检验是根据设定的显著度 <span class="math-inline">\alpha</span> 和<strong>算法个数</strong> <span class="math-inline">k</span> 以及 <strong>数据集个数</strong><span class="math-inline">N</span> 这三者来查表的，如果计算出的统计量 <span class="math-inline">F</span> 小于查表所得的临界值，则假设成立，能以<span class="math-inline">1-\alpha</span> 的把握认为认为这 <span class="math-inline">k</span> 个算法的泛化性能无显著区别。</p>
+<p>但如果这个假设被拒绝了呢？这时就需要进行<strong>后续检验（post-hoc test）</strong>，常用的有 <strong>Nemenyi 后续检验</strong>。</p>
+<h4 id="nemenyi-后续检验">Nemenyi 后续检验<a class="anchor-link" href="#nemenyi-后续检验" title="Permanent link">&para;</a></h4>
+<p>定义<strong>平均序值差别的临界值域</strong>为：</p>
+<p><div class="math-display">CD = q_\alpha \sqrt{\frac{k(k+1)}{6N}}</div></p>
+<p>其中 <span class="math-inline">q_\alpha</span> 由 显著度 <span class="math-inline">\alpha</span> 和<strong>算法个数</strong> <span class="math-inline">k</span> 确定的，通过查表获取。若两个算法的平均序值之差不超过 <span class="math-inline">CD</span>，则能以<span class="math-inline">1-\alpha</span> 的把握认为这两个算法的泛化性能无显著区别，否则认为平均序值较小的更胜一筹。</p>
+<p>Nemenyi 后续检验还可以通过 Friedman 检验图更直观地体现出来，横轴为性能度量，纵轴为算法，每个算法用一段水平线段表示，线段中心点为该算法的平均序值，线段长度为 <span class="math-inline">CD</span>。若两个算法的线段投影到 x 轴上有重叠部分，则可以认为这两个算法的泛化性能无显著区别。</p>
+<h2 id="偏差与方差">偏差与方差<a class="anchor-link" href="#偏差与方差" title="Permanent link">&para;</a></h2>
+<p>除了估计算法的泛化性能，我们往往还希望知道<strong>为什么有这样的性能</strong>？这时一个有用的工具就是<strong>偏差-方差分解（bias-variance decomposition）</strong>。</p>
+<p>知乎上面有两个问题都有不错的答案，不妨先看看。[1] <a href="https://www.zhihu.com/question/27068705">机器学习中的 Bias(偏差)，Error(误差)，和 Variance(方差)有什么区别和联系？</a>；[2] <a href="https://www.zhihu.com/question/20448464">偏差和方差有什么区别？</a>。</p>
+<p>对学习算法的期望繁华错误率进行拆解，最终会发现能拆解为三个项（需要推导）：</p>
+<p><div class="math-display">E(f;D) = \mathbb{E}_D[(f(x;D) - \overline{f}(x))^2] + (\overline{f}(x) - y)^2 + \mathbb{E}_D[(y_D - y)^2]</div></p>
+<p>依次对应于<strong>方差（variance）</strong>、<strong>偏差（bias）</strong>、<strong>噪声（noise）</strong>：</p>
+<p><div class="math-display">E(f;D) = var(x) + bias^2(x) + \epsilon^2</div></p>
+<p>这三者的含义是这样的：</p>
+<ul>
+<li>
+<p>方差：使用同规模的不同训练集进行训练时带来的性能变化，刻画<strong>数据扰动带来的影响</strong>；</p>
+</li>
+<li>
+<p>偏差：学习算法的期望预测与真实结果的偏离程度，刻画<strong>算法本身的拟合能力</strong>；</p>
+</li>
+<li>
+<p>噪声：当前任务上任何算法所能达到的期望泛化误差的下界（即不可能有算法取得更小的误差），刻画<strong>问题本身的难度</strong>；</p>
+</li>
+</ul>
+<p>也即是说，泛化性能是有学习算法的拟合能力，数据的充分性以及问题本身的难度共同决定的。给定一个任务，噪声是固定的，我们需要做得就是尽量降低偏差和方差。</p>
+<p>但是这两者其实是有冲突的，这称为<strong>偏差-方差窘境（bias-variance dilemma）</strong>。给定一个任务，我们可以控制算法的训练程度（如决策树的层数）。在训练程度较低时，拟合能力较差，因此训练数据的扰动不会让性能有显著变化，此时偏差主导泛化错误率；在训练程度较高时，拟合能力很强，以至于训练数据自身的一些特性都会被拟合，从而产生过拟合问题，训练数据的轻微扰动都会令模型产生很大的变化，此时方差主导泛化错误率。</p>
+<p><strong>注意</strong>，将泛化性能完美地分解为方差、偏差、噪声这三项仅在<strong>基于均方误差的回归任务</strong>中得以推导出，分类任务由于损失函数的跳变性导致难以从理论上推导出分解形式，但已经有很多方法可以通过实验进行估计了。</p>
+<h2 id="references">References<a class="anchor-link" href="#references" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>《西瓜书-周志华》</p>
+</li>
+<li>
+<p><a href="https://github.com/familyld/Machine_Learning">familyld/Machine_Learning: 周志华《机器学习》阅读笔记 (github.com)</a></p>
+</li>
+<li>
+<p>《百面机器学习》</p>
+</li>
+<li>
+<p>《统计学习方法-李航》</p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/asasasaababab/article/details/79994920">目标检测（Object Detection）中性能衡量指标 mean Average Precision（mAP）的含义与计算_咚咚锵的博客-CSDN 博客</a></p>
+</li>
+<li>
+<p>https://blog.csdn.net/qq_40006058/article/details/89432773</p>
+</li>
+</ol>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

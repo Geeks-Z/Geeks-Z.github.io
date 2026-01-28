@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正则化</title>
+    <meta name="description" content="正则化 - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#拟合问题">拟合问题</a></li>
+<li><a href="#代价函数">代价函数</a><ul>
+<li><a href="#正则化的线性回归">正则化的线性回归</a></li>
+<li><a href="#正则化的逻辑回归">正则化的逻辑回归</a></li>
+</ul>
+</li>
+<li><a href="#正则化方法">正则化方法</a><ul>
+<li><a href="#lp范数">Lp范数</a></li>
+<li><a href="#l1-正则">L1 正则</a></li>
+<li><a href="#l2-正则-weight-decay">L2 正则/ Weight Decay</a></li>
+<li><a href="#dropout">Dropout</a></li>
+<li><a href="#其他方法">其他方法</a></li>
+</ul>
+</li>
+<li><a href="#qa">QA</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>正则化</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/01.MLTutorials/01.机器学习基础</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h1 id="正则化">正则化<a class="anchor-link" href="#正则化" title="Permanent link">&para;</a></h1>
+<p><strong>正则化主要用于避免过拟合的产生和减少网络误差。</strong></p>
+<p>正则化一般具有如下形式：</p>
+<p><div class="math-display"><br />
+J(w,b)= \frac{1}{m} \sum_{i=1}^{m}L(f(x),y)+\lambda R(f)<br />
+</div><br />
+其中，第 1 项是<strong>经验风险</strong>，第 2 项是<strong>正则项</strong>， <span class="math-inline">λ≥0</span> 为调整两者之间关系的系数。</p>
+<p>第 1 项的经验风险较小的模型可能较复杂（有多个非零参数），这时第 2 项的模型复杂度会较大。</p>
+<p><strong>正则化的作用是选择经验风险与模型复杂度同时较小的模型</strong>。 </p>
+<p>常见的有正则项有 <strong>L1 正则</strong> 和 <strong>L2 正则</strong> 以及 <strong>Dropout</strong> ，其中 <strong>L2 正则</strong> 的控制过拟合的效果比 <strong>L1 正则</strong> 的好。</p>
+<hr />
+<h2 id="拟合问题">拟合问题<a class="anchor-link" href="#拟合问题" title="Permanent link">&para;</a></h2>
+<p>对于拟合的表现，可以分为三类情况：</p>
+<ul>
+<li><strong>欠拟合(Underfitting)</strong></li>
+</ul>
+<p>无法很好的拟合训练集中的数据，预测值和实际值的误差很大，这类情况被称为欠拟合。拟合模型比较简单（特征选少了）时易出现这类情况。类似于，你上课不好好听，啥都不会，下课也差不多啥都不会。</p>
+<ul>
+<li><strong>优良的拟合(Just right)</strong></li>
+</ul>
+<p>不论是训练集数据还是不在训练集中的预测数据，都能给出较为正确的结果。类似于，学霸学神！</p>
+<ul>
+<li><strong>过拟合(Overfitting)</strong></li>
+</ul>
+<p>能很好甚至完美拟合训练集中的数据，即 <span class="math-inline">J(\theta) \to 0</span>，但是对于不在训练集中的<strong>新数据</strong>，预测值和实际值的误差会很大，<strong>泛化能力弱</strong>，这类情况被称为过拟合。拟合模型过于复杂（特征选多了）时易出现这类情况。类似于，你上课跟着老师做题都会都听懂了，下课遇到新题就懵了不会拓展。</p>
+<p>线性模型中的拟合情况(左图欠拟合，右图过拟合)：</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202507031256337.png" style="zoom: 67%;" /></p>
+<p>逻辑分类模型中的拟合情况：</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001297.png" style="zoom:67%;" /></p>
+<p>为了度量拟合表现，引入：</p>
+<ul>
+<li>偏差(bias)</li>
+</ul>
+<p>指模型的预测值与真实值的<strong>偏离程度</strong>。偏差越大，预测值偏离真实值越厉害。偏差低意味着能较好地反应训练集中的数据情况。</p>
+<ul>
+<li>方差(Variance)</li>
+</ul>
+<p>指模型预测值的<strong>离散程度或者变化范围</strong>。方差越大，数据的分布越分散，函数波动越大，泛化能力越差。方差低意味着拟合曲线的稳定性高，波动小。</p>
+<p>据此，我们有对同一数据的各类拟合情况如下图：</p>
+<p><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001103.png" style="zoom:67%;" /></p>
+<p>据上图，高偏差意味着欠拟合，高方差意味着过拟合。</p>
+<p>我们应尽量使得拟合模型处于低方差（较好地拟合数据）状态且同时处于低偏差（较好地预测新值）的状态。</p>
+<p>避免过拟合的方法有：</p>
+<ul>
+<li>减少特征的数量</li>
+<li>手动选取需保留的特征</li>
+<li>使用模型选择算法来选取合适的特征(如 PCA 算法)</li>
+<li>减少特征的方式易丢失有用的特征信息</li>
+<li>正则化(Regularization)</li>
+<li>可保留所有参数（许多有用的特征都能轻微影响结果）</li>
+<li>减少/惩罚各参数大小(magnitude)，以减轻各参数对模型的影响程度</li>
+<li>当有很多参数对于模型只有轻微影响时，正则化方法的表现很好</li>
+</ul>
+<hr />
+<h2 id="代价函数">代价函数<a class="anchor-link" href="#代价函数" title="Permanent link">&para;</a></h2>
+<p>很多时候由于特征数量过多，过拟合时我们很难选出要保留的特征，这时候应用正则化方法则是很好的选择。</p>
+<p>上文中，<span class="math-inline">\theta_0 + \theta_1x + \theta_2x^2 + \theta_3x^3 + \theta_4x^4</span> 这样一个复杂的多项式较易过拟合，在不减少特征的情况下，<strong>如果能消除类似于 <span class="math-inline">\theta_3x^3</span>、<span class="math-inline">\theta_4x^4</span> 等复杂部分，那复杂函数就变得简单了</strong>。</p>
+<p>为了保留各个参数的信息，不修改假设函数，改而修改代价函数：</p>
+<p><div class="math-display"><br />
+min_\theta\ \dfrac{1}{2m}\sum_{i=1}^m (h_\theta(x^{(i)}) - y^{(i)})^2 + 1000\cdot\theta_3^2 + 1000\cdot\theta_4^2<br />
+</div></p>
+<p>上式中，我们在代价函数中增加了 <span class="math-inline">\theta_3</span>、<span class="math-inline">\theta_4</span> 的惩罚项(penalty term) <span class="math-inline">1000\cdot\theta_3^2 + 1000\cdot\theta_4^2</span>，如果要最小化代价函数，那么势必需要极大地<strong>减小 <span class="math-inline">\theta_3</span>、<span class="math-inline">\theta_4</span></strong>，从而使得假设函数中的 <span class="math-inline">\theta_3x^3</span>、<span class="math-inline">\theta_4x^4</span> 这两项的参数非常小，就相当于没有了，假设函数也就<strong>“变得”简单</strong>了，从而在保留各参数的情况下避免了过拟合问题。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001210.png" /></p>
+<p>根据上面的讨论，有时也无法决定要减少哪个参数，故统一惩罚除了 <span class="math-inline">\theta_0</span> 外的所有参数。</p>
+<p>代价函数：</p>
+<p><div class="math-display"><br />
+J\left( \theta  \right)=\frac{1}{2m}[\sum\limits_{i=1}^{m}{{{({h_\theta}({{x}^{(i)}})-{{y}^{(i)}})}^{2}}+\lambda \sum\limits_{j=1}^{n}{\theta_{j}^{2}}]}<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">\lambda</span>: 正则化参数(Regularization Parameter)，<span class="math-inline">\lambda &gt; 0</span></p>
+<p><span class="math-inline">\sum\limits_{j=1}^{n}</span>: 不惩罚基础参数 <span class="math-inline">\theta_0</span></p>
+<p><span class="math-inline">\lambda \sum\limits_{j=1}^{n}{\theta_{j}^{2}}</span>: 正则化项</p>
+</blockquote>
+<p><span class="math-inline">\lambda</span> 正则化参数类似于学习速率，也需要我们自行对其选择一个合适的值。</p>
+<ul>
+<li>过大</li>
+<li>导致模型欠拟合(假设可能会变成近乎 <span class="math-inline">x = \theta_0</span> 的直线 )</li>
+<li>无法正常去过拟问题</li>
+<li>梯度下降可能无法收敛</li>
+<li>过小</li>
+<li>无法避免过拟合（等于没有）</li>
+</ul>
+<blockquote>
+<p>正则化符合奥卡姆剃刀(Occam's razor)原理。在所有可能选择的模型中，能够很好地解释已知数据并且十分简单才是最好的模型，也就是应该选择的模型。从贝叶斯估计的角度来看，正则化项对应于模型的先验概率。可以假设复杂的模型有较大的先验概率，简单的模型有较小的先验概率。</p>
+<p>正则化是结构风险最小化策略的实现，是去过拟合问题的典型方法，虽然看起来多了个一参数多了一重麻烦，后文会介绍自动选取正则化参数的方法。模型越复杂，正则化参数值就越大。比如，正则化项可以是模型参数向量的范数。</p>
+</blockquote>
+<h3 id="正则化的线性回归">正则化的线性回归<a class="anchor-link" href="#正则化的线性回归" title="Permanent link">&para;</a></h3>
+<p>应用正则化的线性回归梯度下降算法：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{Repeat}\ \lbrace \<br />
+&amp; \ \ \ \ \theta_0 := \theta_0 - \alpha\ \frac{1}{m}\ \sum_{i=1}^m (h_\theta(x^{(i)}) - y^{(i)})x_0^{(i)} \<br />
+&amp; \ \ \ \ \theta_j := \theta_j - \alpha\ \left[ \left( \frac{1}{m}\ \sum_{i=1}^m (h_\theta(x^{(i)}) - y^{(i)})x_j^{(i)} \right) + \frac{\lambda}{m}\theta_j \right], \ \ \ j \in \lbrace 1,2...n\rbrace\<br />
+&amp; \rbrace<br />
+\end{align</em>}<br />
+</div></p>
+<p>也可以移项得到更新表达式的另一种表示形式</p>
+<p><div class="math-display"><br />
+\theta_j := \theta_j(1 - \alpha\frac{\lambda}{m}) - \alpha\frac{1}{m}\sum_{i=1}^m(h_\theta(x^{(i)}) - y^{(i)})x_j^{(i)}<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">\frac{\lambda}{m}\theta_j</span>: 正则化项</p>
+</blockquote>
+<p>应用正则化的正规方程法：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \theta = \left( X^TX + \lambda \cdot L \right)^{-1} X^Ty \<br />
+&amp; \text{where}\ \ L = \begin{bmatrix} 0 &amp; &amp; &amp; &amp; \<br />
+&amp; 1 &amp; &amp; &amp; \<br />
+&amp; &amp; 1 &amp; &amp; \<br />
+&amp; &amp; &amp; \ddots &amp; \<br />
+&amp; &amp; &amp; &amp; 1 \ \end{bmatrix}<br />
+\end{align</em>}<br />
+</div></p>
+<blockquote>
+<p><span class="math-inline">\lambda\cdot L</span>: 正则化项</p>
+<p><span class="math-inline">L</span>: 第一行第一列为 <span class="math-inline">0</span> 的 <span class="math-inline">n+1</span> 维单位矩阵</p>
+</blockquote>
+<p>前文提到正则化可以解决正规方程法中不可逆的问题，即增加了 <span class="math-inline">\lambda \cdot L</span> 正则化项后，可以保证 <span class="math-inline">X^TX + \lambda \cdot L</span> 可逆(invertible)，即便 <span class="math-inline">X^TX</span> 不可逆(non-invertible)。</p>
+<h3 id="正则化的逻辑回归">正则化的逻辑回归<a class="anchor-link" href="#正则化的逻辑回归" title="Permanent link">&para;</a></h3>
+<p>为逻辑回归的代价函数添加正则化项：</p>
+<p><div class="math-display"><br />
+J(\theta) = - \frac{1}{m} \sum_{i=1}^m \large[ y^{(i)}\ \log (h_\theta (x^{(i)})) + (1 - y^{(i)})\ \log (1 - h_\theta(x^{(i)}))\large] + \frac{\lambda}{2m}\sum_{j=1}^n \theta_j^2<br />
+</div></p>
+<p>前文已经证明过逻辑回归和线性回归的代价函数的求导结果是一样的，此处通过给正则化项添加常数 <span class="math-inline">\frac{1}{2}</span>，则其求导结果也就一样了。</p>
+<p>从而有应用正则化的逻辑回归梯度下降算法：</p>
+<p><div class="math-display"><br />
+\begin{align<em>}<br />
+&amp; \text{Repeat}\ \lbrace \<br />
+&amp; \ \ \ \ \theta_0 := \theta_0 - \alpha\ \frac{1}{m}\ \sum_{i=1}^m (h_\theta(x^{(i)}) - y^{(i)})x_0^{(i)} \<br />
+&amp; \ \ \ \ \theta_j := \theta_j - \alpha\ \left[ \left( \frac{1}{m}\ \sum_{i=1}^m (h_\theta(x^{(i)}) - y^{(i)})x_j^{(i)} \right) + \frac{\lambda}{m}\theta_j \right], \ \ \ j \in \lbrace 1,2...n\rbrace\<br />
+&amp; \rbrace \end{align</em>}<br />
+</div></p>
+<p>我们用逻辑回归来实现这些设想，求成本函数<span class="math-inline">J</span> 最小值，它是我们定义的成本函数，参数包含一些训练数据和不同数据中个体预测的损失，<span class="math-inline">w</span> <span class="math-inline">b</span> 逻辑回归的两个参数，<span class="math-inline">w</span> 一个多维度参数矢量，<span class="math-inline">b</span> 一个实数。在逻辑回归函数中加入正则化，只需添加参数 <span class="math-inline">\lambda</span>，也就是正则化参数。</p>
+<h2 id="正则化方法">正则化方法<a class="anchor-link" href="#正则化方法" title="Permanent link">&para;</a></h2>
+<h3 id="lp范数">Lp范数<a class="anchor-link" href="#lp范数" title="Permanent link">&para;</a></h3>
+<p><span class="math-inline">L_{p}</span> 正则的 <span class="math-inline">L</span> 是指 <span class="math-inline">L_{p}</span> 范数，其定义为：</p>
+<p><span class="math-inline">L_{0}</span> 范数： <span class="math-inline">\left | w \right |<em>{0} = #(i)\ with \ x</em>{i} \neq 0</span> <em>（非零元素的个数）</em></p>
+<p><span class="math-inline">L_{1}</span> 范数： <span class="math-inline">\left | w \right |<em>{1} = \sum</em>{i = 1}^{d}\lvert x_i\rvert</span> <em>（每个元素绝对值之和）</em></p>
+<p><span class="math-inline">L_{2}</span> 范数： <span class="math-inline">\left | w \right |<em>{2} = \Bigl(\sum</em>{i = 1}^{d} x_i^2\Bigr)^{1/2}</span> <em>（欧氏距离）</em></p>
+<p><span class="math-inline">L_{p}</span> 范数： <span class="math-inline">\left | w \right |<em>{p} = \Bigl(\sum</em>{i = 1}^{d} x_i^p\Bigr)^{1/p}</span> </p>
+<p>在机器学习中，若使用了 <span class="math-inline">\lVert w\rVert_p</span> 作为正则项，我们则说该机器学习任务<strong>引入了</strong> <span class="math-inline">L_{p}</span> <strong>正则项</strong>。</p>
+<div align=center><img src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/202410091228949.jpg"/></div>
+
+<p><em>上图来自周志华老师的《机器学习》插图</em></p>
+<h3 id="l1-正则">L1 正则<a class="anchor-link" href="#l1-正则" title="Permanent link">&para;</a></h3>
+<p><div class="math-display"><br />
+J(w,b)=\frac{1}{m} \sum_{i=1}^{m}L(\hat{y},y)+\frac{\lambda }{m}\left | w \right |_{1}​<br />
+</div></p>
+<ul>
+<li>凸函数，不是处处可微分</li>
+<li>得到的是稀疏解（最优解常出现在顶点上，且顶点上的 <span class="math-inline">w</span> 只有很少的元素是非零的）</li>
+</ul>
+<p>如果用的是<span class="math-inline">L1</span> 则化，<span class="math-inline">w</span> 最终会是稀疏的，也就是说<span class="math-inline">w</span> 量中有很多 0，有人说这样有利于压缩模型，因为集合中参数均为 0，存储模型所占用的内存更少。实际上，虽然<span class="math-inline">L1</span> 则化使模型变得稀疏，却没有降低太多存储内存，所以我认为这并不是<span class="math-inline">L1</span> 正则化的目的，至少不是为了压缩模型，人们在训练网络时，越来越倾向于使用<span class="math-inline">L2</span> 正则化。</p>
+<h3 id="l2-正则-weight-decay">L2 正则/ Weight Decay<a class="anchor-link" href="#l2-正则-weight-decay" title="Permanent link">&para;</a></h3>
+<p><div class="math-display"><br />
+J(w,b)=\frac{1}{m} \sum_{i=1}^{m}L(\hat{y},y)+\frac{\lambda }{2m}\left | w \right |^{2}_{2}​<br />
+</div></p>
+<ul>
+<li>凸函数，处处可微分</li>
+<li>易于优化</li>
+</ul>
+<blockquote>
+<p>L2 regularization和Weight decay只在SGD优化的情况下是等价的。<br />
+1.weight decay<br />
+Weight decay是在每次更新的梯度基础上减去一个梯度（ <span class="math-inline">\boldsymbol{\theta}</span> 为模型参数向量， <span class="math-inline">\nabla f_{t}\left(\boldsymbol{\theta}<em>{t}\right)</span> 为 <span class="math-inline">t</span> 时刻loss函数的梯度， <span class="math-inline">\alpha</span> 为学习率）:<br />
+<span class="math-inline">\boldsymbol{\theta}</em>{t+1}=(1-\lambda) \boldsymbol{\theta}<em>{t}-\alpha \nabla f</em>{t}\left(\boldsymbol{\theta}<em>{t}\right)\</span><br />
+2.L2 regularization<br />
+L2 regularization是给参数加上一个L2惩罚( <span class="math-inline">f</em>{t}(\boldsymbol{\theta})</span> 为loss函数)：<br />
+<span class="math-inline">f_{t}^{r e g}(\boldsymbol{\theta})=f_{t}(\boldsymbol{\theta})+\frac{\lambda^{\prime}}{2}|\boldsymbol{\theta}|_{2}^{2}\</span><br />
+(当 <span class="math-inline">\lambda^{\prime}=\frac{\lambda}{\alpha}</span> ​时，与weight decay等价，仅在使用标准SGD优化时成立)</p>
+</blockquote>
+<h3 id="dropout">Dropout<a class="anchor-link" href="#dropout" title="Permanent link">&para;</a></h3>
+<p><strong>Dropout 主要用于神经网络，其原理是使神经网络中的某些神经元随机失活，让模型不过度依赖某一神经元，达到增强模型鲁棒性以及控制过拟合的效果。</strong></p>
+<p>除了<span class="math-inline">L2</span> 则化，还有一个非常实用的正则化方法——“<strong>Dropout</strong>（随机失活）”，我们来看看它的工作原理。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001654.png" /></p>
+<p>假设你在训练上图这样的神经网络，它存在过拟合，这就是<strong>dropout</strong>所要处理的，我们复制这个神经网络，<strong>dropout</strong>会遍历网络的每一层，并设置消除神经网络中节点的概率。假设网络中的每一层，每个节点都以抛硬币的方式设置概率，每个节点得以保留和消除的概率都是 0.5，设置完节点概率，我们会消除一些节点，然后删除掉从该节点进出的连线，最后得到一个节点更少，规模更小的网络，然后用<strong>backprop</strong>方法进行训练。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001206.png" /></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001641.png" /></p>
+<p>这是网络节点精简后的一个样本，对于其它样本，我们照旧以抛硬币的方式设置概率，保留一类节点集合，删除其它类型的节点集合。对于每个训练样本，我们都将采用一个精简后神经网络来训练它，这种方法似乎有点怪，单纯遍历节点，编码也是随机的，可它真的有效。不过可想而知，我们针对每个训练样本训练规模小得多的网络，最后你可能会认识到为什么要正则化网络，因为我们在训练规模小得多的网络。</p>
+<h3 id="其他方法">其他方法<a class="anchor-link" href="#其他方法" title="Permanent link">&para;</a></h3>
+<ol>
+<li>数据扩增</li>
+<li><strong>early stopping</strong></li>
+</ol>
+<hr />
+<h2 id="qa">QA<a class="anchor-link" href="#qa" title="Permanent link">&para;</a></h2>
+<ol>
+<li>为什么只正则化参数<span class="math-inline">w</span>？为什么不再加上参数 <span class="math-inline">b</span> 呢？</li>
+</ol>
+<p>你可以这么做，只是我习惯省略不写，因为<span class="math-inline">w</span> 常是一个高维参数矢量，已经可以表达高偏差问题，<span class="math-inline">w</span> 能包含有很多参数，我们不可能拟合所有参数，而 <span class="math-inline">b</span> 是单个数字，所以 <span class="math-inline">w</span> 乎涵盖所有参数，而不是<span class="math-inline">b</span>，如果加了参数<span class="math-inline">b</span>，其实也没太大影响，因为<span class="math-inline">b</span> 是众多参数中的一个，所以我通常省略不计，如果你想加上这个参数，完全没问题。</p>
+<ol start="2">
+<li>为什么正则化有利于预防过拟合？</li>
+</ol>
+<p>为什么正则化有利于预防过拟合呢？为什么它可以减少方差问题？我们通过两个例子来直观体会一下。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001189.png" /></p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001673.png" /></p>
+<p>左图是高偏差，右图是高方差，中间是<strong>Just Right</strong>。</p>
+<p>直观上理解就是如果正则化<span class="math-inline">\lambda</span> 设置得足够大，权重矩阵<span class="math-inline">W</span> 设置为接近于 0 的值，直观理解就是把多隐藏单元的权重设为 0，于是基本上消除了这些隐藏单元的许多影响。如果是这种情况，这个被大大简化了的神经网络会变成一个很小的网络，小到如同一个逻辑回归单元，可是深度却很大，它会使这个网络从过度拟合的状态更接近左图的高偏差状态。<span class="math-inline">\lambda</span> 存在一个中间值，会有一个接近“<strong>Just Right</strong>”的中间状态。</p>
+<p>直观理解就是<span class="math-inline">\lambda</span> 加到足够大，<span class="math-inline">W</span> 接近于 0，实际上是不会发生这种情况的，我们尝试消除或至少减少许多隐藏单元的影响，最终这个网络会变得更简单，这个神经网络越来越接近逻辑回归，我们直觉上认为大量隐藏单元被完全消除了，其实不然，实际上是该神经网络的所有隐藏单元依然存在，但是它们的影响变得更小了。神经网络变得更简单了，貌似这样更不容易发生过拟合，因此我不确定这个直觉经验是否有用，不过在编程中执行正则化时，你实际看到一些方差减少的结果。</p>
+<p><img alt="" src="https://markdownimg-hw.oss-cn-beijing.aliyuncs.com/image202208161001696.png" /></p>
+<h2 id="reference">Reference<a class="anchor-link" href="#reference" title="Permanent link">&para;</a></h2>
+<p>[1] LeCun, Y., Bottou, L., Orr, G., and Muller, K. Efficient backprop. In Orr, G. and K., Muller (eds.), Neural Net-works: Tricks of the trade. Springer, 1998b.</p>
+<p>[2] Sergey Ioffe, Christian Szegedy, “Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift”, arXiv preprint arXiv:1502.03167, 2015.</p>
+<p>[3] 李航. 统计方法学 P13-14</p>
+<p>[4] 聊聊机器学习中的损失函数 <a href="http://kubicode.me/2016/04/11/Machine Learning/Say-About-Loss-Function/">http://kubicode.me/2016/04/11/Machine Learning/Say-About-Loss-Function/</a></p>
+<p>[5] Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever and Ruslan Salakhutdinov, "Dropout: A Simple Way to Prevent Neural Networks from<br />
+Overfitting",</p>
+<p>[6] <a href="https://zhuanlan.zhihu.com/p/29957294">ML 入门：归一化、标准化和正则化</a></p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>

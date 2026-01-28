@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Untitled</title>
+    <meta name="description" content="Untitled - Hongwei Zhao's Blog">
+    <meta name="author" content="Hongwei Zhao">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme-dark">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-theme-light" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #2980b9;
+            --primary-hover: #1a5276;
+            --link-color: #c0392b;
+            --text-color: #333;
+            --text-light: #666;
+            --text-muted: #999;
+            --bg-color: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-code: #f5f5f5;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5dade2;
+            --primary-hover: #85c1e9;
+            --link-color: #e74c3c;
+            --text-color: #e5e7eb;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --bg-color: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-code: #0f0f23;
+            --border-color: #374151;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .page-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        /* Sidebar TOC */
+        .toc-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-container a {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            display: block;
+            padding: 0.25rem 0;
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .toc-container a:hover,
+        .toc-container a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .toc-container ul ul {
+            margin-left: 1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            max-width: 800px;
+        }
+
+        /* Header */
+        .post-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .post-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .post-meta i {
+            color: var(--text-muted);
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            color: var(--text-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Article Content */
+        .post-content {
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .post-content h1 { font-size: 1.875rem; }
+        .post-content h2 { 
+            font-size: 1.5rem; 
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .post-content h3 { font-size: 1.25rem; }
+        .post-content h4 { font-size: 1.125rem; }
+
+        .post-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin: 1.25rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .post-content blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code */
+        .post-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9em;
+            background: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: var(--link-color);
+        }
+
+        .post-content pre {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Images */
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Tables */
+        .post-content table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .post-content th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+        }
+
+        .post-content tr:nth-child(even) {
+            background: var(--bg-secondary);
+        }
+
+        /* Math */
+        .math-display {
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Anchor links */
+        .anchor-link {
+            opacity: 0;
+            margin-left: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            transition: opacity 0.2s;
+        }
+
+        .post-content h2:hover .anchor-link,
+        .post-content h3:hover .anchor-link,
+        .post-content h4:hover .anchor-link {
+            opacity: 1;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary-hover);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .comments-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .post-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .toc-sidebar {
+                display: none;
+            }
+            
+            .page-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .post-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .theme-toggle {
+                bottom: 1rem;
+                right: 1rem;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- TOC Sidebar -->
+        <aside class="toc-sidebar">
+            <div class="toc-container">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <div class="toc">
+<ul>
+<li><a href="#overcoming-catastrophic-forgetting-in-neural-networks">Overcoming catastrophic forgetting in neural networks</a></li>
+<li><a href="#条件和目标">条件和目标</a></li>
+<li><a href="#问题分析">问题分析</a></li>
+<li><a href="#举个栗子">举个栗子</a></li>
+<li><a href="#ewc的解决方法">EWC的解决方法</a></li>
+<li><a href="#参数重要性的估计">参数重要性的估计</a></li>
+<li><a href="#贝叶斯视角下ewc的理论推导">贝叶斯视角下EWC的理论推导</a></li>
+<li><a href="#结论">结论</a></li>
+<li><a href="#0-摘要">0. 摘要</a></li>
+<li><a href="#1-引言">1. 引言</a></li>
+<li><a href="#2-弹性权重巩固">2. 弹性权重巩固</a><ul>
+<li><a href="#21-ewc-允许在监督学习环境中进行持续学习">2.1 EWC 允许在监督学习环境中进行持续学习</a></li>
+<li><a href="#22-ewc-允许在强化学习环境中进行持续学习">2.2 EWC 允许在强化学习环境中进行持续学习</a></li>
+</ul>
+</li>
+<li><a href="#3-讨论">3. 讨论</a></li>
+<li><a href="#4-附录">4. 附录</a><ul>
+<li><a href="#41-mnist-实验">4.1 MNIST 实验</a></li>
+<li><a href="#42-atari-实验">4.2 Atari 实验</a></li>
+<li><a href="#43-fisher-重叠">4.3 Fisher 重叠</a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <article>
+                <header class="post-header">
+                    <a href="../../../../index.html" class="back-link">
+                        <i class="fas fa-arrow-left"></i> 返回博客列表
+                    </a>
+                    <h1>Untitled</h1>
+                    <div class="post-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2026-01-28</span>
+                        <span><i class="fas fa-folder"></i> AINotes/40.CIL/30.Parameter Regularization</span>
+                        <span><i class="fas fa-user"></i> Hongwei Zhao</span>
+                    </div>
+                    <div class="tags">
+                        
+                    </div>
+                </header>
+
+                <div class="post-content">
+                    <h2 id="overcoming-catastrophic-forgetting-in-neural-networks">Overcoming catastrophic forgetting in neural networks<a class="anchor-link" href="#overcoming-catastrophic-forgetting-in-neural-networks" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/86365066">终身持续学习-可塑权重巩固（Elastic Weight Consolidation）</a></li>
+<li><a href="https://blog.csdn.net/csuwoshikunge/article/details/111160336">连续学习之 -- Overcoming catastrophic forgetting in neural networks</a><br />
+-<a href="https://blog.csdn.net/qq_43428929/article/details/125868016">持续学习EWC代码实现</a></li>
+</ul>
+<p>回过头来梳理了一下EWC方法，在持续终身学习里面很经典的一个方法，Deepmind写的晦涩难懂x，当时折腾了好久才理解。。。。。因为自己有点菜√</p>
+<h2 id="条件和目标">条件和目标<a class="anchor-link" href="#条件和目标" title="Permanent link">&para;</a></h2>
+<p>论文中，假设存在两个任务A和B (可以推广为旧任务和新任务)，数据集分别为D和D。模型学习完任务A后，继续学习任务B，并且不再使用任务A的数据，只使用任务B的数据。我们想让模型在这种情况下学习完任务B后，能够在任务A和B上都有不错的表现。</p>
+<h2 id="问题分析">问题分析<a class="anchor-link" href="#问题分析" title="Permanent link">&para;</a></h2>
+<p>在实际环境中，未来的任务和数据是无法预测的，在时间轴上，任务的数据是非独立同分布 Non-IID.，本质上，这是一个时域上的 Non-IID. 问题。目前通常训练模型，都是随机打乱数据，使得其近似成 IID.，但在序贯学习(Sequential Learning)里面，没有太多的内存来存旧数据，并且未来的数据是未知的，难以用同样的策略转化为 IID.，如果不用额外内存来存储旧任务的数据并且采用相同策略来训练模型，那么模型将会发生灾难性遗忘(Catastrophic forgetting)，因为新任务的数据会对模型造成干扰(interference)，模型参数不受限地变动使得模型会遗忘旧任务上学习到的知识。核心问题在于，如何用可接受的代价来减缓灾难遗忘？</p>
+<h2 id="举个栗子">举个栗子<a class="anchor-link" href="#举个栗子" title="Permanent link">&para;</a></h2>
+<p>任务A是猫狗识别二分类，任务B是狮虎识别二分类，训练完猫狗识别后，模型在猫狗识别的任务上有很不错的表现，这个时候，直接用这个模型继续去训练狮虎识别(此处默认只用狮虎数据集)，那么模型在猫狗识别任务上的表现，将会变得很差，这个过程中，模型遗忘了识别猫狗的能力，发生了灾难性遗忘。终身持续学习的目标是想让模型继续训练识别狮虎的时候，还能保留拥有识别猫狗的能力。</p>
+<h2 id="ewc的解决方法">EWC的解决方法<a class="anchor-link" href="#ewc的解决方法" title="Permanent link">&para;</a></h2>
+<p>下面都是针对神经网络讨论。</p>
+<p>简单地说，EWC从新任务数据对模型的interference角度，让模型参数受限地变动，阻碍在旧任务上重要参数的变化。比如，参数矩阵里面，某些参数对猫狗识别非常重要(这些重要参数在确定分类器分类猫狗的超平面过程中起主要作用)，那么在训练狮虎识别时，记下这些参数原本的值，加一个损失函数阻碍它们的变化(参数像橡皮筋有弹性一样，想拉长它，会有弹力阻碍)，模型在样本空间中，猫狗识别的数据样本区域分类器的超平面变化不大。</p>
+<p>EWC加了一个正则化损失函数：</p>
+<p><div class="math-display">\mathcal{L}<em>{old} =  \frac{\lambda}{2} \sum</em>{i} \Omega_{i} \left(\theta_{i}-\theta_{i}^{*}\right)^{2} \tag{1} </div>  </p>
+<p><span class="math-inline">\Omega_{i}</span> 代表了参数 <span class="math-inline">\theta_{i}^{*}</span> 在任务A(旧任务)上的重要性,，就是论文里说的费雪信息矩阵的对角。 <span class="math-inline">\lambda</span> 是权重调节因子。</p>
+<p>其中，这里的 <span class="math-inline">\theta</span> 和 <span class="math-inline">\theta^{*}</span> 是长度为 <span class="math-inline">N</span> 的一维向量， <span class="math-inline">N</span> 是模型的参数总数(把所有参数矩阵都拿出来，然后平铺在一起)。</p>
+<h2 id="参数重要性的估计">参数重要性的估计<a class="anchor-link" href="#参数重要性的估计" title="Permanent link">&para;</a></h2>
+<p>EWC方法里，参数的重要性用二阶导来评估。</p>
+<p><div class="math-display">        \Omega_{i} =  \frac{1}{\mid D \mid} \sum_{d \in D} \frac{\partial^2  \mathcal{L}(d,\theta)}{\partial \theta^{2}} \tag{2}</div>  </p>
+<p><span class="math-inline">D</span> 数据集。<span class="math-inline"> \mathcal{L}</span> 是任务的损失函数，比如猫狗识别一般就用交叉熵。 <span class="math-inline"> \mathcal{L}(d,\theta)</span> 为参数为 <span class="math-inline">\theta</span> 的模型和一个数据样本 <span class="math-inline">d</span> 上的损失。</p>
+<p>为了降低计算复杂度，按照<em>Theory of Point Estimation, Second Edition</em> by Lehmann &amp; Casella, Lemma 5.3, p. 116.，做了个近似：</p>
+<p><div class="math-display">        \Omega_{i}  = \frac{1}{\mid D \mid} \sum_{d \in D} \frac{\partial  \mathcal{L}(d,\theta)^{2}}{\partial \theta^{2}} \tag{3}</div>  </p>
+<p>这个近似仅限于参数在极值点附近，或者说模型在该数据集上训练好了，到了最优。</p>
+<p>看到这很简单，就是用梯度的平方平均值来作为重要性，如果只是要用这个方法的话，这里就够了，下面都是理论推导。</p>
+<h2 id="贝叶斯视角下ewc的理论推导">贝叶斯视角下EWC的理论推导<a class="anchor-link" href="#贝叶斯视角下ewc的理论推导" title="Permanent link">&para;</a></h2>
+<p>机器学习在贝叶斯的视角下，目的都是为了最大化后验概率 <span class="math-inline">p(\theta | D)</span> ,但是因为后验概率难以估计(不可能尝试所有的 <span class="math-inline">\theta</span> )，因此用贝叶斯公式 <span class="math-inline">p(\theta | D)=\frac{p(D | \theta)P(\theta)}{P(D)}</span> 转化为最大化 <span class="math-inline">p(D | \theta)</span> ，然后取一个 <span class="math-inline">log</span> 转成似然函数用点估计方法做极大似然估计来达成目的。</p>
+<p>在这里，我们把 <span class="math-inline">D</span> 分为 <span class="math-inline">D_{A}</span> 和 <span class="math-inline">D_{B}</span> ，因此：</p>
+<p><div class="math-display">\begin{aligned} \log p(\theta | D) &amp;= \log p\left(D_{A}, D_{B} | \theta\right)+\log p(\theta)-\log p\left(D_{A}, D_{B}\right) \ &amp;=\log p\left(D_{A} | \theta\right)+\log p\left(D_{B} | \theta\right)+\log p(\theta)-\log p\left(D_{A}\right)-\log p\left(D_{B}\right) \ &amp;=\log p\left(D_{B} | \theta\right)+\log p\left(\theta | D_{A}\right)-\log p\left(D_{B}\right)  \end{aligned} \tag{4}</div>  </p>
+<p>因此，我们的目标在贝爷看来，只是一边最大化任务B的似然概率 <span class="math-inline">p\left(D_{B} | \theta\right)</span> ，一般保持任务A的后验概率 <span class="math-inline">p\left(\theta | D_{A}\right)</span> 的最大化。最大化任务B的似然概率推导到后面任务的损失函数，这个推导就不展开讲(但是都是类似的)，下面推导保持任务A的后验概率的最大化的损失函数。</p>
+<p>先拉普拉斯近似，假设<span class="math-inline">p\left(\theta | D_{A}\right)</span> 于参数服从高斯分布，均值为 <span class="math-inline">\mu</span> ，方差为 <span class="math-inline">\sigma</span> ，都是是长度为 <span class="math-inline">N</span> 的一维向量。</p>
+<p>把<span class="math-inline">p\left(\theta | D_{A}\right)</span> 作一个关于 <span class="math-inline">\theta</span> 的函数：</p>
+<p><div class="math-display">p\left(\theta | D_{A}\right) = \frac{1}{Z}f(\theta) \tag{5}</div>  </p>
+<p>其中， <span class="math-inline">Z</span> 为归一化系数(概率的积分必须为1)，不用管它。</p>
+<p>然后，对它的似然函数进行泰勒展开(log和ln在这里没有本质区别)：</p>
+<p><div class="math-display">\ln f(\theta)=\ln f\left(\theta^{<em>}\right)+J_{\ln f}\left(\theta^{</em>}\right) \cdot\left(\theta-\theta^{<em>}\right)+\frac{1}{2} \cdot\left(\theta-\theta^{</em>}\right)^{T} \cdot H_{\ln f}\left(\theta^{<em>}\right) \cdot\left(\theta-\theta^{</em>}\right)+R_{n}(\theta) \tag{6}</div>  </p>
+<p><span class="math-inline">\theta^{*}</span> 为在任务A上优化好的参数，另外复习一下泰勒展开公式。。。。：</p>
+<p><span class="math-inline">F(x)=\frac{F\left(x_{0}\right)}{0 !}+\frac{F^{\prime}\left(x_{0}\right)}{1 !} \cdot\left(x-x_{0}\right)+\frac{F^{\prime \prime}\left(x_{0}\right)}{2 !} \cdot\left(x-x_{0}\right)^{2}+R_{n}(x)</span> </p>
+<p><span class="math-inline">F(x)=\frac{F\left(x_{0}\right)}{0 !}+\frac{J_{F}\left(x_{0}\right)}{1 !} \cdot\left(x-x_{0}\right)+\left(x-x_{0}\right)^{T} \cdot \frac{H_{F}\left(x_{0}\right)}{2 !} \cdot\left(x-x_{0}\right)+R_{n}(x)</span> </p>
+<p>因为在任务A上，模型优化到了最优，损失函数很小，一阶导很小，近似为0，并且三阶及以上的项，在 <span class="math-inline">\theta</span> 变化不大的情况下都可以近似为0，因此只保留二阶项和零阶项。</p>
+<p><div class="math-display">\ln f(\theta) \approx \ln f\left(\theta^{<em>}\right)-\frac{1}{2} \cdot\left(\theta-\theta^{</em>}\right)^{T} \cdot F_{\ln f}\left(\theta^{<em>}\right) \cdot\left(\theta-\theta^{</em>}\right) \ F_{\ln f}=-H_{\mathrm{lnf}}\left(\theta^{*}\right) \tag{7}</div>  </p>
+<p>这里，把Hessian矩阵取负，就得到了费雪信息矩阵。</p>
+<p>对公式(7)取指数，得：</p>
+<p><div class="math-display">f(\theta) \approx \frac{1}{Z} f\left(\theta^{<em>}\right) \cdot e^{-\frac{1}{2}\left(\theta-\theta^{</em>}\right)^{T} \cdot F_{\operatorname{lnf}}\left(\theta^{<em>}\right) \cdot\left(\theta-\theta^{</em>}\right)} \tag{8}</div>  </p>
+<p>看，活脱脱的高斯分布。</p>
+<p>因此，回头看我们一开始的假设， <span class="math-inline">p\left(\theta | D_{A}\right)</span> ，它是服从一个 <span class="math-inline">\mu=\theta^{<em>}</span> ， <span class="math-inline">\frac{1}{\sigma^{2}}=F_{lnf}(\theta^{</em>})</span> 的高斯分布，而最大化 <span class="math-inline">p\left(\theta | D_{A}\right)</span> 就等价于最大化 <span class="math-inline">\ln f(\theta)</span> 。</p>
+<p>因为 <span class="math-inline">\ln f\left(\theta^{<em>}\right)</span> 是个常数( <span class="math-inline">\theta^{</em>}</span> 是给定的)，因此，最大化 <span class="math-inline">p\left(\theta | D_{A}\right)</span> 最终等价于最大化 <span class="math-inline">-\frac{1}{2} \cdot\left(\theta-\theta^{<em>}\right)^{T} \cdot F_{\ln f}\left(\theta^{</em>}\right) \cdot\left(\theta-\theta^{*}\right) </span>。</p>
+<p>此外，<span class="math-inline">\theta^{<em>}</span> 是长度为 <span class="math-inline">N</span> 的一维向量， <span class="math-inline">F_{\ln f}\left(\theta^{</em>}\right)</span> 为 <span class="math-inline">N\times N</span> 大小，计算的时间和空间复杂度难以接受，于是和优化的领域一样，取了费雪信息矩阵的对角线，这等于假设参数之间相互独立没有影响，最终，导出损失函数：</p>
+<p><div class="math-display">        \mathcal{L}<em>{old} =  \frac{\lambda}{2} \sum</em>{i} F_{\ln f}\left(\theta^{<em>}\right)<em>{i,i} \left(\theta</em>{i}-\theta_{i}^{</em>}\right)^{2} \ F_{\ln f}\left(\theta^{*}\right)<em>{i,j} =\frac{\partial^{2}  \mathcal{L}(d,\theta)}{\partial \theta</em>{i} \partial \theta_{j}}   \tag{9}</div>  </p>
+<p>看完后应该会有不少人联想到L2正则化，确实，本质上他们都是针对参数先验进行构造，假设和推导也很类似，这也是目前ML领域水论文的方向之一。  </p>
+<h2 id="结论">结论<a class="anchor-link" href="#结论" title="Permanent link">&para;</a></h2>
+<p>在任务差异不大情况下，EWC确实是一个有效的方法，理论也很优雅，但任务差异较大时，泰勒展开的高阶项就不能近似为0，导致了EWC方法不好的表现，此外，参数之间是有关联分布的(假设应该他们是混合高斯)，EWC取费雪信息矩阵的对掉线忽略了参数相关性，这些都是EWC的不足，后续有一些论文多多少少改进了一些，但任重道远~</p>
+<p>引用什么的其他的以后再补充8 √</p>
+<h2 id="0-摘要">0. 摘要<a class="anchor-link" href="#0-摘要" title="Permanent link">&para;</a></h2>
+<p>序贯学习任务的能力对人工智能的发展至关重要。神经网络通常不具备这种能力，并且广泛认为<strong>灾难性遗忘</strong>是连接主义模型的一个不可避免的特征。我们展示了克服这一限制的可能性，并训练了能够长期保持对未经历任务的专业知识的网络。我们的方法通过选择性减缓对这些任务重要的权重的学习来记住旧任务。我们通过解决基于 MNIST 手写数字数据集的分类任务和顺序学习多个 Atari 2600 游戏，证明了我们的方法具有可扩展性和有效性。</p>
+<h2 id="1-引言">1. 引言<a class="anchor-link" href="#1-引言" title="Permanent link">&para;</a></h2>
+<p>实现通用人工智能要求代理能够学习和记住许多不同的任务（Legg 和 Hutter，2007）。这在现实环境中尤其困难：任务的顺序可能没有明确标记，任务可能会不可预测地切换，并且任何单个任务可能在长时间间隔内不会再次出现。因此，智能代理必须具备<strong>持续学习</strong>的能力：即能够学习连续任务而不会忘记如何执行先前训练的任务。</p>
+<p>持续学习对人工神经网络提出了特殊的挑战，因为当与当前任务（例如任务 B）相关的信息被纳入时，先前学习任务（例如任务 A）的知识可能会突然丢失。这种现象称为<strong>灾难性遗忘</strong>（French, 1999; McCloskey 和 Cohen, 1989; McClelland 等, 1995; Ratcliff, 1990），特别发生在网络被顺序训练于多个任务时，因为网络中对于任务 A 重要的权重被改变以满足任务 B 的目标。尽管最近在机器学习特别是深度神经网络方面的进展使得在多个领域取得了显著的性能提升（例如，Krizhevsky 等，2012；LeCun 等，2015），但在实现持续学习方面进展甚微。当前的方法通常确保在训练期间所有任务的数据同时可用。通过在训练期间交错多个任务的数据，遗忘不会发生，因为网络的权重可以联合优化以在所有任务上表现良好。在这种模式下——通常称为<strong>多任务学习</strong>范式——深度学习技术已被用于训练能够成功玩多个 Atari 游戏的单一代理（Rusu 等，2015；Parisotto 等，2015）。如果任务是顺序呈现的，多任务学习只有在数据被情景记忆系统记录并在训练期间重放给网络时才能使用。这种方法（通常称为系统级巩固，McClelland 等，1995）对于学习大量任务是不切实际的，因为在我们的设置中，它需要存储和重放的内存量与任务数量成正比。缺乏支持持续学习的算法仍然是开发通用人工智能的一个主要障碍。</p>
+<p>与人工神经网络形成鲜明对比的是，人类和其他动物似乎能够以持续的方式学习（Cichon 和 Gan，2015）。最近的证据表明，哺乳动物的大脑可能通过在新皮层回路中保护先前获得的知识来避免灾难性遗忘（Cichon 和 Gan，2015；Hayashi-Takagi 等，2015；Yang 等，2009, 2014）。当小鼠学会一项新技能时，一部分兴奋性突触会被增强；这表现为神经元单个树突棘体积的增加（Yang 等，2009）。重要的是，这些增大的树突棘在随后学习其他任务时仍然存在，解释了几个月后性能的保持（Yang 等，2009）。当这些树突棘被选择性“擦除”时，相应的技能会被遗忘（Hayashi-Takagi 等，2015；Cichon 和 Gan，2015）。这提供了因果证据，表明支持这些增强突触保护的神经机制对任务性能的保持至关重要。这些实验发现与神经生物学模型（Fusi 等，2005；Benna 和 Fusi，2016）一起表明，哺乳动物新皮层的持续学习依赖于任务特异性突触巩固过程，即关于如何执行先前获得任务的知识被持久地编码在一部分突触中，这些突触变得不那么可塑，因此在长时间尺度上保持稳定。</p>
+<p>在这项工作中，我们展示了任务特异性突触巩固为人工智能的持续学习问题提供了一种新颖的解决方案。我们开发了一种类似于人工神经网络突触巩固的算法，我们称之为<strong>弹性权重巩固</strong>（简称 EWC）。该算法根据权重对先前任务的重要性来减缓某些权重的学习。我们展示了 EWC 如何在监督学习和强化学习问题中用于顺序训练多个任务而不会忘记旧任务，这与之前的深度学习技术形成鲜明对比。</p>
+<h2 id="2-弹性权重巩固">2. 弹性权重巩固<a class="anchor-link" href="#2-弹性权重巩固" title="Permanent link">&para;</a></h2>
+<p>在大脑中，突触巩固通过减少对先前学习任务至关重要的突触的可塑性来实现持续学习。我们实现了一种在人工神经网络中执行类似操作的算法，通过约束重要参数使其保持接近旧值。在本节中，我们解释了为什么我们期望在旧任务的邻域中找到新任务的解决方案，如何实现约束，以及最后如何确定哪些参数是重要的。</p>
+<p>深度神经网络由多个线性投影层和逐元素非线性组成。学习任务包括调整线性投影的权重和偏置 <span class="math-inline">\theta</span> 以优化性能。许多 <span class="math-inline">\theta</span> 的配置将导致相同的性能（Nielsen, 1989; Sussmann, 1992）；这与 EWC 相关：过度参数化使得任务 B 的解决方案 <span class="math-inline">\theta^<em>_B</span> 很可能接近先前找到的任务 A 的解决方案 <span class="math-inline">\theta^</em>_A</span>。在学习任务 B 时，EWC 通过约束参数保持在任务 A 的低误差区域（以 <span class="math-inline">\theta^*_A</span> 为中心）来保护任务 A 的性能，如图 1 所示。该约束通过二次惩罚实现，因此可以想象为一个将参数锚定到先前解决方案的弹簧，因此称为“弹性”。重要的是，这个弹簧的刚度不应对所有参数相同；相反，它应对那些对任务 A 性能最重要的参数更大。</p>
+<p>为了证明这种约束选择的合理性并定义哪些权重对任务最重要，从概率角度考虑神经网络训练是有用的。从这个角度来看，优化参数等同于在给定数据 <span class="math-inline">D</span> 的情况下找到它们的最可能值。我们可以通过使用贝叶斯规则从参数的先验概率 <span class="math-inline">p(\theta)</span> 和数据的概率 <span class="math-inline">p(D|\theta)</span> 计算这个条件概率 <span class="math-inline">p(\theta|D)</span>：<br />
+<div class="math-display"><br />
+    \log p(\theta|D) = \log p(D|\theta) + \log p(\theta) - \log p(D) \tag{1}<br />
+</div><br />
+请注意，数据给定参数的 <span class="math-inline">\log p(D|\theta)</span> 只是手头问题的损失函数的负数 <span class="math-inline">-L(\theta)</span>。假设数据被分成两个独立的部分，一部分定义任务 A（<span class="math-inline">D_A</span>），另一部分定义任务 B（<span class="math-inline">D_B</span>）。然后，我们可以重新排列公式 1：<br />
+<div class="math-display"><br />
+    \log p(\theta|D) = \log p(D_B|\theta) + \log p(\theta|D_A) - \log p(D_B) \tag{2}<br />
+</div><br />
+请注意，左侧仍然描述了给定整个数据集的参数的后验概率，而右侧仅依赖于任务 B 的损失函数 <span class="math-inline">\log p(D_B|\theta)</span>。因此，所有关于任务 A 的信息必须已经被吸收到后验分布 <span class="math-inline">p(\theta|D_A)</span> 中。这个后验概率必须包含哪些参数对任务 A 重要的信息，因此是实现 EWC 的关键。真实的后验概率是难以处理的，因此，按照 Mackay（1992）的工作，我们将后验近似为以参数 <span class="math-inline">\theta^<em>_A</span> 为均值、以 Fisher 信息矩阵 <span class="math-inline">F</span> 的对角线为精度的对角高斯分布。<span class="math-inline">F</span> 具有三个关键特性（Pascanu 和 Bengio，2013）：（a）它等效于损失在最小值附近的二阶导数，（b）它可以从一阶导数计算，因此即使对于大模型也易于计算，（c）它保证是半正定的。请注意，这种方法类似于期望传播，其中每个子任务被视为后验的一个因子（Eskin 等，2004）。给定这个近似，我们在 EWC 中最小化的函数 <span class="math-inline">L</span> 为：<br />
+<div class="math-display"><br />
+    L(\theta) = L_B(\theta) + \sum_i \frac{\lambda}{2} F_i (\theta_i - \theta^</em>_{A,i})^2 \tag{3}<br />
+</div><br />
+其中 <span class="math-inline">L_B(\theta)</span> 是仅针对任务 B 的损失，<span class="math-inline">\lambda</span> 设置旧任务与新任务的重要性，<span class="math-inline">i</span> 标记每个参数。</p>
+<p>当转向第三个任务 C 时，EWC 将尝试使网络参数保持接近任务 A 和 B 的学习参数。这可以通过两个单独的惩罚来强制执行，或者通过注意到两个二次惩罚的和本身是一个二次惩罚来作为一个惩罚。</p>
+<h3 id="21-ewc-允许在监督学习环境中进行持续学习">2.1 EWC 允许在监督学习环境中进行持续学习<a class="anchor-link" href="#21-ewc-允许在监督学习环境中进行持续学习" title="Permanent link">&para;</a></h3>
+<p>我们首先解决了弹性权重巩固是否允许深度神经网络在不发生灾难性遗忘的情况下学习一组复杂任务的问题。特别是，我们训练了一个全连接的多层神经网络，顺序学习几个监督学习任务。在每个任务中，我们以传统方式训练神经网络，即通过打乱数据并以小批量处理。然而，在每项任务的固定训练量之后，我们不允许对该任务的数据集进行进一步训练。</p>
+<p>我们根据持续学习文献中先前使用的方案（Srivastava 等，2013；Goodfellow 等，2014），从 MNIST 手写数字数据集（LeCun 等，1998）的分类问题构建了任务集。对于每个任务，我们生成一个固定的随机排列，所有图像的输入像素将被打乱。因此，每个任务的难度与原始 MNIST 问题相同，尽管每个任务需要不同的解决方案。有关所用设置的详细描述，请参见附录 4.1。</p>
+<p>使用普通随机梯度下降（SGD）训练这一系列任务会导致灾难性遗忘，如图 2A 所示。蓝色曲线显示了在两个不同任务的测试集上的表现。当训练模式从任务 A 切换到任务 B 时，任务 B 的表现迅速下降，而任务 A 的表现急剧上升。随着训练时间的增加和后续任务的添加，任务 A 的遗忘进一步加剧。这个问题无法通过对每个权重施加固定二次约束的正则化来解决（绿色曲线，L2 正则化）：在这里，任务 A 的表现下降得较轻，但任务 B 无法很好地学习，因为约束平等地保护了所有权重，几乎没有剩余容量来学习任务 B。然而，当我们使用 EWC 并考虑到每个权重对任务 A 的重要性时，网络可以在不忘记任务 A 的情况下很好地学习任务 B（红色曲线）。这正是图 1 中描述的预期行为。</p>
+<p>之前解决深度神经网络持续学习问题的尝试依赖于仔细选择网络超参数以及其他标准正则化方法，以减轻灾难性遗忘。然而，在这个任务中，它们仅在两到三个随机排列上取得了合理的结果（Srivastava 等，2013；Goodfellow 等，2014）。使用与 Goodfellow 等（2014）类似的交叉验证超参数搜索，我们将传统的 Dropout 正则化与 EWC 进行了比较。我们发现，仅使用 Dropout 正则化的随机梯度下降是有限的，无法扩展到更多任务（图 2B）。相比之下，EWC 允许顺序学习大量任务，且错误率仅适度增长。</p>
+<p>鉴于 EWC 允许网络有效地将更多功能压缩到具有固定容量的网络中，我们可能会问它是否为每个任务分配了完全独立的网络部分，或者是否通过共享表示以更高效的方式使用了容量。为了评估这一点，我们通过测量任务对的 Fisher 信息矩阵之间的重叠来确定每个任务是否依赖于相同的权重集（参见附录 4.3）。较小的重叠意味着两个任务依赖于不同的权重集（即 EWC 将网络的权重细分给不同的任务）；较大的重叠表明权重被用于两个任务（即 EWC 实现了表示的共享）。图 2C 显示了重叠随深度变化的函数。作为一个简单的对照，当网络在两个非常相似的任务上训练时（两个版本的 MNIST，仅少数像素被置换），两个任务在整个网络中依赖于相似的权重集（灰色曲线）。当两个任务更加不同时，网络开始为两个任务分配独立的容量（即权重，黑色曲线）。然而，即使对于较大的置换，靠近网络输出层的部分确实被两个任务重用。这反映了置换使输入域非常不同，但输出域（即类别标签）是共享的。</p>
+<h3 id="22-ewc-允许在强化学习环境中进行持续学习">2.2 EWC 允许在强化学习环境中进行持续学习<a class="anchor-link" href="#22-ewc-允许在强化学习环境中进行持续学习" title="Permanent link">&para;</a></h3>
+<p>我们接下来测试了弹性权重巩固是否能够在更具挑战性的强化学习（RL）领域中支持持续学习。在 RL 中，代理动态与环境交互以开发最大化累积未来奖励的策略。我们询问 Deep Q 网络（DQN）——一种在此类具有挑战性的 RL 设置中取得显著成功的架构（Mnih 等，2015）——是否可以通过 EWC 成功支持经典 Atari 2600 任务集中的持续学习。具体来说，每个实验由从 DQN 达到或超过人类水平的游戏中随机选择的十个游戏组成。在训练时，代理在长时间内暴露于每个游戏的经验。游戏的呈现顺序是随机的，并且允许多次返回同一游戏。在固定间隔内，我们还会测试代理在每个游戏上的得分，而不允许代理在这些游戏上进行训练（图 3A）。</p>
+<p>值得注意的是，之前的强化学习持续学习方法要么依赖于增加网络容量（Ring, 1998; Rusu 等, 2016），要么依赖于在单独网络中学习每个任务，然后用于训练可以玩所有游戏的单一网络（Rusu 等, 2015; Parisotto 等, 2015）。相比之下，本文提出的 EWC 方法利用了具有固定资源（即网络容量）的单一网络，并且计算开销最小。</p>
+<p>除了使用 EWC 保护先前获得的知识外，我们还使用 RL 领域来满足成功持续学习系统所需的更广泛要求：特别是需要更高级的机制来推断当前正在执行的任务，检测并整合新任务，并允许在任务之间快速灵活地切换（Collins 和 Frank, 2013）。在灵长类动物的大脑中，前额叶皮质广泛被认为通过维持任务上下文的神经表征来支持这些能力，这些表征对感觉处理、工作记忆和低级区域的动作选择施加自上而下的门控影响（O’Reilly 和 Frank, 2006; Mante 等, 2013; Miller 和 Cohen, 2001; Doya 等, 2002）。受此证据启发，我们使用了一个与 van Hasselt 等（2016）描述的代理非常相似的代理，具有以下差异：（a）具有更多参数的网络，（b）较小的转换表，（c）每层的任务特定偏置和增益，（d）Atari 中的完整动作集，（e）任务识别模型，以及（e）EWC 惩罚。超参数的完整描述见附录 app:atari。这里我们简要描述代理的两个最重要的修改：任务识别模块和 EWC 惩罚的实现。</p>
+<p>我们将任务上下文视为隐马尔可夫模型的隐变量。因此，每个任务与观察的生成模型相关联。我们方法的主要区别在于，我们允许添加新的生成模型，如果它们比现有模型池更好地解释最近的数据，则使用受“不忘”过程启发的训练程序（Kieran 等, 2016）（参见附录 4.2）。</p>
+<p>为了应用 EWC，我们在每次任务切换时计算 Fisher 信息矩阵。对于每个任务，添加一个惩罚，其锚点由参数的当前值给出，权重由 Fisher 信息矩阵乘以通过超参数搜索优化的缩放因子 <span class="math-inline">\lambda</span> 给出。我们仅对至少经历了 2000 万帧的游戏添加了 EWC 惩罚。</p>
+<p>我们还允许 DQN 代理为每个推断的任务维护单独的短期记忆缓冲区：这些缓冲区允许使用经验回放机制对每个任务的动作值进行离线学习（Mnih 等, 2015）。因此，整个系统在两个时间尺度上具有记忆：在短时间尺度上，经验回放机制允许 DQN 的学习基于交错和非相关的经验（Mnih 等, 2015）。在较长时间尺度上，跨任务的知识通过使用 EWC 进行巩固。最后，我们允许少量网络参数是特定于游戏的，而不是跨游戏共享的。特别是，我们允许网络的每一层具有特定于每个游戏的偏置和逐元素乘法增益。</p>
+<p>我们在图 3 中比较了使用 EWC 的代理（红色）与不使用 EWC 的代理（蓝色）在十组游戏上的表现。我们通过所有十个游戏的总人类归一化得分来衡量表现。我们对随机种子和选择的十个游戏进行平均（参见附录 4.2）。我们还将每个游戏的人类归一化得分裁剪为 1。因此，我们的表现度量是一个最大为 10 的数字（至少在所有游戏上达到人类水平），0 表示代理与随机代理一样好。如果我们依赖于普通梯度下降方法（如 Mnih 等, 2015），代理永远无法学会玩多个游戏，忘记旧游戏的危害意味着总人类归一化得分保持在 1 以下。然而，通过使用 EWC，代理确实学会了玩多个游戏。作为对照，我们还考虑了如果我们明确提供代理真实任务标签（图 3B，棕色）而不是依赖于通过 FMN 算法学习的任务识别（红色）对代理的益处。这里的改进只是适度的。</p>
+<p>尽管通过 EWC 增强 DQN 代理使其能够顺序学习多个游戏而不会遭受灾难性遗忘，但它并未达到训练十个单独的 DQN 所能获得的得分（参见附录 4.2 中的图 1）。一个可能的原因是我们基于参数不确定性的可处理近似（Fisher 信息）为每个游戏巩固了权重。因此，我们试图通过实验测试我们的估计质量。为此，我们训练了一个代理玩单个游戏，并测量扰动网络参数对代理得分的影响。无论代理被训练于哪个游戏，我们观察到了相同的模式，如图 3C 所示。首先，代理始终对由 Fisher 信息对角线的逆形成的参数扰动（蓝色）比对均匀扰动（黑色）更鲁棒。这验证了 Fisher 对角线是衡量参数重要性的良好估计。在我们的近似中，扰动在零空间中应该对性能完全没有影响。然而，实验上我们观察到在这种空间中扰动（橙色）与在逆 Fisher 空间中扰动具有相同的效果。这表明我们对某些参数的不重要性过于自信：因此，当前实现的主要限制可能是低估了参数不确定性。</p>
+<h2 id="3-讨论">3. 讨论<a class="anchor-link" href="#3-讨论" title="Permanent link">&para;</a></h2>
+<p>我们提出了一种新颖的算法——弹性权重巩固（EWC），它解决了神经网络持续学习中的重大问题。EWC 允许在新学习过程中保护先前任务的知识，从而避免旧能力的灾难性遗忘。它通过选择性降低权重的可塑性来实现这一目标，因此与突触巩固的神经生物学模型具有相似性。我们将 EWC 实现为一个软二次约束，每个权重被拉回其旧值的程度与其对先前学习任务性能的重要性成正比。在任务共享结构的情况下，使用 EWC 训练的网络重用了网络的共享部分。我们进一步表明，EWC 可以有效地与深度神经网络结合，以支持在具有挑战性的强化学习场景（如 Atari 2600 游戏）中的持续学习。</p>
+<p>EWC 算法可以基于贝叶斯学习方法进行解释。形式上，当有新任务需要学习时，网络参数通过一个先验进行调节，该先验是给定先前任务数据的参数后验分布。这使得在先前任务约束较弱的参数上学习速率较快，而在那些关键参数上学习速率较慢。</p>
+<p>之前有一些工作（French 和 Chater, 2002; Eaton 和 Ruvolo, 2013）使用二次惩罚来近似旧部分的数据集，但这些应用仅限于小模型。具体来说，French 和 Chater（2002）使用随机输入来计算能量表面的二次近似。他们的方法速度较慢，因为它需要在每个样本上重新计算曲率。Eaton 和 Ruvolo（2013）描述的 ELLA 算法需要计算和反转维度等于被优化参数数量的矩阵，因此它主要应用于线性和逻辑回归。相比之下，EWC 的运行时间与参数数量和训练样本数量呈线性关系。我们能够实现这种低计算复杂度，主要是通过对任务参数的后验分布（即权重不确定性）进行因子化高斯近似，并通过 Fisher 信息矩阵的对角线计算其方差。尽管其计算成本低且经验成功——即使在具有挑战性的 RL 领域——我们对后验方差的使用（如拉普拉斯近似）确实构成了一个显著的弱点（见图 4C）。我们的初步探索表明，通过使用贝叶斯神经网络（Blundell 等，2015）可能会改进这一局部估计。</p>
+<p>虽然本文主要集中在从神经生物学观察中构建算法，但考虑算法的成功是否可以反馈到我们对大脑的理解也是有启发性的。特别是，我们在 EWC 和两种突触可塑性计算理论之间看到了显著的相似性。</p>
+<p>在这方面，我们提供的视角与最近的一项提议一致，即每个突触不仅存储其当前权重，还隐含地表示其对该权重的不确定性（Aitchison 和 Latham，2015）。这一想法基于观察到突触后电位在幅度上高度可变（表明在计算过程中从权重后验中采样），并且那些更可变的突触更容易被增强或抑制（表明更新权重后验）。虽然我们在这里没有探讨从后验中采样的计算优势，但我们的工作与权重不确定性应通知学习速率的观点一致。我们更进一步强调，巩固高精度权重使得在长时间尺度上实现持续学习成为可能。使用 EWC 时，每个突触需要存储三个值：权重本身、其方差和其均值。有趣的是，大脑中的突触也携带不止一条信息。例如，短期可塑性的状态可能携带有关方差的信息（Aitchison 和 Latham，2015; Pfister 等，2010）。早期可塑性阶段的权重（Clopath 等，2008）可能编码当前的突触强度，而与晚期可塑性阶段或巩固阶段相关的权重可能编码平均权重。</p>
+<p>能够顺序学习任务而不会遗忘是生物和人工智能的核心组成部分。在这项工作中，我们展示了一种支持持续学习的算法——其灵感来自突触巩固的神经生物学模型——可以与深度神经网络结合，在一系列具有挑战性的领域中实现成功的表现。通过这样做，我们证明了当前关于突触巩固的神经生物学理论确实可以扩展到大规模学习系统。这为这些原则可能是大脑学习和记忆的基本方面提供了初步证据。</p>
+<h2 id="4-附录">4. 附录<a class="anchor-link" href="#4-附录" title="Permanent link">&para;</a></h2>
+<h3 id="41-mnist-实验">4.1 MNIST 实验<a class="anchor-link" href="#41-mnist-实验" title="Permanent link">&para;</a></h3>
+<p>我们使用具有整流线性单元的全连接网络进行了所有 MNIST 实验。为了复制 Goodfellow 等（2014）的结果，我们比较了使用 Dropout 正则化的结果。如 Goodfellow 等（2014）建议，我们对输入应用了 0.2 的 Dropout 概率，对其他隐藏层应用了 0.5 的 Dropout 概率。为了给使用 Dropout 的 SGD 提供最好的机会，我们还使用了早停。早停通过计算所有已见像素排列的验证集上的测试误差来实现。如果观察到验证误差在连续五步后增加，我们终止该训练段并继续到下一个数据集；此时，我们将网络权重重置为在所有先前数据集上具有最低平均验证误差的值。表 1 显示了用于生成正文图 3 中三个图形的所有超参数。如果存在范围，则参数随机变化，报告的结果使用最佳超参数设置获得。当使用随机超参数搜索时，每个实验尝试了 50 种参数组合。</p>
+<h3 id="42-atari-实验">4.2 Atari 实验<a class="anchor-link" href="#42-atari-实验" title="Permanent link">&para;</a></h3>
+<p>使用的代理架构与 van Hasselt 等（2016）中使用的几乎相同。在本节中，我们提供了所有使用参数的详细信息。</p>
+<p>图像的预处理方式与 Mnih 等（2015）相同，即 Atari 模拟器的 210x160 图像使用双线性插值下采样到 84x84。然后我们将 RGB 图像转换为 YUV 并仅使用灰度通道。代理使用的状态由四个最近的下采样灰度观察拼接而成。</p>
+<p>使用的网络结构与 Mnih 等（2015）中的类似，即三个卷积层后接一个全连接层。第一个卷积核大小为 8，步幅为 4，滤波器数量为 32。第二个卷积核大小为 4，步幅为 2，滤波器数量为 64。最后一个卷积核大小为 3，步幅为 1，滤波器数量为 128。全连接层有 1024 个单元。请注意，由于在全连接层中有两倍的单元和最后一个卷积层中有两倍的滤波器，该网络的参数数量大约是标准网络的四倍。与标准网络的其他区别在于，每一层都被允许具有任务特定的增益和偏置。对于每一层，网络计算的变换 <span class="math-inline">x \rightarrow y</span> 为：<br />
+<div class="math-display"><br />
+    y_i = \left( \sum_j W_{ij} x_j + b^c_i \right) g^c_i \tag{4}<br />
+</div><br />
+其中偏置 <span class="math-inline">b</span> 和增益 <span class="math-inline">g</span>。网络权重和偏置通过将其随机初始化为 <span class="math-inline">-\sigma</span> 和 <span class="math-inline">\sigma</span> 之间的均匀数，<span class="math-inline">\sigma</span> 设置为传入隐藏单元的平方根（对于线性层）或核面积乘以传入滤波器数量（对于卷积层）。偏置和增益分别初始化为 0 和 1。</p>
+<p>我们使用了 <span class="math-inline">\epsilon</span>- 贪婪探索策略，其中选择随机动作的概率 <span class="math-inline">\epsilon</span> 随训练时间衰减。我们为每个任务保持了不同的计时器。我们设置 <span class="math-inline">\epsilon=1</span> 进行 <span class="math-inline">5 \times 10^4</span> 步，然后线性衰减到 <span class="math-inline">0.01</span>，持续接下来的 <span class="math-inline">10^6</span> 步。</p>
+<p>我们使用 Double Q-learning 算法（van Hasselt 等，2016）训练网络。每四步对 32 个经验的小批量进行训练步骤。目标网络每 <span class="math-inline">3 \times 10^4</span> 步更新一次。我们使用 RMSProp 进行训练，动量为 0，衰减为 0.95，学习率为 <span class="math-inline">2.5 \times 10^{-4}</span>，最大学习率为 <span class="math-inline">2.5 \times 10^{-3}</span>。</p>
+<p>我们改变的其他超参数包括：1）使用较小的回放缓冲区（<span class="math-inline">5 \times 10^5</span> 个过去的经验），以及 2）EWC 惩罚的缩放因子为 400。另一个细微的区别是我们使用了 Atari 模拟器中的完整动作集。事实上，尽管许多游戏只支持 18 个可能动作中的一小部分，但为了在所有游戏中具有统一的网络结构，我们在每个游戏中使用了 18 个动作。</p>
+<p>我们随机选择了每个实验的 10 个游戏，来自一组 19 个 Atari 游戏，其中独立的 DQN 可以在 <span class="math-inline">50 \times 10^6</span> 帧内达到人类水平的表现。图 4 显示了每个游戏在基线算法、EWC 和普通 SGD 训练下的得分，作为在该游戏中玩的步数的函数。为了获得平均表现，我们选择了 10 组 10 个游戏，并为每组运行了 4 个不同的随机种子。</p>
+<p>与已发表模型的最显著区别是任务的自动确定。我们将每个任务建模为环境的生成模型。在这项工作中，为简单起见，我们仅对当前观察进行建模。当前任务被建模为一个分类上下文 <span class="math-inline">c</span>，被视为解释观察的隐马尔可夫模型中的隐变量。在这样的模型中，特定上下文 <span class="math-inline">c</span> 在时间 <span class="math-inline">t</span> 的概率根据以下公式演变：<br />
+<div class="math-display"><br />
+    p(c, t+1) = \sum_{c'} p(c', t) \Gamma(c, c')<br />
+</div></p>
+<p><div class="math-display"><br />
+    \Gamma(c, c') = \delta(c, c') (1 - \alpha) + (1 - \delta(c, c')) \alpha<br />
+</div><br />
+其中 <span class="math-inline">\delta</span> 是 Kronecker delta 函数，<span class="math-inline">\alpha</span> 是切换上下文的概率。任务上下文然后条件化为生成模型，预测观察概率 <span class="math-inline">p(o|c, t)</span>。给定这样的生成模型，可以通过迄今为止看到的观察推断在时间 <span class="math-inline">t</span> 处于任务集的概率为：<br />
+<div class="math-display"><br />
+    p(c|o_1 \dots o_t) \propto \sum_{c'} \Gamma(c, c') p(c', t-1) p(o|c, t)<br />
+</div><br />
+最大概率上下文被视为当前任务标签。</p>
+<p>在我们的实现中，生成模型由解释观察空间中每个像素状态的分解多项式分布组成。模型是一个参数化的 Dirichlet 分布，它使用贝叶斯更新总结迄今为止看到的数据。为了鼓励每个模型专业化，我们按以下方式训练模型。我们将时间划分为特定宽度 <span class="math-inline">W</span> 的窗口。在每个窗口期间，所有 Dirichlet 先验都更新为迄今为止看到的证据。在窗口结束时，选择最符合当前任务集的模型。由于该模型最适合解释当前数据，它保留其先验，而所有其他先验恢复到时间窗口开始时的状态。我们确保始终有一个保留的均匀（即未初始化）Dirichlet 多项式可用。每当选择保留模型时，就会创建一个新的生成模型，从而创建一个新的任务上下文。该模型是贝叶斯的，因为数据用于维护生成模型的先验信念，并且是非参数的，因为模型可以根据观察到的数据增长。它可以被视为 Kieran 等（2016）中描述的“不忘”算法的实现。</p>
+<p>参数 <span class="math-inline">\alpha</span> 没有学习。相反，我们使用了 Veness 等（2012）的结果，其中表明时间衰减的切换率 <span class="math-inline">\alpha = 1/t</span> 保证了良好的最坏情况渐近性能，前提是任务数量以 <span class="math-inline">o\left(\frac{n}{\log n}\right)</span> 增长。</p>
+<p>表 2 总结了用于 Atari 实验的所有超参数。除了与 EWC 算法相关的参数（Fisher 乘数，Fisher 样本数量，EWC 开始）或与任务识别模型相关的参数（模型更新周期，模型下采样和窗口大小），所有参数值与 van Hasselt 等（2016）中的相同，并未为这些实验进行调整。</p>
+<h3 id="43-fisher-重叠">4.3 Fisher 重叠<a class="anchor-link" href="#43-fisher-重叠" title="Permanent link">&para;</a></h3>
+<p>为了评估在相同网络中解决的不同任务是否使用相似的权重集（正文图 3C），我们测量了两个任务的 Fisher 矩阵之间的重叠程度。具体来说，我们计算了两个任务的 Fisher 矩阵 <span class="math-inline">F_1</span> 和 <span class="math-inline">F_2</span>，将它们归一化为具有单位迹，<span class="math-inline">\hat{F}_1</span> 和 <span class="math-inline">\hat{F}_2</span>，然后计算它们的 Fréchet 距离，这是正半定矩阵空间中的一种度量（Dowson 和 Landau, 1982）：<br />
+<div class="math-display"><br />
+    d^2(\hat{F}_1, \hat{F}_2) = \frac{1}{2} \text{tr}(\hat{F}_1 + \hat{F}_2 - 2(\hat{F}_1 \hat{F}_2)^{1/2}) = \frac{1}{2} ||\hat{F}_1^{1/2} - \hat{F}_2^{1/2}||_F<br />
+</div><br />
+其值介于 0 和 1 之间。然后我们将重叠定义为 <span class="math-inline">1 - d^2</span>，值为 0 表示两个任务依赖于不重叠的权重集，值为 1 表示 <span class="math-inline">F_1 = \alpha F_2</span>，其中 <span class="math-inline">\alpha &gt; 0</span>。</p>
+                </div>
+
+                <!-- Comments Section (Giscus) -->
+                <section class="comments-section">
+                    <h3><i class="fas fa-comments"></i> 评论</h3>
+                    <script src="https://giscus.app/client.js"
+                        data-repo="Geeks-Z/Geeks-Z.github.io"
+                        data-repo-id=""
+                        data-category="Announcements"
+                        data-category-id=""
+                        data-mapping="pathname"
+                        data-strict="0"
+                        data-reactions-enabled="1"
+                        data-emit-metadata="0"
+                        data-input-position="bottom"
+                        data-theme="preferred_color_scheme"
+                        data-lang="zh-CN"
+                        crossorigin="anonymous"
+                        async>
+                    </script>
+                </section>
+            </article>
+
+            <footer class="post-footer">
+                <p>© 2025 Hongwei Zhao. Built with ❤️</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        const hljsDark = document.getElementById('hljs-theme-dark');
+        const hljsLight = document.getElementById('hljs-theme-light');
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.setAttribute('data-theme', 'dark');
+            icon.className = 'fas fa-sun';
+            hljsDark.disabled = false;
+            hljsLight.disabled = true;
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+                hljsDark.disabled = true;
+                hljsLight.disabled = false;
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+                hljsDark.disabled = false;
+                hljsLight.disabled = true;
+            }
+            
+            // Update Giscus theme
+            const giscusFrame = document.querySelector('iframe.giscus-frame');
+            if (giscusFrame) {
+                giscusFrame.contentWindow.postMessage({
+                    giscus: {
+                        setConfig: {
+                            theme: isDark ? 'light' : 'dark'
+                        }
+                    }
+                }, 'https://giscus.app');
+            }
+        });
+        
+        // Highlight.js
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // KaTeX auto-render
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+        
+        // TOC active state
+        const tocLinks = document.querySelectorAll('.toc-container a');
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3, .post-content h4');
+        
+        function updateTocActive() {
+            let current = '';
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                if (rect.top <= 100) {
+                    current = heading.getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateTocActive);
+        updateTocActive();
+    </script>
+</body>
+</html>
